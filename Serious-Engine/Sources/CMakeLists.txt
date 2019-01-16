@@ -1,0 +1,6 @@
+add_subdirectory(Ecc)
+add_subdirectory(Engine)
+add_subdirectory(EntitiesMP)
+add_subdirectory(EngineGUI)
+add_subdirectory(GameMP)
+add_subdirectory(SeriousSam)

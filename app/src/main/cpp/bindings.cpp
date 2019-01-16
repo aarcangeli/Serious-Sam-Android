@@ -2,6 +2,8 @@
 #include <string>
 #include <GLES2/gl2.h>
 
+static_assert(sizeof(void *) == 4, "Serious engine require 32 bit address space");
+
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_github_aarcangeli_serioussamandroid_MainActivity_init(JNIEnv *env, jobject instance) {
