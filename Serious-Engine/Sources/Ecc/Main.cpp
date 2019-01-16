@@ -211,7 +211,7 @@ void ReplaceFileRL(const char *strOld, const char *strNew)
   if(pfOld) fclose(pfOld);
   remove(strNew);
   return;
-Error:
+    Error:
   if(pfNew) fclose(pfNew);
   if(pfOld) fclose(pfOld);
 }
@@ -268,46 +268,61 @@ void ReplaceIfChanged(const char *strOld, const char *strNew)
 
 int main(int argc, char *argv[])
 {
-  // if there is not one argument on the command line
-  if (argc<1+1) {
-    // print usage
-    printf("Usage: Ecc <es_file_name>\n       -line\n");
-    //quit
-    return EXIT_FAILURE;
-  }
-  if(argc>2)
-  {
-    if(strcmp(argv[2],"-line")==0)
-    {
+  char *inputFile = nullptr;
+  char *outputFile = nullptr;
+  char *fileName = nullptr;
+  for(int i=1;i<argc;i++) {
+    if (argv[i][0] != '-') {
+      if (inputFile == nullptr) {
+        inputFile = argv[i];
+      } else {
+        printf("Unknown command: %s\n", argv[i]);
+        return EXIT_FAILURE;
+      }
+    } else if (argv[i][1] == 'o') {
+      outputFile = &argv[i][2];
+    } else if (argv[i][1] == 'n') {
+      fileName = &argv[i][2];
+    } else if (strcmp(argv[i], "-line") == 0) {
       _bRemoveLineDirective=1;
+    } else {
+      printf("Unknown option: %s\n", argv[i]);
+      return EXIT_FAILURE;
     }
   }
+  if (!inputFile) {
+    printf("Usage: Ecc -o<output_file> <es_file_name>\n       -line\n");
+    return EXIT_FAILURE;
+  }
+  if (outputFile == nullptr) {
+    outputFile = inputFile;
+  }
   // open the input file
-  _fInput = FOpen(argv[1], "r");
+  _fInput = FOpen(inputFile, "r");
 
-  //printf("%s\n", argv[1]);
+  printf("Compiling %s\n", inputFile);
   // open all the output files
-  char *strImplementation    = ChangeFileNameExtension(argv[1], ".cpp_tmp");
-  char *strImplementationOld = ChangeFileNameExtension(argv[1], ".cpp");
-  char *strDeclaration       = ChangeFileNameExtension(argv[1], ".h_tmp");
-  char *strDeclarationOld    = ChangeFileNameExtension(argv[1], ".h");
-  char *strTables            = ChangeFileNameExtension(argv[1], "_tables.h_tmp");
-  char *strTablesOld         = ChangeFileNameExtension(argv[1], "_tables.h");
+  char *strImplementation    = ChangeFileNameExtension(outputFile, ".cpp_tmp");
+  char *strImplementationOld = ChangeFileNameExtension(outputFile, ".cpp");
+  char *strDeclaration       = ChangeFileNameExtension(outputFile, ".h_tmp");
+  char *strDeclarationOld    = ChangeFileNameExtension(outputFile, ".h");
+  char *strTables            = ChangeFileNameExtension(outputFile, "_tables.h_tmp");
+  char *strTablesOld         = ChangeFileNameExtension(outputFile, "_tables.h");
 
   _fImplementation = FOpen(strImplementation, "w");
   _fDeclaration    = FOpen(strDeclaration   , "w");
   _fTables         = FOpen(strTables        , "w");
   // get the filename as preprocessor usable identifier
-  _strFileNameBase = ChangeFileNameExtension(argv[1], "");
-  _strFileNameBaseIdentifier = strdup(_strFileNameBase);
+  _strFileNameBase = ChangeFileNameExtension(outputFile, "");
+  _strFileNameBaseIdentifier = strdup(fileName);
   {char *strNextSlash = _strFileNameBaseIdentifier;
-  while((strNextSlash = strchr(strNextSlash, '/'))!=NULL) {
-    *strNextSlash = '_';
-  }}
+    while((strNextSlash = strchr(strNextSlash, '/'))!=NULL) {
+      *strNextSlash = '_';
+    }}
   {char *strNextSlash = _strFileNameBaseIdentifier;
-  while((strNextSlash = strchr(strNextSlash, '\\'))!=NULL) {
-    *strNextSlash = '_';
-  }}
+    while((strNextSlash = strchr(strNextSlash, '\\'))!=NULL) {
+      *strNextSlash = '_';
+    }}
   // print their headers
   PrintHeader(_fImplementation );
   PrintHeader(_fDeclaration    );
@@ -315,7 +330,7 @@ int main(int argc, char *argv[])
 
   // remember input filename
   char strFullInputName[MAXPATHLEN];
-  _fullpath(strFullInputName, argv[1], MAXPATHLEN);
+  _fullpath(strFullInputName, inputFile, MAXPATHLEN);
   _strInputFileName = strFullInputName;
   TranslateBackSlashes(_strInputFileName);
   // make lex use the input file
@@ -337,7 +352,7 @@ int main(int argc, char *argv[])
     ReplaceIfChanged(strTablesOld, strTables);
 
     return EXIT_SUCCESS;
-  // if there were errors
+    // if there were errors
   } else {
     // delete all files (the old declaration file is left intact!)
     remove(strImplementation);
