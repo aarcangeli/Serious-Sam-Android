@@ -341,7 +341,7 @@ inline SLONG FloatToInt( FLOAT f)
 // log base 2 of any float numero
 inline FLOAT Log2( FLOAT f) {
 #if (defined USE_PORTABLE_C)
-  return (FLOAT)(log10(x)*3.321928094887);  // log10(x)/log10(2)
+  return (FLOAT)(log10(f)*3.321928094887);  // log10(x)/log10(2)
 
 #elif (defined _MSC_VER)
   FLOAT fRet;
@@ -375,7 +375,10 @@ inline FLOAT Log2( FLOAT f) {
 inline SLONG FastLog2( SLONG x)
 {
 #if (defined USE_PORTABLE_C)
-  #error write me.
+  ULONG temp = (ULONG) x;
+  SLONG result = 0;
+  while (temp >>= 1) result++;
+  return result;
 
 #elif (defined _MSC_VER)
   SLONG slRet;
@@ -402,9 +405,12 @@ inline SLONG FastLog2( SLONG x)
 
 // returns log2 of first larger value that is a power of 2
 inline SLONG FastMaxLog2( SLONG x)
-{ 
+{
 #if (defined USE_PORTABLE_C)
-  #error write me.
+  if (x == 1) return 1;
+  SLONG result = FastLog2(x);
+  if ((ULONG) 1 << result != (ULONG) x) result++;
+  return result;
 
 #elif (defined _MSC_VER)
   SLONG slRet;

@@ -211,53 +211,53 @@ extern void ReportGlobalMemoryStatus(void)
 {
    CPrintF(TRANS("Global memory status...\n"));
 
-   MEMORYSTATUS ms;
-   GlobalMemoryStatus(&ms);
-
-#define MB (1024*1024)
-   CPrintF(TRANS("  Physical memory used: %4d/%4dMB\n"), (ms.dwTotalPhys    -ms.dwAvailPhys    )/MB, ms.dwTotalPhys    /MB);
-   CPrintF(TRANS("  Page file used:       %4d/%4dMB\n"), (ms.dwTotalPageFile-ms.dwAvailPageFile)/MB, ms.dwTotalPageFile/MB);
-   CPrintF(TRANS("  Virtual memory used:  %4d/%4dMB\n"), (ms.dwTotalVirtual -ms.dwAvailVirtual )/MB, ms.dwTotalVirtual /MB);
-   CPrintF(TRANS("  Memory load: %3d%%\n"), ms.dwMemoryLoad);
-
-   DWORD dwMin;
-   DWORD dwMax;
-   GetProcessWorkingSetSize(GetCurrentProcess(), &dwMin, &dwMax);
-   CPrintF(TRANS("  Process working set: %dMB-%dMB\n\n"), dwMin/(1024*1024), dwMax/(1024*1024));
+//   MEMORYSTATUS ms;
+//   GlobalMemoryStatus(&ms);
+//
+//#define MB (1024*1024)
+//   CPrintF(TRANS("  Physical memory used: %4d/%4dMB\n"), (ms.dwTotalPhys    -ms.dwAvailPhys    )/MB, ms.dwTotalPhys    /MB);
+//   CPrintF(TRANS("  Page file used:       %4d/%4dMB\n"), (ms.dwTotalPageFile-ms.dwAvailPageFile)/MB, ms.dwTotalPageFile/MB);
+//   CPrintF(TRANS("  Virtual memory used:  %4d/%4dMB\n"), (ms.dwTotalVirtual -ms.dwAvailVirtual )/MB, ms.dwTotalVirtual /MB);
+//   CPrintF(TRANS("  Memory load: %3d%%\n"), ms.dwMemoryLoad);
+//
+//   DWORD dwMin;
+//   DWORD dwMax;
+//   GetProcessWorkingSetSize(GetCurrentProcess(), &dwMin, &dwMax);
+//   CPrintF(TRANS("  Process working set: %dMB-%dMB\n\n"), dwMin/(1024*1024), dwMax/(1024*1024));
 }
 
 static void MemoryInfo(void)
 {
   ReportGlobalMemoryStatus();
 
-  _HEAPINFO hinfo;
-   int heapstatus;
-   hinfo._pentry = NULL;
-   SLONG slTotalUsed = 0;
-   SLONG slTotalFree = 0;
-   INDEX ctUsed = 0;
-   INDEX ctFree = 0;
+//  _HEAPINFO hinfo;
+//   int heapstatus;
+//   hinfo._pentry = NULL;
+//   SLONG slTotalUsed = 0;
+//   SLONG slTotalFree = 0;
+//   INDEX ctUsed = 0;
+//   INDEX ctFree = 0;
 
    CPrintF( "Walking heap...\n");
-   while( ( heapstatus = _heapwalk( &hinfo ) ) == _HEAPOK )
-   {
-     if (hinfo._useflag == _USEDENTRY ) {
-       slTotalUsed+=hinfo._size;
-       ctUsed++;
-     } else {
-       slTotalFree+=hinfo._size;
-       ctFree++;
-     }
-   }
-   switch( heapstatus )   {
-     case _HEAPEMPTY:     CPrintF( "Heap empty?!?\n" );                break;
-     case _HEAPEND:       CPrintF( "Heap ok.\n" );                     break;
-     case _HEAPBADPTR:    CPrintF( "ERROR - bad pointer to heap\n" );  break;
-     case _HEAPBADBEGIN:  CPrintF( "ERROR - bad start of heap\n" );    break;
-     case _HEAPBADNODE:   CPrintF( "ERROR - bad node in heap\n" );     break;
-   }
-   CPrintF( "Total used: %d bytes (%.2f MB) in %d blocks\n", slTotalUsed, slTotalUsed/1024.0f/1024.0f, ctUsed);
-   CPrintF( "Total free: %d bytes (%.2f MB) in %d blocks\n", slTotalFree, slTotalFree/1024.0f/1024.0f, ctFree);
+//   while( ( heapstatus = _heapwalk( &hinfo ) ) == _HEAPOK )
+//   {
+//     if (hinfo._useflag == _USEDENTRY ) {
+//       slTotalUsed+=hinfo._size;
+//       ctUsed++;
+//     } else {
+//       slTotalFree+=hinfo._size;
+//       ctFree++;
+//     }
+//   }
+//   switch( heapstatus )   {
+//     case _HEAPEMPTY:     CPrintF( "Heap empty?!?\n" );                break;
+//     case _HEAPEND:       CPrintF( "Heap ok.\n" );                     break;
+//     case _HEAPBADPTR:    CPrintF( "ERROR - bad pointer to heap\n" );  break;
+//     case _HEAPBADBEGIN:  CPrintF( "ERROR - bad start of heap\n" );    break;
+//     case _HEAPBADNODE:   CPrintF( "ERROR - bad node in heap\n" );     break;
+//   }
+//   CPrintF( "Total used: %d bytes (%.2f MB) in %d blocks\n", slTotalUsed, slTotalUsed/1024.0f/1024.0f, ctUsed);
+//   CPrintF( "Total free: %d bytes (%.2f MB) in %d blocks\n", slTotalFree, slTotalFree/1024.0f/1024.0f, ctFree);
 }
 
 // get help for a shell symbol
@@ -306,14 +306,14 @@ extern void PrintShellSymbolHelp(const CTString &strSymbol)
   try {
     CTString strHelp = GetShellSymbolHelp_t(strSymbol);
     if (strHelp!="") {
-      CPrintF("%s\n", strHelp);
+      CPrintF("%s\n", strHelp.str_String);
     } else {
-      CPrintF( TRANS("No help found for '%s'.\n"), strSymbol);
+      CPrintF( TRANS("No help found for '%s'.\n"), strSymbol.str_String);
     }
   // if failed
   } catch(char *strError) {
     // just print the error
-    CPrintF( TRANS("Cannot print help for '%s': %s\n"), strSymbol, strError);
+    CPrintF( TRANS("Cannot print help for '%s': %s\n"), strSymbol.str_String, strError);
   }
 }
 
@@ -344,23 +344,23 @@ extern void ListSymbolsByPattern(CTString strPattern)
 
     // print its declaration to the console
     if (st.st_sttType == STT_FUNCTION) {
-      CPrintF("void %s(void)", ss.ss_strName);
+      CPrintF("void %s(void)", ss.ss_strName.str_String);
 
     } else if (st.st_sttType == STT_STRING) {
-      CPrintF("CTString %s = \"%s\"", ss.ss_strName, *(CTString*)ss.ss_pvValue);
+      CPrintF("CTString %s = \"%s\"", ss.ss_strName.str_String, ((CTString*)ss.ss_pvValue)->str_String);
     } else if (st.st_sttType == STT_FLOAT) {
-      CPrintF("FLOAT %s = %g", ss.ss_strName, *(FLOAT*)ss.ss_pvValue);
+      CPrintF("FLOAT %s = %g", ss.ss_strName.str_String, *(FLOAT*)ss.ss_pvValue);
     } else if (st.st_sttType == STT_INDEX) {
-      CPrintF("INDEX %s = %d (0x%08x)", ss.ss_strName, *(INDEX*)ss.ss_pvValue, *(INDEX*)ss.ss_pvValue);
+      CPrintF("INDEX %s = %d (0x%08x)", ss.ss_strName.str_String, *(INDEX*)ss.ss_pvValue, *(INDEX*)ss.ss_pvValue);
     } else if (st.st_sttType == STT_ARRAY) {
       // get base type
       ShellType &stBase = _shell_ast[st.st_istBaseType];
       if (stBase.st_sttType == STT_FLOAT) {
-        CPrintF("FLOAT %s[%d]", ss.ss_strName, st.st_ctArraySize);
+        CPrintF("FLOAT %s[%d]", ss.ss_strName.str_String, st.st_ctArraySize);
       } else if (stBase.st_sttType == STT_INDEX) {
-        CPrintF("INDEX %s[%d]", ss.ss_strName, st.st_ctArraySize);
+        CPrintF("INDEX %s[%d]", ss.ss_strName.str_String, st.st_ctArraySize);
       } else if (stBase.st_sttType == STT_STRING) {
-        CPrintF("CTString %s[%d]", ss.ss_strName, st.st_ctArraySize);
+        CPrintF("CTString %s[%d]", ss.ss_strName.str_String, st.st_ctArraySize);
       } else {
         ASSERT(FALSE);
       }
@@ -390,7 +390,7 @@ static void ListSymbols(void)
 void Echo(void* pArgs)
 {
   CTString str = *NEXTARGUMENT(CTString*);
-  CPrintF("%s", str);
+  CPrintF("%s", str.str_String);
 }
 
 
@@ -465,7 +465,7 @@ void LoadCommands(void)
       // assign value
       *(CTString*)ssNew.ss_pvValue = "!command "+strCmd;
     } else {
-      _pShell->ErrorF("Symbol '%s' is not suitable to be a command", ssNew.ss_strName);
+      _pShell->ErrorF("Symbol '%s' is not suitable to be a command", ssNew.ss_strName.str_String);
     }
   }
 }
@@ -540,26 +540,26 @@ void CShell::Initialize(void)
   DeclareSymbol("const INDEX YES;",   (void*)&_bTRUE);
   DeclareSymbol("const INDEX NO;",    (void*)&_bFALSE);
 
-  DeclareSymbol("user void LoadCommands(void);", &LoadCommands);
-  DeclareSymbol("user void ListSymbols(void);", &ListSymbols);
-  DeclareSymbol("user void MemoryInfo(void);",  &MemoryInfo);
-  DeclareSymbol("user void MakeAccessViolation(INDEX);", &MakeAccessViolation);
-  DeclareSymbol("user void MakeStackOverflow(INDEX);",   &MakeStackOverflow);
-  DeclareSymbol("user void MakeFatalError(INDEX);",      &MakeFatalError);
+  DeclareSymbol("user void LoadCommands(void);", (void*) &LoadCommands);
+  DeclareSymbol("user void ListSymbols(void);", (void*) &ListSymbols);
+  DeclareSymbol("user void MemoryInfo(void);",  (void*) &MemoryInfo);
+  DeclareSymbol("user void MakeAccessViolation(INDEX);", (void*) &MakeAccessViolation);
+  DeclareSymbol("user void MakeStackOverflow(INDEX);",   (void*) &MakeStackOverflow);
+  DeclareSymbol("user void MakeFatalError(INDEX);",      (void*) &MakeFatalError);
   DeclareSymbol("persistent user INDEX con_iLastLines;", &con_iLastLines);
   DeclareSymbol("persistent user FLOAT tmp_af[10];", &tmp_af);
   DeclareSymbol("persistent user INDEX tmp_ai[10];", &tmp_ai);
   DeclareSymbol("persistent user INDEX tmp_i;", &tmp_i);
   DeclareSymbol("persistent user FLOAT tmp_fAdd;", &tmp_fAdd);
 
-  DeclareSymbol("user void Echo(CTString);", &Echo);
-  DeclareSymbol("user CTString UndecorateString(CTString);", &UndecorateString);
-  DeclareSymbol("user INDEX Matches(CTString, CTString);", &MatchStrings);
-  DeclareSymbol("user CTString LoadString(CTString);", &MyLoadString);
-  DeclareSymbol("user void SaveString(CTString, CTString);", &MySaveString);
-  DeclareSymbol("user CTString RemoveSubstring(CTString, CTString);", &RemoveSubstringCfunc);
-  DeclareSymbol("user CTString ToUpper(CTString);", &ToUpperCfunc);
-  DeclareSymbol("user CTString ToLower(CTString);", &ToLowerCfunc);
+  DeclareSymbol("user void Echo(CTString);", (void*) &Echo);
+  DeclareSymbol("user CTString UndecorateString(CTString);", (void*) &UndecorateString);
+  DeclareSymbol("user INDEX Matches(CTString, CTString);", (void*) &MatchStrings);
+  DeclareSymbol("user CTString LoadString(CTString);", (void*) &MyLoadString);
+  DeclareSymbol("user void SaveString(CTString, CTString);", (void*) &MySaveString);
+  DeclareSymbol("user CTString RemoveSubstring(CTString, CTString);", (void*) &RemoveSubstringCfunc);
+  DeclareSymbol("user CTString ToUpper(CTString);", (void*) &ToUpperCfunc);
+  DeclareSymbol("user CTString ToLower(CTString);", (void*) &ToLowerCfunc);
 }
 
 static BOOL _iParsing = 0;
@@ -856,7 +856,7 @@ void CShell::StorePersistentSymbols(const CTFileName &fnScript)
         continue;
       }
 
-      char *strUser = (ss.ss_ulFlags & SSF_USER)?"user ":"";
+      const char *strUser = (ss.ss_ulFlags & SSF_USER)?"user ":"";
 
       // get its type
       ShellType &st = _shell_ast[ss.ss_istType];
@@ -869,39 +869,39 @@ void CShell::StorePersistentSymbols(const CTFileName &fnScript)
         if (stBase.st_sttType==STT_FLOAT) {
           // dump all members as floats
           for(INDEX i=0; i<st.st_ctArraySize; i++) {
-            fScript.FPrintF_t("%s[%d]=(FLOAT)%g;\n", ss.ss_strName, i, ((FLOAT*)ss.ss_pvValue)[i]);
+            fScript.FPrintF_t("%s[%d]=(FLOAT)%g;\n", ss.ss_strName.str_String, i, ((FLOAT*)ss.ss_pvValue)[i]);
           }
         // if index
         } else if (stBase.st_sttType==STT_INDEX) {
           // dump all members as indices
           for(INDEX i=0; i<st.st_ctArraySize; i++) {
-            fScript.FPrintF_t("%s[%d]=(INDEX)%d;\n", ss.ss_strName, i, ((INDEX*)ss.ss_pvValue)[i]);
+            fScript.FPrintF_t("%s[%d]=(INDEX)%d;\n", ss.ss_strName.str_String, i, ((INDEX*)ss.ss_pvValue)[i]);
           }
         // if string
         } else if (stBase.st_sttType==STT_STRING) {
           // dump all members
           for(INDEX i=0; i<st.st_ctArraySize; i++) {
-            fScript.FPrintF_t("%s[%d]=\"%s\";\n", ss.ss_strName, i, (const char*)(ScriptEsc(*(CTString*)ss.ss_pvValue)[i]) );
+            fScript.FPrintF_t("%s[%d]=\"%s\";\n", ss.ss_strName.str_String, i, (const char*)(ScriptEsc(*(CTString*)ss.ss_pvValue)[i]) );
           }
         // otherwise
         } else {
-          ThrowF_t("%s is an array of wrong type", ss.ss_strName);
+          ThrowF_t("%s is an array of wrong type", ss.ss_strName.str_String);
         }
       // if float
       } else if (st.st_sttType==STT_FLOAT) {
         // dump as float
-        fScript.FPrintF_t("persistent extern %sFLOAT %s=(FLOAT)%g;\n", strUser, ss.ss_strName, *(FLOAT*)ss.ss_pvValue);
+        fScript.FPrintF_t("persistent extern %sFLOAT %s=(FLOAT)%g;\n", strUser, ss.ss_strName.str_String, *(FLOAT*)ss.ss_pvValue);
       // if index
       } else if (st.st_sttType==STT_INDEX) {
         // dump as index
-        fScript.FPrintF_t("persistent extern %sINDEX %s=(INDEX)%d;\n", strUser, ss.ss_strName, *(INDEX*)ss.ss_pvValue);
+        fScript.FPrintF_t("persistent extern %sINDEX %s=(INDEX)%d;\n", strUser, ss.ss_strName.str_String, *(INDEX*)ss.ss_pvValue);
       // if string
       } else if (st.st_sttType==STT_STRING) {
         // dump as index
-        fScript.FPrintF_t("persistent extern %sCTString %s=\"%s\";\n", strUser, ss.ss_strName, (const char*)ScriptEsc(*(CTString*)ss.ss_pvValue) );
+        fScript.FPrintF_t("persistent extern %sCTString %s=\"%s\";\n", strUser, ss.ss_strName.str_String, (const char*)ScriptEsc(*(CTString*)ss.ss_pvValue) );
       // otherwise
       } else {
-        ThrowF_t("%s of wrong type", ss.ss_strName);
+        ThrowF_t("%s of wrong type", ss.ss_strName.str_String);
       }
     }
   } catch (char *strError) {

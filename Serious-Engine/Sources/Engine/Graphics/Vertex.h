@@ -57,17 +57,22 @@ struct GFXColor
   GFXColor() {};
 
   GFXColor( COLOR col) {
-    _asm mov   ecx,dword ptr [this]
-    _asm mov   eax,dword ptr [col]
-    _asm bswap eax
-    _asm mov   dword ptr [ecx],eax
+    // little endian to big endian
+    ULONG temp = 0;
+    temp |= (col & 0xff) << 24;
+    temp |= (col >> 8 & 0xff) << 16;
+    temp |= (col >> 16 & 0xff) << 8;
+    temp |= (col >> 24 & 0xff);
+    abgr = temp;
   }
 
   __forceinline void Set( COLOR col) {
-    _asm mov   ecx,dword ptr [this]
-    _asm mov   eax,dword ptr [col]
-    _asm bswap eax
-    _asm mov   dword ptr [ecx],eax
+    ULONG temp = 0;
+    temp |= (col & 0xff) << 24;
+    temp |= (col >> 8 & 0xff) << 16;
+    temp |= (col >> 16 & 0xff) << 8;
+    temp |= (col >> 24 & 0xff);
+    abgr = temp;
   }
 
   void MultiplyRGBA( const GFXColor &col1, const GFXColor &col2) {

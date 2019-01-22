@@ -50,7 +50,8 @@ static CTFileStream _strmDebugOutput;
 
 // this function is here to satisfy compiler's weird need when compiling 
 // the template for CDynamicArray<CBrushVertex *>
-inline void Clear(CBrushVertex *pbvx) {
+template<>
+inline void Clear(CBrushVertex *&pbvx) {
   (void)pbvx;
 };
 

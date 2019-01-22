@@ -29,6 +29,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Templates/BSP_internal.h>
 #include <Engine/Templates/DynamicArray.cpp>
 #include <Engine/Templates/StaticArray.cpp>
+#include <Engine/Templates/BSP.cpp>
 
 template CDynamicArray<CBrush3D>;
 

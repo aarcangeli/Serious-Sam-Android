@@ -506,18 +506,13 @@ INDEX CTString::VPrintF(const char *strFormat, va_list arg)
 
 
 
-static void *psscanf = &sscanf;
 // Scan formatted from a string
-__declspec(naked) INDEX CTString::ScanF(const char *strFormat, ...)
+INDEX CTString::ScanF(const char *strFormat, ...)
 {
-  __asm {
-    push    eax
-    mov     eax,dword ptr [esp+8]
-    mov     eax,dword ptr [eax]
-    mov     dword ptr [esp+8], eax
-    pop     eax
-    jmp     dword ptr [psscanf]
-  }
+  va_list args;
+  va_start(args, strFormat);
+  vsscanf(str_String, strFormat, args);
+  va_end(args);
 }
 
 
@@ -643,7 +638,7 @@ void CTString::LoadVar(const class CTFileName &fnmFile)
     str.Load_t(fnmFile);
     *this = str;
   } catch (char *strError) {
-    CPrintF(TRANS("Cannot load variable from '%s':\n%s\n"), (CTString&)fnmFile, strError);
+    CPrintF(TRANS("Cannot load variable from '%s':\n%s\n"), fnmFile.str_String, strError);
   }
 }
 
@@ -652,7 +647,7 @@ void CTString::SaveVar(const class CTFileName &fnmFile)
   try {
     Save_t(fnmFile);
   } catch (char *strError) {
-    CPrintF(TRANS("Cannot save variable to '%s':\n%s\n"), (CTString&)fnmFile, strError);
+    CPrintF(TRANS("Cannot save variable to '%s':\n%s\n"), fnmFile.str_String, strError);
   }
 }
 

@@ -1,3 +1,5 @@
+add_subdirectory(libvorbis)
+add_subdirectory(libogg)
 add_subdirectory(Ecc)
 add_subdirectory(Engine)
 add_subdirectory(EntitiesMP)

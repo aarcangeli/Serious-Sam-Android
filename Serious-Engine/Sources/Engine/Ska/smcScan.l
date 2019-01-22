@@ -1,7 +1,7 @@
 %option prefix="syy"
 %{
-#include "ParsingSmbs.h"
-#include "smcPars.h"
+#include <Engine/Ska/ParsingSmbs.h>
+#include <Engine/Ska/smcPars.h>
 
 #include <Engine/Base/CTString.h>
 #include <Engine/Base/CTString.inl>

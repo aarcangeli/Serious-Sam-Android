@@ -20,6 +20,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #endif
 
 #include <Engine/Base/Assert.h>
+#include <Engine/Math/Functions.h>
 
 /*
  * Template class for quaternion of arbitrary precision.

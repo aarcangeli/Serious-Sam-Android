@@ -17,6 +17,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <Engine/Graphics/Color.h>
 #include <Engine/Math/Functions.h>
+#include <Engine/Base/ErrorReporting.h>
 
 // asm shortcuts
 #define O offset
@@ -247,6 +248,9 @@ COLOR MulColors( COLOR col1, COLOR col2)
   if( col2==0xFFFFFFFF)   return col1;
   if( col1==0 || col2==0) return 0;
   COLOR colRet;
+#if PLATFORM_UNIX
+  FatalError("TODO");
+#else
   __asm {
     xor     ebx,ebx
     // red 
@@ -320,6 +324,7 @@ COLOR MulColors( COLOR col1, COLOR col2)
     // done
     mov     D [colRet],ebx
   }
+#endif
   return colRet;
 }
 
@@ -331,6 +336,9 @@ COLOR AddColors( COLOR col1, COLOR col2)
   if( col2==0) return col1;
   if( col1==0xFFFFFFFF || col2==0xFFFFFFFF) return 0xFFFFFFFF;
   COLOR colRet;
+#if PLATFORM_UNIX
+    FatalError("TODO");
+#else
   __asm {
     xor     ebx,ebx
     mov     esi,255
@@ -393,6 +401,7 @@ COLOR AddColors( COLOR col1, COLOR col2)
     // done
     mov     D [colRet],ebx
   }
+#endif
   return colRet;
 }
 
@@ -401,6 +410,9 @@ COLOR AddColors( COLOR col1, COLOR col2)
 // multiple conversion from OpenGL color to DirectX color
 extern void abgr2argb( ULONG *pulSrc, ULONG *pulDst, INDEX ct)
 {
+#if PLATFORM_UNIX
+    FatalError("TODO");
+#else
   __asm {
     mov   esi,dword ptr [pulSrc]
     mov   edi,dword ptr [pulDst]
@@ -452,4 +464,5 @@ colSkip2:
     mov   dword ptr [edi],eax
 colSkip1:
   }
+#endif
 }

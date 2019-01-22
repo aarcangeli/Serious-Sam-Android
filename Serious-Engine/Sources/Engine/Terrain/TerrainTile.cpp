@@ -233,7 +233,7 @@ void CTerrainTile::AddVertex(INDEX ic, INDEX ir)
   GFXVertex4 &vxFinal = GetVertices().Push();
   GFXTexCoord &tcShadow = GetShadowMapTC().Push();
 
-  GFXVertex4 &vx = GetVertex(ic,ir,tt_iIndex);
+  const GFXVertex4 &vx = GetVertex(ic,ir,tt_iIndex);
   vxFinal.x = vx.x * _ptrTerrain->tr_vStretch(1);
   vxFinal.y = vx.y * _ptrTerrain->tr_vStretch(2);
   vxFinal.z = vx.z * _ptrTerrain->tr_vStretch(3);

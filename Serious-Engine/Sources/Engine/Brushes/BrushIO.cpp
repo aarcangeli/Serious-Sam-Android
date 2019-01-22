@@ -25,6 +25,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Graphics/Color.h>
 #include <Engine/Templates/StaticArray.cpp>
 #include <Engine/Templates/DynamicArray.cpp>
+#include <Engine/Templates/BSP.cpp>
 
 static const INDEX _iSupportedVersion = 14;
 

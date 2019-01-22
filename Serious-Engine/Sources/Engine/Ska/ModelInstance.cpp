@@ -308,13 +308,13 @@ ANGLE3D CModelInstance::GetOffsetRot()
 }
 
 // Stretch model instance
-void CModelInstance::StretchModel(FLOAT3D &vStretch)
+void CModelInstance::StretchModel(const FLOAT3D &vStretch)
 {
   mi_vStretch = vStretch;
 }
 
 // Stretch model instance without attachments
-void CModelInstance::StretchSingleModel(FLOAT3D &vStretch)
+void CModelInstance::StretchSingleModel(const FLOAT3D &vStretch)
 {
   mi_vStretch = vStretch;
   // for each child of model instance

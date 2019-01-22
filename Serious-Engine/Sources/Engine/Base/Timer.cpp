@@ -26,17 +26,19 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <Engine/Base/ListIterator.inl>
 #include <Engine/Base/Priority.inl>
+#include "unistd.h"
 
 // Read the Pentium TimeStampCounter
 static inline __int64 ReadTSC(void)
 {
-  __int64 mmRet;
-  __asm {
-    rdtsc
-    mov   dword ptr [mmRet+0],eax
-    mov   dword ptr [mmRet+4],edx
-  }
-  return mmRet;
+//  __int64 mmRet;
+//  __asm {
+//    rdtsc
+//    mov   dword ptr [mmRet+0],eax
+//    mov   dword ptr [mmRet+4],edx
+//  }
+//  return mmRet;
+  return getTimeNsec();
 }
 
 
@@ -44,7 +46,7 @@ static inline __int64 ReadTSC(void)
 #pragma comment(lib, "winmm.lib")
 
 // current game time always valid for the currently active task
-static _declspec(thread) TIME _CurrentTickTimer = 0.0f;
+static thread_local TIME _CurrentTickTimer = 0.0f;
 
 // CTimer implementation
 
@@ -131,93 +133,6 @@ void __stdcall CTimer_TimerFunc(UINT uID, UINT uMsg, ULONG dwUser, ULONG dw1, UL
 #define MAX_MEASURE_TRIES 5
 static INDEX _aiTries[MAX_MEASURE_TRIES];
 
-// Get processor speed in Hertz
-static __int64 GetCPUSpeedHz(void)
-{
-  // get the frequency of the 'high' precision timer
-  __int64 llTimerFrequency;
-  BOOL bPerformanceCounterPresent = QueryPerformanceFrequency((LARGE_INTEGER*)&llTimerFrequency);
-  // fail if the performance counter is not available on this system
-  if( !bPerformanceCounterPresent) {
-    CPrintF( TRANS("PerformanceTimer is not available!\n"));
-    return 1;
-  }
-
-  INDEX iSpeed, iTry;
-  INDEX ctTotalFaults=0;
-  __int64 llTimeLast, llTimeNow;
-  __int64 llCPUBefore, llCPUAfter; 
-  __int64 llTimeBefore, llTimeAfter;
-  __int64 llSpeedMeasured;
-
-  // try to measure 10 times
-  INDEX iSet=0;
-  for( ; iSet<10; iSet++)
-  { // one time has several tries
-    for( iTry=0; iTry<MAX_MEASURE_TRIES; iTry++)
-    { // wait the state change on the timer
-      QueryPerformanceCounter((LARGE_INTEGER*)&llTimeNow);
-      do {
-        llTimeLast = llTimeNow;
-        QueryPerformanceCounter((LARGE_INTEGER*)&llTimeNow);
-      } while( llTimeLast==llTimeNow);
-      // wait for some time, and count the CPU clocks passed
-      llCPUBefore  = ReadTSC();
-      llTimeBefore = llTimeNow;
-      llTimeAfter  = llTimeNow + llTimerFrequency/4;
-      do {
-        QueryPerformanceCounter((LARGE_INTEGER*)&llTimeNow);
-      } while( llTimeNow<llTimeAfter );
-      llCPUAfter = ReadTSC();
-      // calculate the CPU clock frequency from gathered data
-      llSpeedMeasured = (llCPUAfter-llCPUBefore)*llTimerFrequency / (llTimeNow-llTimeBefore);
-      _aiTries[iTry]  = llSpeedMeasured/1000000;
-    }
-    // see if we had good measurement
-    INDEX ctFaults = 0;
-    iSpeed = _aiTries[0];
-    const INDEX iTolerance = iSpeed *1/100; // %1 tolerance should be enough
-    for( iTry=1; iTry<MAX_MEASURE_TRIES; iTry++) {
-      if( abs(iSpeed-_aiTries[iTry]) > iTolerance) ctFaults++;
-    }
-    // done if no faults
-    if( ctFaults==0) break;
-    Sleep(1000);
-  }
-
-  // fail if couldn't readout CPU speed
-  if( iSet==10) {
-    CPrintF( TRANS("PerformanceTimer is not vaild!\n"));
-    //return 1; 
-    // NOTE: this function must never fail, or the engine will crash! 
-    // if this failed, the speed will be read from registry (only happens on Win2k)
-  }
-
-  // keep readout speed and read speed from registry
-  const SLONG slSpeedRead = _aiTries[0];
-  SLONG slSpeedReg = 0;
-  BOOL bFoundInReg = REG_GetLong("HKEY_LOCAL_MACHINE\\HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0\\~MHz", (ULONG&)slSpeedReg);
-
-  // if not found in registry
-  if( !bFoundInReg) {
-    // use measured
-    CPrintF(TRANS("  CPU speed not found in registry, using calculated value\n\n"));
-    return (__int64)slSpeedRead*1000000;
-  // if found in registry
-  } else {
-    // if different than measured
-    const INDEX iTolerance = slSpeedRead *1/100; // %1 tolerance should be enough
-    if( abs(slSpeedRead-slSpeedReg) > iTolerance) {
-      // report warning and use registry value
-      CPrintF(TRANS("  WARNING: calculated CPU speed different than stored in registry!\n\n"));
-      return (__int64)slSpeedReg*1000000;
-    }
-    // use measured value
-    return (__int64)slSpeedRead*1000000;
-  }
-}
-
-
 /*
  * Constructor.
  */
@@ -230,8 +145,8 @@ CTimer::CTimer(BOOL bInterrupt /*=TRUE*/)
   tm_bInterrupt = bInterrupt;
 
   { // this part of code must be executed as precisely as possible
-    CSetPriority sp(REALTIME_PRIORITY_CLASS, THREAD_PRIORITY_TIME_CRITICAL);
-    tm_llCPUSpeedHZ = GetCPUSpeedHz();
+//    CSetPriority sp(REALTIME_PRIORITY_CLASS, THREAD_PRIORITY_TIME_CRITICAL);
+    tm_llCPUSpeedHZ = 1000000000;
     tm_llPerformanceCounterFrequency = tm_llCPUSpeedHZ;
 
     // measure profiling errors and set epsilon corrections
@@ -248,31 +163,31 @@ CTimer::CTimer(BOOL bInterrupt /*=TRUE*/)
   tm_fLerpFactor = 1.0f;
   tm_fLerpFactor2 = 1.0f;
 
-  // start interrupt (eventually)
-  if( tm_bInterrupt)
-  {
-    tm_TimerID = timeSetEvent(
-      ULONG(TickQuantum*1000.0f),	  // period value [ms]
-      0,	                          // resolution (0==max. possible)
-      &CTimer_TimerFunc,	          // callback
-      0,                            // user
-      TIME_PERIODIC);               // event type
-
-    // check that interrupt was properly started
-    if( tm_TimerID==NULL) FatalError(TRANS("Cannot initialize multimedia timer!"));
-
-    // make sure that timer interrupt is ticking
-    INDEX iTry=1;
-    for( ; iTry<=3; iTry++) {
-      const TIME tmTickBefore = GetRealTimeTick();
-      Sleep(1000* iTry*3 *TickQuantum);
-      const TIME tmTickAfter = GetRealTimeTick();
-      if( tmTickBefore!=tmTickAfter) break;
-      Sleep(1000*iTry);
-    }
-    // report fatal
-    if( iTry>3) FatalError(TRANS("Problem with initializing multimedia timer - please try again."));
-  }
+//  // start interrupt (eventually)
+//  if( tm_bInterrupt)
+//  {
+//    tm_TimerID = timeSetEvent(
+//      ULONG(TickQuantum*1000.0f),	  // period value [ms]
+//      0,	                          // resolution (0==max. possible)
+//      &CTimer_TimerFunc,	          // callback
+//      0,                            // user
+//      TIME_PERIODIC);               // event type
+//
+//    // check that interrupt was properly started
+//    if( tm_TimerID==NULL) FatalError(TRANS("Cannot initialize multimedia timer!"));
+//
+//    // make sure that timer interrupt is ticking
+//    INDEX iTry=1;
+//    for( ; iTry<=3; iTry++) {
+//      const TIME tmTickBefore = GetRealTimeTick();
+//      Sleep(1000* iTry*3 *TickQuantum);
+//      const TIME tmTickAfter = GetRealTimeTick();
+//      if( tmTickBefore!=tmTickAfter) break;
+//      Sleep(1000*iTry);
+//    }
+//    // report fatal
+//    if( iTry>3) FatalError(TRANS("Problem with initializing multimedia timer - please try again."));
+//  }
 }
 
 /*
@@ -283,11 +198,11 @@ CTimer::~CTimer(void)
   ASSERT(_pTimer == this);
 
   // destroy timer
-  if (tm_bInterrupt) {
-    ASSERT(tm_TimerID!=NULL);
-    ULONG rval = timeKillEvent(tm_TimerID);
-    ASSERT(rval == TIMERR_NOERROR);
-  }
+//  if (tm_bInterrupt) {
+//    ASSERT(tm_TimerID!=NULL);
+//    ULONG rval = timeKillEvent(tm_TimerID);
+//    ASSERT(rval == TIMERR_NOERROR);
+//  }
   // check that all handlers have been removed
   ASSERT(tm_lhHooks.IsEmpty());
 

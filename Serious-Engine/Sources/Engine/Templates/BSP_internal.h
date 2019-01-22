@@ -139,6 +139,7 @@ public:
  */
 template<class Type, int iDimensions>
 class BSPNode : public Plane<Type, iDimensions> {  // split plane
+  using Super = Plane<Type, iDimensions>;
 public:
   enum BSPNodeLocation bn_bnlLocation;    // location of bsp node
 

@@ -18,8 +18,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <sys\types.h>
 #include <sys\stat.h>
 #include <fcntl.h>
-#include <io.h>
-#include <DbgHelp.h>
+//#include <io.h>
+//#include <DbgHelp.h>
 #include <Engine/Base/Protection.h>
 
 #include <Engine/Base/Stream.h>
@@ -46,9 +46,9 @@ ULONG _ulMaxLenghtOfSavingFile = (1UL<<20)*128;
 extern INDEX fil_bPreferZips = FALSE;
 
 // set if current thread has currently enabled stream handling
-static _declspec(thread) BOOL _bThreadCanHandleStreams = FALSE;
+static thread_local BOOL _bThreadCanHandleStreams = FALSE;
 // list of currently opened streams
-static _declspec(thread) CListHead *_plhOpenedStreams = NULL;
+static thread_local CListHead *_plhOpenedStreams = NULL;
 
 ULONG _ulVirtuallyAllocatedSpace = 0;
 ULONG _ulVirtuallyAllocatedSpaceTotal = 0;
@@ -117,10 +117,11 @@ static CTFileName _fnmApp;
 void InitStreams(void)
 {
   // obtain information about system
-  SYSTEM_INFO siSystemInfo;
-  GetSystemInfo( &siSystemInfo);
-  // and remember page size
-  _ulPageSize = siSystemInfo.dwPageSize*16;   // cca. 64kB on WinNT/Win95
+//  SYSTEM_INFO siSystemInfo;
+//  GetSystemInfo( &siSystemInfo);
+//  // and remember page size
+//  _ulPageSize = siSystemInfo.dwPageSize*16;   // cca. 64kB on WinNT/Win95
+  _ulPageSize = 4000 * 16;   // cca. 64kB on WinNT/Win95
 
   // keep a copy of path for setting purposes
   _fnmApp = _fnmApplicationPath;
@@ -131,7 +132,7 @@ void InitStreams(void)
     LoadStringVar(CTString("DefaultMod.txt"), _fnmMod);
   }
 
-  CPrintF(TRANS("Current mod: %s\n"), _fnmMod==""?TRANS("<none>"):(CTString&)_fnmMod);
+  CPrintF(TRANS("Current mod: %s\n"), _fnmMod==""?TRANS("<none>"):_fnmMod.str_String);
   // if there is a mod active
   if (_fnmMod!="") {
     // load mod's include/exclude lists
@@ -163,67 +164,71 @@ void InitStreams(void)
   CPrintF(TRANS("Loading group files...\n"));
 
   // for each group file in base directory
-  struct _finddata_t c_file;
-  long hFile;
-  hFile = _findfirst(_fnmApplicationPath+"*.gro", &c_file);
-  BOOL bOK = (hFile!=-1);
-  while(bOK) {
-    if (CTString(c_file.name).Matches("*.gro")) {
-      // add it to active set
-      UNZIPAddArchive(_fnmApplicationPath+c_file.name);
-    }
-    bOK = _findnext(hFile, &c_file)==0;
-  }
-  _findclose( hFile );
+  FatalError("TODO");
+//  struct _finddata_t c_file;
+//  long hFile;
+//  hFile = _findfirst(_fnmApplicationPath+"*.gro", &c_file);
+//  BOOL bOK = (hFile!=-1);
+//  while(bOK) {
+//    if (CTString(c_file.name).Matches("*.gro")) {
+//      // add it to active set
+//      UNZIPAddArchive(_fnmApplicationPath+c_file.name);
+//    }
+//    bOK = _findnext(hFile, &c_file)==0;
+//  }
+//  _findclose( hFile );
 
   // if there is a mod active
   if (_fnmMod!="") {
     // for each group file in mod directory
-    struct _finddata_t c_file;
-    long hFile;
-    hFile = _findfirst(_fnmApplicationPath+_fnmMod+"*.gro", &c_file);
-    BOOL bOK = (hFile!=-1);
-    while(bOK) {
-      if (CTString(c_file.name).Matches("*.gro")) {
-        // add it to active set
-        UNZIPAddArchive(_fnmApplicationPath+_fnmMod+c_file.name);
-      }
-      bOK = _findnext(hFile, &c_file)==0;
-    }
-    _findclose( hFile );
+    FatalError("TODO");
+//    struct _finddata_t c_file;
+//    long hFile;
+//    hFile = _findfirst(_fnmApplicationPath+_fnmMod+"*.gro", &c_file);
+//    BOOL bOK = (hFile!=-1);
+//    while(bOK) {
+//      if (CTString(c_file.name).Matches("*.gro")) {
+//        // add it to active set
+//        UNZIPAddArchive(_fnmApplicationPath+_fnmMod+c_file.name);
+//      }
+//      bOK = _findnext(hFile, &c_file)==0;
+//    }
+//    _findclose( hFile );
   }
 
   // if there is a CD path
   if (_fnmCDPath!="") {
     // for each group file on the CD
-    struct _finddata_t c_file;
-    long hFile;
-    hFile = _findfirst(_fnmCDPath+"*.gro", &c_file);
-    BOOL bOK = (hFile!=-1);
-    while(bOK) {
-      if (CTString(c_file.name).Matches("*.gro")) {
-        // add it to active set
-        UNZIPAddArchive(_fnmCDPath+c_file.name);
-      }
-      bOK = _findnext(hFile, &c_file)==0;
-    }
-    _findclose( hFile );
+      FatalError("TODO");
+//    struct _finddata_t c_file;
+//    long hFile;
+//    hFile = _findfirst(_fnmCDPath+"*.gro", &c_file);
+//    BOOL bOK = (hFile!=-1);
+//    while(bOK) {
+//      if (CTString(c_file.name).Matches("*.gro")) {
+//        // add it to active set
+//        UNZIPAddArchive(_fnmCDPath+c_file.name);
+//      }
+//      bOK = _findnext(hFile, &c_file)==0;
+//    }
+//    _findclose( hFile );
 
     // if there is a mod active
     if (_fnmMod!="") {
+        FatalError("TODO");
       // for each group file in mod directory
-      struct _finddata_t c_file;
-      long hFile;
-      hFile = _findfirst(_fnmCDPath+_fnmMod+"*.gro", &c_file);
-      BOOL bOK = (hFile!=-1);
-      while(bOK) {
-        if (CTString(c_file.name).Matches("*.gro")) {
-          // add it to active set
-          UNZIPAddArchive(_fnmCDPath+_fnmMod+c_file.name);
-        }
-        bOK = _findnext(hFile, &c_file)==0;
-      }
-      _findclose( hFile );
+//      struct _finddata_t c_file;
+//      long hFile;
+//      hFile = _findfirst(_fnmCDPath+_fnmMod+"*.gro", &c_file);
+//      BOOL bOK = (hFile!=-1);
+//      while(bOK) {
+//        if (CTString(c_file.name).Matches("*.gro")) {
+//          // add it to active set
+//          UNZIPAddArchive(_fnmCDPath+_fnmMod+c_file.name);
+//        }
+//        bOK = _findnext(hFile, &c_file)==0;
+//      }
+//      _findclose( hFile );
     }
   }
 
@@ -281,6 +286,7 @@ void CTStream::DisableStreamHandling(void)
   _plhOpenedStreams = NULL;
 }
 
+#ifdef PLATFORM_WIN32
 int CTStream::ExceptionFilter(DWORD dwCode, _EXCEPTION_POINTERS *pExceptionInfoPtrs)
 {
   // If the exception is not a page fault, exit.
@@ -317,13 +323,15 @@ int CTStream::ExceptionFilter(DWORD dwCode, _EXCEPTION_POINTERS *pExceptionInfoP
   // Continue execution where the page fault occurred
   return EXCEPTION_CONTINUE_EXECUTION;
 }
+#endif
 
 /*
  * Static function to report fatal exception error.
  */
 void CTStream::ExceptionFatalError(void)
 {
-  FatalError( GetWindowsError( GetLastError()) );
+//  FatalError( GetWindowsError( GetLastError()) );
+  FatalError("Fatal error");
 }
 
 /*
@@ -335,7 +343,7 @@ void CTStream::Throw_t(char *strFormat, ...)  // throws char *
   char strFormatBuffer[slBufferSize];
   char strBuffer[slBufferSize];
   // add the stream description to the format string
-  _snprintf(strFormatBuffer, slBufferSize, "%s (%s)", strFormat, strm_strStreamDescription);
+  _snprintf(strFormatBuffer, slBufferSize, "%s (%s)", strFormat, strm_strStreamDescription.str_String);
   // format the message in buffer
   va_list arg;
   va_start(arg, strFormat); // variable arguments start after this argument
@@ -392,7 +400,7 @@ void CTStream::GetLine_t(char *strBuffer, SLONG slBufferSize, char cDelimiter /*
   INDEX iLetters = 0;
   // test if EOF reached
   if(AtEOF()) {
-    ThrowF_t(TRANS("EOF reached, file %s"), strm_strStreamDescription);
+    ThrowF_t(TRANS("EOF reached, file %s"), strm_strStreamDescription.str_String);
   }
   // get line from istream
   FOREVER
@@ -521,7 +529,7 @@ void CTStream::ExpectKeyword_t(const CTString &strKeyword) // throw char *
     SBYTE chKeywordChar;
     (*this)>>chKeywordChar;
     if (chKeywordChar!=strKeyword[iKeywordChar]) {
-      ThrowF_t(TRANS("Expected keyword %s not found"), strKeyword);
+      ThrowF_t(TRANS("Expected keyword %s not found"), strKeyword.str_String);
     }
   }
 }
@@ -834,7 +842,7 @@ void CTStream::DictionaryPreload_t(void)
         fnm.fnm_pserPreloaded = _pModelStock->Obtain_t(fnm);
       }
     } catch (char *strError) {
-      CPrintF( TRANS("Cannot preload %s: %s\n"), (CTString&)fnm, strError);
+      CPrintF( TRANS("Cannot preload %s: %s\n"), fnm.str_String, strError);
     }
   }
 }
@@ -896,7 +904,7 @@ void CTFileStream::Open_t(const CTFileName &fnFileName, CTStream::OpenMode om/*=
   if (!_bThreadCanHandleStreams) {
     // error
     ::ThrowF_t(TRANS("Cannot open file `%s', stream handling is not enabled for this thread"),
-      (CTString&)fnFileName);
+      fnFileName.str_String);
   }
 
   // check parameters
@@ -918,7 +926,7 @@ void CTFileStream::Open_t(const CTFileName &fnFileName, CTStream::OpenMode om/*=
       fstrm_iZipHandle = UNZIPOpen_t(fnmFullFileName);
       fstrm_slZipSize = UNZIPGetSize(fstrm_iZipHandle);
       // load the file from the zip in the buffer
-      fstrm_pubZipBuffer = (UBYTE*)VirtualAlloc(NULL, fstrm_slZipSize, MEM_COMMIT, PAGE_READWRITE);
+      fstrm_pubZipBuffer = (UBYTE*)malloc(fstrm_slZipSize);
       UNZIPReadBlock_t(fstrm_iZipHandle, (UBYTE*)fstrm_pubZipBuffer, 0, fstrm_slZipSize);
     // if it is a physical file
     } else if (iFile==EFP_FILE) {
@@ -940,7 +948,7 @@ void CTFileStream::Open_t(const CTFileName &fnFileName, CTStream::OpenMode om/*=
   // if openning operation was not successfull
   if(fstrm_pFile == NULL && fstrm_iZipHandle==-1) {
     // throw exception
-    Throw_t(TRANS("Cannot open file `%s' (%s)"), (CTString&)fnmFullFileName,
+    Throw_t(TRANS("Cannot open file `%s' (%s)"), fnmFullFileName.str_String,
       strerror(errno));
   }
 
@@ -965,7 +973,7 @@ void CTFileStream::Create_t(const CTFileName &fnFileName,
   if (!_bThreadCanHandleStreams) {
     // error
     ::ThrowF_t(TRANS("Cannot create file `%s', stream handling is not enabled for this thread"),
-      (CTString&)fnFileNameAbsolute);
+               fnFileNameAbsolute.str_String);
   }
 
   CTFileName fnmFullFileName;
@@ -977,7 +985,7 @@ void CTFileStream::Create_t(const CTFileName &fnFileName,
   ASSERT(fstrm_pFile == NULL);
 
   // create the directory for the new file if it doesn't exist yet
-  MakeSureDirectoryPathExists(fnmFullFileName);
+//  TODO: MakeSureDirectoryPathExists(fnmFullFileName);
 
   // open file stream for writing (destroy file context if file existed before)
   fstrm_pFile = fopen(fnmFullFileName, "wb+");
@@ -985,7 +993,7 @@ void CTFileStream::Create_t(const CTFileName &fnFileName,
   if(fstrm_pFile == NULL)
   {
     // throw exception
-    Throw_t(TRANS("Cannot create file `%s' (%s)"), (CTString&)fnmFullFileName,
+    Throw_t(TRANS("Cannot create file `%s' (%s)"), fnmFullFileName.str_String,
       strerror(errno));
   }
   // if file creation was successfull, set stream description to file name
@@ -1023,7 +1031,7 @@ void CTFileStream::Close(void)
     UNZIPClose(fstrm_iZipHandle);
     fstrm_iZipHandle = -1;
 
-    VirtualFree(fstrm_pubZipBuffer, 0, MEM_RELEASE);
+    free(fstrm_pubZipBuffer);
 
     _ulVirtuallyAllocatedSpace -= fstrm_slZipSize;
     //CPrintF("Freed virtual memory with size ^c00ff00%d KB^C (now %d KB)\n", (fstrm_slZipSize / 1000), (_ulVirtuallyAllocatedSpace / 1000));
@@ -1159,7 +1167,7 @@ CTMemoryStream::CTMemoryStream(void)
   // add this newly created memory stream into opened stream list
   _plhOpenedStreams->AddTail( strm_lnListNode);
   // allocate amount of memory needed to hold maximum allowed file length (when saving)
-  mstrm_pubBuffer = (UBYTE*)VirtualAlloc(NULL, _ulMaxLenghtOfSavingFile, MEM_COMMIT, PAGE_READWRITE);
+  mstrm_pubBuffer = (UBYTE*)malloc(_ulMaxLenghtOfSavingFile);
   mstrm_pubBufferEnd = mstrm_pubBuffer + _ulMaxLenghtOfSavingFile;
   mstrm_pubBufferMax = mstrm_pubBuffer;
 }
@@ -1177,7 +1185,7 @@ CTMemoryStream::CTMemoryStream(void *pvBuffer, SLONG slSize,
   }
 
   // allocate amount of memory needed to hold maximum allowed file length (when saving)
-  mstrm_pubBuffer = (UBYTE*)VirtualAlloc(NULL, _ulMaxLenghtOfSavingFile, MEM_COMMIT, PAGE_READWRITE);
+  mstrm_pubBuffer = (UBYTE*)malloc(_ulMaxLenghtOfSavingFile);
   mstrm_pubBufferEnd = mstrm_pubBuffer + _ulMaxLenghtOfSavingFile;
   mstrm_pubBufferMax = mstrm_pubBuffer + slSize;
   // copy given block of memory into memory file
@@ -1206,7 +1214,7 @@ CTMemoryStream::CTMemoryStream(void *pvBuffer, SLONG slSize,
 CTMemoryStream::~CTMemoryStream(void)
 {
   ASSERT(mstrm_ctLocked==0);
-  VirtualFree(mstrm_pubBuffer, 0, MEM_RELEASE);
+  free(mstrm_pubBuffer);
   // remove memory stream from list of curently opened streams
   strm_lnListNode.Remove();
 }
@@ -1376,19 +1384,24 @@ SLONG GetFileTimeStamp_t(const CTFileName &fnm)
     return FALSE;
   }
 
-  int file_handle;
-  // try to open file for reading
-  file_handle = _open( fnmExpanded, _O_RDONLY | _O_BINARY);
-  if(file_handle==-1) {
-    ThrowF_t(TRANS("Cannot open file '%s' for reading"), CTString(fnm));
-    return -1;
-  }
-  struct stat statFileStatus;
-  // get file status
-  fstat( file_handle, &statFileStatus);
-  _close( file_handle);
-  ASSERT(statFileStatus.st_mtime<=time(NULL));
-  return statFileStatus.st_mtime;
+//  int file_handle;
+//  // try to open file for reading
+//  file_handle = _open( fnmExpanded, _O_RDONLY | _O_BINARY);
+//  if(file_handle==-1) {
+//    ThrowF_t(TRANS("Cannot open file '%s' for reading"), CTString(fnm));
+//    return -1;
+//  }
+//  struct stat statFileStatus;
+//  // get file status
+//  fstat( file_handle, &statFileStatus);
+//  _close( file_handle);
+//  ASSERT(statFileStatus.st_mtime<=time(NULL));
+//  return statFileStatus.st_mtime;
+    struct stat st;
+    int ierr = stat (fnm.str_String, &st);
+    if (ierr == 0) {
+        return st.st_mtime;
+    }
 }
 
 // Get CRC32 of a file
@@ -1411,18 +1424,19 @@ BOOL IsFileReadOnly(const CTFileName &fnm)
     return FALSE;
   }
 
-  int file_handle;
-  // try to open file for reading
-  file_handle = _open( fnmExpanded, _O_RDONLY | _O_BINARY);
-  if(file_handle==-1) {
-    return FALSE;
-  }
-  struct stat statFileStatus;
-  // get file status
-  fstat( file_handle, &statFileStatus);
-  _close( file_handle);
-  ASSERT(statFileStatus.st_mtime<=time(NULL));
-  return !(statFileStatus.st_mode&_S_IWRITE);
+//  int file_handle;
+//  // try to open file for reading
+//  file_handle = _open( fnmExpanded, _O_RDONLY | _O_BINARY);
+//  if(file_handle==-1) {
+//    return FALSE;
+//  }
+//  struct stat statFileStatus;
+//  // get file status
+//  fstat( file_handle, &statFileStatus);
+//  _close( file_handle);
+//  ASSERT(statFileStatus.st_mtime<=time(NULL));
+//  return !(statFileStatus.st_mode&_S_IWRITE);
+    return true;
 }
 
 // Delete a file

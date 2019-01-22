@@ -126,7 +126,7 @@ functions:
   {
     CMovableModelEntity::DumpSync_t(strm, iExtensiveSyncCheck);
     strm.FPrintF_t("player: %s\n", 
-      en_pcCharacter.GetName());
+      en_pcCharacter.GetName().str_String);
     strm.FPrintF_t("GUID: ");
     {for (INDEX i=0; i<sizeof(en_pcCharacter.pc_aubGUID); i++) {
       strm.FPrintF_t("%02X", en_pcCharacter.pc_aubGUID[i]);

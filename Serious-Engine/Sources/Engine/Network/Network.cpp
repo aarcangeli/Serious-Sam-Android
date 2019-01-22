@@ -332,7 +332,7 @@ static void NetworkInfo(void)
       CPlayerBuffer &plb = _pNetwork->ga_srvServer.srv_aplbPlayers[iplb];
       if (plb.plb_Active) {
         CPrintF("    %2d(%2d):'%s'@client%2d: (%dact)\n",
-          iplb, plb.plb_Index, plb.plb_pcCharacter.GetNameForPrinting(),
+          iplb, plb.plb_Index, plb.plb_pcCharacter.GetNameForPrinting().str_String,
           plb.plb_iClient, plb.plb_abReceived.GetCount());
       }
     }
@@ -340,7 +340,7 @@ static void NetworkInfo(void)
     for(INDEX iSession=0; iSession<_pNetwork->ga_srvServer.srv_assoSessions.Count(); iSession++) {
       CSessionSocket &sso = _pNetwork->ga_srvServer.srv_assoSessions[iSession];
       if (sso.sso_bActive) {
-        CPrintF("  %2d:'%s'\n", iSession, _cmiComm.Server_GetClientName(iSession)),
+        CPrintF("  %2d:'%s'\n", iSession, _cmiComm.Server_GetClientName(iSession).str_String),
         CPrintF("    buffer: %dblk=%dk\n",
           sso.sso_nsBuffer.GetUsedBlocks(),
           sso.sso_nsBuffer.GetUsedMemory()/1024);
@@ -397,7 +397,7 @@ static void ListPlayers(void)
   for(INDEX iplb=0; iplb<_pNetwork->ga_srvServer.srv_aplbPlayers.Count(); iplb++) {
     CPlayerBuffer &plb = _pNetwork->ga_srvServer.srv_aplbPlayers[iplb];
     if (plb.plb_Active) {
-      CPrintF("     %-2d   %s\n", plb.plb_iClient, plb.plb_pcCharacter.GetNameForPrinting());
+      CPrintF("     %-2d   %s\n", plb.plb_iClient, plb.plb_pcCharacter.GetNameForPrinting().str_String);
     }
   }
   CPrintF("  ----------------------\n");
@@ -418,7 +418,7 @@ static void KickClient(INDEX iClient, const CTString &strReason)
     CPrintF(TRANS("Can't kick local client!\n"));
     return;
   }
-  CPrintF( TRANS("Kicking %d with explanation '%s'...\n"), iClient, strReason);
+  CPrintF( TRANS("Kicking %d with explanation '%s'...\n"), iClient, strReason.str_String);
   _pNetwork->ga_srvServer.SendDisconnectMessage(iClient, "Admin: "+strReason);
 }
 static void KickClientCfunc(void* pArgs)
@@ -632,7 +632,7 @@ static void StockDump(void)
     _pSoundStock->DumpMemoryUsage_t(strm);
     strm.PutLine_t("Classes:");
     _pEntityClassStock->DumpMemoryUsage_t(strm);
-    CPrintF("Dumped to '%s'\n", CTString(fnm));
+    CPrintF("Dumped to '%s'\n", CTString(fnm).str_String);
   } catch (char *strError) {
     CPrintF("Error: %s\n", strError);
   }
@@ -730,23 +730,23 @@ void CNetworkLibrary::Init(const CTString &strGameID)
   _pShell->DeclareSymbol("persistent user INDEX gam_bPretouch;", &gam_bPretouch);
 
   _pShell->DeclareSymbol("user INDEX dem_iRecordedNumber;",     &dem_iRecordedNumber);
-  _pShell->DeclareSymbol("user void StartDemoRecording(void);", &StartDemoRecording);
-  _pShell->DeclareSymbol("user void StopDemoRecording(void);",  &StopDemoRecording);
-  _pShell->DeclareSymbol("user void NetworkInfo(void);",  &NetworkInfo);
-  _pShell->DeclareSymbol("user void StockInfo(void);",    &StockInfo);
-  _pShell->DeclareSymbol("user void StockDump(void);",    &StockDump);
-  _pShell->DeclareSymbol("user void RendererInfo(void);", &RendererInfo);
-  _pShell->DeclareSymbol("user void ClearRenderer(void);",   &ClearRenderer);
-  _pShell->DeclareSymbol("user void CacheShadows(void);",    &CacheShadows);
-  _pShell->DeclareSymbol("user void KickClient(INDEX, CTString);", &KickClientCfunc);
-  _pShell->DeclareSymbol("user void KickByName(CTString, CTString);", &KickByNameCfunc);
-  _pShell->DeclareSymbol("user void ListPlayers(void);", &ListPlayers);
-  _pShell->DeclareSymbol("user void Admin(CTString);", &Admin);
+  _pShell->DeclareSymbol("user void StartDemoRecording(void);", (void*) &StartDemoRecording);
+  _pShell->DeclareSymbol("user void StopDemoRecording(void);",  (void*) &StopDemoRecording);
+  _pShell->DeclareSymbol("user void NetworkInfo(void);", (void*)  &NetworkInfo);
+  _pShell->DeclareSymbol("user void StockInfo(void);", (void*)    &StockInfo);
+  _pShell->DeclareSymbol("user void StockDump(void);", (void*)    &StockDump);
+  _pShell->DeclareSymbol("user void RendererInfo(void);", (void*) &RendererInfo);
+  _pShell->DeclareSymbol("user void ClearRenderer(void);", (void*)   &ClearRenderer);
+  _pShell->DeclareSymbol("user void CacheShadows(void);", (void*)    &CacheShadows);
+  _pShell->DeclareSymbol("user void KickClient(INDEX, CTString);", (void*) &KickClientCfunc);
+  _pShell->DeclareSymbol("user void KickByName(CTString, CTString);", (void*) &KickByNameCfunc);
+  _pShell->DeclareSymbol("user void ListPlayers(void);", (void*) &ListPlayers);
+  _pShell->DeclareSymbol("user void Admin(CTString);", (void*) &Admin);
 
-  _pShell->DeclareSymbol("user void AddIPMask(CTString);", &AddIPMask);
-  _pShell->DeclareSymbol("user void RemIPMask(CTString);", &RemIPMask);
-  _pShell->DeclareSymbol("user void AddNameMask(CTString);", &AddNameMask);
-  _pShell->DeclareSymbol("user void RemNameMask(CTString);", &RemNameMask);
+  _pShell->DeclareSymbol("user void AddIPMask(CTString);", (void*) &AddIPMask);
+  _pShell->DeclareSymbol("user void RemIPMask(CTString);", (void*) &RemIPMask);
+  _pShell->DeclareSymbol("user void AddNameMask(CTString);", (void*) &AddNameMask);
+  _pShell->DeclareSymbol("user void RemNameMask(CTString);", (void*) &RemNameMask);
 
 
   _pShell->DeclareSymbol("user FLOAT dem_tmTimer;",         &ga_fDemoTimer);
@@ -981,8 +981,8 @@ void CNetworkLibrary::StartPeerToPeer_t(const CTString &strSessionName,
   _pSound->Mute();
 
   // go on
-  CPrintF( TRANS("Starting session: '%s'\n"), strSessionName);
-  CPrintF( TRANS("  level: '%s'\n"), (const char*) fnmWorld);
+  CPrintF( TRANS("Starting session: '%s'\n"), strSessionName.str_String);
+  CPrintF( TRANS("  level: '%s'\n"), fnmWorld.str_String);
   CPrintF( TRANS("  spawnflags: %08x\n"), ulSpawnFlags);
   CPrintF( TRANS("  max players: %d\n"), ctMaxPlayers);
   CPrintF( TRANS("  waiting: %d\n"), bWaitAllPlayers);
@@ -1233,7 +1233,7 @@ void CNetworkLibrary::JoinSession_t(const CNetworkSession &nsSesssion, INDEX ctL
   _pSound->Mute();
 
   // report session addres
-  CPrintF( TRANS("Joining session at: '%s'\n"), nsSesssion.ns_strAddress);
+  CPrintF( TRANS("Joining session at: '%s'\n"), nsSesssion.ns_strAddress.str_String);
 
   ga_bLocalPause = FALSE;
 
@@ -1721,7 +1721,7 @@ void CNetworkLibrary::ChangeLevel_internal(void)
     {for( INDEX iClient=0; iClient<NET_MAXGAMECOMPUTERS; iClient++) {
       CSessionSocket &sso = ga_srvServer.srv_assoSessions[iClient];
       // reset message timer
-      sso.sso_tvMessageReceived = -1I64;
+      sso.sso_tvMessageReceived = (__int64) -1;
       // reset sync timer
       sso.sso_tmLastSyncReceived = -1.0f;
     }}
@@ -1807,7 +1807,7 @@ static void SendAdminResponse(ULONG ulAdr, UWORD uwPort, ULONG ulCode, const CTS
     str.DeleteChar(0);
     if (strLine.Length()>0) {
       CNetworkMessage nm(MSG_EXTRA);
-      nm<<CTString(0, "log %u %d %s\n", ulCode, iLineCt++, strLine);
+      nm<<CTString(0, "log %u %d %s\n", ulCode, iLineCt++, strLine.str_String);
       _pNetwork->SendBroadcast(nm, ulAdr, uwPort);
     }
   }
@@ -2201,7 +2201,7 @@ CPlayerSource *CNetworkLibrary::AddPlayer_t(CPlayerCharacter &pcCharacter)  // t
 {
   // synchronize access to network
   CTSingleLock slNetwork(&ga_csNetwork, TRUE);
-  CPrintF( TRANS("Adding player: '%s'\n"), pcCharacter.GetNameForPrinting());
+  CPrintF( TRANS("Adding player: '%s'\n"), pcCharacter.GetNameForPrinting().str_String);
 
   // for all local clients on this machine
   FOREACHINSTATICARRAY(ga_aplsPlayers, CPlayerSource, itcls) {
@@ -2277,7 +2277,7 @@ void CNetworkLibrary::CheckVersion_t(CTStream &strm, BOOL bAllowReinit, BOOL &bN
   if (iCurrent<iSaved) {
     // it cannot be reinitialized
     ThrowF_t(TRANS("File '%s' was saved by a newer version of engine, it cannot be loaded"),
-      strm.GetDescription());
+      strm.GetDescription().str_String);
     return;
   }
 
@@ -2296,7 +2296,7 @@ void CNetworkLibrary::CheckVersion_t(CTStream &strm, BOOL bAllowReinit, BOOL &bN
     // if it may not be reinitialized
     if (!bAllowReinit) {
       ThrowF_t(TRANS("File '%s' was saved by an older version of engine, it cannot be loaded"),
-        strm.GetDescription());
+        strm.GetDescription().str_String);
     }
     return;
   }

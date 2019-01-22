@@ -29,7 +29,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <Engine/Base/ListIterator.inl>
 
-
 extern INDEX ogl_iTBufferEffect;
 extern INDEX ogl_iTBufferSamples;
 
@@ -119,8 +118,8 @@ void WIN_CheckError(BOOL bRes, const char *strDescription)
 {
   if( bRes) return;
   DWORD dwWindowsErrorCode = GetLastError();
-  if( dwWindowsErrorCode==ERROR_SUCCESS) return; // ignore stupid 'successful' error 
-  WarningMessage("%s: %s", strDescription, GetWindowsError(dwWindowsErrorCode));
+  if( dwWindowsErrorCode==ERROR_SUCCESS) return; // ignore stupid 'successful' error
+  WarningMessage("%s: %s", strDescription, GetWindowsError(dwWindowsErrorCode).str_String);
 }
 
 
@@ -152,6 +151,7 @@ static void OGL_ClearFunctionPointers(void)
 
 
 
+#ifdef PLATFORM_WIN32
 
 #define BACKOFF pwglMakeCurrent( NULL, NULL); \
 	              pwglDeleteContext( hglrc); \
@@ -169,7 +169,7 @@ static INDEX ChoosePixelFormatTB( HDC hdc, const PIXELFORMATDESCRIPTOR *ppfd,
   _TBCapability = FALSE;
 	char *extensions = NULL;
 	char *wglextensions = NULL;
-	HGLRC hglrc; 
+	HGLRC hglrc;
 	HWND dummyhwnd;
 	WNDCLASSA cls;
   HINSTANCE hInstance = GetModuleHandle(NULL);
@@ -187,7 +187,7 @@ static INDEX ChoosePixelFormatTB( HDC hdc, const PIXELFORMATDESCRIPTOR *ppfd,
   // didn't manage to register class?
 	if( !RegisterClassA(&cls))	return 0;
 
-	// create window fullscreen 
+	// create window fullscreen
   //CPrintF( "  Dummy window: %d x %d\n", pixResWidth, pixResHeight);
 	dummyhwnd = CreateWindowExA( WS_EX_TOPMOST, classname, "Dummy OGL window",
                               WS_POPUP|WS_VISIBLE, 0, 0, pixResWidth, pixResHeight,
@@ -245,7 +245,7 @@ static INDEX ChoosePixelFormatTB( HDC hdc, const PIXELFORMATDESCRIPTOR *ppfd,
 	}
 
  	// check for the pixel format and multisample extension strings
- 	if( (strstr((const char*)wglextensions, "WGL_ARB_pixel_format ") != NULL) && 
+ 	if( (strstr((const char*)wglextensions, "WGL_ARB_pixel_format ") != NULL) &&
       (strstr((const char*)extensions,    "GL_3DFX_multisample ")  != NULL)) {
     // 3dfx extensions present
     _TBCapability = TRUE;
@@ -289,8 +289,9 @@ static INDEX ChoosePixelFormatTB( HDC hdc, const PIXELFORMATDESCRIPTOR *ppfd,
   BACKOFF
   return iPixelFormat;
 }
+#endif
 
-
+#ifdef PLATFORM_WIN32
 // prepares pixel format for OpenGL context
 BOOL CGfxLibrary::SetupPixelFormat_OGL( HDC hdc, BOOL bReport/*=FALSE*/)
 {
@@ -372,42 +373,43 @@ BOOL CGfxLibrary::SetupPixelFormat_OGL( HDC hdc, BOOL bReport/*=FALSE*/)
 
   // prepare pixel type description
   CTString strPixelType;
-  if( pfd.iPixelType==PFD_TYPE_RGBA) strPixelType = "TYPE_RGBA"; 
+  if( pfd.iPixelType==PFD_TYPE_RGBA) strPixelType = "TYPE_RGBA";
   else if( pfd.iPixelType&PFD_TYPE_COLORINDEX) strPixelType = "TYPE_COLORINDEX";
   else strPixelType = "unknown";
   // prepare flags description
   CTString strFlags = "";
-  if( pfd.dwFlags&PFD_DRAW_TO_WINDOW)        strFlags += "DRAW_TO_WINDOW "; 
-  if( pfd.dwFlags&PFD_DRAW_TO_BITMAP)        strFlags += "DRAW_TO_BITMAP "; 
-  if( pfd.dwFlags&PFD_SUPPORT_GDI)           strFlags += "SUPPORT_GDI "; 
-  if( pfd.dwFlags&PFD_SUPPORT_OPENGL)        strFlags += "SUPPORT_OPENGL "; 
-  if( pfd.dwFlags&PFD_GENERIC_ACCELERATED)   strFlags += "GENERIC_ACCELERATED "; 
-  if( pfd.dwFlags&PFD_GENERIC_FORMAT)        strFlags += "GENERIC_FORMAT "; 
-  if( pfd.dwFlags&PFD_NEED_PALETTE)          strFlags += "NEED_PALETTE "; 
-  if( pfd.dwFlags&PFD_NEED_SYSTEM_PALETTE)   strFlags += "NEED_SYSTEM_PALETTE "; 
-  if( pfd.dwFlags&PFD_DOUBLEBUFFER)          strFlags += "DOUBLEBUFFER "; 
-  if( pfd.dwFlags&PFD_STEREO)                strFlags += "STEREO "; 
-  if( pfd.dwFlags&PFD_SWAP_LAYER_BUFFERS)    strFlags += "SWAP_LAYER_BUFFERS "; 
-  if( pfd.dwFlags&PFD_DEPTH_DONTCARE)        strFlags += "DEPTH_DONTCARE "; 
-  if( pfd.dwFlags&PFD_DOUBLEBUFFER_DONTCARE) strFlags += "DOUBLEBUFFER_DONTCARE "; 
-  if( pfd.dwFlags&PFD_STEREO_DONTCARE)       strFlags += "STEREO_DONTCARE "; 
-  if( pfd.dwFlags&PFD_SWAP_COPY)             strFlags += "SWAP_COPY "; 
-  if( pfd.dwFlags&PFD_SWAP_EXCHANGE)         strFlags += "SWAP_EXCHANGE "; 
+  if( pfd.dwFlags&PFD_DRAW_TO_WINDOW)        strFlags += "DRAW_TO_WINDOW ";
+  if( pfd.dwFlags&PFD_DRAW_TO_BITMAP)        strFlags += "DRAW_TO_BITMAP ";
+  if( pfd.dwFlags&PFD_SUPPORT_GDI)           strFlags += "SUPPORT_GDI ";
+  if( pfd.dwFlags&PFD_SUPPORT_OPENGL)        strFlags += "SUPPORT_OPENGL ";
+  if( pfd.dwFlags&PFD_GENERIC_ACCELERATED)   strFlags += "GENERIC_ACCELERATED ";
+  if( pfd.dwFlags&PFD_GENERIC_FORMAT)        strFlags += "GENERIC_FORMAT ";
+  if( pfd.dwFlags&PFD_NEED_PALETTE)          strFlags += "NEED_PALETTE ";
+  if( pfd.dwFlags&PFD_NEED_SYSTEM_PALETTE)   strFlags += "NEED_SYSTEM_PALETTE ";
+  if( pfd.dwFlags&PFD_DOUBLEBUFFER)          strFlags += "DOUBLEBUFFER ";
+  if( pfd.dwFlags&PFD_STEREO)                strFlags += "STEREO ";
+  if( pfd.dwFlags&PFD_SWAP_LAYER_BUFFERS)    strFlags += "SWAP_LAYER_BUFFERS ";
+  if( pfd.dwFlags&PFD_DEPTH_DONTCARE)        strFlags += "DEPTH_DONTCARE ";
+  if( pfd.dwFlags&PFD_DOUBLEBUFFER_DONTCARE) strFlags += "DOUBLEBUFFER_DONTCARE ";
+  if( pfd.dwFlags&PFD_STEREO_DONTCARE)       strFlags += "STEREO_DONTCARE ";
+  if( pfd.dwFlags&PFD_SWAP_COPY)             strFlags += "SWAP_COPY ";
+  if( pfd.dwFlags&PFD_SWAP_EXCHANGE)         strFlags += "SWAP_EXCHANGE ";
   if( strFlags=="") strFlags = "none";
-                              
+
   // output pixel format description to console (for debugging purposes)
   CPrintF( TRANS("\nPixel Format Description:\n"));
   CPrintF( TRANS("  Number:     %d (%s)\n"), iPixelFormat, strPixelType);
   CPrintF( TRANS("  Flags:      %s\n"), strFlags);
-  CPrintF( TRANS("  Color bits: %d (%d:%d:%d:%d)\n"), pfd.cColorBits, 
+  CPrintF( TRANS("  Color bits: %d (%d:%d:%d:%d)\n"), pfd.cColorBits,
            pfd.cRedBits, pfd.cGreenBits, pfd.cBlueBits, pfd.cAlphaBits);
   CPrintF( TRANS("  Depth bits: %d (%d for stencil)\n"), pfd.cDepthBits, pfd.cStencilBits);
   gl_iCurrentDepth = pfd.cDepthBits; // keep depth bits
-  
+
   // all done
   CPrintF( "\n");
   return TRUE;
 }
+#endif
 
 
 // test if an extension exists
@@ -424,7 +426,7 @@ static BOOL HasExtension( const char *strAllExtensions, const char *strExtension
     return HasExtension( strFound+iExtensionLen, strExtension);
   }
   // extension found
-  return TRUE; 
+  return TRUE;
 }
 
 
@@ -445,6 +447,7 @@ void CGfxLibrary::TestExtension_OGL( ULONG ulFlag, const char *strName)
 
 
 // creates OpenGL drawing context
+#ifdef PLATFORM_WIN32
 BOOL CGfxLibrary::CreateContext_OGL(HDC hdc)
 {
   if( !SetupPixelFormat_OGL( hdc, TRUE)) return FALSE;
@@ -461,12 +464,12 @@ BOOL CGfxLibrary::CreateContext_OGL(HDC hdc)
   }
   return TRUE;
 }
-
-
+#endif
 
 // prepares OpenGL drawing context
 void CGfxLibrary::InitContext_OGL(void)
 {
+#ifdef PLATFORM_WIN32
   // must have context
   ASSERT( gl_pvpActive!=NULL);
 
@@ -643,7 +646,7 @@ void CGfxLibrary::InitContext_OGL(void)
     pglGetIntegerv( GL_MAX_PN_TRIANGLES_TESSELATION_LEVEL_ATI, &gliRet);
     gl_iMaxTessellationLevel = gliRet;
     OGL_CHECKERROR;
-  } 
+  }
 
   // if T-buffer is supported
   if( _TBCapability) {
@@ -702,7 +705,7 @@ void CGfxLibrary::InitContext_OGL(void)
   if( gliRet==8) gl_ulFlags |= GLF_32BITTEXTURES;
   pglDeleteTextures( 1, &uiTmpTex);
   OGL_CHECKERROR;
-  
+
   // setup fog and haze textures
   extern PIX _fog_pixSizeH;
   extern PIX _fog_pixSizeL;
@@ -752,6 +755,7 @@ void CGfxLibrary::InitContext_OGL(void)
   extern void CacheShadows(void);
   ReloadTextures();
   if( shd_bCacheAll) CacheShadows();
+#endif
 }
 
 
@@ -759,6 +763,7 @@ void CGfxLibrary::InitContext_OGL(void)
 BOOL CGfxLibrary::InitDriver_OGL( BOOL b3Dfx/*=FALSE*/)
 {
   ASSERT( gl_hiDriver==NONE);
+#if PLATFORM_WIN32
   UINT iOldErrorMode = SetErrorMode( SEM_NOOPENFILEERRORBOX|SEM_FAILCRITICALERRORS);
   CTString strDriverFileName = b3Dfx ? "3DFXVGL.DLL" : "OPENGL32.DLL";
 
@@ -814,8 +819,9 @@ BOOL CGfxLibrary::InitDriver_OGL( BOOL b3Dfx/*=FALSE*/)
     // as appropriate.
   }
   // done
+#endif
   return TRUE;
-} 
+}
 
 
 // shutdown OpenGL driver
@@ -837,6 +843,7 @@ void CGfxLibrary::EndDriver_OGL(void)
   _ptdFlat->Unbind();
 
   // shut the driver down
+#ifdef PLATFORM_WIN32
   if( go_hglRC!=NULL) {
     if( pwglMakeCurrent!=NULL) {
       BOOL bRes = pwglMakeCurrent(NULL, NULL);
@@ -847,6 +854,7 @@ void CGfxLibrary::EndDriver_OGL(void)
     WIN_CHECKERROR( bRes, "DeleteContext");
     go_hglRC = NULL;
   }
+#endif
   OGL_ClearFunctionPointers();
 }
 
@@ -863,8 +871,8 @@ BOOL CGfxLibrary::SetCurrentViewport_OGL(CViewPort *pvp)
     pvp->CloseCanvas();
     pvp->OpenCanvas();
     // init now
-    CTempDC tdc(pvp->vp_hWnd);
-    if( !CreateContext_OGL(tdc.hdc)) return FALSE;
+//    CTempDC tdc(pvp->vp_hWnd);
+//    if( !CreateContext_OGL(tdc.hdc)) return FALSE;
     gl_pvpActive = pvp; // remember as current viewport (must do that BEFORE InitContext)
     InitContext_OGL();
     pvp->vp_ctDisplayChanges = gl_ctDriverChanges;
@@ -878,8 +886,8 @@ BOOL CGfxLibrary::SetCurrentViewport_OGL(CViewPort *pvp)
     pvp->CloseCanvas();
     pvp->OpenCanvas();
     // set it
-    CTempDC tdc(pvp->vp_hWnd);
-    if( !SetupPixelFormat_OGL(tdc.hdc)) return FALSE;
+//    CTempDC tdc(pvp->vp_hWnd);
+//    if( !SetupPixelFormat_OGL(tdc.hdc)) return FALSE;
     pvp->vp_ctDisplayChanges = gl_ctDriverChanges;
   }
 
@@ -891,11 +899,13 @@ BOOL CGfxLibrary::SetCurrentViewport_OGL(CViewPort *pvp)
     if( gl_pvpActive->vp_hWnd==pvp->vp_hWnd) return TRUE;
   }
 
+#ifdef PLATFORM_WIN32
   // try to set context to this window
   pwglMakeCurrent( NULL, NULL);
   CTempDC tdc(pvp->vp_hWnd);
   // fail, if cannot set context to this window
   if( !pwglMakeCurrent( tdc.hdc, go_hglRC)) return FALSE;
+#endif
 
   // remember as current window
   gl_pvpActive = pvp;

@@ -214,7 +214,7 @@ void CConsole::PutString(const char *strString)
   CTSingleLock slConsole(&con_csConsole, TRUE);
 
   // if in debug version, report it to output window
-  _RPT1(_CRT_WARN, "%s", strString);
+  //TODO: _RPT1(_CRT_WARN, "%s", strString);
   // first append that string to the console output file
   if (con_fLog!=NULL) {
     fprintf(con_fLog, "%s", strString);

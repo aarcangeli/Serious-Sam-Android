@@ -45,7 +45,7 @@ struct SortArray
   CStaticArray<struct VertexLocator> sa_aMorphMapList;
 };
 
-CStaticArray <struct SortArray> _aSortArray;
+CStaticArray <struct SortArray> _aSortArray_SortArray;
 CStaticArray <INDEX> _aiOptimizedIndex;
 CStaticArray <INDEX> _aiSortedIndex;
 
@@ -129,12 +129,12 @@ void ClearSortArray(INDEX ctOldVertices)
 {
   for(int iv=0;iv<ctOldVertices;iv++)
   {
-    _aSortArray[iv].sa_aWeightMapList.Clear();
-    _aSortArray[iv].sa_aMorphMapList.Clear();
+    _aSortArray_SortArray[iv].sa_aWeightMapList.Clear();
+    _aSortArray_SortArray[iv].sa_aMorphMapList.Clear();
   }
   _aiOptimizedIndex.Clear();
   _aiSortedIndex.Clear();
-  _aSortArray.Clear();
+  _aSortArray_SortArray.Clear();
 }
 // optimize mesh
 void CMesh::Optimize(void)
@@ -158,7 +158,7 @@ void CMesh::OptimizeLod(MeshLOD &mLod)
   if(ctVertices<=0) return;
   
   // create array for sorting
-  _aSortArray.New(ctVertices);
+  _aSortArray_SortArray.New(ctVertices);
   _aiSortedIndex.New(ctVertices);
   _aiOptimizedIndex.New(ctVertices);
   // put original vertex indices in SortArray
@@ -175,9 +175,9 @@ void CMesh::OptimizeLod(MeshLOD &mLod)
     {
       MeshTriangle &mtTriangle = mLod.mlod_aSurfaces[is].msrf_aTriangles[its];
 
-      _aSortArray[mtTriangle.iVertex[0]].sa_iSurfaceIndex = is;
-      _aSortArray[mtTriangle.iVertex[1]].sa_iSurfaceIndex = is;
-      _aSortArray[mtTriangle.iVertex[2]].sa_iSurfaceIndex = is;
+      _aSortArray_SortArray[mtTriangle.iVertex[0]].sa_iSurfaceIndex = is;
+      _aSortArray_SortArray[mtTriangle.iVertex[1]].sa_iSurfaceIndex = is;
+      _aSortArray_SortArray[mtTriangle.iVertex[2]].sa_iSurfaceIndex = is;
     }
   }
   // loop each weightmap and expand sa_aWeightMapList in SortArray
@@ -189,12 +189,12 @@ void CMesh::OptimizeLod(MeshLOD &mLod)
     {
       MeshVertexWeight &mwwWeight = mLod.mlod_aWeightMaps[iw].mwm_aVertexWeight[iwm];
       // get curent list num of weightmaps  
-      INDEX ctWeightMapList = _aSortArray[mwwWeight.mww_iVertex].sa_aWeightMapList.Count();
+      INDEX ctWeightMapList = _aSortArray_SortArray[mwwWeight.mww_iVertex].sa_aWeightMapList.Count();
       // expand array of sufrace lists for 1
-      _aSortArray[mwwWeight.mww_iVertex].sa_aWeightMapList.Expand(ctWeightMapList+1);
+      _aSortArray_SortArray[mwwWeight.mww_iVertex].sa_aWeightMapList.Expand(ctWeightMapList+1);
       // set vl_iIndex to index of surface
       // set vl_iSubIndex to index in triangle set
-      VertexLocator &vxLoc = _aSortArray[mwwWeight.mww_iVertex].sa_aWeightMapList[ctWeightMapList];
+      VertexLocator &vxLoc = _aSortArray_SortArray[mwwWeight.mww_iVertex].sa_aWeightMapList[ctWeightMapList];
       vxLoc.vl_iIndex = iw;
       vxLoc.vl_iSubIndex = iwm;
     }
@@ -208,12 +208,12 @@ void CMesh::OptimizeLod(MeshLOD &mLod)
     {
       MeshVertexMorph &mwmMorph = mLod.mlod_aMorphMaps[im].mmp_aMorphMap[imm];
       // get curent list num of morphmaps  
-      INDEX ctMorphMapList = _aSortArray[mwmMorph.mwm_iVxIndex].sa_aMorphMapList.Count();
+      INDEX ctMorphMapList = _aSortArray_SortArray[mwmMorph.mwm_iVxIndex].sa_aMorphMapList.Count();
       // expand array of sufrace lists for 1
-      _aSortArray[mwmMorph.mwm_iVxIndex].sa_aMorphMapList.Expand(ctMorphMapList+1);
+      _aSortArray_SortArray[mwmMorph.mwm_iVxIndex].sa_aMorphMapList.Expand(ctMorphMapList+1);
       // set vl_iIndex to index of surface
       // set vl_iSubIndex to index in triangle set
-      VertexLocator &vxLoc = _aSortArray[mwmMorph.mwm_iVxIndex].sa_aMorphMapList[ctMorphMapList];
+      VertexLocator &vxLoc = _aSortArray_SortArray[mwmMorph.mwm_iVxIndex].sa_aMorphMapList[ctMorphMapList];
       vxLoc.vl_iIndex = im;
       vxLoc.vl_iSubIndex = imm;
     }
@@ -226,7 +226,7 @@ void CMesh::OptimizeLod(MeshLOD &mLod)
   // compare vertices
   INDEX iDiferentVertices = 1;
   INDEX iLastIndex = _aiSortedIndex[0];
-  _aSortArray[iLastIndex].sa_iNewIndex = 0;
+  _aSortArray_SortArray[iLastIndex].sa_iNewIndex = 0;
   _aiOptimizedIndex[0] = iLastIndex;
   
   for(INDEX isa=1;isa<ctVertices;isa++)
@@ -240,7 +240,7 @@ void CMesh::OptimizeLod(MeshLOD &mLod)
       iDiferentVertices++;
       iLastIndex = iCurentIndex;
     }
-    _aSortArray[iCurentIndex].sa_iNewIndex = iDiferentVertices-1;
+    _aSortArray_SortArray[iCurentIndex].sa_iNewIndex = iDiferentVertices-1;
   }
 
   // create new mesh
@@ -280,7 +280,7 @@ void CMesh::OptimizeLod(MeshLOD &mLod)
       // for each vertex in triangle
       for(INDEX iv=0;iv<3;iv++)
       {
-        mtTriangle.iVertex[iv] = _aSortArray[mtTriangle.iVertex[iv]].sa_iNewIndex;
+        mtTriangle.iVertex[iv] = _aSortArray_SortArray[mtTriangle.iVertex[iv]].sa_iNewIndex;
         // find first index in this surface
         if(mtTriangle.iVertex[iv]<iMinIndex) iMinIndex = mtTriangle.iVertex[iv];
         // find last index in this surface
@@ -313,9 +313,9 @@ void CMesh::OptimizeLod(MeshLOD &mLod)
   for(;ivx<ctNewVertices;ivx++)
   {
     INDEX ioptVx = _aiOptimizedIndex[ivx];
-    for(INDEX iwl=0;iwl<_aSortArray[ioptVx].sa_aWeightMapList.Count();iwl++)
+    for(INDEX iwl=0;iwl<_aSortArray_SortArray[ioptVx].sa_aWeightMapList.Count();iwl++)
     {
-      VertexLocator &wml = _aSortArray[ioptVx].sa_aWeightMapList[iwl];
+      VertexLocator &wml = _aSortArray_SortArray[ioptVx].sa_aWeightMapList[iwl];
       INDEX wmIndex = wml.vl_iIndex;
       INDEX wwIndex = wml.vl_iSubIndex;
       INDEX ctww = mshOptimized.mlod_aWeightMaps[wmIndex].mwm_aVertexWeight.Count();
@@ -335,9 +335,9 @@ void CMesh::OptimizeLod(MeshLOD &mLod)
   for(ivx=0;ivx<ctNewVertices;ivx++)
   {
     INDEX ioptVx = _aiOptimizedIndex[ivx];
-    for(INDEX iml=0;iml<_aSortArray[ioptVx].sa_aMorphMapList.Count();iml++)
+    for(INDEX iml=0;iml<_aSortArray_SortArray[ioptVx].sa_aMorphMapList.Count();iml++)
     {
-      VertexLocator &mml = _aSortArray[ioptVx].sa_aMorphMapList[iml];
+      VertexLocator &mml = _aSortArray_SortArray[ioptVx].sa_aMorphMapList[iml];
       INDEX mmIndex = mml.vl_iIndex;
       INDEX mwmIndex = mml.vl_iSubIndex;
       INDEX ctmwm = mshOptimized.mlod_aMorphMaps[mmIndex].mmp_aMorphMap.Count();
@@ -379,7 +379,7 @@ INDEX AreVerticesDiferent(INDEX iCurentIndex, INDEX iLastIndex)
 #define CHECKF(x,y) if(((x)-(y))!=0) return Sgn((x)-(y))
   
   // check surfaces
-  CHECK(_aSortArray[iCurentIndex].sa_iSurfaceIndex,_aSortArray[iLastIndex].sa_iSurfaceIndex);
+  CHECK(_aSortArray_SortArray[iCurentIndex].sa_iSurfaceIndex,_aSortArray_SortArray[iLastIndex].sa_iSurfaceIndex);
   // check vertices
   CHECKF(pMeshLOD->mlod_aVertices[iCurentIndex].y,pMeshLOD->mlod_aVertices[iLastIndex].y);
   CHECKF(pMeshLOD->mlod_aVertices[iCurentIndex].x,pMeshLOD->mlod_aVertices[iLastIndex].x);
@@ -396,10 +396,10 @@ INDEX AreVerticesDiferent(INDEX iCurentIndex, INDEX iLastIndex)
     CHECKF(pMeshLOD->mlod_aUVMaps[iuvm].muv_aTexCoords[iCurentIndex].v,pMeshLOD->mlod_aUVMaps[iuvm].muv_aTexCoords[iLastIndex].v);
   }
   // count weight and morph maps
-  INDEX ctwmCurent  = _aSortArray[iCurentIndex].sa_aWeightMapList.Count();
-  INDEX ctwmLast    = _aSortArray[iLastIndex].sa_aWeightMapList.Count();
-  INDEX ctmmCurent  = _aSortArray[iCurentIndex].sa_aMorphMapList.Count();
-  INDEX ctmmLast    = _aSortArray[iLastIndex].sa_aMorphMapList.Count();
+  INDEX ctwmCurent  = _aSortArray_SortArray[iCurentIndex].sa_aWeightMapList.Count();
+  INDEX ctwmLast    = _aSortArray_SortArray[iLastIndex].sa_aWeightMapList.Count();
+  INDEX ctmmCurent  = _aSortArray_SortArray[iCurentIndex].sa_aMorphMapList.Count();
+  INDEX ctmmLast    = _aSortArray_SortArray[iLastIndex].sa_aMorphMapList.Count();
   // check if vertices have same weight and morph maps count
   CHECK(ctwmCurent,ctwmLast);
   CHECK(ctmmCurent,ctmmLast);
@@ -407,11 +407,11 @@ INDEX AreVerticesDiferent(INDEX iCurentIndex, INDEX iLastIndex)
   for(INDEX iwm=0;iwm<ctwmCurent;iwm++)
   {
     // get weight map indices
-    INDEX iwmCurent = _aSortArray[iCurentIndex].sa_aWeightMapList[iwm].vl_iIndex;
-    INDEX iwmLast   = _aSortArray[iLastIndex].sa_aWeightMapList[iwm].vl_iIndex;
+    INDEX iwmCurent = _aSortArray_SortArray[iCurentIndex].sa_aWeightMapList[iwm].vl_iIndex;
+    INDEX iwmLast   = _aSortArray_SortArray[iLastIndex].sa_aWeightMapList[iwm].vl_iIndex;
     // get wertex weight indices
-    INDEX iwwCurent = _aSortArray[iCurentIndex].sa_aWeightMapList[iwm].vl_iSubIndex;
-    INDEX iwwLast   = _aSortArray[iLastIndex].sa_aWeightMapList[iwm].vl_iSubIndex;
+    INDEX iwwCurent = _aSortArray_SortArray[iCurentIndex].sa_aWeightMapList[iwm].vl_iSubIndex;
+    INDEX iwwLast   = _aSortArray_SortArray[iLastIndex].sa_aWeightMapList[iwm].vl_iSubIndex;
     // if weight map factors are diferent
     CHECKF(pMeshLOD->mlod_aWeightMaps[iwmCurent].mwm_aVertexWeight[iwwCurent].mww_fWeight,pMeshLOD->mlod_aWeightMaps[iwmLast].mwm_aVertexWeight[iwwLast].mww_fWeight);
   }
@@ -420,11 +420,11 @@ INDEX AreVerticesDiferent(INDEX iCurentIndex, INDEX iLastIndex)
   for(INDEX imm=0;imm<ctmmCurent;imm++)
   {
     // get morph map indices
-    INDEX immCurent = _aSortArray[iCurentIndex].sa_aMorphMapList[imm].vl_iIndex;
-    INDEX immLast   = _aSortArray[iLastIndex].sa_aMorphMapList[imm].vl_iIndex;
+    INDEX immCurent = _aSortArray_SortArray[iCurentIndex].sa_aMorphMapList[imm].vl_iIndex;
+    INDEX immLast   = _aSortArray_SortArray[iLastIndex].sa_aMorphMapList[imm].vl_iIndex;
     // get mesh vertex morph indices
-    INDEX imwmCurent  = _aSortArray[iCurentIndex].sa_aMorphMapList[imm].vl_iSubIndex;
-    INDEX imwmLast    = _aSortArray[iLastIndex].sa_aMorphMapList[imm].vl_iSubIndex;
+    INDEX imwmCurent  = _aSortArray_SortArray[iCurentIndex].sa_aMorphMapList[imm].vl_iSubIndex;
+    INDEX imwmLast    = _aSortArray_SortArray[iLastIndex].sa_aMorphMapList[imm].vl_iSubIndex;
     
     // if mesh morph map params are diferent return
     CHECKF(pMeshLOD->mlod_aMorphMaps[immCurent].mmp_aMorphMap[imwmCurent].mwm_x,

@@ -26,7 +26,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #define SKELETON_VERSION  6
 #define SKELETON_ID       "SKEL"
 
-CStaticArray<struct SkeletonBone> _aSortArray;
+CStaticArray<struct SkeletonBone> _aSortArray_SkeletonBone;
 INDEX ctSortBones;
 
 CSkeleton::CSkeleton()
@@ -65,13 +65,13 @@ void CSkeleton::SortSkeleton()
   for(INDEX islod=0;islod<ctslods;islod++)
   {
     // create SkeletonBones array for sorting array
-    _aSortArray.New(skl_aSkeletonLODs[islod].slod_aBones.Count());
+    _aSortArray_SkeletonBone.New(skl_aSkeletonLODs[islod].slod_aBones.Count());
     // start sort for parent bone
     SortSkeletonRecursive(-1,islod);
     // just copy sorted array
-    skl_aSkeletonLODs[islod].slod_aBones.CopyArray(_aSortArray);
+    skl_aSkeletonLODs[islod].slod_aBones.CopyArray(_aSortArray_SkeletonBone);
     // clear array
-    _aSortArray.Clear();
+    _aSortArray_SkeletonBone.Clear();
     // calculate abs transforms for bones in this lod
     CalculateAbsoluteTransformations(islod);
   }
@@ -90,13 +90,13 @@ void CSkeleton::SortSkeletonRecursive(INDEX iParentID, INDEX iSkeletonLod)
     SkeletonBone &sb = slod.slod_aBones[isb];
     if(sb.sb_iParentID == iParentID)
     {
-      // just copy data to _aSortArray
-      _aSortArray[ctSortBones].sb_iID = sb.sb_iID;
-      _aSortArray[ctSortBones].sb_iParentID = sb.sb_iParentID;
-      _aSortArray[ctSortBones].sb_fBoneLength = sb.sb_fBoneLength;
-      memcpy(&_aSortArray[ctSortBones].sb_mAbsPlacement,&sb.sb_mAbsPlacement,sizeof(float)*12);
-      memcpy(&_aSortArray[ctSortBones].sb_qvRelPlacement,&sb.sb_qvRelPlacement,sizeof(QVect));
-      _aSortArray[ctSortBones].sb_fOffSetLen = sb.sb_fOffSetLen;
+      // just copy data to _aSortArray_SkeletonBone
+      _aSortArray_SkeletonBone[ctSortBones].sb_iID = sb.sb_iID;
+      _aSortArray_SkeletonBone[ctSortBones].sb_iParentID = sb.sb_iParentID;
+      _aSortArray_SkeletonBone[ctSortBones].sb_fBoneLength = sb.sb_fBoneLength;
+      memcpy(&_aSortArray_SkeletonBone[ctSortBones].sb_mAbsPlacement,&sb.sb_mAbsPlacement,sizeof(float)*12);
+      memcpy(&_aSortArray_SkeletonBone[ctSortBones].sb_qvRelPlacement,&sb.sb_qvRelPlacement,sizeof(QVect));
+      _aSortArray_SkeletonBone[ctSortBones].sb_fOffSetLen = sb.sb_fOffSetLen;
       // increase couter for sorted bones
       ctSortBones++;
     }

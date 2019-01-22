@@ -19,6 +19,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Templates/BSP_internal.h>
 
 #include <Engine/Templates/DynamicArray.cpp>
+#include <Engine/Templates/BSP.cpp>
 
 /*
  * CSG operation table action.

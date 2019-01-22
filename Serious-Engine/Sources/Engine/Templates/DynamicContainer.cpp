@@ -72,7 +72,7 @@ template<class Type>
 void CDynamicContainer<Type>::Add(Type *ptNewObject)
 {
   // set the new pointer
-  Push() = ptNewObject;
+  Super::Push() = ptNewObject;
 }
 
 /*
@@ -107,8 +107,8 @@ void CDynamicContainer<Type>::Remove(Type *ptOldObject)
   // find its index
   INDEX iMember=GetIndex(ptOldObject);
   // move last pointer here
-  sa_Array[iMember]=sa_Array[Count()-1];
-  Pop();
+  Super::sa_Array[iMember]=Super::sa_Array[Super::Count()-1];
+  Super::Pop();
 }
 
 /* Test if a given object is in the container. */
@@ -118,8 +118,8 @@ BOOL CDynamicContainer<Type>::IsMember(Type *ptOldObject)
   ASSERT(this!=NULL);
   // slow !!!!
   // check all members
-  for (INDEX iMember=0; iMember<Count(); iMember++) {
-    if(sa_Array[iMember]==ptOldObject) {
+  for (INDEX iMember=0; iMember<Super::Count(); iMember++) {
+    if(Super::sa_Array[iMember]==ptOldObject) {
       return TRUE;
     }
   }
@@ -133,23 +133,23 @@ template<class Type>
 Type *CDynamicContainer<Type>::Pointer(INDEX iMember) {
   ASSERT(this!=NULL);
   // check that index is currently valid
-  ASSERT(iMember>=0 && iMember<Count());
+  ASSERT(iMember>=0 && iMember<Super::Count());
 #if CHECKARRAYLOCKING
   // check that locked for indices
   ASSERT(dc_LockCt>0);
 #endif
-  return sa_Array[iMember];
+  return Super::sa_Array[iMember];
 }
 template<class Type>
 const Type *CDynamicContainer<Type>::Pointer(INDEX iMember) const {
   ASSERT(this!=NULL);
   // check that index is currently valid
-  ASSERT(iMember>=0 && iMember<Count());
+  ASSERT(iMember>=0 && iMember<Super::Count());
 #if CHECKARRAYLOCKING
   // check that locked for indices
   ASSERT(dc_LockCt>0);
 #endif
-  return sa_Array[iMember];
+  return Super::sa_Array[iMember];
 }
 
 /*
@@ -198,8 +198,8 @@ INDEX CDynamicContainer<Type>::GetIndex(Type *ptMember) {
   ASSERT(this!=NULL);
   // slow !!!!
   // check all members
-  for (INDEX iMember=0; iMember<Count(); iMember++) {
-    if(sa_Array[iMember]==ptMember) {
+  for (INDEX iMember=0; iMember<Super::Count(); iMember++) {
+    if(Super::sa_Array[iMember]==ptMember) {
       return iMember;
     }
   }
@@ -211,8 +211,8 @@ INDEX CDynamicContainer<Type>::GetIndex(Type *ptMember) {
 template<class Type>
 Type &CDynamicContainer<Type>::GetFirst(void)
 {
-  ASSERT(Count()>=1);
-  return *sa_Array[0];
+  ASSERT(Super::Count()>=1);
+  return *Super::sa_Array[0];
 }
 
 /*

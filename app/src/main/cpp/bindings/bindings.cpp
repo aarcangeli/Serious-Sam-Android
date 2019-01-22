@@ -3,6 +3,7 @@
 #include <GLES2/gl2.h>
 
 static_assert(sizeof(void *) == 4, "Serious engine require 32 bit address space");
+void ciao();
 
 extern "C"
 JNIEXPORT void JNICALL
@@ -21,4 +22,5 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_github_aarcangeli_serioussamandroid_MainActivity_draw(JNIEnv *env, jobject instance) {
     glClear(GL_COLOR_BUFFER_BIT);
+    ciao();
 }

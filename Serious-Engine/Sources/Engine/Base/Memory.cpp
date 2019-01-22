@@ -63,9 +63,9 @@ public:
 CMemHandlerInit::CMemHandlerInit(void)
 {
   // set our not-enough-memory handler
-  _set_new_handler(NewHandler);
+//  std::set_new_handler(&NewHandler);
   // make malloc use that handler
-  _set_new_mode(1);
+//  _set_new_mode(1);
 }
 
 #undef AllocMemory
@@ -89,19 +89,20 @@ void *AllocMemory( SLONG memsize )
 #ifndef NDEBUG
 void *_debug_AllocMemory( SLONG memsize, int iType, const char *strFile, int iLine)
 {
-  void *pmem;
-  ASSERTMSG(memsize>0, "AllocMemory: Block size is less or equal zero.");
-
-  if (_bCheckAllAllocations) {
-    _CrtCheckMemory();
-  }
-  pmem = _malloc_dbg( memsize, iType, strFile, iLine);
-  // memory handler asures no null results here?!
-  if (pmem==NULL) {
-    _CrtCheckMemory();
-    FatalError(TRANS("Not enough memory (%d bytes needed)!"), memsize);
-  }
-  return pmem;
+//  void *pmem;
+//  ASSERTMSG(memsize>0, "AllocMemory: Block size is less or equal zero.");
+//
+//  if (_bCheckAllAllocations) {
+//    _CrtCheckMemory();
+//  }
+//  pmem = _malloc_dbg( memsize, iType, strFile, iLine);
+//  // memory handler asures no null results here?!
+//  if (pmem==NULL) {
+//    _CrtCheckMemory();
+//    FatalError(TRANS("Not enough memory (%d bytes needed)!"), memsize);
+//  }
+//  return pmem;
+  return AllocMemory(memsize);
 }
 #endif
 

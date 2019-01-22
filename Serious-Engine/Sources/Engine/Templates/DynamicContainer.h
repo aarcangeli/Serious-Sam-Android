@@ -27,6 +27,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
  */
 template<class Type>
 class CDynamicContainer : public CStaticStackArray<Type *> {
+    using Super = CStaticStackArray<Type *>;
 public:
 #if CHECKARRAYLOCKING
   INDEX da_LockCt;          // lock counter for getting indices

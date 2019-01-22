@@ -26,6 +26,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
  */
 template<class Type>
 class CDynamicStackArray : public CDynamicArray<Type> {
+  using Super = CDynamicArray<Type>;
 public:
   INDEX da_ctUsed;            // number of used objects in array
   INDEX da_ctAllocationStep;  // how many elements to allocate when stack overflows

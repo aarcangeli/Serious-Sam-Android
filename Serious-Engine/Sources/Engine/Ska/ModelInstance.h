@@ -54,8 +54,8 @@ struct ColisionBox
   };
   inline FLOAT3D &Min() {return cb_vMin;}
   inline FLOAT3D &Max() {return cb_vMax;}
-  inline void SetMin(FLOAT3D &vMin) {cb_vMin = vMin;}
-  inline void SetMax(FLOAT3D &vMax) {cb_vMax = vMax;}
+  inline void SetMin(const FLOAT3D &vMin) {cb_vMin = vMin;}
+  inline void SetMax(const FLOAT3D &vMax) {cb_vMax = vMax;}
   inline void SetName(CTString strName) {
     cb_strName = strName;
     cb_iBoxID  = ska_GetIDFromStringTable(cb_strName);
@@ -173,9 +173,9 @@ public:
   ANGLE3D GetOffsetRot();
 
   // Stretch model instance
-  void StretchModel(FLOAT3D &vStretch);
+  void StretchModel(const FLOAT3D &vStretch);
   // Stretch model instance without attachments
-  void StretchSingleModel(FLOAT3D &vStretch);
+  void StretchSingleModel(const FLOAT3D &vStretch);
   // Add new cloned anim state
   void NewClonedState(FLOAT fFadeTime);
   // Add new clear anim state

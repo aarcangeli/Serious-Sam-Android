@@ -90,7 +90,7 @@ inline INDEX CAllocationArray<Type>::Allocate(void)
     // remember old size
     INDEX ctOldSize = CStaticArray<Type>::Count();
     // expand the array by the allocation step
-    Expand(ctOldSize+aa_ctAllocationStep);
+    Super::Expand(ctOldSize+aa_ctAllocationStep);
     // create new free indices
     INDEX *piNewFree = aa_aiFreeElements.Push(aa_ctAllocationStep);
     // fill them up
@@ -194,7 +194,7 @@ template<class Type>
 INDEX CAllocationArray<Type>::Index(Type *ptObject)
 {
   ASSERT(this!=NULL);
-  INDEX i = CStaticArray<Type>::Index(ptMember);
+  INDEX i = CStaticArray<Type>::Index(ptObject);
   ASSERT(IsAllocated(i));
   return i;
 }

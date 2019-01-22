@@ -14,6 +14,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
 #include "stdh.h"
+#include <Engine/Base/CTString.h>
 
 #include <Engine/Graphics/GfxLibrary.h>
 
@@ -323,6 +324,7 @@ extern INDEX sys_bUsingDirect3D = 0;
 
 static HHOOK _hLLKeyHook = NULL;
 
+#if PLATFORM_WIN32
 LRESULT CALLBACK LowLevelKeyboardProc (INT nCode, WPARAM wParam, LPARAM lParam)
 {
   // By returning a non-zero value from the hook procedure, the
@@ -356,8 +358,10 @@ LRESULT CALLBACK LowLevelKeyboardProc (INT nCode, WPARAM wParam, LPARAM lParam)
           break;
   }
   return CallNextHookEx (_hLLKeyHook, nCode, wParam, lParam);
-} 
+}
+#endif
 
+#if PLATFORM_WIN32
 void DisableWindowsKeys(void)
 {
   //if( _hLLKeyHook!=NULL) UnhookWindowsHookEx(_hLLKeyHook);
@@ -366,13 +370,20 @@ void DisableWindowsKeys(void)
   INDEX iDummy;
   SystemParametersInfo(SPI_SETSCREENSAVERRUNNING, TRUE, &iDummy, 0);
 }
+#else
+void DisableWindowsKeys(void) {}
+#endif
 
+#if PLATFORM_WIN32
 void EnableWindowsKeys(void)
 {
   INDEX iDummy;
   SystemParametersInfo(SPI_SETSCREENSAVERRUNNING, FALSE, &iDummy, 0);
   // if( _hLLKeyHook!=NULL) UnhookWindowsHookEx(_hLLKeyHook);
 }
+#else
+void EnableWindowsKeys(void) {}
+#endif
 
 // texture size reporting
 
@@ -429,11 +440,11 @@ static void TexturesInfo(void)
   CTString strTmp;
   strTmp = tex_bFineEffect ? "32-bit" : "16-bit";
   CPrintF( "\n");
-  CPrintF( "Normal-opaque textures quality:         %s\n", ReportQuality(TS.ts_iNormQualityO));
-  CPrintF( "Normal-translucent textures quality:    %s\n", ReportQuality(TS.ts_iNormQualityA));
-  CPrintF( "Animation-opaque textures quality:      %s\n", ReportQuality(TS.ts_iAnimQualityO));
-  CPrintF( "Animation-translucent textures quality: %s\n", ReportQuality(TS.ts_iAnimQualityA));
-  CPrintF( "Effect textures quality:                %s\n", strTmp);
+  CPrintF( "Normal-opaque textures quality:         %s\n", ReportQuality(TS.ts_iNormQualityO).str_String);
+  CPrintF( "Normal-translucent textures quality:    %s\n", ReportQuality(TS.ts_iNormQualityA).str_String);
+  CPrintF( "Animation-opaque textures quality:      %s\n", ReportQuality(TS.ts_iAnimQualityO).str_String);
+  CPrintF( "Animation-translucent textures quality: %s\n", ReportQuality(TS.ts_iAnimQualityA).str_String);
+  CPrintF( "Effect textures quality:                %s\n", strTmp.str_String);
   CPrintF( "\n");
   CPrintF( "Max allowed normal texture area size:    %3dx%d\n", pixNormDim, pixNormDim);
   CPrintF( "Max allowed animation texture area size: %3dx%d\n", pixAnimDim, pixAnimDim);
@@ -508,9 +519,9 @@ static void GAPInfo(void)
 
   // report renderer
   CDisplayAdapter &da = _pGfx->gl_gaAPI[eAPI].ga_adaAdapter[_pGfx->gl_iCurrentAdapter];
-  if( eAPI==GAT_OGL) CPrintF( "- Vendor:   %s\n", da.da_strVendor);
-  CPrintF( "- Renderer: %s\n", da.da_strRenderer);
-  CPrintF( "- Version:  %s\n", da.da_strVersion);
+  if( eAPI==GAT_OGL) CPrintF( "- Vendor:   %s\n", da.da_strVendor.str_String);
+  CPrintF( "- Renderer: %s\n", da.da_strRenderer.str_String);
+  CPrintF( "- Version:  %s\n", da.da_strVersion.str_String);
   CPrintF( "\n");
 
   // Z-buffer depth
@@ -563,7 +574,7 @@ static void GAPInfo(void)
         if( gap_bForceTruform) CPrintF( "(for all models)\n");
         else CPrintF( "(only for Truform-ready models)\n");
         CTString strNormalMode = ogl_bTruformLinearNormals ? "linear" : "quadratic";
-        CPrintF( "- Tesselation level: %d of %d (%s normals)\n", _pGfx->gl_iTessellationLevel, _pGfx->gl_iMaxTessellationLevel, strNormalMode);
+        CPrintF( "- Tesselation level: %d of %d (%s normals)\n", _pGfx->gl_iTessellationLevel, _pGfx->gl_iMaxTessellationLevel, strNormalMode.str_String);
       } else CPrintF( "disabled\n");
     } else CPrintF( "not supported\n");
 
@@ -588,7 +599,7 @@ static void GAPInfo(void)
         CTString strEffect = "Partial anti-aliasing";
         if( ogl_iTBufferEffect<1) strEffect = "none";
         if( ogl_iTBufferEffect>1) strEffect = "Motion blur";
-        CPrintF( "%s (%d buffers used)\n", strEffect, _pGfx->go_ctSampleBuffers);
+        CPrintF( "%s (%d buffers used)\n", strEffect.str_String, _pGfx->go_ctSampleBuffers);
       }
     }
 
@@ -602,8 +613,8 @@ static void GAPInfo(void)
         CTString strSep="";
         CPrintF( "enabled (for ");
         if( CVA_bWorld)  { CPrintF( "world");               strSep="/"; }
-        if( CVA_bModels) { CPrintF( "%smodels",    strSep); strSep="/"; }
-        if( CVA_b2D)     { CPrintF( "%sparticles", strSep); }
+        if( CVA_bModels) { CPrintF( "%smodels",    strSep.str_String); strSep="/"; }
+        if( CVA_b2D)     { CPrintF( "%sparticles", strSep.str_String); }
         CPrintF( ")\n");
       } else CPrintF( "disabled\n");
     } else CPrintF( "not supported\n");
@@ -614,9 +625,9 @@ static void GAPInfo(void)
     else {
       CTString strSep="";
       if( _pGfx->gl_ulFlags & GLF_EXTC_ARB)    { CPrintF( "ARB");                strSep=", "; }
-      if( _pGfx->gl_ulFlags & GLF_EXTC_S3TC)   { CPrintF( "%sS3TC",     strSep); strSep=", "; }
-      if( _pGfx->gl_ulFlags & GLF_EXTC_FXT1)   { CPrintF( "%sFTX1",     strSep); strSep=", "; }
-      if( _pGfx->gl_ulFlags & GLF_EXTC_LEGACY) { CPrintF( "%sold S3TC", strSep); }
+      if( _pGfx->gl_ulFlags & GLF_EXTC_S3TC)   { CPrintF( "%sS3TC",     strSep.str_String); strSep=", "; }
+      if( _pGfx->gl_ulFlags & GLF_EXTC_FXT1)   { CPrintF( "%sFTX1",     strSep.str_String); strSep=", "; }
+      if( _pGfx->gl_ulFlags & GLF_EXTC_LEGACY) { CPrintF( "%sold S3TC", strSep.str_String); }
       CPrintF( "\n- Current texture compression system: ");
       switch( ogl_iTextureCompressionType) {
       case 0:   CPrintF( "none\n");         break;
@@ -646,9 +657,9 @@ static void GAPInfo(void)
     } */
     // report OpenGL externsions
     CPrintF("\n");
-    CPrintF("- Published extensions: %s", ReformatExtensionsString(_pGfx->go_strExtensions));
-    if( _pGfx->go_strWinExtensions != "") CPrintF("%s", ReformatExtensionsString(_pGfx->go_strWinExtensions));
-    CPrintF("\n- Supported extensions: %s\n", ReformatExtensionsString(_pGfx->go_strSupportedExtensions));
+    CPrintF("- Published extensions: %s", ReformatExtensionsString(_pGfx->go_strExtensions).str_String);
+    if( _pGfx->go_strWinExtensions != "") CPrintF("%s", ReformatExtensionsString(_pGfx->go_strWinExtensions).str_String);
+    CPrintF("\n- Supported extensions: %s\n", ReformatExtensionsString(_pGfx->go_strSupportedExtensions).str_String);
   }
 
   // Direct3D only stuff
@@ -1036,6 +1047,7 @@ void CGfxLibrary::Init(void)
   // report desktop settings
   CPrintF(TRANS("Desktop settings...\n"));
 
+#if PLATFORM_WIN32
   HDC hdc = GetDC(NULL); 
   SLONG slBPP = GetDeviceCaps(hdc, PLANES) * GetDeviceCaps(hdc, BITSPIXEL); 
   ReleaseDC(NULL, hdc);  
@@ -1048,6 +1060,7 @@ void CGfxLibrary::Init(void)
   CPrintF(TRANS("  Monitors directly reported: %d\n"), gfx_ctMonitors);
 
   CPrintF("\n");
+#endif
 
   gfx_bMultiMonDisabled = FALSE;
  
@@ -1057,15 +1070,15 @@ void CGfxLibrary::Init(void)
   putenv( "FX_GLIDE_NO_SPLASH=1");
 
   // declare some console vars
-  _pShell->DeclareSymbol("user void MonitorsOn(void);",  &MonitorsOn);
-  _pShell->DeclareSymbol("user void MonitorsOff(void);", &MonitorsOff);
+  _pShell->DeclareSymbol("user void MonitorsOn(void);",  (void*) &MonitorsOn);
+  _pShell->DeclareSymbol("user void MonitorsOff(void);", (void*) &MonitorsOff);
 
-  _pShell->DeclareSymbol("user void GAPInfo(void);",      &GAPInfo);
-  _pShell->DeclareSymbol("user void TexturesInfo(void);", &TexturesInfo);
-  _pShell->DeclareSymbol("user void UncacheShadows(void);",  &UncacheShadows);
-  _pShell->DeclareSymbol("user void RecacheShadows(void);",  &RecacheShadows);
-  _pShell->DeclareSymbol("user void RefreshTextures(void);", &RefreshTextures);
-  _pShell->DeclareSymbol("user void ReloadModels(void);",    &ReloadModels);
+  _pShell->DeclareSymbol("user void GAPInfo(void);", (void*)      &GAPInfo);
+  _pShell->DeclareSymbol("user void TexturesInfo(void);", (void*) &TexturesInfo);
+  _pShell->DeclareSymbol("user void UncacheShadows(void);", (void*)  &UncacheShadows);
+  _pShell->DeclareSymbol("user void RecacheShadows(void);", (void*)  &RecacheShadows);
+  _pShell->DeclareSymbol("user void RefreshTextures(void);", (void*) &RefreshTextures);
+  _pShell->DeclareSymbol("user void ReloadModels(void);", (void*)    &ReloadModels);
 
   _pShell->DeclareSymbol("persistent user INDEX ogl_bUseCompiledVertexArrays;", &ogl_bUseCompiledVertexArrays);
   _pShell->DeclareSymbol("persistent user INDEX ogl_bExclusive;", &ogl_bExclusive);
@@ -1105,7 +1118,7 @@ void CGfxLibrary::Init(void)
   _pShell->DeclareSymbol("persistent user INDEX gap_iDepthBits;",   &gap_iDepthBits);
   _pShell->DeclareSymbol("persistent user INDEX gap_iStencilBits;", &gap_iStencilBits);
 
-  _pShell->DeclareSymbol("void MdlPostFunc(INDEX);", &MdlPostFunc);
+  _pShell->DeclareSymbol("void MdlPostFunc(INDEX);", (void*) &MdlPostFunc);
 
   _pShell->DeclareSymbol("           user INDEX gfx_bRenderPredicted;", &gfx_bRenderPredicted);
   _pShell->DeclareSymbol("           user INDEX gfx_bRenderModels;",    &gfx_bRenderModels);
@@ -1418,7 +1431,10 @@ void CGfxLibrary::StopDisplayMode(void)
   }
 
   // free driver DLL
+
+#if PLATFORM_WIN32
   if( gl_hiDriver!=NONE) FreeLibrary(gl_hiDriver);
+#endif
   gl_hiDriver = NONE;
 
   // reset some vars
@@ -1521,6 +1537,7 @@ void CGfxLibrary::UnlockDrawPort( CDrawPort *pdpToUnlock)
 /* Create a new window canvas. */
 void CGfxLibrary::CreateWindowCanvas(void *hWnd, CViewPort **ppvpNew, CDrawPort **ppdpNew)
 {
+#if PLATFORM_WIN32
   RECT rectWindow;	// rectangle for the client area of the window
 
 	// get the dimensions from the window
@@ -1538,6 +1555,9 @@ void CGfxLibrary::CreateWindowCanvas(void *hWnd, CViewPort **ppvpNew, CDrawPort 
     delete *ppvpNew;
     *ppvpNew = NULL;
   }
+#else
+  FatalError("TODO");
+#endif
 }
 
 /* Destroy a window canvas. */
@@ -1555,6 +1575,7 @@ static BOOL _bClassRegistered = FALSE;
 /* Create a work canvas. */
 void CGfxLibrary::CreateWorkCanvas(PIX pixWidth, PIX pixHeight, CDrawPort **ppdpNew)
 {
+#if PLATFORM_WIN32
   // must have dimensions
 	ASSERT (pixWidth>0 || pixHeight>0);
 
@@ -1593,6 +1614,9 @@ void CGfxLibrary::CreateWorkCanvas(PIX pixWidth, PIX pixHeight, CDrawPort **ppdp
   *ppdpNew = NULL;
   CViewPort *pvp;
   CreateWindowCanvas(hWnd, &pvp, ppdpNew);
+#else
+  FatalError("Should not be called");
+#endif
 }
 
 /* Destroy a work canvas. */
@@ -1601,7 +1625,7 @@ void CGfxLibrary::DestroyWorkCanvas(CDrawPort *pdpOld)
   CViewPort *pvp = pdpOld->dp_Raster->ra_pvpViewPort;
   HWND hwnd = pvp->vp_hWndParent;
   DestroyWindowCanvas(pvp);
-  ::DestroyWindow(hwnd);
+//  ::DestroyWindow(hwnd);
 }
 
 
@@ -1758,8 +1782,9 @@ void CGfxLibrary::SwapBuffers(CViewPort *pvp)
       }
     }
     // swap buffers
-    CTempDC tdc(pvp->vp_hWnd);
-    pwglSwapBuffers(tdc.hdc);
+    FatalError("TODO");
+//    CTempDC tdc(pvp->vp_hWnd);
+//    pwglSwapBuffers(tdc.hdc);
 
     // force finishing of all rendering operations (if required)
     if( ogl_iFinish==3) gfxFinish();
@@ -1874,8 +1899,8 @@ void CGfxLibrary::SwapBuffers(CViewPort *pvp)
     const BOOL bTableSet = GenerateGammaTable();
     if( bTableSet) {
       if( gl_eCurrentAPI==GAT_OGL) {
-        CTempDC tdc(pvp->vp_hWnd);
-        SetDeviceGammaRamp( tdc.hdc, &_auwGammaTable[0]);
+//        CTempDC tdc(pvp->vp_hWnd);
+//        SetDeviceGammaRamp( tdc.hdc, &_auwGammaTable[0]);
       } 
 #ifdef SE1_D3D
       else if( gl_eCurrentAPI==GAT_D3D) {
@@ -2028,8 +2053,8 @@ static BOOL GenerateGammaTable(void)
 DeclareSymbol( "[persistent] [hidden] [const] [type] name [minval] [maxval] [func()]", &shd_iStaticQuality, func()=NULL);
 
 
-_pShell->DeclareSymbol( "INDEX GfxVarPreFunc(INDEX);", &GfxVarPreFunc);
-_pShell->DeclareSymbol( "void GfxVarPostFunc(INDEX);", &GfxVarPostFunc);
+_pShell->DeclareSymbol( "INDEX GfxVarPreFunc(INDEX);", (void*) &GfxVarPreFunc);
+_pShell->DeclareSymbol( "void GfxVarPostFunc(INDEX);", (void*) &GfxVarPostFunc);
 
 static BOOL GfxVarPreFunc(void *pvVar)
 {

@@ -26,6 +26,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
  */
 template <class cType, unsigned long ulFlag>
 class CSelection : public CDynamicContainer<cType> {
+  using Super = CDynamicContainer<cType>;
 public:
   /* Deselect all objects. */
   void Clear(void);

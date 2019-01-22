@@ -99,14 +99,14 @@ CTString IFeel_GetProjectFileName()
     if(strProduct == strDeviceName) return strProjectFile;
   }
   // device was not found, return default project file
-  CPrintF("No project file specified for device '%s'.\nUsing default project file\n",strProduct);
+  CPrintF("No project file specified for device '%s'.\nUsing default project file\n",strProduct.str_String);
   return strDefaultProjectFile;
 }
 
 // inits imm ifeel device
 BOOL IFeel_InitDevice(HINSTANCE &hInstance, HWND &hWnd)
 {
-  _pShell->DeclareSymbol("void inp_IFeelGainChange(INDEX);", &ifeel_GainChange);
+  _pShell->DeclareSymbol("void inp_IFeelGainChange(INDEX);", (void*) &ifeel_GainChange);
   _pShell->DeclareSymbol("persistent user FLOAT inp_fIFeelGain post:inp_IFeelGainChange;", &ifeel_fGain);
   _pShell->DeclareSymbol("const user INDEX sys_bIFeelEnabled;", &ifeel_bEnabled);
   IFeel_ChangeGain(ifeel_fGain);
@@ -178,12 +178,12 @@ BOOL IFeel_LoadFile(CTFileName fnFile)
     BOOL hr = immLoadFile((const char*)fnmExpanded);
     if(hr)
     {
-      CPrintF("IFeel project file '%s' loaded\n", fnFile);
+      CPrintF("IFeel project file '%s' loaded\n", fnFile.str_String);
       return TRUE;
     }
     else
     {
-      CPrintF("Error loading IFeel project file '%s'\n", fnFile);
+      CPrintF("Error loading IFeel project file '%s'\n", fnFile.str_String);
       return FALSE;
     }
   }

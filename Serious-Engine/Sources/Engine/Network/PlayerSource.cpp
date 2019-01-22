@@ -99,7 +99,7 @@ void CPlayerSource::Start_t(CPlayerCharacter &pcCharacter) // throw char *
       CTString strReason;
       nmReceived>>strReason;
       _pNetwork->ga_sesSessionState.ses_strDisconnected = strReason;
-      ThrowF_t(TRANS("Cannot add player because: %s\n"), strReason);
+      ThrowF_t(TRANS("Cannot add player because: %s\n"), strReason.str_String);
 
     // otherwise
     } else {

@@ -196,7 +196,7 @@ CTextureData::CTextureData()
   td_ulFlags = NONE;
   td_mexWidth  = 0;
   td_mexHeight = 0;
-  td_tvLastDrawn = 0I64;
+  td_tvLastDrawn = CTimerValue((__int64)0);
   td_iFirstMipLevel  = 0;
   td_ctFineMipLevels = 0;
 
@@ -797,7 +797,7 @@ void CTextureData::Read_t( CTStream *inFile)
         CTFileName fnTex = inFile->GetDescription();
         if( fnTex == fnBaseTexture) {
           // generate exception
-          ThrowF_t( TRANS("Texture \"%s\" has same name as its base texture."), (CTString&)fnTex);
+          ThrowF_t( TRANS("Texture \"%s\" has same name as its base texture."), fnTex.str_String);
         } else {
           // obtain base texture
           td_ptdBaseTexture = _pTextureStock->Obtain_t( fnBaseTexture);
@@ -848,7 +848,7 @@ void CTextureData::Read_t( CTStream *inFile)
       FOREACHINDYNAMICARRAY( td_ptegEffect->teg_atesEffectSources, CTextureEffectSource, itEffectSource)
       {
         // read type of effect source
-        *inFile >> (ULONG) itEffectSource->tes_ulEffectSourceType;
+        *inFile >> (ULONG&) itEffectSource->tes_ulEffectSourceType;
         // read structure holding effect source properties
         inFile->Read_t( &itEffectSource->tes_tespEffectSourceProperties, sizeof(struct TextureEffectSourceProperties));
         // remember pointer to global effect
@@ -881,7 +881,7 @@ void CTextureData::Read_t( CTStream *inFile)
     else
     {
       ThrowF_t( TRANS("Unrecognisable chunk ID (\"%s\") found while reading texture \"%s\"."),
-                (char*)idChunk, (CTString&)inFile->GetDescription() );
+                idChunk.cid_ID, inFile->GetDescription().str_String );
     }
   }
   // until we didn't reach end of file
@@ -1012,7 +1012,7 @@ void CTextureData::Write_t( CTStream *outFile)   // throw char *
   if( td_ptdBaseTexture != NULL) {
     CTFileName fnTex = outFile->GetDescription();
     if( fnTex == td_ptdBaseTexture->GetName()) {
-      ThrowF_t( TRANS("Texture \"%s\" has same name as its base texture."), (CTString&)fnTex);
+      ThrowF_t( TRANS("Texture \"%s\" has same name as its base texture."), fnTex.str_String);
     }
   }
 
@@ -1434,7 +1434,7 @@ void CTextureData::SetAsCurrent( INDEX iFrameNo/*=0*/, BOOL bForceUpload/*=FALSE
 void CTextureData::Unbind(void)
 {
   // reset mark
-  td_tvLastDrawn = 0I64;
+  td_tvLastDrawn = (__int64) 0;
 
   // only if bound
   if( td_ulObject==NONE) {
@@ -1490,7 +1490,7 @@ void CTextureData::Clear(void)
   td_ctFrames = 0;
   td_mexWidth  = 0;
   td_mexHeight = 0;
-  td_tvLastDrawn = 0I64;
+  td_tvLastDrawn = (__int64)0;
   td_iFirstMipLevel  = 0;
   td_ctFineMipLevels = 0;
   td_pixBufferWidth  = 0;
@@ -1746,7 +1746,7 @@ COLOR CTextureData::GetTexel( MEX mexU, MEX mexV)
   if (!(td_ulFlags&TEX_STATIC) && !(td_ulFlags&TEX_CONSTANT)) {
     // print warning
     ASSERTALWAYS("GetTexel: Texture needs to be static and constant.");
-    CPrintF("GetTexel: '%s' was not static and/or constant!\n", (const char*)GetName());
+    CPrintF("GetTexel: '%s' was not static and/or constant!\n", GetName().str_String);
   }
 
   // make sure that the texture is static
@@ -1821,7 +1821,7 @@ CTString CTextureData::GetDescription(void)
     strSizeM.PrintF("%.2fx%.2fm", fSizeU, fSizeV);
   }
   CTString str;
-  str.PrintF( "%s(%dx%d) %d/%d", strSizeM, pixSizeU, pixSizeV, ctFineMips, ctTotalMips);
+  str.PrintF( "%s(%dx%d) %d/%d", strSizeM.str_String, pixSizeU, pixSizeV, ctFineMips, ctTotalMips);
 
   // print flags
   CTString strFlags = "";

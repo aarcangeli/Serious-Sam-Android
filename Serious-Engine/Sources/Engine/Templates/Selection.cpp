@@ -33,7 +33,7 @@ void CSelection<cType, ulFlag>::Select(cType &tToSelect)
     // select it
     tToSelect.Select(ulFlag);
     // add it to this container
-    Add(&tToSelect);
+    Super::Add(&tToSelect);
 
   // if the object is already selected
   } else {
@@ -52,7 +52,7 @@ void CSelection<cType, ulFlag>::Deselect(cType &tToSelect)
     // deselect it
     tToSelect.Deselect(ulFlag);
     // remove it from this container
-    Remove(&tToSelect);
+    Super::Remove(&tToSelect);
 
   // if the object is not selected
   } else {
@@ -79,7 +79,7 @@ void CSelection<cType, ulFlag>::Clear(void)
   // for all objects in the container
   FOREACHINDYNAMICCONTAINER(*this, cType, itObject) {
     // object must be allocated and valid
-    ASSERT(_CrtIsValidPointer(&*itObject, sizeof(cType), TRUE));
+//    ASSERT(_CrtIsValidPointer(&*itObject, sizeof(cType), TRUE));
 /*    ASSERT(_CrtIsValidHeapPointer(&*itObject));
     ASSERT(_CrtIsMemoryBlock(&*itObject, sizeof(cType), NULL, NULL, NULL ));
     */
@@ -94,7 +94,7 @@ void CSelection<cType, ulFlag>::Clear(void)
 template<class cType, unsigned long ulFlag>
 cType *CSelection<cType, ulFlag>::GetFirstInSelection(void)
 {
-  if( Count() == 0)
+  if( Super::Count() == 0)
   {
     return NULL;
   }

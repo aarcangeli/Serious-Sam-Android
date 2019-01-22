@@ -324,88 +324,89 @@ void CRenderer::PassPortal(CScreenPolygon &spo)
  */
 void CRenderer::AddActiveSector(CBrushSector &bscSector)
 {
-  // if already active
-  if (bscSector.bsc_lnInActiveSectors.IsLinked()) {
-    // do nothing;
-    return;
-  }
-  _pfRenderProfile.StartTimer(CRenderProfile::PTI_ADDSECTOR);
-
-  // add it to active sectors list
-  re_lhActiveSectors.AddTail(bscSector.bsc_lnInActiveSectors);
-
-  ASSERT((_controlfp(0, 0)&_MCW_RC)==_RC_NEAR);
-
-  CBrush3D &br = *bscSector.bsc_pbmBrushMip->bm_pbrBrush;
-  // if should render field brush sector
-  if (br.br_penEntity->en_RenderType==CEntity::RT_FIELDBRUSH 
-      && !_wrpWorldRenderPrefs.IsFieldBrushesOn()) {
-    // skip it
-    bscSector.bsc_ulFlags|=BSCF_INVISIBLE;
-    _pfRenderProfile.StopTimer(CRenderProfile::PTI_ADDSECTOR);
-    return;
-  }
-
-  // test sector visibility
-  const INDEX iFrustrumTest = IsSectorVisible( br, bscSector);
-  if( iFrustrumTest==-1) {
-    // outside of frustrum - skip it
-    bscSector.bsc_ulFlags |= BSCF_INVISIBLE;
-    _pfRenderProfile.StopTimer(CRenderProfile::PTI_ADDSECTOR);
-    return;
-  } else if( iFrustrumTest==0) {
-    // partially in frustrum - needs clipping
-    bscSector.bsc_ulFlags |= BSCF_NEEDSCLIPPING;
-  } else {
-    // completely in frustrum - doesn't need clipping
-    bscSector.bsc_ulFlags &= ~BSCF_NEEDSCLIPPING;
-  }
-  // mark that sector is visible
-  bscSector.bsc_ulFlags &= ~BSCF_INVISIBLE;
-
-  // remember current sector
-  re_pbscCurrent = &bscSector;
-  re_pbrCurrent = &br;
-  _sfStats.IncrementCounter(CStatForm::SCI_SECTORS);
-
-  // if projection is perspective
-  if( br.br_prProjection.IsPerspective()) {
-    // prepare fog/haze
-    SetupFogAndHaze();
-  }
-
-  // transform all vertices and planes in this sector
-  PreClipVertices();
-  PreClipPlanes();
-
-  // if polygons should be drawn
-  if (_wrpWorldRenderPrefs.wrp_ftPolygons != CWorldRenderPrefs::FT_NONE
-    ||re_bRenderingShadows) {
-    // find which portals should be rendered as portals or as pretenders
-    FindPretenders();
-    // make screen polygons for nondetail polygons in current sector
-    MakeNonDetailScreenPolygons();
-    // clip all polygons to all clip planes
-    if( bscSector.bsc_ulFlags&BSCF_NEEDSCLIPPING) ClipToAllPlanes( br.br_prProjection);
-    // project vertices to 2d
-    PostClipVertices();
-    // make final edges for all polygons in current sector
-    MakeFinalPolygonEdges();
-    // add screen edges for all polygons in current sector
-    AddScreenEdges();
-    // make screen polygons for detail polygons in current sector
-    MakeDetailScreenPolygons();
-  }
-
-  _pfRenderProfile.StopTimer(CRenderProfile::PTI_ADDSECTOR);
-
-  // get the entity the sector is in
-  CEntity *penSectorEntity = bscSector.bsc_pbmBrushMip->bm_pbrBrush->br_penEntity;
-  // if it has the entity (it is not the background brush)
-  if (penSectorEntity != NULL) {
-    // add all other entities near the sector
-    AddEntitiesInSector(&bscSector);
-  }
+  FatalError("TODO");
+//  // if already active
+//  if (bscSector.bsc_lnInActiveSectors.IsLinked()) {
+//    // do nothing;
+//    return;
+//  }
+//  _pfRenderProfile.StartTimer(CRenderProfile::PTI_ADDSECTOR);
+//
+//  // add it to active sectors list
+//  re_lhActiveSectors.AddTail(bscSector.bsc_lnInActiveSectors);
+//
+//  ASSERT((_controlfp(0, 0)&_MCW_RC)==_RC_NEAR);
+//
+//  CBrush3D &br = *bscSector.bsc_pbmBrushMip->bm_pbrBrush;
+//  // if should render field brush sector
+//  if (br.br_penEntity->en_RenderType==CEntity::RT_FIELDBRUSH
+//      && !_wrpWorldRenderPrefs.IsFieldBrushesOn()) {
+//    // skip it
+//    bscSector.bsc_ulFlags|=BSCF_INVISIBLE;
+//    _pfRenderProfile.StopTimer(CRenderProfile::PTI_ADDSECTOR);
+//    return;
+//  }
+//
+//  // test sector visibility
+//  const INDEX iFrustrumTest = IsSectorVisible( br, bscSector);
+//  if( iFrustrumTest==-1) {
+//    // outside of frustrum - skip it
+//    bscSector.bsc_ulFlags |= BSCF_INVISIBLE;
+//    _pfRenderProfile.StopTimer(CRenderProfile::PTI_ADDSECTOR);
+//    return;
+//  } else if( iFrustrumTest==0) {
+//    // partially in frustrum - needs clipping
+//    bscSector.bsc_ulFlags |= BSCF_NEEDSCLIPPING;
+//  } else {
+//    // completely in frustrum - doesn't need clipping
+//    bscSector.bsc_ulFlags &= ~BSCF_NEEDSCLIPPING;
+//  }
+//  // mark that sector is visible
+//  bscSector.bsc_ulFlags &= ~BSCF_INVISIBLE;
+//
+//  // remember current sector
+//  re_pbscCurrent = &bscSector;
+//  re_pbrCurrent = &br;
+//  _sfStats.IncrementCounter(CStatForm::SCI_SECTORS);
+//
+//  // if projection is perspective
+//  if( br.br_prProjection.IsPerspective()) {
+//    // prepare fog/haze
+//    SetupFogAndHaze();
+//  }
+//
+//  // transform all vertices and planes in this sector
+//  PreClipVertices();
+//  PreClipPlanes();
+//
+//  // if polygons should be drawn
+//  if (_wrpWorldRenderPrefs.wrp_ftPolygons != CWorldRenderPrefs::FT_NONE
+//    ||re_bRenderingShadows) {
+//    // find which portals should be rendered as portals or as pretenders
+//    FindPretenders();
+//    // make screen polygons for nondetail polygons in current sector
+//    MakeNonDetailScreenPolygons();
+//    // clip all polygons to all clip planes
+//    if( bscSector.bsc_ulFlags&BSCF_NEEDSCLIPPING) ClipToAllPlanes( br.br_prProjection);
+//    // project vertices to 2d
+//    PostClipVertices();
+//    // make final edges for all polygons in current sector
+//    MakeFinalPolygonEdges();
+//    // add screen edges for all polygons in current sector
+//    AddScreenEdges();
+//    // make screen polygons for detail polygons in current sector
+//    MakeDetailScreenPolygons();
+//  }
+//
+//  _pfRenderProfile.StopTimer(CRenderProfile::PTI_ADDSECTOR);
+//
+//  // get the entity the sector is in
+//  CEntity *penSectorEntity = bscSector.bsc_pbmBrushMip->bm_pbrBrush->br_penEntity;
+//  // if it has the entity (it is not the background brush)
+//  if (penSectorEntity != NULL) {
+//    // add all other entities near the sector
+//    AddEntitiesInSector(&bscSector);
+//  }
 }
 
 /*

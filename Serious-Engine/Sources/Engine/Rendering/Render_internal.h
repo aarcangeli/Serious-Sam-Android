@@ -492,7 +492,7 @@ public:
   void RenderOneModel( CEntity &en, CModelObject &moModel, const CPlacement3D &plModel,
                        const FLOAT fDistanceFactor, BOOL bRenderShadow, ULONG ulDMFlags);
   /* Render a ska model. */
-  void CRenderer::RenderOneSkaModel( CEntity &en, const CPlacement3D &plModel,
+  void RenderOneSkaModel( CEntity &en, const CPlacement3D &plModel,
                                   const FLOAT fDistanceFactor, BOOL bRenderShadow, ULONG ulDMFlags);
   /* Render models that were kept for delayed rendering. */
   void RenderModels(BOOL bBackground);

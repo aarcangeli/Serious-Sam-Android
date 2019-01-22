@@ -201,9 +201,9 @@ void shaCalculateLight(void)
   _acolVtxColors.Push(_ctVertices);
 
   GFXColor colModel   = (GFXColor)_colModel;   // Model color
-  GFXColor &colAmbient = (GFXColor)_colAmbient; // Ambient color
-  GFXColor &colLight   = (GFXColor)_colLight;   // Light color
-  GFXColor &colSurface = (GFXColor)_colConstant; // shader color
+  const GFXColor &colAmbient = (GFXColor)_colAmbient; // Ambient color
+  const GFXColor &colLight   = (GFXColor)_colLight;   // Light color
+  const GFXColor &colSurface = (GFXColor)_colConstant; // shader color
 
   colModel.MultiplyRGBA(colModel,colSurface);
 
@@ -227,7 +227,7 @@ void shaCalculateLight(void)
   // for each vertex color
   for(INDEX ivx=0;ivx<_ctVertices;ivx++) {
     // calculate vertex light
-    FLOAT3D &vNorm = FLOAT3D(_paNormals[ivx].nx,_paNormals[ivx].ny,_paNormals[ivx].nz);
+    FLOAT3D vNorm = FLOAT3D(_paNormals[ivx].nx,_paNormals[ivx].ny,_paNormals[ivx].nz);
     FLOAT fDot = vNorm % _vLightDir;
     fDot = Clamp(fDot,0.0f,1.0f);
     SLONG slDot = NormFloatToByte(fDot);
@@ -249,9 +249,9 @@ void shaCalculateLightForSpecular(void)
   _acolVtxColors.Push(_ctVertices);
 
   GFXColor colModel   = (GFXColor)_colModel;   // Model color
-  GFXColor &colAmbient = (GFXColor)_colAmbient; // Ambient color
-  GFXColor &colLight   = (GFXColor)_colLight;   // Light color
-  GFXColor &colSurface = (GFXColor)_colConstant; // shader color
+  const GFXColor &colAmbient = (GFXColor)_colAmbient; // Ambient color
+  const GFXColor &colLight   = (GFXColor)_colLight;   // Light color
+  const GFXColor &colSurface = (GFXColor)_colConstant; // shader color
 
   // colModel = MulColors(colModel.r,colSurface.abgr);
   colModel.MultiplyRGBA(colModel,colSurface);
@@ -276,7 +276,7 @@ void shaCalculateLightForSpecular(void)
   // for each vertex color
   for(INDEX ivx=0;ivx<_ctVertices;ivx++) {
     // calculate vertex light
-    FLOAT3D &vNorm = FLOAT3D(_paNormals[ivx].nx,_paNormals[ivx].ny,_paNormals[ivx].nz);
+    FLOAT3D vNorm = FLOAT3D(_paNormals[ivx].nx,_paNormals[ivx].ny,_paNormals[ivx].nz);
     FLOAT fDot = vNorm % _vLightDir;
     fDot = Clamp(fDot,0.0f,1.0f);
     SLONG slDot = NormFloatToByte(fDot);

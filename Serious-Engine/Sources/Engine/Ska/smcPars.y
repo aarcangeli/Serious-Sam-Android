@@ -6,7 +6,7 @@
 #include <Engine/Base/ErrorReporting.h>
 #include <Engine/Base/Shell.h>
 #include <Engine/Templates/DynamicContainer.cpp>
-#include "ParsingSmbs.h"
+#include <Engine/Ska/ParsingSmbs.h>
 
 extern BOOL bRememberSourceFN;
 BOOL bOffsetAllreadySet = FALSE;

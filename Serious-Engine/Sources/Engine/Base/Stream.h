@@ -30,12 +30,15 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 // maximum length of file that can be saved (default: 8Mb)
 ENGINE_API extern ULONG _ulMaxLengthOfSavingFile;
 
-#define CTSTREAM_BEGIN CTStream::EnableStreamHandling(); __try
-#define CTSTREAM_END __except( CTStream::ExceptionFilter( GetExceptionCode(),\
-                                                          GetExceptionInformation()) )\
-  {\
-     CTStream::ExceptionFatalError();\
-  }; CTStream::DisableStreamHandling();
+//#define CTSTREAM_BEGIN CTStream::EnableStreamHandling(); __try
+//#define CTSTREAM_END __except( CTStream::ExceptionFilter( GetExceptionCode(),\
+//                                                          GetExceptionInformation()) )\
+//  {\
+//     CTStream::ExceptionFatalError();\
+//  }; CTStream::DisableStreamHandling();
+
+#define CTSTREAM_BEGIN CTStream::EnableStreamHandling();
+#define CTSTREAM_END
 
 /*
  * Chunk ID class

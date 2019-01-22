@@ -93,9 +93,9 @@ void CImageInfo::Read_t( CTStream *inFile)   // throw char *
   inFile->ExpectID_t( CChunkID("CTII"));
   if( inFile->GetSize_t() != 5*4) throw( "Invalid image info file.");
 
-  *inFile >> (PIX)ii_Width;
-  *inFile >> (PIX)ii_Height;
-  *inFile >> (SLONG)ii_BitsPerPixel;
+  *inFile >> (PIX&)ii_Width;
+  *inFile >> (PIX&)ii_Height;
+  *inFile >> (SLONG&)ii_BitsPerPixel;
 
   // read image contents (all channels)
   ULONG pic_size = ii_Width*ii_Height * ii_BitsPerPixel/8;

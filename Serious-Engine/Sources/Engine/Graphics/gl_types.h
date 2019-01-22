@@ -19,6 +19,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
   #pragma once
 #endif
 
+#if !PLATFORM_UNIX
+#include <GLES2/gl2.h>
+#else
+
 /*
  *
  * Enumerations
@@ -1065,6 +1069,6 @@ typedef double		GLclampd;	/* double precision float in [0,1] */
 
 
 
-
+#endif /* PLATFORM_UNIX */
 #endif  /* include-once check. */
 

@@ -421,7 +421,8 @@ void CWorld::SplitSectors(CEntity &enThis, CBrushSectorSelection &selbscSectorsT
   // for all sectors in the selection
   FOREACHINDYNAMICCONTAINER(selbscSectorsToSplit, CBrushSector, itbsc) {
     // split the sector using the copy of other object
-    SplitOneSector(*itbsc, CObject3D(obOther));
+    CObject3D obj(obOther);
+    SplitOneSector(*itbsc, obj);
   }
 
   // update the bounding boxes of this brush

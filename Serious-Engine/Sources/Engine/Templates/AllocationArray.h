@@ -26,6 +26,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
  */
 template<class Type>
 class CAllocationArray : public CStaticArray<Type> {
+    using Super = CStaticArray<Type>;
 public:
   CStaticStackArray<INDEX> aa_aiFreeElements; // array of indices of free elements
   INDEX aa_ctAllocationStep;  // how many elements to allocate when pool overflows

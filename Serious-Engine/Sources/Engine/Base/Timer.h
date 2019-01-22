@@ -20,7 +20,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #endif
 
 #ifndef _MT
-#error Multithreading support is required!
+//#error Multithreading support is required!
 #endif
 
 #include <Engine/Base/Lists.h>
@@ -132,11 +132,12 @@ public:
 
   /* Get current timer value of high precision timer. */
   inline CTimerValue GetHighPrecisionTimer(void) {
-   __int64 mmRet;
-    _asm rdtsc
-    _asm mov dword ptr [mmRet+0],eax
-    _asm mov dword ptr [mmRet+4],edx
-    return mmRet;
+//   __int64 mmRet;
+//    _asm rdtsc
+//    _asm mov dword ptr [mmRet+0],eax
+//    _asm mov dword ptr [mmRet+4],edx
+//    return mmRet;
+    return CTimerValue((__int64) getTimeNsec());
   };
 };
 

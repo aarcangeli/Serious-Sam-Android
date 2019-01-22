@@ -82,7 +82,7 @@ static struct KeyConversion {
 
   // reserved for 'no-key-pressed'
   { KID_NONE, -1, -1, TRANAME("None")},
-                            
+
 // numbers row              
   { KID_1               , '1',   2, INTNAME("1")},
   { KID_2               , '2',   3, INTNAME("2")},
@@ -96,7 +96,7 @@ static struct KeyConversion {
   { KID_0               , '0',  11, INTNAME("0")},
   { KID_MINUS           , 189,  12, INTNAME("-")},
   { KID_EQUALS          , 187,  13, INTNAME("=")},
-                            
+
 // 1st alpha row            
   { KID_Q               , 'Q',  16, INTNAME("Q")},
   { KID_W               , 'W',  17, INTNAME("W")},
@@ -111,7 +111,7 @@ static struct KeyConversion {
   { KID_LBRACKET        , 219,  26, INTNAME("[")},
   { KID_RBRACKET        , 221,  27, INTNAME("]")},
   { KID_BACKSLASH       , 220,  43, INTNAME("\\")},
-                            
+
 // 2nd alpha row            
   { KID_A               , 'A',  30, INTNAME("A")},
   { KID_S               , 'S',  31, INTNAME("S")},
@@ -135,7 +135,7 @@ static struct KeyConversion {
   { KID_COMMA           , 190,  51, INTNAME(",")},
   { KID_PERIOD          , 188,  52, INTNAME(".")},
   { KID_SLASH           , 191,  53, INTNAME("/")},
-                                       
+
 // row with F-keys                     
   { KID_F1              ,  VK_F1,  59, INTNAME("F1")},
   { KID_F2              ,  VK_F2,  60, INTNAME("F2")},
@@ -149,7 +149,7 @@ static struct KeyConversion {
   { KID_F10             , VK_F10,  68, INTNAME("F10")},
   { KID_F11             , VK_F11,  87, INTNAME("F11")},
   { KID_F12             , VK_F12,  88, INTNAME("F12")},
-                            
+
 // extra keys               
   { KID_ESCAPE          , VK_ESCAPE,     1, TRANAME("Escape")},
   { KID_TILDE           , -1,           41, TRANAME("Tilde")},
@@ -158,7 +158,7 @@ static struct KeyConversion {
   { KID_CAPSLOCK        , VK_CAPITAL,   58, TRANAME("Caps Lock")},
   { KID_ENTER           , VK_RETURN,    28, TRANAME("Enter")},
   { KID_SPACE           , VK_SPACE,     57, TRANAME("Space")},
-                                            
+
 // modifier keys                            
   { KID_LSHIFT          , VK_LSHIFT  , 42, TRANAME("Left Shift")},
   { KID_RSHIFT          , VK_RSHIFT  , 54, TRANAME("Right Shift")},
@@ -166,7 +166,7 @@ static struct KeyConversion {
   { KID_RCONTROL        , VK_RCONTROL, 256+29, TRANAME("Right Control")},
   { KID_LALT            , VK_LMENU   , 56, TRANAME("Left Alt")},
   { KID_RALT            , VK_RMENU   , 256+56, TRANAME("Right Alt")},
-                            
+
 // navigation keys          
   { KID_ARROWUP         , VK_UP,        256+72, TRANAME("Arrow Up")},
   { KID_ARROWDOWN       , VK_DOWN,      256+80, TRANAME("Arrow Down")},
@@ -181,7 +181,7 @@ static struct KeyConversion {
   { KID_PRINTSCR        , VK_SNAPSHOT,  256+55, TRANAME("Print Screen")},
   { KID_SCROLLLOCK      , VK_SCROLL,    70, TRANAME("Scroll Lock")},
   { KID_PAUSE           , VK_PAUSE,     69, TRANAME("Pause")},
-                            
+
 // numpad numbers           
   { KID_NUM0            , VK_NUMPAD0, 82, INTNAME("Num 0")},
   { KID_NUM1            , VK_NUMPAD1, 79, INTNAME("Num 1")},
@@ -194,7 +194,7 @@ static struct KeyConversion {
   { KID_NUM8            , VK_NUMPAD8, 72, INTNAME("Num 8")},
   { KID_NUM9            , VK_NUMPAD9, 73, INTNAME("Num 9")},
   { KID_NUMDECIMAL      , VK_DECIMAL, 83, INTNAME("Num .")},
-                            
+
 // numpad gray keys         
   { KID_NUMLOCK         , VK_NUMLOCK,   256+69, INTNAME("Num Lock")},
   { KID_NUMSLASH        , VK_DIVIDE,    256+53, INTNAME("Num /")},
@@ -343,7 +343,8 @@ LRESULT CALLBACK GetMsgProc(
   CheckMessage(pMsg);
 
   LRESULT retValue = 0;
-  retValue = CallNextHookEx( _hGetMsgHook, nCode, wParam, lParam );
+//  retValue = CallNextHookEx( _hGetMsgHook, nCode, wParam, lParam );
+  FatalError("TODO");
 
 #ifndef WM_MOUSEWHEEL
  #define WM_MOUSEWHEEL 0x020A
@@ -371,8 +372,9 @@ LRESULT CALLBACK SendMsgProc(
   CheckMessage(pMsg);
 
   LRESULT retValue = 0;
-  retValue = CallNextHookEx( _hSendMsgHook, nCode, wParam, lParam );
-  
+//  retValue = CallNextHookEx( _hSendMsgHook, nCode, wParam, lParam );
+    FatalError("TODO");
+
   return retValue;
 }
 
@@ -413,7 +415,7 @@ static void Poll2ndMouse(void)
   // parse the mouse packets
   for( INDEX i=0; i<dwLength; i++)
   {
-    // prepare    
+    // prepare
     if( aubMouseBuffer[i] & 64) _iByteNum  = 0;
     if( _iByteNum<4) _aubComBytes[_iByteNum] = aubMouseBuffer[i];
     _iByteNum++;
@@ -452,13 +454,13 @@ static void Startup2ndMouse(INDEX iPort)
 {
   // skip if disabled
   ASSERT( iPort>=0 && iPort<=4);
-  if( iPort==0) return; 
+  if( iPort==0) return;
   // determine port string
   CTString str2ndMousePort( 0, "COM%d", iPort);
-    
+
   // create COM handle if needed
   if( _h2ndMouse==NONE) {
-    _h2ndMouse = CreateFileA( str2ndMousePort, GENERIC_READ|GENERIC_WRITE, 0, NULL,           
+    _h2ndMouse = CreateFileA( str2ndMousePort, GENERIC_READ|GENERIC_WRITE, 0, NULL,
                              OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
     if( _h2ndMouse==INVALID_HANDLE_VALUE) {
       // failed! :(
@@ -494,7 +496,7 @@ static void Startup2ndMouse(INDEX iPort)
   // reset
   _iByteNum = 0;
   _aubComBytes[0] = _aubComBytes[1] = _aubComBytes[2] = _aubComBytes[3] = 0;
-  _bIgnoreMouse2 = TRUE; // ignore mouse polling until 1 after non-0 readout 
+  _bIgnoreMouse2 = TRUE; // ignore mouse polling until 1 after non-0 readout
   _iLastPort = iPort;
   //CPrintF( "STARTUP M2!\n");
 }
@@ -518,7 +520,7 @@ static void Shutdown2ndMouse(void)
   _bIgnoreMouse2 = TRUE;
 }
 
- 
+
 
 
 // pointer to global input object
@@ -668,28 +670,28 @@ BOOL CInput::CheckJoystick(INDEX iJoy)
     ControlAxisInfo &cai= inp_caiAllAxisInfo[ FIRST_JOYAXIS+iJoy*MAX_AXES_PER_JOYSTICK+iAxis];
     // remember min/max info
     switch( iAxis) {
-    case 0: 
-      cai.cai_slMin = jc.wXmin; cai.cai_slMax = jc.wXmax; 
+    case 0:
+      cai.cai_slMin = jc.wXmin; cai.cai_slMax = jc.wXmax;
       cai.cai_bExisting = TRUE;
       break;
-    case 1: 
-      cai.cai_slMin = jc.wYmin; cai.cai_slMax = jc.wYmax; 
+    case 1:
+      cai.cai_slMin = jc.wYmin; cai.cai_slMax = jc.wYmax;
       cai.cai_bExisting = TRUE;
       break;
-    case 2: 
-      cai.cai_slMin = jc.wZmin; cai.cai_slMax = jc.wZmax; 
+    case 2:
+      cai.cai_slMin = jc.wZmin; cai.cai_slMax = jc.wZmax;
       cai.cai_bExisting = jc.wCaps&JOYCAPS_HASZ;
       break;
-    case 3: 
-      cai.cai_slMin = jc.wRmin; cai.cai_slMax = jc.wRmax; 
+    case 3:
+      cai.cai_slMin = jc.wRmin; cai.cai_slMax = jc.wRmax;
       cai.cai_bExisting = jc.wCaps&JOYCAPS_HASR;
       break;
-    case 4: 
-      cai.cai_slMin = jc.wUmin; cai.cai_slMax = jc.wUmax; 
+    case 4:
+      cai.cai_slMin = jc.wUmin; cai.cai_slMax = jc.wUmax;
       cai.cai_bExisting = jc.wCaps&JOYCAPS_HASU;
       break;
-    case 5: 
-      cai.cai_slMin = jc.wVmin; cai.cai_slMax = jc.wVmax; 
+    case 5:
+      cai.cai_slMin = jc.wVmin; cai.cai_slMax = jc.wVmax;
       cai.cai_bExisting = jc.wCaps&JOYCAPS_HASV;
       break;
     }
@@ -848,7 +850,7 @@ void CInput::EnableInput(HWND hwnd)
     }
   }}
 #endif
-  
+
   // remember current status
   inp_bInputEnabled = TRUE;
   inp_bPollJoysticks = FALSE;
@@ -862,7 +864,7 @@ void CInput::DisableInput( void)
 {
   // skip if allready disabled
   if( !inp_bInputEnabled) return;
-  
+
   UnhookWindowsHookEx(_hGetMsgHook);
   UnhookWindowsHookEx(_hSendMsgHook);
 
@@ -933,7 +935,7 @@ void CInput::GetInput(BOOL bPreScan)
             inp_ubButtonsBuffer[iKID] = 0xFF;
           }
         }
-    
+
       // if snooping messages
       } else {
         // if snooped that key is pressed

@@ -1,16 +1,20 @@
 package com.github.aarcangeli.serioussamandroid;
 
+import android.content.pm.ApplicationInfo;
 import android.opengl.GLSurfaceView;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.WindowManager;
 
+import java.io.File;
+
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 public class MainActivity extends AppCompatActivity {
     public static final String TAG = "MainActivity";
+    private File homeDir;
 
     private GLSurfaceView glSurfaceView;
 
@@ -18,6 +22,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        homeDir = new File(getApplicationInfo().dataDir);
 
         glSurfaceView = new GLSurfaceView(this);
         glSurfaceView.setEGLContextClientVersion(2);

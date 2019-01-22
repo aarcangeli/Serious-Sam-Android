@@ -159,7 +159,7 @@ void PrepareScene(CAnyProjection3D &apr, CDrawPort *pdp, CTerrain *ptrTerrain)
   _vViewerObj = _vViewer * !pen->en_mRotation;
 
 
-  CPlacement3D &plTerrain = pen->GetLerpedPlacement();
+  const CPlacement3D &plTerrain = pen->GetLerpedPlacement();
 
   _mObjectToView  = mViewer * pen->en_mRotation;
   _vObjectToView  = (plTerrain.pl_PositionVector - _aprProjection->pr_vViewerPosition) * mViewer;

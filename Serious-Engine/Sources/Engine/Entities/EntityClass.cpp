@@ -228,42 +228,42 @@ HINSTANCE LoadDLL_t(const char *strFileName) // throw char *
 {
   HINSTANCE hiDLL = ::LoadLibraryA(strFileName);
 
-  // if the DLL can not be loaded
-  if (hiDLL==NULL) {
-    // get the error code
-    DWORD dwMessageId = GetLastError();
-    // format the windows error message
-    LPVOID lpMsgBuf;
-    DWORD dwSuccess = FormatMessage(
-        FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-        NULL,
-        dwMessageId,
-        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // default language
-        (LPTSTR) &lpMsgBuf,
-        0,
-        NULL
-    );
-    CTString strWinError;
-    // if formatting succeeds
-    if (dwSuccess!=0) {
-      // copy the result
-      strWinError = ((char *)lpMsgBuf);
-      // free the windows message buffer
-      LocalFree( lpMsgBuf );
-    } else {
-      // set our message about the failure
-      CTString strError;
-      strError.PrintF(
-        TRANS("Cannot format error message!\n"
-        "Original error code: %d,\n"
-        "Formatting error code: %d.\n"),
-        dwMessageId, GetLastError());
-      strWinError = strError;
-    }
-
-    // report error
-    ThrowF_t(TRANS("Cannot load DLL file '%s':\n%s"), strFileName, strWinError);
-  }
+//  // if the DLL can not be loaded
+//  if (hiDLL==NULL) {
+//    // get the error code
+//    DWORD dwMessageId = GetLastError();
+//    // format the windows error message
+//    LPVOID lpMsgBuf;
+//    DWORD dwSuccess = FormatMessage(
+//        FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+//        NULL,
+//        dwMessageId,
+//        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // default language
+//        (LPTSTR) &lpMsgBuf,
+//        0,
+//        NULL
+//    );
+//    CTString strWinError;
+//    // if formatting succeeds
+//    if (dwSuccess!=0) {
+//      // copy the result
+//      strWinError = ((char *)lpMsgBuf);
+//      // free the windows message buffer
+//      LocalFree( lpMsgBuf );
+//    } else {
+//      // set our message about the failure
+//      CTString strError;
+//      strError.PrintF(
+//        TRANS("Cannot format error message!\n"
+//        "Original error code: %d,\n"
+//        "Formatting error code: %d.\n"),
+//        dwMessageId, GetLastError());
+//      strWinError = strError;
+//    }
+//
+//    // report error
+//    ThrowF_t(TRANS("Cannot load DLL file '%s':\n%s"), strFileName, strWinError);
+//  }
   return hiDLL;
 }
 
@@ -302,7 +302,7 @@ void CEntityClass::Read_t( CTStream *istr) // throw char *
     ec_hiClassDLL = NULL;
     ec_fnmClassDLL.Clear();
     // report error
-    ThrowF_t(TRANS("Class '%s' not found in entity class package file '%s'"), strClassName, fnmDLL);
+    ThrowF_t(TRANS("Class '%s' not found in entity class package file '%s'"), strClassName.str_String, fnmDLL.str_String);
   }
 
   // obtain all components needed by the DLL

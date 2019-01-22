@@ -38,7 +38,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #define W  word ptr
 #define B  byte ptr
 
-#define ASMOPT 1
+#define ASMOPT 0
 
 #define MAXTEXUNITS   4
 #define SHADOWTEXTURE 3
@@ -438,14 +438,15 @@ static void RSBinToGroups( ScenePolygon *pspoFirst)
     }
   }
 
-  // determine maximum used groups
-  ASSERT( _ctGroupsCount);
-  __asm {
-    mov     eax,2
-    bsr     ecx,D [_ctGroupsCount]
-    shl     eax,cl
-    mov     D [_ctGroupsCount],eax
-  }
+    FatalError("ASM");
+//  // determine maximum used groups
+//  ASSERT( _ctGroupsCount);
+//  __asm {
+//    mov     eax,2
+//    bsr     ecx,D [_ctGroupsCount]
+//    shl     eax,cl
+//    mov     D [_ctGroupsCount],eax
+//  }
 
   // done with bining
   _pfGfxProfile.StopTimer( CGfxProfile::PTI_RS_BINTOGROUPS);
@@ -811,7 +812,6 @@ vtxLoop:
       jnz     vtxLoop
     }
 #else
-    const FLOAT3D &vO = pspo->spo_amvMapping[iLayer].mv_vO;
     const FLOAT3D &vU = pspo->spo_amvMapping[iLayer].mv_vU;
     const FLOAT3D &vV = pspo->spo_amvMapping[iLayer].mv_vV;
     for( INDEX i=0; i<pspo->spo_ctVtx; i++) {

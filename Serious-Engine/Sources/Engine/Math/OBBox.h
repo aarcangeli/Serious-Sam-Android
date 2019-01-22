@@ -75,7 +75,7 @@ inline void OBBox<Type>::SetToNormalizedEmpty(void) {
  * Constructor for empty bounding box.
  */
 template<class Type>
-inline OBBox<Type>::OBBox<Type>() {
+inline OBBox<Type>::OBBox() {
   SetToNormalizedEmpty();
 }
 

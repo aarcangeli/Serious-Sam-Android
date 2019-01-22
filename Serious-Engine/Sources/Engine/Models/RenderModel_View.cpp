@@ -40,7 +40,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #define W  word ptr
 #define B  byte ptr
 
-#define ASMOPT 1
+#define ASMOPT 0
 
 extern INDEX mdl_bRenderBump;
 
@@ -2556,24 +2556,25 @@ reflMipLoop:
       pop     ebx
     }
 #else
+      FatalError("TO REVAMP");
     // for each mip vertex
-    for( INDEX iMipVx=0; iMipVx<_ctAllMipVx; iMipVx++)
-    { // get normal in absolute space
-      const GFXNormal &nor = pnorMipBase[iMipVx];
-      const FLOAT fNx = nor.nx*m(1,1) + nor.ny*m(1,2) + nor.nz*m(1,3);
-      const FLOAT fNy = nor.nx*m(2,1) + nor.ny*m(2,2) + nor.nz*m(2,3);
-      const FLOAT fNz = nor.nx*m(3,1) + nor.ny*m(3,2) + nor.nz*m(3,3);
-      // reflect viewer around normal
-      const FLOAT fNV  = fNx*_vViewer(1) + fNy*_vViewer(2) + fNz*_vViewer(3);
-      const FLOAT fRVx = _vViewer(1) - 2*fNx*fNV;
-      const FLOAT fRVy = _vViewer(2) - 2*fNy*fNV;
-      const FLOAT fRVz = _vViewer(3) - 2*fNz*fNV;
-      // map reflected vector to texture 
-      // NOTE: using X and Z axes, so that singularity gets on -Y axis (where it will least probably be seen)
-      const FLOAT f1oFM = 0.5f / sqrt(2+2*fRVy);  
-      ptexMipBase[iMipVx].s = fRVx*f1oFM +0.5f;
-      ptexMipBase[iMipVx].t = fRVz*f1oFM +0.5f;
-    }
+//    for( INDEX iMipVx=0; iMipVx<_ctAllMipVx; iMipVx++)
+//    { // get normal in absolute space
+//      const GFXNormal &nor = pnorMipBase[iMipVx];
+//      const FLOAT fNx = nor.nx*m(1,1) + nor.ny*m(1,2) + nor.nz*m(1,3);
+//      const FLOAT fNy = nor.nx*m(2,1) + nor.ny*m(2,2) + nor.nz*m(2,3);
+//      const FLOAT fNz = nor.nx*m(3,1) + nor.ny*m(3,2) + nor.nz*m(3,3);
+//      // reflect viewer around normal
+//      const FLOAT fNV  = fNx*_vViewer(1) + fNy*_vViewer(2) + fNz*_vViewer(3);
+//      const FLOAT fRVx = _vViewer(1) - 2*fNx*fNV;
+//      const FLOAT fRVy = _vViewer(2) - 2*fNy*fNV;
+//      const FLOAT fRVz = _vViewer(3) - 2*fNz*fNV;
+//      // map reflected vector to texture
+//      // NOTE: using X and Z axes, so that singularity gets on -Y axis (where it will least probably be seen)
+//      const FLOAT f1oFM = 0.5f / sqrt(2+2*fRVy);
+//      ptexMipBase[iMipVx].s = fRVx*f1oFM +0.5f;
+//      ptexMipBase[iMipVx].t = fRVz*f1oFM +0.5f;
+//    }
 #endif
     _pfModelProfile.StopTimer( CModelProfile::PTI_VIEW_INIT_REFL_MIP);
 
@@ -2757,22 +2758,23 @@ specMipLoop:
     }
 #else
     // for each mip vertex
-    for( INDEX iMipVx=0; iMipVx<_ctAllMipVx; iMipVx++)
-    { // reflect light vector around vertex normal in object space
-      GFXNormal &nor = pnorMipBase[iMipVx];
-      const FLOAT fNL = nor.nx*_vLightObj(1) + nor.ny*_vLightObj(2) +	nor.nz*_vLightObj(3);
-      const FLOAT fRx = _vLightObj(1) - 2*nor.nx*fNL;
-      const FLOAT fRy = _vLightObj(2) - 2*nor.ny*fNL;
-      const FLOAT fRz = _vLightObj(3) - 2*nor.nz*fNL;
-      // transform the reflected vector to viewer space
-      const FLOAT fRVx = fRx*m(1,1) + fRy*m(1,2) + fRz*m(1,3);
-      const FLOAT fRVy = fRx*m(2,1) + fRy*m(2,2) + fRz*m(2,3);
-      const FLOAT fRVz = fRx*m(3,1) + fRy*m(3,2) + fRz*m(3,3);
-      // map reflected vector to texture
-      const FLOAT f1oFM = 0.5f / sqrt(2+2*fRVz);  // was 2*sqrt(2+2*fRVz)
-      ptexMipBase[iMipVx].s = fRVx*f1oFM +0.5f;
-      ptexMipBase[iMipVx].t = fRVy*f1oFM +0.5f;
-    }
+      FatalError("TO REVAMP");
+//    for( INDEX iMipVx=0; iMipVx<_ctAllMipVx; iMipVx++)
+//    { // reflect light vector around vertex normal in object space
+//      const GFXNormal &nor = pnorMipBase[iMipVx];
+//      const FLOAT fNL = nor.nx*_vLightObj(1) + nor.ny*_vLightObj(2) +	nor.nz*_vLightObj(3);
+//      const FLOAT fRx = _vLightObj(1) - 2*nor.nx*fNL;
+//      const FLOAT fRy = _vLightObj(2) - 2*nor.ny*fNL;
+//      const FLOAT fRz = _vLightObj(3) - 2*nor.nz*fNL;
+//      // transform the reflected vector to viewer space
+//      const FLOAT fRVx = fRx*m(1,1) + fRy*m(1,2) + fRz*m(1,3);
+//      const FLOAT fRVy = fRx*m(2,1) + fRy*m(2,2) + fRz*m(2,3);
+//      const FLOAT fRVz = fRx*m(3,1) + fRy*m(3,2) + fRz*m(3,3);
+//      // map reflected vector to texture
+//      const FLOAT f1oFM = 0.5f / sqrt(2+2*fRVz);  // was 2*sqrt(2+2*fRVz)
+//      ptexMipBase[iMipVx].s = fRVx*f1oFM +0.5f;
+//      ptexMipBase[iMipVx].t = fRVy*f1oFM +0.5f;
+//    }
 #endif
     _pfModelProfile.StopTimer( CModelProfile::PTI_VIEW_INIT_SPEC_MIP);
 

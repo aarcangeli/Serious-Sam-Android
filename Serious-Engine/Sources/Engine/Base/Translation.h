@@ -37,7 +37,8 @@ ENGINE_API char * Translate(char *str, INDEX iOffset=0);
 ENGINE_API const char * TranslateConst(const char *str, INDEX iOffset=0);
 
 // macro for inserting a string for translation into executables
-#define TRANS(str) Translate("ETRS" str, 4)
+//#define TRANS(str) Translate("ETRS" str, 4)
+#define TRANS(str) str
 // macro for translating a variable string (usually can be CTString)
 #define TRANSV(str) TranslateConst(str, 0)
 

@@ -26,6 +26,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/Timer.inl>
 
 #include <Engine/Templates/StaticArray.h>
+#include <Engine/Templates/StaticArray.cpp>
 
 /*
  * Profiling counter.

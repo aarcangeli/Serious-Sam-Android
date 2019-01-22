@@ -111,7 +111,7 @@ static void OV_SetFunctionPointers_t(void) {
   // get vo function pointers
   #define DLLFUNCTION(dll, output, name, inputs, params, required) \
     strName = #name ;  \
-    p##name = (output (__cdecl *) inputs) GetProcAddress( _hOV, strName); \
+    p##name = (output (__cdecl *) inputs) &name; \
     if(p##name == NULL) FailFunction_t(strName);
   #include "ov_functions.h"
   #undef DLLFUNCTION

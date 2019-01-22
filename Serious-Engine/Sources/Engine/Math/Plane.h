@@ -26,6 +26,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
  */
 template<class Type, int iDimensions>
 class Plane : public Vector<Type, iDimensions> { // normal vector
+  using Super = Vector<Type, iDimensions>;
 public:
   Type pl_distance;      // distance from point 0 along the normal vector
 public:
@@ -106,7 +107,7 @@ inline Plane<Type, iDimensions>::Plane(const Vector<Type, iDimensions> &normal, 
   : Vector<Type, iDimensions>(normal)
 {
   // normalize normal vector
-  Normalize();
+  Super::Normalize();
   pl_distance = (*this)%point;   // distance = normalized_normal * point (dot product)
 }
 

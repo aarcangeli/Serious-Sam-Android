@@ -18,7 +18,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/FileName.h>
 #include <Engine/Base/Unzip.h>
 #include <Engine/Templates/DynamicStackArray.cpp>
-#include <io.h>
+//#include <io.h>
+#include <dirent.h>
 
 extern CDynamicStackArray<CTFileName> _afnmBaseBrowseInc;
 extern CDynamicStackArray<CTFileName> _afnmBaseBrowseExc;
@@ -63,38 +64,38 @@ void FillDirList_internal(const CTFileName &fnmBasePath,
     }
     
     // start listing the directory
-    struct _finddata_t c_file; long hFile;
-    hFile = _findfirst( (const char *)(fnmBasePath+fnmDir+"*"), &c_file );
+    struct dirent *ent;
+    DIR *dir = opendir((fnmBasePath + fnmDir + "*").str_String);
     
     // for each file in the directory
-    for (
-      BOOL bFileExists = hFile!=-1; 
-      bFileExists; 
-      bFileExists = _findnext( hFile, &c_file )==0) {
+    if (dir) {
+      while ((ent = readdir(dir)) != NULL) {
 
-      // if dummy dir (this dir, parent dir, or any dir starting with '.')
-      if (c_file.name[0]=='.') {
-        // skip it
-        continue;
-      }
-
-      // get the file's filepath
-      CTFileName fnm = fnmDir+c_file.name;
-
-      // if it is a directory
-      if (c_file.attrib&_A_SUBDIR) {
-        // if recursive reading
-        if (bRecursive) {
-          // add it to the list of directories to search
-          CDirToRead *pdrNew = new CDirToRead;
-          pdrNew->dr_strDir = fnm+"\\";
-          lhDirs.AddTail(pdrNew->dr_lnNode);
+        // if dummy dir (this dir, parent dir, or any dir starting with '.')
+        if (ent->d_name[0]=='.') {
+          // skip it
+          continue;
         }
-      // if it matches the pattern
-      } else if (strPattern=="" || fnm.Matches(strPattern)) {
-        // add that file
-        afnm.Push() = fnm;
+
+        // get the file's filepath
+        CTFileName fnm = fnmDir+ent->d_name;
+
+        // if it is a directory
+        if (ent->d_type == DT_DIR) {
+          // if recursive reading
+          if (bRecursive) {
+            // add it to the list of directories to search
+            CDirToRead *pdrNew = new CDirToRead;
+            pdrNew->dr_strDir = fnm+"\\";
+            lhDirs.AddTail(pdrNew->dr_lnNode);
+          }
+        // if it matches the pattern
+        } else if (strPattern=="" || fnm.Matches(strPattern)) {
+          // add that file
+          afnm.Push() = fnm;
+        }
       }
+      closedir(dir);
     }
   }
 }

@@ -478,7 +478,7 @@ FLOAT BSPNode<Type, iDimensions>::TestSphere(const Vector<Type, iDimensions> &vS
   } else {
     ASSERT(bn_bnlLocation == BNL_BRANCH);
     // test the sphere against the split plane
-    Type tCenterDistance = PointDistance(vSphereCenter);
+    Type tCenterDistance = Super::PointDistance(vSphereCenter);
     // if the sphere is in front of the plane
     if (tCenterDistance > +tSphereRadius) {
       // recurse down the front node
@@ -587,8 +587,8 @@ void BSPNode<Type, iDimensions>::FindLineMinMax(
   } else {
     ASSERT(bn_bnlLocation == BNL_BRANCH);
     // test the points against the split plane
-    Type tD0 = PointDistance(v0);
-    Type tD1 = PointDistance(v1);
+    Type tD0 = Super::PointDistance(v0);
+    Type tD1 = Super::PointDistance(v1);
     // if both are front
     if (tD0>=0 && tD1>=0) {
       // recurse down the front node

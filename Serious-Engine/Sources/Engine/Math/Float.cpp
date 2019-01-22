@@ -14,53 +14,55 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
 #include "stdh.h"
+#include <cmath>
 
 #include <Engine/Math/Float.h>
 
 /* Get current precision setting of FPU. */
 enum FPUPrecisionType GetFPUPrecision(void)
 {
-  // get control flags from FPU
-  ULONG fpcw = _control87( 0, 0);
-
-  // extract the precision from the flags
-  switch(fpcw&_MCW_PC) {
-  case _PC_24:
-    return FPT_24BIT;
-    break;
-  case _PC_53:
-    return FPT_53BIT;
-    break;
-  case _PC_64:
     return FPT_64BIT;
-    break;
-  default:
-    ASSERT(FALSE);
-    return FPT_24BIT;
-  };
+  // get control flags from FPU
+//  ULONG fpcw = _control87( 0, 0);
+//
+//  // extract the precision from the flags
+//  switch(fpcw&_MCW_PC) {
+//  case _PC_24:
+//    return FPT_24BIT;
+//    break;
+//  case _PC_53:
+//    return FPT_53BIT;
+//    break;
+//  case _PC_64:
+//    return FPT_64BIT;
+//    break;
+//  default:
+//    ASSERT(FALSE);
+//    return FPT_24BIT;
+//  };
 }
 
 /* Set current precision setting of FPU. */
 void SetFPUPrecision(enum FPUPrecisionType fptNew)
 {
-  ULONG fpcw;
-  // create FPU flags from the precision
-  switch(fptNew) {
-  case FPT_24BIT:
-    fpcw=_PC_24;
-    break;
-  case FPT_53BIT:
-    fpcw=_PC_53;
-    break;
-  case FPT_64BIT:
-    fpcw=_PC_64;
-    break;
-  default:
-    ASSERT(FALSE);
-    fpcw=_PC_24;
-  };
-  // set the FPU precission
-  _control87( fpcw, MCW_PC);
+//  ULONG fpcw;
+//  // create FPU flags from the precision
+//  switch(fptNew) {
+//  case FPT_24BIT:
+//    fpcw=_PC_24;
+//    break;
+//  case FPT_53BIT:
+//    fpcw=_PC_53;
+//    break;
+//  case FPT_64BIT:
+//    fpcw=_PC_64;
+//    break;
+//  default:
+//    ASSERT(FALSE);
+//    fpcw=_PC_24;
+//  };
+//  // set the FPU precission
+//  _control87( fpcw, MCW_PC);
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -94,7 +96,7 @@ CSetFPUPrecision::~CSetFPUPrecision(void)
 
 BOOL IsValidFloat(float f)
 {
-  return _finite(f) && (*(ULONG*)&f)!=0xcdcdcdcdUL;
+  return std::isfinite(f) && (*(ULONG*)&f)!=(ULONG)0xcdcdcdcd;
 /*  int iClass = _fpclass(f);
   return
     iClass==_FPCLASS_NN ||
@@ -108,7 +110,8 @@ BOOL IsValidFloat(float f)
 
 BOOL IsValidDouble(double f)
 {
-  return _finite(f) && (*(unsigned __int64*)&f)!=0xcdcdcdcdcdcdcdcdI64;
+  return std::isfinite(f);
+//  return _finite(f) && (*(unsigned __int64*)&f)!=0xcdcdcdcdcdcdcdcdI64;
 /*  int iClass = _fpclass(f);
   return
     iClass==_FPCLASS_NN ||
