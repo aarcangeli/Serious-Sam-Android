@@ -38,7 +38,7 @@ ENGINE_API extern ULONG _ulMaxLengthOfSavingFile;
 //  }; CTStream::DisableStreamHandling();
 
 #define CTSTREAM_BEGIN CTStream::EnableStreamHandling();
-#define CTSTREAM_END
+#define CTSTREAM_END CTStream::DisableStreamHandling();
 
 /*
  * Chunk ID class

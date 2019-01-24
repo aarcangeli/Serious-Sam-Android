@@ -1044,11 +1044,10 @@ void CGfxLibrary::Init(void)
 {
   ASSERT( this!=NULL);
 
+#if PLATFORM_WIN32
   // report desktop settings
   CPrintF(TRANS("Desktop settings...\n"));
-
-#if PLATFORM_WIN32
-  HDC hdc = GetDC(NULL); 
+  HDC hdc = GetDC(NULL);
   SLONG slBPP = GetDeviceCaps(hdc, PLANES) * GetDeviceCaps(hdc, BITSPIXEL); 
   ReleaseDC(NULL, hdc);  
 

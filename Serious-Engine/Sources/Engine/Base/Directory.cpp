@@ -65,7 +65,9 @@ void FillDirList_internal(const CTFileName &fnmBasePath,
     
     // start listing the directory
     struct dirent *ent;
-    DIR *dir = opendir((fnmBasePath + fnmDir + "*").str_String);
+    CTFileName currentPath = fnmBasePath + fnmDir;
+
+    DIR *dir = opendir(currentPath);
     
     // for each file in the directory
     if (dir) {

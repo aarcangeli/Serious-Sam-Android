@@ -26,6 +26,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/Lists.h>
 #include <Engine/Base/Synchronization.h>
 
+int64_t getTimeNsec();
 /*
  * Class that holds and manipulates with high-precision timer values.
  */

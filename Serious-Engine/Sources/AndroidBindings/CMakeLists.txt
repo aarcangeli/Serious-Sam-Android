@@ -1,4 +1,4 @@
-add_library(SeriousSamNatives SHARED bindings.cpp)
+add_library(SeriousSamNatives SHARED bindings.cpp glmocks.cpp)
 target_link_libraries(SeriousSamNatives GLESv2 log)
 
 # attach serious engine

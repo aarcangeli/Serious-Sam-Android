@@ -37,7 +37,7 @@ CTFileName CTFileName::FileDir() const
   // make a temporary copy of string
   CTFileName strPath(*this);
   // find last backlash in it
-  char *pPathBackSlash = strrchr( strPath.str_String, '\\');
+  char *pPathBackSlash = strrchr( strPath.str_String, '/');
   // if there is no backslash
   if( pPathBackSlash == NULL) {
     // return emptystring as directory
@@ -73,7 +73,7 @@ CTFileName CTFileName::FileName() const
   }
 
   // find last backlash in what's left
-  char *pBackSlash = strrchr( strPath.str_String, '\\');
+  char *pBackSlash = strrchr( strPath.str_String, '/');
   // if there is no backslash
   if( pBackSlash == NULL) {
     // return it all as filename
@@ -265,4 +265,12 @@ void CTFileName::ReadFromText_t(CTStream &strmStream,
 
   // copy it here
   (*this) = CTString( (const char *)str);
+}
+
+void CTFileName::convertSlashes() {
+  for (char *pszString = str_String; *pszString; ++pszString) {
+    if (*pszString == '\\') {
+      *pszString = '/';
+    }
+  }
 }

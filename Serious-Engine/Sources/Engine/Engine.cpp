@@ -43,6 +43,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Templates/Stock_CShader.h>
 #include <Engine/Templates/StaticArray.cpp>
 #include <Engine/Base/IFeel.h>
+#include <sys/system_properties.h>
+#include <sys/sysinfo.h>
 
 // this version string can be referenced from outside the engine
 ENGINE_API CTString _strEngineBuild  = "";
@@ -72,24 +74,24 @@ static INDEX sys_iOSBuild = 0;
 static CTString sys_strOSMisc = "";
 
 // CPU info
-static CTString sys_strCPUVendor = "";
-static INDEX sys_iCPUType = 0;
-static INDEX sys_iCPUFamily = 0;
-static INDEX sys_iCPUModel = 0;
-static INDEX sys_iCPUStepping = 0;
-static BOOL  sys_bCPUHasMMX = 0;
-static BOOL  sys_bCPUHasCMOV = 0;
-static INDEX sys_iCPUMHz = 0;
-       INDEX sys_iCPUMisc = 0;
+//static CTString sys_strCPUVendor = "";
+//static INDEX sys_iCPUType = 0;
+//static INDEX sys_iCPUFamily = 0;
+//static INDEX sys_iCPUModel = 0;
+//static INDEX sys_iCPUStepping = 0;
+//static BOOL  sys_bCPUHasMMX = 0;
+//static BOOL  sys_bCPUHasCMOV = 0;
+//static INDEX sys_iCPUMHz = 0;
+//       INDEX sys_iCPUMisc = 0;
 
 // RAM info
 static INDEX sys_iRAMPhys = 0;
 static INDEX sys_iRAMSwap = 0;
 
 // HDD info
-static INDEX sys_iHDDSize = 0;
-static INDEX sys_iHDDFree = 0;
-static INDEX sys_iHDDMisc = 0;
+//static INDEX sys_iHDDSize = 0;
+//static INDEX sys_iHDDFree = 0;
+//static INDEX sys_iHDDMisc = 0;
 
 // MOD info
 static CTString sys_strModName = "";
@@ -114,14 +116,14 @@ BOOL APIENTRY DllMain( HANDLE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
   return TRUE;
 }
 
-static void DetectCPU(void)
-{
-  char strVendor[12+1] = {};
-  strVendor[12] = 0;
-  ULONG ulTFMS = 0;
-  ULONG ulFeatures = 0;
-
-  // test MMX presence and update flag
+//static void DetectCPU(void)
+//{
+//  char strVendor[12+1];
+//  strVendor[12] = 0;
+//  ULONG ulTFMS;
+//  ULONG ulFeatures;
+//
+//  // test MMX presence and update flag
 //  __asm {
 //    mov     eax,0           ;// request for basic id
 //    cpuid
@@ -133,47 +135,47 @@ static void DetectCPU(void)
 //    mov     dword ptr [ulTFMS], eax ;// remember type, family, model and stepping
 //    mov     dword ptr [ulFeatures], edx
 //  }
+//
+//  INDEX iType     = (ulTFMS>>12)&0x3;
+//  INDEX iFamily   = (ulTFMS>> 8)&0xF;
+//  INDEX iModel    = (ulTFMS>> 4)&0xF;
+//  INDEX iStepping = (ulTFMS>> 0)&0xF;
+//
+//
+//  CPrintF(TRANS("  Vendor: %s\n"), strVendor);
+//  CPrintF(TRANS("  Type: %d, Family: %d, Model: %d, Stepping: %d\n"),
+//    iType, iFamily, iModel, iStepping);
+//
+//  BOOL bMMX  = ulFeatures & (1<<23);
+//  BOOL bCMOV = ulFeatures & (1<<15);
+//
+//  CTString strYes = TRANS("Yes");
+//  CTString strNo = TRANS("No");
+//
+//  CPrintF(TRANS("  MMX : %s\n"), bMMX ?strYes:strNo);
+//  CPrintF(TRANS("  CMOV: %s\n"), bCMOV?strYes:strNo);
+//  CPrintF(TRANS("  Clock: %.0fMHz\n"), _pTimer->tm_llCPUSpeedHZ/1E6);
+//
+//  sys_strCPUVendor = strVendor;
+//  sys_iCPUType = iType;
+//  sys_iCPUFamily =  iFamily;
+//  sys_iCPUModel = iModel;
+//  sys_iCPUStepping = iStepping;
+//  sys_bCPUHasMMX = bMMX!=0;
+//  sys_bCPUHasCMOV = bCMOV!=0;
+//  sys_iCPUMHz = INDEX(_pTimer->tm_llCPUSpeedHZ/1E6);
+//
+//  if( !bMMX) FatalError( TRANS("MMX support required but not present!"));
+//}
 
-  INDEX iType     = (ulTFMS>>12)&0x3;
-  INDEX iFamily   = (ulTFMS>> 8)&0xF;
-  INDEX iModel    = (ulTFMS>> 4)&0xF;
-  INDEX iStepping = (ulTFMS>> 0)&0xF;
-
-
-  CPrintF(TRANS("  Vendor: %s\n"), strVendor);
-  CPrintF(TRANS("  Type: %d, Family: %d, Model: %d, Stepping: %d\n"),
-    iType, iFamily, iModel, iStepping);
-
-  BOOL bMMX  = ulFeatures & (1<<23);
-  BOOL bCMOV = ulFeatures & (1<<15);
-
-  CTString strYes = TRANS("Yes");
-  CTString strNo = TRANS("No");
-
-  CPrintF(TRANS("  MMX : %s\n"), bMMX ?strYes.str_String:strNo.str_String);
-  CPrintF(TRANS("  CMOV: %s\n"), bCMOV?strYes.str_String:strNo.str_String);
-  CPrintF(TRANS("  Clock: %.0fMHz\n"), _pTimer->tm_llCPUSpeedHZ/1E6);
-
-  sys_strCPUVendor = strVendor;
-  sys_iCPUType = iType;
-  sys_iCPUFamily =  iFamily;
-  sys_iCPUModel = iModel;
-  sys_iCPUStepping = iStepping;
-  sys_bCPUHasMMX = bMMX!=0;
-  sys_bCPUHasCMOV = bCMOV!=0;
-  sys_iCPUMHz = INDEX(_pTimer->tm_llCPUSpeedHZ/1E6);
-
-  if( !bMMX) FatalError( TRANS("MMX support required but not present!"));
-}
-
-static void DetectCPUWrapper(void)
-{
+//static void DetectCPUWrapper(void)
+//{
 //  __try {
-    DetectCPU();
+//    DetectCPU();
 //  } __except(EXCEPTION_EXECUTE_HANDLER) {
 //    CPrintF( TRANS("Cannot detect CPU: exception raised.\n"));
 //  }
-}
+//}
 
 // reverses string
 void StrRev( char *str) {
@@ -189,12 +191,12 @@ void StrRev( char *str) {
   }
 }
 
-static char strExePath[MAX_PATH] = "";
-static char strDirPath[MAX_PATH] = "";
+//static char strExePath[MAX_PATH] = "";
+//static char strDirPath[MAX_PATH] = "";
 
 static void AnalyzeApplicationPath(void)
 {
-  FatalError("TODO");
+  FatalError("unused");
 //  strcpy(strDirPath, "D:\\");
 //  strcpy(strExePath, "D:\\TestExe.xbe");
 //  char strTmpPath[MAX_PATH] = "";
@@ -235,19 +237,21 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
     _bWorldEditorApp = TRUE;
   }
 
-  AnalyzeApplicationPath();
-  _fnmApplicationPath = CTString(strDirPath);
-  _fnmApplicationExe = CTString(strExePath);
-  try {
-    _fnmApplicationExe.RemoveApplicationPath_t();
-  } catch (char *strError) {
-    (void) strError;
-    ASSERT(FALSE);
-  }
+  // setted by bindings.cpp
+//  AnalyzeApplicationPath();
+//  _fnmApplicationPath = CTString(strDirPath);
+//  _fnmApplicationExe = CTString(strExePath);
+//  try {
+//    _fnmApplicationExe.RemoveApplicationPath_t();
+//  } catch (char *strError) {
+//    (void) strError;
+//    ASSERT(FALSE);
+//  }
 
   _pConsole = new CConsole;
   if (_strLogFile=="") {
-    _strLogFile = CTFileName(CTString(strExePath)).FileName();
+//    _strLogFile = CTFileName(CTString(strExePath)).FileName();
+    _strLogFile = CTFileName(_fnmApplicationExe).FileName();
   }
   _pConsole->Initialize(_fnmApplicationPath+_strLogFile+".log", 90, 512);
 
@@ -276,7 +280,7 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
   CPrintF("  %s\n\n", _strEngineBuild.str_String);
 
   // print info on the started application
-  CPrintF(TRANS("Executable: %s\n"), strExePath);
+  CPrintF(TRANS("Executable: %s\n"), _fnmApplicationExe.str_String);
   CPrintF(TRANS("Assumed engine directory: %s\n"), _fnmApplicationPath.str_String);
 
   CPrintF("\n");
@@ -286,7 +290,6 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
 //  OSVERSIONINFOA osv;
 //  memset(&osv, 0, sizeof(osv));
 //  osv.dwOSVersionInfoSize = sizeof(osv);
-  if (false) {
 //  if (GetVersionExA(&osv)) {
 //    switch (osv.dwPlatformId) {
 //    case VER_PLATFORM_WIN32s:         sys_strOS = "Win32s";  break;
@@ -304,9 +307,25 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
 //    CPrintF(TRANS("  Version: %d.%d, build %d\n"),
 //      osv.dwMajorVersion, osv.dwMinorVersion, osv.dwBuildNumber & 0xFFFF);
 //    CPrintF(TRANS("  Misc: %s\n"), osv.szCSDVersion);
+//  } else {
+//    CPrintF(TRANS("Error getting OS info: %s\n"), GetWindowsError(GetLastError()).str_String );
+//  }
+  char buffer[PROP_VALUE_MAX+1];
+  if (__system_property_get("ro.product.model", buffer)) {
+    CPrintF("  Running on Android [%s]\n", buffer);
   } else {
-    CPrintF(TRANS("Error getting OS info: %s\n"), GetWindowsError(GetLastError()).str_String );
+    CPrintF("  Running on Android\n");
   }
+  if (__system_property_get("ro.build.version.sdk", buffer)) {
+    CPrintF("  API level %s\n", buffer);
+  }
+  if (__system_property_get("ro.product.cpu.abi", buffer)) {
+    CPrintF("  Abi: %s", buffer);
+  }
+  if (__system_property_get("ro.product.cpu.abilist", buffer)) {
+    CPrintF(" [avaiable: %s]", buffer);
+  }
+  CPrintF("\n");
   CPrintF("\n");
 
   // init main shell
@@ -314,9 +333,9 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
   _pShell->Initialize();
 
   // report CPU
-  CPrintF(TRANS("Detecting CPU...\n"));
-  DetectCPUWrapper();
-  CPrintF("\n");
+//  CPrintF(TRANS("Detecting CPU...\n"));
+//  DetectCPUWrapper();
+//  CPrintF("\n");
 
   // report memory info
   extern void ReportGlobalMemoryStatus(void);
@@ -328,19 +347,21 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
   #define MB (1024*1024)
 //  sys_iRAMPhys = ms.dwTotalPhys    /MB;
 //  sys_iRAMSwap = ms.dwTotalPageFile/MB;
-  sys_iRAMPhys = 1000000;
-  sys_iRAMSwap = 1000000;
+  struct sysinfo info;
+  sysinfo(&info);
+  sys_iRAMPhys = info.totalram;
+  sys_iRAMSwap = info.totalswap;
 
   // initialize zip semaphore
   zip_csLock.cs_iIndex = -1;  // not checked for locking order
 
 
   // get info on the first disk in system
-  DWORD dwSerial;
-  DWORD dwFreeClusters;
-  DWORD dwClusters;
-  DWORD dwSectors;
-  DWORD dwBytes;
+//  DWORD dwSerial;
+//  DWORD dwFreeClusters;
+//  DWORD dwClusters;
+//  DWORD dwSectors;
+//  DWORD dwBytes;
 
 //  char strDrive[] = "C:\\";
 //  strDrive[0] = strExePath[0];
@@ -350,9 +371,6 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
 //  sys_iHDDSize = __int64(dwSectors)*dwBytes*dwClusters/MB;
 //  sys_iHDDFree = __int64(dwSectors)*dwBytes*dwFreeClusters/MB;
 //  sys_iHDDMisc = dwSerial;
-  sys_iHDDSize = 10000;
-  sys_iHDDFree = 10000;
-  sys_iHDDMisc = 0;
 
   // add console variables
   extern INDEX con_bNoWarnings;
@@ -370,21 +388,21 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
   _pShell->DeclareSymbol("user const INDEX sys_iOSBuild    ;", &sys_iOSBuild);
   _pShell->DeclareSymbol("user const CTString sys_strOSMisc;", &sys_strOSMisc);
   // CPU info
-  _pShell->DeclareSymbol("user const CTString sys_strCPUVendor;", &sys_strCPUVendor);
-  _pShell->DeclareSymbol("user const INDEX sys_iCPUType       ;", &sys_iCPUType    );
-  _pShell->DeclareSymbol("user const INDEX sys_iCPUFamily     ;", &sys_iCPUFamily  );
-  _pShell->DeclareSymbol("user const INDEX sys_iCPUModel      ;", &sys_iCPUModel   );
-  _pShell->DeclareSymbol("user const INDEX sys_iCPUStepping   ;", &sys_iCPUStepping);
-  _pShell->DeclareSymbol("user const INDEX sys_bCPUHasMMX     ;", &sys_bCPUHasMMX  );
-  _pShell->DeclareSymbol("user const INDEX sys_bCPUHasCMOV    ;", &sys_bCPUHasCMOV );
-  _pShell->DeclareSymbol("user const INDEX sys_iCPUMHz        ;", &sys_iCPUMHz     );
-  _pShell->DeclareSymbol("     const INDEX sys_iCPUMisc       ;", &sys_iCPUMisc    );
+//  _pShell->DeclareSymbol("user const CTString sys_strCPUVendor;", &sys_strCPUVendor);
+//  _pShell->DeclareSymbol("user const INDEX sys_iCPUType       ;", &sys_iCPUType    );
+//  _pShell->DeclareSymbol("user const INDEX sys_iCPUFamily     ;", &sys_iCPUFamily  );
+//  _pShell->DeclareSymbol("user const INDEX sys_iCPUModel      ;", &sys_iCPUModel   );
+//  _pShell->DeclareSymbol("user const INDEX sys_iCPUStepping   ;", &sys_iCPUStepping);
+//  _pShell->DeclareSymbol("user const INDEX sys_bCPUHasMMX     ;", &sys_bCPUHasMMX  );
+//  _pShell->DeclareSymbol("user const INDEX sys_bCPUHasCMOV    ;", &sys_bCPUHasCMOV );
+//  _pShell->DeclareSymbol("user const INDEX sys_iCPUMHz        ;", &sys_iCPUMHz     );
+//  _pShell->DeclareSymbol("     const INDEX sys_iCPUMisc       ;", &sys_iCPUMisc    );
   // RAM info
   _pShell->DeclareSymbol("user const INDEX sys_iRAMPhys;", &sys_iRAMPhys);
   _pShell->DeclareSymbol("user const INDEX sys_iRAMSwap;", &sys_iRAMSwap);
-  _pShell->DeclareSymbol("user const INDEX sys_iHDDSize;", &sys_iHDDSize);
-  _pShell->DeclareSymbol("user const INDEX sys_iHDDFree;", &sys_iHDDFree);
-  _pShell->DeclareSymbol("     const INDEX sys_iHDDMisc;", &sys_iHDDMisc);
+//  _pShell->DeclareSymbol("user const INDEX sys_iHDDSize;", &sys_iHDDSize);
+//  _pShell->DeclareSymbol("user const INDEX sys_iHDDFree;", &sys_iHDDFree);
+//  _pShell->DeclareSymbol("     const INDEX sys_iHDDMisc;", &sys_iHDDMisc);
   // MOD info
   _pShell->DeclareSymbol("user const CTString sys_strModName;", &sys_strModName);
   _pShell->DeclareSymbol("user const CTString sys_strModExt;",  &sys_strModExt);

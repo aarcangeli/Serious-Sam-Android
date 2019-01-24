@@ -209,8 +209,8 @@ void MakeFatalError(void* pArgs)
 
 extern void ReportGlobalMemoryStatus(void)
 {
-   CPrintF(TRANS("Global memory status...\n"));
-
+//   CPrintF(TRANS("Global memory status...\n"));
+//
 //   MEMORYSTATUS ms;
 //   GlobalMemoryStatus(&ms);
 //

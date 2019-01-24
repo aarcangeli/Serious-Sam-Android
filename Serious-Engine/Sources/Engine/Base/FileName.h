@@ -29,14 +29,14 @@ public:
   class CSerial *fnm_pserPreloaded;     // pointer to already loaded object if available
 private:
   /* Constructor from character string. */
-  inline CTFileName(const char *pString) : CTString(pString), fnm_pserPreloaded(NULL) {};
+  inline CTFileName(const char *pString) : CTString(pString), fnm_pserPreloaded(NULL) {convertSlashes();};
 public:
   /* Default constructor. */
-  inline CTFileName(void) : fnm_pserPreloaded(NULL) {};
+  inline CTFileName(void) : fnm_pserPreloaded(NULL) {convertSlashes();};
   /* Copy constructor. */
-  inline CTFileName(const CTString &strOriginal) : CTString(strOriginal), fnm_pserPreloaded(NULL) {};
+  inline CTFileName(const CTString &strOriginal) : CTString(strOriginal), fnm_pserPreloaded(NULL) {convertSlashes();};
   /* Constructor from character string for insertion in exe-file. */
-  inline CTFileName(const char *pString, int i) : CTString(pString+i), fnm_pserPreloaded(NULL) {};
+  inline CTFileName(const char *pString, int i) : CTString(pString+i), fnm_pserPreloaded(NULL) {convertSlashes();};
 
   /* Assignment. */
   CTFileName &operator=(const char *strCharString);
@@ -67,6 +67,9 @@ public:
   ENGINE_API friend CTStream &operator>>(CTStream &strmStream, CTFileName &fnmFileName);
   /* Write to stream. */
   ENGINE_API friend CTStream &operator<<(CTStream &strmStream, const CTFileName &fnmFileName);
+
+  // convert '\' in '/'
+  void convertSlashes();
 };
 
 // macro for defining a literal filename in code (EFNM = exe-filename)

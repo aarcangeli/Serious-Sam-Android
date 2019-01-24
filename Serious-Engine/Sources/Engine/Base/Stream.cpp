@@ -38,9 +38,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <Engine/Templates/Stock_CTextureData.h>
 #include <Engine/Templates/Stock_CModelData.h>
+#include <dirent.h>
 
 // default size of page used for stream IO operations (4Kb)
-ULONG _ulPageSize = 0;
+//ULONG _ulPageSize = 0;
 // maximum lenght of file that can be saved (default: 128Mb)
 ULONG _ulMaxLenghtOfSavingFile = (1UL<<20)*128;
 extern INDEX fil_bPreferZips = FALSE;
@@ -114,6 +115,22 @@ extern BOOL FileMatchesList(CDynamicStackArray<CTFileName> &afnm, const CTFileNa
 
 static CTFileName _fnmApp;
 
+void findGroInsideDirectory(CTFileName filename) {
+    // for each group file in base directory
+    DIR *dir = opendir(filename);
+    if (dir) {
+        struct dirent *ent;
+        while ((ent = readdir(dir)) != NULL) {
+            if (CTString(ent->d_name).Matches("*.gro")) {
+                UNZIPAddArchive(filename + ent->d_name);
+            }
+        }
+        closedir(dir);
+    } else {
+        WarningMessage("Cannot open %s: %s", filename.str_String, strerror(errno));
+    }
+}
+
 void InitStreams(void)
 {
   // obtain information about system
@@ -121,7 +138,7 @@ void InitStreams(void)
 //  GetSystemInfo( &siSystemInfo);
 //  // and remember page size
 //  _ulPageSize = siSystemInfo.dwPageSize*16;   // cca. 64kB on WinNT/Win95
-  _ulPageSize = 4000 * 16;   // cca. 64kB on WinNT/Win95
+//  _ulPageSize = 4000 * 16;   // cca. 64kB on WinNT/Win95
 
   // keep a copy of path for setting purposes
   _fnmApp = _fnmApplicationPath;
@@ -163,25 +180,15 @@ void InitStreams(void)
 
   CPrintF(TRANS("Loading group files...\n"));
 
+  struct dirent *ent;
+  DIR *dir;
+
   // for each group file in base directory
-  FatalError("TODO");
-//  struct _finddata_t c_file;
-//  long hFile;
-//  hFile = _findfirst(_fnmApplicationPath+"*.gro", &c_file);
-//  BOOL bOK = (hFile!=-1);
-//  while(bOK) {
-//    if (CTString(c_file.name).Matches("*.gro")) {
-//      // add it to active set
-//      UNZIPAddArchive(_fnmApplicationPath+c_file.name);
-//    }
-//    bOK = _findnext(hFile, &c_file)==0;
-//  }
-//  _findclose( hFile );
+  findGroInsideDirectory(_fnmApplicationPath);
 
   // if there is a mod active
   if (_fnmMod!="") {
-    // for each group file in mod directory
-    FatalError("TODO");
+//    // for each group file in mod directory
 //    struct _finddata_t c_file;
 //    long hFile;
 //    hFile = _findfirst(_fnmApplicationPath+_fnmMod+"*.gro", &c_file);
@@ -199,7 +206,6 @@ void InitStreams(void)
   // if there is a CD path
   if (_fnmCDPath!="") {
     // for each group file on the CD
-      FatalError("TODO");
 //    struct _finddata_t c_file;
 //    long hFile;
 //    hFile = _findfirst(_fnmCDPath+"*.gro", &c_file);
@@ -215,7 +221,6 @@ void InitStreams(void)
 
     // if there is a mod active
     if (_fnmMod!="") {
-        FatalError("TODO");
       // for each group file in mod directory
 //      struct _finddata_t c_file;
 //      long hFile;
@@ -245,7 +250,7 @@ void InitStreams(void)
 
   LoadFileList(_afnmNoCRC, CTFILENAME("Data\\NoCRC.lst"));
 
-  _pShell->SetINDEX(CTString("sys")+"_iCPU"+"Misc", 1);
+//  _pShell->SetINDEX((CTString("sys")+"_iCPU"+"Misc").str_String, 1);
 }
 
 void EndStreams(void)
@@ -341,7 +346,7 @@ void CTStream::Throw_t(char *strFormat, ...)  // throws char *
 {
   const SLONG slBufferSize = 256;
   char strFormatBuffer[slBufferSize];
-  char strBuffer[slBufferSize];
+  static thread_local char strBuffer[slBufferSize];
   // add the stream description to the format string
   _snprintf(strFormatBuffer, slBufferSize, "%s (%s)", strFormat, strm_strStreamDescription.str_String);
   // format the message in buffer
@@ -1398,7 +1403,7 @@ SLONG GetFileTimeStamp_t(const CTFileName &fnm)
 //  ASSERT(statFileStatus.st_mtime<=time(NULL));
 //  return statFileStatus.st_mtime;
     struct stat st;
-    int ierr = stat (fnm.str_String, &st);
+    int ierr = stat (fnmExpanded.str_String, &st);
     if (ierr == 0) {
         return st.st_mtime;
     }

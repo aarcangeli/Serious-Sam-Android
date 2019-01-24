@@ -10,7 +10,7 @@ int64_t getTimeNsec() {
 }
 
 unsigned int _rotl(unsigned int value, int shift) {
-    FatalError("_rotl");
+    return value << shift | value >> (32 - shift);
 }
 
 char *strupr(char *s) {
@@ -20,19 +20,22 @@ char *strupr(char *s) {
 }
 
 HMODULE LoadLibraryA(LPCSTR lpLibFileName) {
-    FatalError("LoadLibraryA('%s')", lpLibFileName);
+    WarningMessage("LoadLibraryA('%s')", lpLibFileName);
+    return nullptr;
 }
 
 void *GetProcAddress(HMODULE hModule, LPCSTR lpProcName) {
-    FatalError("LoadLibraryA(lib, '%s')", lpProcName);
+    WarningMessage("GetProcAddress(lib, '%s')", lpProcName);
+    return nullptr;
 }
 
 BOOL FreeLibrary(HMODULE hLibModule) {
-    FatalError("FreeLibrary(lib)");
+    WarningMessage("FreeLibrary(lib)");
 }
 
 UINT WINAPI SetErrorMode(UINT uMode) {
-    FatalError("SetErrorMode()");
+    WarningMessage("SetErrorMode()");
+    return 0;
 }
 
 int _CrtCheckMemory(void) {

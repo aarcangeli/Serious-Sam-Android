@@ -193,7 +193,7 @@ void CZipHandle::Clear(void)
 void CZipHandle::ThrowZLIBError_t(int ierr, const CTString &strDescription)
 {
   ThrowF_t(TRANS("(%s/%s) %s - ZLIB error: %s - %s"), 
-    *zh_zeEntry.ze_pfnmArchive->str_String,
+    zh_zeEntry.ze_pfnmArchive,
     zh_zeEntry.ze_fnm.str_String,
     strDescription.str_String, GetZlibError(ierr).str_String, zh_zstream.msg);
 }
@@ -209,8 +209,12 @@ static CStaticStackArray<CTFileName> _afnmArchives;
 void ConvertSlashes(char *p)
 {
   while (*p!=0) {
-    if (*p=='/') {
+    if (*p=='/' || *p=='\\') {
+#ifdef PLATFORM_WIN32
       *p = '\\';
+#else
+      *p = '/';
+#endif
     }
     p++;
   }

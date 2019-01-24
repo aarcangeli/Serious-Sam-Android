@@ -19,7 +19,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/Translation.h>
 
 #include <Engine/Base/ErrorReporting.h>
-#include <new.h>
+#include <new>
 
 extern FLOAT _bCheckAllAllocations = FALSE;
 

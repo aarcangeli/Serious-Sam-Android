@@ -26,6 +26,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/Console.h>
 
 #include <Engine/Templates/DynamicArray.cpp>
+#include <Engine/Templates/DynamicStackArray.cpp>
 
 // table of translations
 static CNameTable_CTranslationPair _nttpPairs;

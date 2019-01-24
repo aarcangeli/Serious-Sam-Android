@@ -511,8 +511,9 @@ INDEX CTString::ScanF(const char *strFormat, ...)
 {
   va_list args;
   va_start(args, strFormat);
-  vsscanf(str_String, strFormat, args);
+  INDEX ret = vsscanf(str_String, strFormat, args);
   va_end(args);
+  return ret;
 }
 
 

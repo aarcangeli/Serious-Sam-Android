@@ -39,4 +39,4 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/Types.h>
 #include <Engine/Base/Assert.h>
 
-#include "android-adapters.h"
+#include <AndroidAdapters/android-adapters.h>
