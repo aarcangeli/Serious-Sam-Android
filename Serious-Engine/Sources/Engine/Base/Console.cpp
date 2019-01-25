@@ -275,17 +275,11 @@ void CConsole::CloseLog(void)
 }
 
 // Print formated text to the main console.
-extern void CPrintF(const char *strFormat, ...)
+extern void CPrintF(CTString strBuffer)
 {
   if (_pConsole==NULL) {
     return;
   }
-  // format the message in buffer
-  va_list arg;
-  va_start(arg, strFormat);
-  CTString strBuffer;
-  strBuffer.VPrintF(strFormat, arg);
-
   // print it to the main console
   _pConsole->PutString(strBuffer);
 }

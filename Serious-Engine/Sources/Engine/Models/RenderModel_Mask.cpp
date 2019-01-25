@@ -360,7 +360,7 @@ void CModelObject::RenderModel_Mask( CRenderModel &rm)
   CTextureData *ptd = (CTextureData*)mo_toTexture.GetData();
   if( ptd!=NULL && ptd->td_ptegEffect!=NULL) {
     // report to console
-    CPrintF( TRANS("WARNING: model '%s' cast cluster shadows but has an effect texture.\n"), GetData()->GetName().str_String);
+    CPrintF( TRANS("WARNING: model '%s' cast cluster shadows but has an effect texture.\n"), GetData()->GetName());
     return;
   }
 

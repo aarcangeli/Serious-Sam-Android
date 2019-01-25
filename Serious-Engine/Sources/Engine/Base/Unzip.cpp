@@ -193,9 +193,9 @@ void CZipHandle::Clear(void)
 void CZipHandle::ThrowZLIBError_t(int ierr, const CTString &strDescription)
 {
   ThrowF_t(TRANS("(%s/%s) %s - ZLIB error: %s - %s"), 
-    zh_zeEntry.ze_pfnmArchive,
-    zh_zeEntry.ze_fnm.str_String,
-    strDescription.str_String, GetZlibError(ierr).str_String, zh_zstream.msg);
+    (const CTString&)*zh_zeEntry.ze_pfnmArchive, 
+    (const CTString&)zh_zeEntry.ze_fnm,
+    strDescription, GetZlibError(ierr), zh_zstream.msg);
 }
 
 // all files in all active zip archives
@@ -341,7 +341,7 @@ void ReadZIPDirectory_t(CTFileName *pfnmZip)
         ze.ze_bStored = FALSE;
       } else {
         ThrowF_t(TRANS("%s/%s: Only 'deflate' compression is supported"),
-          ze.ze_pfnmArchive->str_String, ze.ze_fnm.str_String);
+          (CTString&)*ze.ze_pfnmArchive, ze.ze_fnm);
       }
     }
   }
@@ -349,11 +349,11 @@ void ReadZIPDirectory_t(CTFileName *pfnmZip)
   // if error reading
   if (ferror(f)) {
     // fail
-    ThrowF_t(TRANS("%s: Error reading central directory"), pfnmZip->str_String);
+    ThrowF_t(TRANS("%s: Error reading central directory"), (CTString&)*pfnmZip);
   }
 
   // report that file was read
-  CPrintF(TRANS("  %s: %d files\n"), pfnmZip->str_String, ctFiles++);
+  CPrintF(TRANS("  %s: %d files\n"), (CTString&)*pfnmZip, ctFiles++);
 }
 
 // add one zip archive to current active set
@@ -466,7 +466,7 @@ void UNZIPReadDirectoriesReverse_t(void)
   // if there were errors
   if (strAllErrors!="") {
     // report them
-    ThrowF_t("%s", strAllErrors.str_String);
+    ThrowF_t("%s", strAllErrors);
   }
 }
 
@@ -554,7 +554,7 @@ INDEX UNZIPOpen_t(const CTFileName &fnm)
   // if not found
   if (pze==NULL) {
     // fail
-    ThrowF_t(TRANS("File not found: %s"), fnm.str_String);
+    ThrowF_t(TRANS("File not found: %s"), (const CTString&)fnm);
   }
 
   // for each existing handle
@@ -599,7 +599,7 @@ INDEX UNZIPOpen_t(const CTFileName &fnm)
   if (slSig!=SIGNATURE_LFH) {
     // fail
     ThrowF_t(TRANS("%s/%s: Wrong signature for 'local file header'"), 
-      zh.zh_zeEntry.ze_pfnmArchive->str_String, zh.zh_zeEntry.ze_fnm.str_String);
+      (CTString&)*zh.zh_zeEntry.ze_pfnmArchive, zh.zh_zeEntry.ze_fnm);
   }
   // read the header
   LocalFileHeader lfh;

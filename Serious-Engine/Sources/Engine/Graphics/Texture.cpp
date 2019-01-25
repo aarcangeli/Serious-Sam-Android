@@ -797,7 +797,7 @@ void CTextureData::Read_t( CTStream *inFile)
         CTFileName fnTex = inFile->GetDescription();
         if( fnTex == fnBaseTexture) {
           // generate exception
-          ThrowF_t( TRANS("Texture \"%s\" has same name as its base texture."), fnTex.str_String);
+          ThrowF_t( TRANS("Texture \"%s\" has same name as its base texture."), (CTString&)fnTex);
         } else {
           // obtain base texture
           td_ptdBaseTexture = _pTextureStock->Obtain_t( fnBaseTexture);
@@ -881,7 +881,7 @@ void CTextureData::Read_t( CTStream *inFile)
     else
     {
       ThrowF_t( TRANS("Unrecognisable chunk ID (\"%s\") found while reading texture \"%s\"."),
-                idChunk.cid_ID, inFile->GetDescription().str_String );
+                (char*)idChunk, (CTString&)inFile->GetDescription() );
     }
   }
   // until we didn't reach end of file
@@ -1012,7 +1012,7 @@ void CTextureData::Write_t( CTStream *outFile)   // throw char *
   if( td_ptdBaseTexture != NULL) {
     CTFileName fnTex = outFile->GetDescription();
     if( fnTex == td_ptdBaseTexture->GetName()) {
-      ThrowF_t( TRANS("Texture \"%s\" has same name as its base texture."), fnTex.str_String);
+      ThrowF_t( TRANS("Texture \"%s\" has same name as its base texture."), (CTString&)fnTex);
     }
   }
 
@@ -1746,7 +1746,7 @@ COLOR CTextureData::GetTexel( MEX mexU, MEX mexV)
   if (!(td_ulFlags&TEX_STATIC) && !(td_ulFlags&TEX_CONSTANT)) {
     // print warning
     ASSERTALWAYS("GetTexel: Texture needs to be static and constant.");
-    CPrintF("GetTexel: '%s' was not static and/or constant!\n", GetName().str_String);
+    CPrintF("GetTexel: '%s' was not static and/or constant!\n", (const char*)GetName());
   }
 
   // make sure that the texture is static
@@ -1821,7 +1821,7 @@ CTString CTextureData::GetDescription(void)
     strSizeM.PrintF("%.2fx%.2fm", fSizeU, fSizeV);
   }
   CTString str;
-  str.PrintF( "%s(%dx%d) %d/%d", strSizeM.str_String, pixSizeU, pixSizeV, ctFineMips, ctTotalMips);
+  str.PrintF( "%s(%dx%d) %d/%d", strSizeM, pixSizeU, pixSizeV, ctFineMips, ctTotalMips);
 
   // print flags
   CTString strFlags = "";

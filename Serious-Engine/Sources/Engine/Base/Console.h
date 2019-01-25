@@ -20,7 +20,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #endif
 
 // Print formated text to the main console.
-ENGINE_API extern void CPrintF(const char *strFormat, ...);
+ENGINE_API extern void CPrintF(CTString strBuffer);
+template<typename ... Types>
+void CPrintF(const char *strPattern, Types... t) {
+  CPrintF(stringFormatter::format(strPattern, t...));
+}
 // Add a string of text to console
 ENGINE_API void CPutString(const char *strString);
 

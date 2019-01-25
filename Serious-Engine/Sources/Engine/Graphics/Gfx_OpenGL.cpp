@@ -119,7 +119,7 @@ void WIN_CheckError(BOOL bRes, const char *strDescription)
   if( bRes) return;
   DWORD dwWindowsErrorCode = GetLastError();
   if( dwWindowsErrorCode==ERROR_SUCCESS) return; // ignore stupid 'successful' error
-  WarningMessage("%s: %s", strDescription, GetWindowsError(dwWindowsErrorCode).str_String);
+  WarningMessage("%s: %s", strDescription, GetWindowsError(dwWindowsErrorCode));
 }
 
 

@@ -277,11 +277,11 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
 
   // print basic engine info
   CPrintF(TRANS("--- Serious Engine Startup ---\n"));
-  CPrintF("  %s\n\n", _strEngineBuild.str_String);
+  CPrintF("  %s\n\n", _strEngineBuild);
 
   // print info on the started application
-  CPrintF(TRANS("Executable: %s\n"), _fnmApplicationExe.str_String);
-  CPrintF(TRANS("Assumed engine directory: %s\n"), _fnmApplicationPath.str_String);
+  CPrintF(TRANS("Executable: %s\n"), _fnmApplicationExe);
+  CPrintF(TRANS("Assumed engine directory: %s\n"), _fnmApplicationPath);
 
   CPrintF("\n");
 

@@ -191,7 +191,7 @@ void CEditModel::LoadModelAnimationData_t( CTStream *pFile, const FLOATmatrix3D 
     OB3D.LoadAny3DFormat_t( CTString(itFr->cfnn_FileName), mStretch);
     if( edm_md.md_VerticesCt != OB3D.ob_aoscSectors[0].osc_aovxVertices.Count()) {
 			ThrowF_t( "File %s, one of animation frame files has wrong number of points.", 
-                      ((CTString)fnnFileNameNode.cfnn_FileName).str_String);
+        (CTString)fnnFileNameNode.cfnn_FileName);
 		}
     if(bOrigin)
     {
@@ -261,7 +261,7 @@ void CEditModel::LoadModelAnimationData_t( CTStream *pFile, const FLOATmatrix3D 
     // only triangles are supported!
     ASSERT( opo.opo_PolygonEdges.Count() == 3);  
     if( opo.opo_PolygonEdges.Count() != 3) {
-  		ThrowF_t( "Non-triangle polygon encountered in model file %s !", fnmFirstFrame.str_String);
+  		ThrowF_t( "Non-triangle polygon encountered in model file %s !", fnmFirstFrame);
     }
     // get all 3 vetrices of current polygon and sorted them
     opo.opo_PolygonEdges.Lock();
@@ -2093,7 +2093,7 @@ void CEditModel::ExportSurfaceNumbersAndNames( CTFileName fnFile)
   {
     MappingSurface *pms= &pMMI->mmpi_MappingSurfaces[iSurf];
     CTString strExportLine;
-    strExportLine.PrintF( "%d) %s\n", iSurf, pms->ms_Name.str_String);
+    strExportLine.PrintF( "%d) %s\n", iSurf, pms->ms_Name);
     strExport+=strExportLine;
   }
 

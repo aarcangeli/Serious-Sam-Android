@@ -302,7 +302,7 @@ void CEntityClass::Read_t( CTStream *istr) // throw char *
     ec_hiClassDLL = NULL;
     ec_fnmClassDLL.Clear();
     // report error
-    ThrowF_t(TRANS("Class '%s' not found in entity class package file '%s'"), strClassName.str_String, fnmDLL.str_String);
+    ThrowF_t(TRANS("Class '%s' not found in entity class package file '%s'"), strClassName, fnmDLL);
   }
 
   // obtain all components needed by the DLL

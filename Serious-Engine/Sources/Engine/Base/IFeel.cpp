@@ -99,7 +99,7 @@ CTString IFeel_GetProjectFileName()
     if(strProduct == strDeviceName) return strProjectFile;
   }
   // device was not found, return default project file
-  CPrintF("No project file specified for device '%s'.\nUsing default project file\n",strProduct.str_String);
+  CPrintF("No project file specified for device '%s'.\nUsing default project file\n",strProduct);
   return strDefaultProjectFile;
 }
 
@@ -178,12 +178,12 @@ BOOL IFeel_LoadFile(CTFileName fnFile)
     BOOL hr = immLoadFile((const char*)fnmExpanded);
     if(hr)
     {
-      CPrintF("IFeel project file '%s' loaded\n", fnFile.str_String);
+      CPrintF("IFeel project file '%s' loaded\n", fnFile);
       return TRUE;
     }
     else
     {
-      CPrintF("Error loading IFeel project file '%s'\n", fnFile.str_String);
+      CPrintF("Error loading IFeel project file '%s'\n", fnFile);
       return FALSE;
     }
   }

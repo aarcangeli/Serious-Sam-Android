@@ -598,13 +598,13 @@ void CEntityComponent::Obtain_t(void)  // throw char *
     // if something else
     default:
       // error
-      ThrowF_t(TRANS("Component '%s'(%d) is of unknown type!"), ec_fnmComponent.str_String, ec_slID);
+      ThrowF_t(TRANS("Component '%s'(%d) is of unknown type!"), (CTString&)ec_fnmComponent, ec_slID);
   }
 
   // if not already loaded and should not be precaching now
   if( ctUsed<=1 && !_precache_bNowPrecaching) {
     // report warning
-    CPrintF(TRANS("Not precached: (0x%08X)'%s'\n"), this->ec_slID, ec_fnmComponent.str_String);
+    CPrintF(TRANS("Not precached: (0x%08X)'%s'\n"), this->ec_slID, ec_fnmComponent);
   }
   //CPrintF(TRANS("Precaching NOW: (0x%08X)'%s'\n"), this->ec_slID, ec_fnmComponent.str_String);
 

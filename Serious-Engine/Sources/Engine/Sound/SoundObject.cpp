@@ -64,7 +64,7 @@ static CTString GetPred(CEntity*pen)
     str1 = "???";
   }
   CTString str;
-  str.PrintF("%08x-%s", pen, str1.str_String);
+  str.PrintF("%08x-%s", pen, str1);
   return str;
 }
 /* ====================================================
@@ -321,7 +321,7 @@ void CSoundObject::SetOffset( FLOAT fOffset)
   // safety check
   ASSERT( fOffset>=0);
   if( fOffset<0) {
-    CPrintF( "BUG: Trying to set negative offset (%.2g) in sound '%s' !\n", fOffset, psoTail->so_pCsdLink->GetName().str_String);
+    CPrintF( "BUG: Trying to set negative offset (%.2g) in sound '%s' !\n", fOffset, (CTString&)psoTail->so_pCsdLink->GetName());
     fOffset = 0.0f;
   }
 

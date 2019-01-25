@@ -118,6 +118,8 @@ public:
 
   // Print formatted to a string
   INDEX PrintF(const char *strFormat, ...);
+  template<typename ... Types>
+  void PrintF(const char *strPattern, Types... t);
   INDEX VPrintF(const char *strFormat, va_list arg);
   // Scan formatted from a string
   INDEX ScanF(const char *strFormat, ...);

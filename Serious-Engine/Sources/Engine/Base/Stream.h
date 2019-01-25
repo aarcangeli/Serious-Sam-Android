@@ -192,6 +192,10 @@ public:
   virtual void PutLine_t(const char *strBuffer); // throw char *
   virtual void PutString_t(const char *strString); // throw char *
   virtual void FPrintF_t(const char *strFormat, ...); // throw char *
+  template<typename ... Types>
+  void FPrintF_t(const char *strPattern, Types... t) {
+    FPrintF_t(stringFormatter::format(strPattern, t...));
+  }
   /* Get a line of text from stream. */
   virtual void GetLine_t(char *strBuffer, SLONG slBufferSize, char cDelimiter='\n'); // throw char *
   virtual void GetLine_t(CTString &strLine, char cDelimiter='\n'); // throw char *

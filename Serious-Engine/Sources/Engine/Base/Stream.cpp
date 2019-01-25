@@ -127,7 +127,7 @@ void findGroInsideDirectory(CTFileName filename) {
         }
         closedir(dir);
     } else {
-        WarningMessage("Cannot open %s: %s", filename.str_String, strerror(errno));
+        WarningMessage("Cannot open %s: %s", filename, strerror(errno));
     }
 }
 
@@ -149,7 +149,7 @@ void InitStreams(void)
     LoadStringVar(CTString("DefaultMod.txt"), _fnmMod);
   }
 
-  CPrintF(TRANS("Current mod: %s\n"), _fnmMod==""?TRANS("<none>"):_fnmMod.str_String);
+  CPrintF(TRANS("Current mod: %s\n"), _fnmMod==""?TRANS("<none>"):(CTString&)_fnmMod);
   // if there is a mod active
   if (_fnmMod!="") {
     // load mod's include/exclude lists
@@ -405,7 +405,7 @@ void CTStream::GetLine_t(char *strBuffer, SLONG slBufferSize, char cDelimiter /*
   INDEX iLetters = 0;
   // test if EOF reached
   if(AtEOF()) {
-    ThrowF_t(TRANS("EOF reached, file %s"), strm_strStreamDescription.str_String);
+    ThrowF_t(TRANS("EOF reached, file %s"), strm_strStreamDescription);
   }
   // get line from istream
   FOREVER
@@ -534,7 +534,7 @@ void CTStream::ExpectKeyword_t(const CTString &strKeyword) // throw char *
     SBYTE chKeywordChar;
     (*this)>>chKeywordChar;
     if (chKeywordChar!=strKeyword[iKeywordChar]) {
-      ThrowF_t(TRANS("Expected keyword %s not found"), strKeyword.str_String);
+      ThrowF_t(TRANS("Expected keyword %s not found"), strKeyword);
     }
   }
 }
@@ -847,7 +847,7 @@ void CTStream::DictionaryPreload_t(void)
         fnm.fnm_pserPreloaded = _pModelStock->Obtain_t(fnm);
       }
     } catch (char *strError) {
-      CPrintF( TRANS("Cannot preload %s: %s\n"), fnm.str_String, strError);
+      CPrintF( TRANS("Cannot preload %s: %s\n"), (CTString&)fnm, strError);
     }
   }
 }
@@ -909,7 +909,7 @@ void CTFileStream::Open_t(const CTFileName &fnFileName, CTStream::OpenMode om/*=
   if (!_bThreadCanHandleStreams) {
     // error
     ::ThrowF_t(TRANS("Cannot open file `%s', stream handling is not enabled for this thread"),
-      fnFileName.str_String);
+      (CTString&)fnFileName);
   }
 
   // check parameters
@@ -978,7 +978,7 @@ void CTFileStream::Create_t(const CTFileName &fnFileName,
   if (!_bThreadCanHandleStreams) {
     // error
     ::ThrowF_t(TRANS("Cannot create file `%s', stream handling is not enabled for this thread"),
-               fnFileNameAbsolute.str_String);
+      (CTString&)fnFileNameAbsolute);
   }
 
   CTFileName fnmFullFileName;

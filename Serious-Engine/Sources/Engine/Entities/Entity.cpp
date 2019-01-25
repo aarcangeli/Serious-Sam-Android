@@ -888,7 +888,7 @@ void CEntity::Teleport(const CPlacement3D &plNew, BOOL bTelefrag /*=TRUE*/)
         CEntity *ppenObstacleDummy;
         if (pmme->CheckForCollisionNow(pmme->en_iCollisionBox, &ppenObstacleDummy)) {
           CPrintF("Entity '%s' was teleported inside a wall at (%g,%g,%g)!\n", 
-            GetName().str_String,
+            GetName(), 
             en_plPlacement.pl_PositionVector(1),
             en_plPlacement.pl_PositionVector(2),
             en_plPlacement.pl_PositionVector(3));
@@ -2369,7 +2369,7 @@ void CEntity::SetModel(const CTFileName &fnmModel)
     // if failed
     } catch(char *strErrorDefault) {
       FatalError(TRANS("Cannot load default model '%s':\n%s"),
-        fnmDefault.str_String, strErrorDefault);
+        (CTString&)fnmDefault, strErrorDefault);
     }
   }
   UpdateSpatialRange();
@@ -2432,7 +2432,7 @@ BOOL CEntity::SetSkaModel(const CTString &fnmModel)
     // if failed
     } catch(char *strErrorDefault) {
       FatalError(TRANS("Cannot load default model '%s':\n%s"),
-        fnmDefault.str_String, strErrorDefault);
+        (CTString&)fnmDefault, strErrorDefault);
     }
     // set colision info for default model
     SetSkaColisionInfo();
@@ -2489,7 +2489,7 @@ void CEntity::SetModelMainTexture(const CTFileName &fnmTexture)
     // if failed
     } catch(char *strErrorDefault) {
       FatalError(TRANS("Cannot load default texture '%s':\n%s"),
-        fnmDefault.str_String, strErrorDefault);
+        (CTString&)fnmDefault, strErrorDefault);
     }
   }
 }
@@ -2956,7 +2956,7 @@ void CEntity::PlaySound(CSoundObject &so, const CTFileName &fnmSound, SLONG slPl
     // if failed
     } catch(char *strErrorDefault) {
       FatalError(TRANS("Cannot load default sound '%s':\n%s"),
-        fnmDefault.str_String, strErrorDefault);
+        (CTString&)fnmDefault, strErrorDefault);
     }
   }
 }
@@ -3495,7 +3495,7 @@ void CEntity::DumpSync_t(CTStream &strm, INDEX iExtensiveSyncCheck)  // throw ch
     strm.FPrintF_t("*** DELETED ***\n");
   }
   strm.FPrintF_t("class: '%s'\n", GetClass()->ec_pdecDLLClass->dec_strName);
-  strm.FPrintF_t("name: '%s'\n", GetName().str_String);
+  strm.FPrintF_t("name: '%s'\n", GetName());
   if (iExtensiveSyncCheck>0) {
     strm.FPrintF_t("en_ulFlags:          0x%08X\n", en_ulFlags&~
       (ENF_SELECTED|ENF_INRENDERING|ENF_VALIDSHADINGINFO|ENF_FOUNDINGRIDSEARCH|ENF_WILLBEPREDICTED|ENF_PREDICTABLE));
