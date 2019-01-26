@@ -31,6 +31,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <Engine/Templates/Stock_CEntityClass.h>
 
+#include <dlfcn.h>
+
 /////////////////////////////////////////////////////////////////////
 // CEntityClass
 
@@ -91,8 +93,8 @@ void CEntityClass::Clear(void)
      * must stay avaliable, since they cannot be undeclared.
      */
     // free it
-    //BOOL bSuccess = FreeLibrary(ec_hiClassDLL);
-    //ASSERT(bSuccess);
+    int result = dlclose(ec_hiClassDLL);
+    ASSERT(!result); // opposite of FreeLibrary
   }
   ec_pdecDLLClass = NULL;
   ec_hiClassDLL = NULL;
@@ -226,7 +228,18 @@ void CEntityClass::ReleaseComponents(void)
  */
 HINSTANCE LoadDLL_t(const char *strFileName) // throw char *
 {
-  HINSTANCE hiDLL = ::LoadLibraryA(strFileName);
+  void *hiDLL = dlopen(strFileName, RTLD_NOW);
+  if (hiDLL == NULL) {
+    char *err = dlerror();
+    CTString strError;
+    if (err) {
+      strError = err;
+    } else {
+      strError = "Unknown error";
+    }
+    ThrowF_t(TRANS("Cannot load so file '%s':\n%s"), strFileName, strError);
+  }
+  return hiDLL;
 
 //  // if the DLL can not be loaded
 //  if (hiDLL==NULL) {
@@ -264,7 +277,7 @@ HINSTANCE LoadDLL_t(const char *strFileName) // throw char *
 //    // report error
 //    ThrowF_t(TRANS("Cannot load DLL file '%s':\n%s"), strFileName, strWinError);
 //  }
-  return hiDLL;
+//  return hiDLL;
 }
 
 /*
@@ -279,26 +292,27 @@ void CEntityClass::Read_t( CTStream *istr) // throw char *
   strClassName.ReadFromText_t(*istr, "Class: ");
 
   // create name of dll
-  #ifndef NDEBUG
-    fnmDLL = _fnmApplicationExe.FileDir()+fnmDLL.FileName()+_strModExt+"D"+fnmDLL.FileExt();
-  #else
-    fnmDLL = _fnmApplicationExe.FileDir()+fnmDLL.FileName()+_strModExt+fnmDLL.FileExt();
-  #endif
+//  #ifndef NDEBUG
+//    fnmDLL = _fnmApplicationExe.FileDir()+fnmDLL.FileName()+_strModExt+"D"+fnmDLL.FileExt();
+//  #else
+//    fnmDLL = _fnmApplicationExe.FileDir()+fnmDLL.FileName()+_strModExt+fnmDLL.FileExt();
+//  #endif
 
   // load the DLL
-  CTFileName fnmExpanded;
-  ExpandFilePath(EFP_READ, fnmDLL, fnmExpanded);
+//  CTFileName fnmExpanded;
+//  ExpandFilePath(EFP_READ, fnmDLL, fnmExpanded);
 
-  ec_hiClassDLL = LoadDLL_t(fnmExpanded);
+  fnmDLL = "lib" + fnmDLL.FileName() + _strModExt + ".so";
+  ec_hiClassDLL = LoadDLL_t(fnmDLL);
   ec_fnmClassDLL = fnmDLL;
 
   // get the pointer to the DLL class structure
-  ec_pdecDLLClass = (CDLLEntityClass *) GetProcAddress(ec_hiClassDLL, strClassName+"_DLLClass");
+  ec_pdecDLLClass = (CDLLEntityClass *) dlsym(ec_hiClassDLL, strClassName+"_DLLClass");
   // if class structure is not found
   if (ec_pdecDLLClass == NULL) {
     // free the library
-    BOOL bSuccess = FreeLibrary(ec_hiClassDLL);
-    ASSERT(bSuccess);
+    int result = dlclose(ec_hiClassDLL);
+    ASSERT(!result); //  // opposite of FreeLibrary
     ec_hiClassDLL = NULL;
     ec_fnmClassDLL.Clear();
     // report error

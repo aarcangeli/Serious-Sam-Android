@@ -130,13 +130,12 @@ double CSoundData::GetSecondsLength(void)
 // Read sound in memory
 void CSoundData::Read_t(CTStream *inFile)  // throw char *
 {
-  FatalError("CSoundData::Read_t TODO");
-//  // synchronize access to sounds
-//  CTSingleLock slSounds(&_pSound->sl_csSound, TRUE);
-//
-//  ASSERT( sd_pswBuffer==NULL);
-//  sd_ulFlags = NONE;
-//
+  // synchronize access to sounds
+  CTSingleLock slSounds(&_pSound->sl_csSound, TRUE);
+
+  ASSERT( sd_pswBuffer==NULL);
+  sd_ulFlags = NONE;
+
 //  // get filename
 //  CTFileName fnm = inFile->GetDescription();
 //  // if this is encoded file
@@ -179,6 +178,7 @@ void CSoundData::Read_t(CTStream *inFile)  // throw char *
 //
 //  // add to sound aware list
 //  _pSound->AddSoundAware(*this);
+  WarningMessage("CSoundData::Read_t TODO");
 }
 
 

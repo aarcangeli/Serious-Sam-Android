@@ -43,6 +43,7 @@ public:
   inline void operator=(const CTString &strOther) {
     CTString::operator=(strOther);
     fnm_pserPreloaded = NULL;
+    convertSlashes();
   };
 
   /* Get directory part of a filename. */

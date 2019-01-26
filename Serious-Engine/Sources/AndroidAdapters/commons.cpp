@@ -31,6 +31,7 @@ void *GetProcAddress(HMODULE hModule, LPCSTR lpProcName) {
 
 BOOL FreeLibrary(HMODULE hLibModule) {
     WarningMessage("FreeLibrary(lib)");
+    return 1;
 }
 
 UINT WINAPI SetErrorMode(UINT uMode) {

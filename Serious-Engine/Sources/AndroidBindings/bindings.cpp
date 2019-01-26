@@ -14,7 +14,7 @@ Java_com_github_aarcangeli_serioussamandroid_MainActivity_setHomeDir(JNIEnv *env
     const char *homeDir = env->GetStringUTFChars(homeDir_, 0);
 
     _fnmApplicationPath = CTString(homeDir) + "/";
-    _fnmApplicationExe = _fnmApplicationPath + "Bin/dummy.exe";
+    _fnmApplicationExe = _fnmApplicationPath + "Bin/SeriousSam.exe";
 
     env->ReleaseStringUTFChars(homeDir_, homeDir);
 }

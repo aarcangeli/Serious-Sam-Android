@@ -191,14 +191,37 @@ void FlipBitmap( UBYTE *pubSrc, UBYTE *pubDst, PIX pixWidth, PIX pixHeight, INDE
 static __int64 mmRounder = 0x0002000200020002;
 static void MakeOneMipmap( ULONG *pulSrcMipmap, ULONG *pulDstMipmap, PIX pixWidth, PIX pixHeight, BOOL bBilinear)
 {
-    FatalError("ASM");
-//  // some safety checks
-//  ASSERT( pixWidth>1 && pixHeight>1);
-//  ASSERT( pixWidth  == 1L<<FastLog2(pixWidth));
-//  ASSERT( pixHeight == 1L<<FastLog2(pixHeight));
-//  pixWidth >>=1;
-//  pixHeight>>=1;
-//
+  // some safety checks
+  ASSERT(pixWidth > 1 && pixHeight > 1);
+  ASSERT(pixWidth == 1L << FastLog2(pixWidth));
+  ASSERT(pixHeight == 1L << FastLog2(pixHeight));
+
+  if (bBilinear) {
+    WarningMessage("TODO: bBilinear mipmap");
+  }
+
+  PIX pixDestWidth = pixWidth >> 1;
+  PIX pixDestHeight = pixHeight >> 1;
+
+  for (PIX y = 0; y < pixDestHeight; y++) {
+    for (PIX x = 0; x < pixDestWidth; x++) {
+      PIX ys = y * 2;
+      PIX xs = x * 2;
+      ULONG pix1 = pulSrcMipmap[0];
+      // TODO: bilinear
+      //      ULONG pix2 = pulSrcMipmap[1];
+      //      ULONG pix3 = pulSrcMipmap[pixWidth];
+      //      ULONG pix4 = pulSrcMipmap[pixWidth + 1];
+      *pulDstMipmap = pix1;
+      // advance dest
+      pulDstMipmap++;
+      // advance src 2 pixels
+      pulSrcMipmap += 2;
+    }
+    // advance src one line
+    pulSrcMipmap += pixWidth;
+  }
+
 //  if( bBilinear) // type of filtering?
 //  { // BILINEAR
 //    __asm {
@@ -775,7 +798,8 @@ void FilterBitmap( INDEX iFilter, ULONG *pulSrc, ULONG *pulDst, PIX pixWidth, PI
   SLONG slModulo1 = (pixCanvasWidth-pixWidth+1) *BYTES_PER_TEXEL;
   SLONG slCanvasWidth = pixCanvasWidth *BYTES_PER_TEXEL;
 
-    FatalError("ASM");
+  WarningMessage("FilterBitmap: ASM");
+  if (pulDst != pulSrc) memcpy(pulDst, pulSrc, pixCanvasWidth * pixCanvasHeight * BYTES_PER_TEXEL);
   // lets roll ...
 //  __asm {
 //    cld
