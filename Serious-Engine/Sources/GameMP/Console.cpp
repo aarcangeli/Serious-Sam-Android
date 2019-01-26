@@ -526,21 +526,22 @@ void CGame::ConsoleKeyDown( MSG msg)
     // do nothing
     return;
   }
-  BOOL bShift = GetKeyState(VK_SHIFT) & 0x8000;
-  switch( msg.wParam) {
-  case VK_RETURN:  Key_Return();      break;
-  case VK_UP:      Key_ArrowUp();     break;
-  case VK_DOWN:    Key_ArrowDown();   break;
-  case VK_TAB:     Key_Tab(bShift);   break;
-  case VK_PRIOR:   Key_PgUp(bShift);  break;
-  case VK_NEXT:    Key_PgDn(bShift);  break;
-  case VK_BACK:    Key_Backspace(bShift, FALSE);  break;
-  case VK_DELETE:  Key_Backspace(bShift, TRUE);   break;
-  case VK_LEFT:    if( iCursorPos > 0)                      iCursorPos--;  break;
-  case VK_RIGHT:   if( iCursorPos < strlen(strEditingLine)) iCursorPos++;  break;
-  case VK_HOME:    iCursorPos = 0;                       break;
-  case VK_END:     iCursorPos = strlen(strEditingLine);  break;
-  }
+  // TODO
+//  BOOL bShift = GetKeyState(VK_SHIFT) & 0x8000;
+//  switch( msg.wParam) {
+//  case VK_RETURN:  Key_Return();      break;
+//  case VK_UP:      Key_ArrowUp();     break;
+//  case VK_DOWN:    Key_ArrowDown();   break;
+//  case VK_TAB:     Key_Tab(bShift);   break;
+//  case VK_PRIOR:   Key_PgUp(bShift);  break;
+//  case VK_NEXT:    Key_PgDn(bShift);  break;
+//  case VK_BACK:    Key_Backspace(bShift, FALSE);  break;
+//  case VK_DELETE:  Key_Backspace(bShift, TRUE);   break;
+//  case VK_LEFT:    if( iCursorPos > 0)                      iCursorPos--;  break;
+//  case VK_RIGHT:   if( iCursorPos < strlen(strEditingLine)) iCursorPos++;  break;
+//  case VK_HOME:    iCursorPos = 0;                       break;
+//  case VK_END:     iCursorPos = strlen(strEditingLine);  break;
+//  }
 }
 
 

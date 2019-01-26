@@ -813,6 +813,9 @@ public:
   };
 };
 
+char *stringFormatter::convertParam(CEntityPointer &p) {
+  return p.ep_pen->GetName().str_String;
+}
 
 ENGINE_API void EntityAdjustBonesCallback(void *pData);
 ENGINE_API void EntityAdjustShaderParamsCallback(void *pData,INDEX iSurfaceID,CShader *pShader,ShaderParams &spParams);

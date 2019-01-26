@@ -609,7 +609,7 @@ functions:
     m_fFadeEndWait = ClampDn(m_fFadeEndWait, 0.05f);
     m_fFadeSpeed = ClampDn(m_fFadeSpeed, 0.05f);*/
 
-    m_strDescription.PrintF("%s", (CTString&)m_fnModel.FileName());
+    m_strDescription.PrintF("%s", m_fnModel.FileName());
 
     return;
   };

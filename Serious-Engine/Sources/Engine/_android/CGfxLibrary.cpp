@@ -3,6 +3,7 @@
 #include <Engine/Graphics/GfxLibrary.h>
 #include <Engine/Base/Translation.h>
 #include <Engine/Base/Console.h>
+#include <Engine/Base/ErrorReporting.h>
 
 static CListHead _lhCDSModes;
 
@@ -46,13 +47,21 @@ static CResolution _areResolutions[] =
 static const INDEX MAX_RESOLUTIONS = sizeof(_areResolutions) / sizeof(_areResolutions[0]);
 
 
-void CGfxLibrary::InitAPIs(void) {}
+void CGfxLibrary::InitAPIs(void) {
+  WarningMessage("CGfxLibrary::InitAPIs");
+}
 
 
-CListHead &CDS_GetModes(void) {}
+CListHead &CDS_GetModes(void) {
+  WarningMessage("CDS_GetModes");
+}
 
 
-BOOL CDS_SetMode(PIX pixSizeI, PIX pixSizeJ, enum DisplayDepth dd) {}
+BOOL CDS_SetMode(PIX pixSizeI, PIX pixSizeJ, enum DisplayDepth dd) {
+  WarningMessage("CDS_SetMode");
+}
 
 
-void CDS_ResetMode(void) {}
+void CDS_ResetMode(void) {
+  WarningMessage("CDS_ResetMode");
+}

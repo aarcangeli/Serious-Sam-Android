@@ -35,7 +35,9 @@ public:
   /* Constructor from character string. */
   inline CTString(const char *pString);
   /* Constructor with formatting. */
-  inline CTString(INDEX iDummy, const char *strFormat, ...);
+//  inline CTString(INDEX iDummy, const char *strFormat, ...);
+  template<typename ... Types>
+  CTString(INDEX iDummy, const char *strPattern, Types... t);
   /* Destructor. */
   inline ~CTString();
   /* Clear the object. */

@@ -29,7 +29,7 @@ uses "EntitiesMP\GradientMarker";
 
 %{
 
-inline void Clear(EntityStats &es) {es.es_strName.Clear();};
+//inline void Clear(EntityStats &es) {es.es_strName.Clear();};
 static CDynamicArray<EntityStats> _aes;
 static CAnimObject _aoLightningColor;
 
@@ -695,9 +695,9 @@ void CWorldBase_OnWorldInit(CWorld *pwo)
   pwo->wo_aetEnvironmentTypes[13].et_fSize = 1.8f;
 
   // declare console variables
-  _pShell->DeclareSymbol("user void MakeWorldStatistics(void);",  &MakeWorldStatistics);
-  _pShell->DeclareSymbol("user void ReoptimizeAllBrushes(void);", &ReoptimizeAllBrushes);
-  _pShell->DeclareSymbol("user void DoLevelSafetyChecks(void);", &DoLevelSafetyChecks);
+  _pShell->DeclareSymbol("user void MakeWorldStatistics(void);",  (void*) &MakeWorldStatistics);
+  _pShell->DeclareSymbol("user void ReoptimizeAllBrushes(void);", (void*) &ReoptimizeAllBrushes);
+  _pShell->DeclareSymbol("user void DoLevelSafetyChecks(void);", (void*) &DoLevelSafetyChecks);
 }
 
 void CWorldBase_OnWorldRender(CWorld *pwo)

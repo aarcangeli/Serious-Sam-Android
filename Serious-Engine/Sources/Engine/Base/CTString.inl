@@ -38,13 +38,13 @@ ENGINE_API CTString::CTString( const char *strCharString)
 }
 
 /* Constructor with formatting. */
-ENGINE_API CTString::CTString(INDEX iDummy, const char *strFormat, ...)
-{
-  str_String = StringDuplicate("");
-  va_list arg;
-  va_start(arg, strFormat);
-  VPrintF(strFormat, arg);
-}
+//ENGINE_API CTString::CTString(INDEX iDummy, const char *strFormat, ...)
+//{
+//  str_String = StringDuplicate("");
+//  va_list arg;
+//  va_start(arg, strFormat);
+//  VPrintF(strFormat, arg);
+//}
 
 /*
  * Destructor.

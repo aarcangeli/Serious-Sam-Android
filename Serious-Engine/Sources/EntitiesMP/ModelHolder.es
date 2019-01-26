@@ -177,7 +177,7 @@ functions:
       m_aoLightAnimation.PlayAnim(m_iLightAnimation, AOF_LOOPING);
     }
 
-    m_strDescription.PrintF("%s,%s", (CTString&)m_fnModel.FileName(), (CTString&)m_fnTexture.FileName());
+    m_strDescription.PrintF("%s,%s", m_fnModel.FileName(), m_fnTexture.FileName());
 
     return;
   };

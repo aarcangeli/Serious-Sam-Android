@@ -15,6 +15,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 // common headers for flesh entity classes
 
+enum DebrisParticlesType : int;
+enum BasicEffectType : int;
+enum KeyItemType : int;
+enum WorldLinkType : int;
+enum EffectorEffectType : int;
 
 #define SURFACE_SAND 9
 #define SURFACE_WATER 12
@@ -135,6 +140,8 @@ struct EntityStats {
   INDEX es_ctAmmount;
   FLOAT es_fValue;
   INDEX es_iScore;
+
+  inline void Clear() {es_strName.Clear();};
 };
 
 // statistics data for player stats management

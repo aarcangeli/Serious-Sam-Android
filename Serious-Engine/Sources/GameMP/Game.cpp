@@ -18,11 +18,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "stdafx.h"
 #include "Game.h"
-#include <direct.h> // for _mkdir()
-#include <sys/timeb.h>
+#include <dirent.h> // for _mkdir()
+#include <sys/stat.h>
+//#include <sys/timeb.h>
 #include <time.h>
 #include <locale.h>
-#include <io.h>
+//#include <io.h>
 #include <Engine/Base/Profiling.h>
 #include <Engine/Base/Statistics.h>
 #include <Engine/CurrentVersion.h>
@@ -32,7 +33,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 extern FLOAT con_fHeightFactor = 0.5f;
 extern FLOAT con_tmLastLines   = 5.0f;
 extern INDEX con_bTalk = 0;
-CTimerValue _tvMenuQuickSave(0I64);
+CTimerValue _tvMenuQuickSave(0.0);
 
 // used filenames
 CTFileName fnmPersistentSymbols = CTString("Scripts\\PersistentSymbols.ini");
@@ -59,7 +60,7 @@ static CStaticStackArray<INDEX> _actTriangles;  // world, model, particle, total
 // one and only Game object
 extern CGame *_pGame = NULL;
 
-extern "C" __declspec (dllexport) CGame *GAME_Create(void)
+extern "C" CGame *GAME_Create(void)
 {
   _pGame = new CGame;
 
@@ -914,10 +915,10 @@ void CGame::InitInternal( void)
   // add game timer handler
   _pTimer->AddHandler(&m_gthGameTimerHandler);
   // add shell variables
-  _pShell->DeclareSymbol("user void RecordProfile(void);",        &RecordProfile);
-  _pShell->DeclareSymbol("user void SaveScreenShot(void);",       &SaveScreenShot);
-  _pShell->DeclareSymbol("user void DumpProfileToConsole(void);", &DumpProfileToConsole);
-  _pShell->DeclareSymbol("user void DumpProfileToFile(void);",    &DumpProfileToFile);
+  _pShell->DeclareSymbol("user void RecordProfile(void);",        (void*) &RecordProfile);
+  _pShell->DeclareSymbol("user void SaveScreenShot(void);",       (void*) &SaveScreenShot);
+  _pShell->DeclareSymbol("user void DumpProfileToConsole(void);", (void*) &DumpProfileToConsole);
+  _pShell->DeclareSymbol("user void DumpProfileToFile(void);",    (void*) &DumpProfileToFile);
   _pShell->DeclareSymbol("user INDEX hud_iStats;", &hud_iStats);
   _pShell->DeclareSymbol("user INDEX hud_bShowResolution;", &hud_bShowResolution);
   _pShell->DeclareSymbol("persistent user INDEX hud_bShowTime;",  &hud_bShowTime);
@@ -983,8 +984,8 @@ void CGame::InitInternal( void)
   _pShell->DeclareSymbol("persistent user FLOAT con_fHeightFactor;", &con_fHeightFactor);
   _pShell->DeclareSymbol("persistent user FLOAT con_tmLastLines;",   &con_tmLastLines);
   _pShell->DeclareSymbol("user INDEX con_bTalk;", &con_bTalk);
-  _pShell->DeclareSymbol("user void ReportDemoProfile(void);", &ReportDemoProfile);
-  _pShell->DeclareSymbol("user void DumpDemoProfile(void);",   &DumpDemoProfile);
+  _pShell->DeclareSymbol("user void ReportDemoProfile(void);", (void*) &ReportDemoProfile);
+  _pShell->DeclareSymbol("user void DumpDemoProfile(void);",   (void*) &DumpDemoProfile);
   extern CTString GetGameAgentRulesInfo(void);
   extern CTString GetGameTypeName(INDEX);
   extern CTString GetGameTypeNameCfunc(void* pArgs);
@@ -993,26 +994,26 @@ void CGame::InitInternal( void)
   extern ULONG GetSpawnFlagsForGameTypeCfunc(void* pArgs);
   extern BOOL IsMenuEnabled(const CTString &);
   extern BOOL IsMenuEnabledCfunc(void* pArgs);
-  _pShell->DeclareSymbol("user CTString GetGameAgentRulesInfo(void);",   &GetGameAgentRulesInfo);
-  _pShell->DeclareSymbol("user CTString GetGameTypeName(INDEX);",        &GetGameTypeNameCfunc);
-  _pShell->DeclareSymbol("user CTString GetCurrentGameTypeName(void);",  &GetCurrentGameTypeName);
-  _pShell->DeclareSymbol("user INDEX GetSpawnFlagsForGameType(INDEX);",  &GetSpawnFlagsForGameTypeCfunc);
-  _pShell->DeclareSymbol("user INDEX IsMenuEnabled(CTString);",          &IsMenuEnabledCfunc);
-  _pShell->DeclareSymbol("user void Say(CTString);",                     &Say);
-  _pShell->DeclareSymbol("user void SayFromTo(INDEX, INDEX, CTString);", &SayFromTo);
+  _pShell->DeclareSymbol("user CTString GetGameAgentRulesInfo(void);",   (void*) &GetGameAgentRulesInfo);
+  _pShell->DeclareSymbol("user CTString GetGameTypeName(INDEX);",        (void*) &GetGameTypeNameCfunc);
+  _pShell->DeclareSymbol("user CTString GetCurrentGameTypeName(void);",  (void*) &GetCurrentGameTypeName);
+  _pShell->DeclareSymbol("user INDEX GetSpawnFlagsForGameType(INDEX);",  (void*) &GetSpawnFlagsForGameTypeCfunc);
+  _pShell->DeclareSymbol("user INDEX IsMenuEnabled(CTString);",          (void*) &IsMenuEnabledCfunc);
+  _pShell->DeclareSymbol("user void Say(CTString);",                     (void*) &Say);
+  _pShell->DeclareSymbol("user void SayFromTo(INDEX, INDEX, CTString);", (void*) &SayFromTo);
 
-  _pShell->DeclareSymbol("CTString GetGameTypeNameSS(INDEX);",           &GetGameTypeName);
-  _pShell->DeclareSymbol("INDEX GetSpawnFlagsForGameTypeSS(INDEX);",     &GetSpawnFlagsForGameType);
-  _pShell->DeclareSymbol("INDEX IsMenuEnabledSS(CTString);",             &IsMenuEnabled);
+  _pShell->DeclareSymbol("CTString GetGameTypeNameSS(INDEX);",           (void*) &GetGameTypeName);
+  _pShell->DeclareSymbol("INDEX GetSpawnFlagsForGameTypeSS(INDEX);",     (void*) &GetSpawnFlagsForGameType);
+  _pShell->DeclareSymbol("INDEX IsMenuEnabledSS(CTString);",             (void*) &IsMenuEnabled);
 
   _pShell->DeclareSymbol("user const INDEX ctl_iCurrentPlayerLocal;", &ctl_iCurrentPlayerLocal);
   _pShell->DeclareSymbol("user const INDEX ctl_iCurrentPlayer;",      &ctl_iCurrentPlayer);
 
   _pShell->DeclareSymbol("user FLOAT gam_fChatSoundVolume;",      &gam_fChatSoundVolume);
 
-  _pShell->DeclareSymbol("user void PlaySound(INDEX, CTString, FLOAT, FLOAT, INDEX);", &PlayScriptSound);
-  _pShell->DeclareSymbol("user void StopSound(INDEX);", &StopScriptSound);
-  _pShell->DeclareSymbol("user INDEX IsSoundPlaying(INDEX);", &IsScriptSoundPlaying);
+  _pShell->DeclareSymbol("user void PlaySound(INDEX, CTString, FLOAT, FLOAT, INDEX);", (void*) &PlayScriptSound);
+  _pShell->DeclareSymbol("user void StopSound(INDEX);", (void*) &StopScriptSound);
+  _pShell->DeclareSymbol("user INDEX IsSoundPlaying(INDEX);", (void*) &IsScriptSoundPlaying);
 
   CAM_Init();
 
@@ -1170,7 +1171,7 @@ BOOL CGame::NewGame(const CTString &strSessionName, const CTFileName &fnWorld,
   return TRUE;
 }
 
-BOOL CGame::JoinGame(CNetworkSession &session)
+BOOL CGame::JoinGame(const CNetworkSession &session)
 {
   CEnableUserBreak eub;
   gam_iObserverConfig = 0;
@@ -2277,18 +2278,18 @@ void CGame::GameRedrawView( CDrawPort *pdpDrawPort, ULONG ulFlags)
         strIndicator = TRANS("Game finished");
       } else if (_pNetwork->IsPaused() || _pNetwork->GetLocalPause()) {
         strIndicator = TRANS("Paused");
-      } else if (_tvMenuQuickSave.tv_llValue!=0I64 && 
+      } else if (_tvMenuQuickSave.tv_llValue!=0lli &&
         (_pTimer->GetHighPrecisionTimer()-_tvMenuQuickSave).GetSeconds()<3) {
         strIndicator = TRANS("Use F6 for QuickSave during game!");
       } else if (_pNetwork->ga_sesSessionState.ses_strMOTD!="") {
         CTString strMotd = _pNetwork->ga_sesSessionState.ses_strMOTD;
         static CTString strLastMotd = "";
-        static CTimerValue tvLastMotd(0I64);
+        static CTimerValue tvLastMotd(0.0);
         if (strLastMotd!=strMotd) {
           tvLastMotd = _pTimer->GetHighPrecisionTimer();
           strLastMotd = strMotd;
         }
-        if (tvLastMotd.tv_llValue!=0I64 && (_pTimer->GetHighPrecisionTimer()-tvLastMotd).GetSeconds()<3) {
+        if (tvLastMotd.tv_llValue!=0lli && (_pTimer->GetHighPrecisionTimer()-tvLastMotd).GetSeconds()<3) {
           strIndicator = strMotd;
         }
       }
@@ -2386,7 +2387,7 @@ void CGame::GameRedrawView( CDrawPort *pdpDrawPort, ULONG ulFlags)
     bSaveScreenShot = FALSE;
     CTFileName fnmExpanded;
     ExpandFilePath(EFP_WRITE, CTString("ScreenShots"), fnmExpanded);
-    _mkdir(fnmExpanded);
+    mkdir(fnmExpanded.str_String, ACCESSPERMS);
 
     // create a name for screenshot
     CTFileName fnmScreenShot;
@@ -2756,7 +2757,7 @@ static FLOAT _tmNow_SE;
 static ULONG _ulA_SE;
 static BOOL  _bPopup;
 
-void TiledTextureSE( PIXaabbox2D &_boxScreen, FLOAT fStretch, MEX2D &vScreen, MEXaabbox2D &boxTexture)
+void TiledTextureSE( const PIXaabbox2D &_boxScreen, FLOAT fStretch, const MEX2D &vScreen, MEXaabbox2D &boxTexture)
 {
   PIX pixW = _boxScreen.Size()(1);
   PIX pixH = _boxScreen.Size()(2);
@@ -2929,10 +2930,10 @@ void CGame::LCDDrawPointer(PIX pixI, PIX pixJ)
   CDisplayMode dmCurrent;
   _pGfx->GetCurrentDisplayMode(dmCurrent);
   if (dmCurrent.IsFullScreen()) {
-    while (ShowCursor(FALSE) >= 0);
+//    while (ShowCursor(FALSE) >= 0);
   } else {
     if (!_pInput->IsInputEnabled()) {
-      while (ShowCursor(TRUE) < 0);
+//      while (ShowCursor(TRUE) < 0);
     }
     return;
   }

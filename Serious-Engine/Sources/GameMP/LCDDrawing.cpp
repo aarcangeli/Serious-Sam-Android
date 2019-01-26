@@ -59,7 +59,7 @@ extern void LCDSetDrawport(CDrawPort *pdp)
   _boxScreen = PIXaabbox2D ( PIX2D(0,0), PIX2D(_pixSizeI, _pixSizeJ));
 }
 
-void TiledTexture( PIXaabbox2D &_boxScreen, FLOAT fStretch, MEX2D &vScreen, MEXaabbox2D &boxTexture)
+void TiledTexture( const PIXaabbox2D &_boxScreen, const FLOAT fStretch, const MEX2D &vScreen, MEXaabbox2D &boxTexture)
 {
   PIX pixW = _boxScreen.Size()(1);
   PIX pixH = _boxScreen.Size()(2);
@@ -211,10 +211,10 @@ extern void LCDDrawPointer(PIX pixI, PIX pixJ)
   CDisplayMode dmCurrent;
   _pGfx->GetCurrentDisplayMode(dmCurrent);
   if (dmCurrent.IsFullScreen()) {
-    while (ShowCursor(FALSE) >= 0);
+//    while (ShowCursor(FALSE) >= 0);
   } else {
     if (!_pInput->IsInputEnabled()) {
-      while (ShowCursor(TRUE) < 0);
+//      while (ShowCursor(TRUE) < 0);
     }
     return;
   }

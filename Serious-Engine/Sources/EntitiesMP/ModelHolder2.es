@@ -623,9 +623,9 @@ functions:
     }
 
     if (m_penDestruction==NULL) {
-      m_strDescription.PrintF("%s,%s undestroyable", (CTString&)m_fnModel.FileName(), (CTString&)m_fnTexture.FileName());
+      m_strDescription.PrintF("%s,%s undestroyable", m_fnModel.FileName(), m_fnTexture.FileName());
     } else {
-      m_strDescription.PrintF("%s,%s -> %s", (CTString&)m_fnModel.FileName(), (CTString&)m_fnTexture.FileName(),
+      m_strDescription.PrintF("%s,%s -> %s", m_fnModel.FileName(), m_fnTexture.FileName(),
         m_penDestruction->GetName());
     }
 

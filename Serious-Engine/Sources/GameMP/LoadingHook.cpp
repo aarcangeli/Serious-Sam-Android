@@ -60,10 +60,10 @@ static void LoadingHook_t(CProgressHookInfo *pphi)
   if (pphi->phi_fCompleted>0) {
     ulCheckFlags |= 0x0001;
   }
-  if (_bUserBreakEnabled && (GetAsyncKeyState(VK_ESCAPE)&ulCheckFlags)) {
-    // break loading
-    throw TRANS("User break!");
-  }
+//  if (_bUserBreakEnabled && (GetAsyncKeyState(VK_ESCAPE)&ulCheckFlags)) {
+//    // break loading
+//    throw TRANS("User break!");
+//  }
 
 #if USECUSTOMTEXT
   // if no custom loading text
@@ -78,7 +78,7 @@ static void LoadingHook_t(CProgressHookInfo *pphi)
 #endif
 
   // measure time since last call
-  static CTimerValue tvLast(0I64);
+  static CTimerValue tvLast(0.0);
   CTimerValue tvNow = _pTimer->GetHighPrecisionTimer();
 
   // if not first or final update, and not enough time passed

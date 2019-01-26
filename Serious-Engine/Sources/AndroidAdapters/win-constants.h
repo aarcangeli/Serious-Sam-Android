@@ -601,7 +601,9 @@ int _CrtCheckMemory(void);
 HMODULE GetModuleHandleA(LPCSTR lpModuleName);
 
 #include <unistd.h>
-#define Sleep(x) usleep((x) * 1000)
+static inline void Sleep(DWORD dwMilliseconds) {
+  usleep(dwMilliseconds * 1000);
+}
 #undef R_OK
 
 #endif

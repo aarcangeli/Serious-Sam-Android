@@ -248,7 +248,7 @@ functions:
   }
 
   // fire death rocket
-  void FireDeathRocket(FLOAT3D &vPos) {
+  void FireDeathRocket(const FLOAT3D &vPos) {
     CPlacement3D plRocket;
     plRocket.pl_PositionVector = vPos;
     plRocket.pl_OrientationAngle = ANGLE3D(0, -5.0f-FRnd()*10.0f, 0);
@@ -260,7 +260,7 @@ functions:
     penProjectile->Initialize(eLaunch);
   };
   // fire death laser
-  void FireDeathLaser(FLOAT3D &vPos) {
+  void FireDeathLaser(const FLOAT3D &vPos) {
     CPlacement3D plLaser;
     plLaser.pl_PositionVector = vPos;
     plLaser.pl_OrientationAngle = ANGLE3D(0, -5.0f-FRnd()*10.0f, 0);

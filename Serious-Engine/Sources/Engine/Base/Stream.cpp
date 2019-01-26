@@ -43,7 +43,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 // default size of page used for stream IO operations (4Kb)
 //ULONG _ulPageSize = 0;
 // maximum lenght of file that can be saved (default: 128Mb)
-ULONG _ulMaxLenghtOfSavingFile = (1UL<<20)*128;
+ULONG _ulMaxLenghtOfSavingFile = (1UL << 20) * 128;
 extern INDEX fil_bPreferZips = FALSE;
 
 // set if current thread has currently enabled stream handling
@@ -71,41 +71,39 @@ CTString _strModExt;
 CTFileName _fnmCDPath;
 
 // include/exclude lists for base dir writing/browsing
-CDynamicStackArray<CTFileName> _afnmBaseWriteInc;
-CDynamicStackArray<CTFileName> _afnmBaseWriteExc;
-CDynamicStackArray<CTFileName> _afnmBaseBrowseInc;
-CDynamicStackArray<CTFileName> _afnmBaseBrowseExc;
+CDynamicStackArray <CTFileName> _afnmBaseWriteInc;
+CDynamicStackArray <CTFileName> _afnmBaseWriteExc;
+CDynamicStackArray <CTFileName> _afnmBaseBrowseInc;
+CDynamicStackArray <CTFileName> _afnmBaseBrowseExc;
 // list of paths or patterns that are not included when making CRCs for network connection
 // this is used to enable connection between different localized versions
-CDynamicStackArray<CTFileName> _afnmNoCRC;
+CDynamicStackArray <CTFileName> _afnmNoCRC;
 
 
 // load a filelist
-static BOOL LoadFileList(CDynamicStackArray<CTFileName> &afnm, const CTFileName &fnmList)
-{
+static BOOL LoadFileList(CDynamicStackArray <CTFileName> &afnm, const CTFileName &fnmList) {
   afnm.PopAll();
   try {
     CTFileStream strm;
     strm.Open_t(fnmList);
-    while(!strm.AtEOF()) {
+    while (!strm.AtEOF()) {
       CTString strLine;
       strm.GetLine_t(strLine);
       strLine.TrimSpacesLeft();
       strLine.TrimSpacesRight();
-      if (strLine!="") {
+      if (strLine != "") {
         afnm.Push() = strLine;
       }
     }
     return TRUE;
-  } catch(char *strError) {
+  } catch (char *strError) {
     CPrintF("%s\n", strError);
     return FALSE;
   }
 }
 
-extern BOOL FileMatchesList(CDynamicStackArray<CTFileName> &afnm, const CTFileName &fnm)
-{
-  for(INDEX i=0; i<afnm.Count(); i++) {
+extern BOOL FileMatchesList(CDynamicStackArray <CTFileName> &afnm, const CTFileName &fnm) {
+  for (INDEX i = 0; i < afnm.Count(); i++) {
     if (fnm.Matches(afnm[i]) || fnm.HasPrefix(afnm[i])) {
       return TRUE;
     }
@@ -116,23 +114,22 @@ extern BOOL FileMatchesList(CDynamicStackArray<CTFileName> &afnm, const CTFileNa
 static CTFileName _fnmApp;
 
 void findGroInsideDirectory(CTFileName filename) {
-    // for each group file in base directory
-    DIR *dir = opendir(filename);
-    if (dir) {
-        struct dirent *ent;
-        while ((ent = readdir(dir)) != NULL) {
-            if (CTString(ent->d_name).Matches("*.gro")) {
-                UNZIPAddArchive(filename + ent->d_name);
-            }
-        }
-        closedir(dir);
-    } else {
-        WarningMessage("Cannot open %s: %s", filename, strerror(errno));
+  // for each group file in base directory
+  DIR *dir = opendir(filename);
+  if (dir) {
+    struct dirent *ent;
+    while ((ent = readdir(dir)) != NULL) {
+      if (CTString(ent->d_name).Matches("*.gro")) {
+        UNZIPAddArchive(filename + ent->d_name);
+      }
     }
+    closedir(dir);
+  } else {
+    WarningMessage("Cannot open %s: %s", filename, strerror(errno));
+  }
 }
 
-void InitStreams(void)
-{
+void InitStreams(void) {
   // obtain information about system
 //  SYSTEM_INFO siSystemInfo;
 //  GetSystemInfo( &siSystemInfo);
@@ -144,19 +141,19 @@ void InitStreams(void)
   _fnmApp = _fnmApplicationPath;
 
   // if no mod defined yet
-  if (_fnmMod=="") {
+  if (_fnmMod == "") {
     // check for 'default mod' file
     LoadStringVar(CTString("DefaultMod.txt"), _fnmMod);
   }
 
-  CPrintF(TRANS("Current mod: %s\n"), _fnmMod==""?TRANS("<none>"):(CTString&)_fnmMod);
+  CPrintF(TRANS("Current mod: %s\n"), _fnmMod == "" ? TRANS("<none>") : (CTString &) _fnmMod);
   // if there is a mod active
-  if (_fnmMod!="") {
+  if (_fnmMod != "") {
     // load mod's include/exclude lists
     CPrintF(TRANS("Loading mod include/exclude lists...\n"));
     BOOL bOK = FALSE;
-    bOK |= LoadFileList(_afnmBaseWriteInc , CTString("BaseWriteInclude.lst"));
-    bOK |= LoadFileList(_afnmBaseWriteExc , CTString("BaseWriteExclude.lst"));
+    bOK |= LoadFileList(_afnmBaseWriteInc, CTString("BaseWriteInclude.lst"));
+    bOK |= LoadFileList(_afnmBaseWriteExc, CTString("BaseWriteExclude.lst"));
     bOK |= LoadFileList(_afnmBaseBrowseInc, CTString("BaseBrowseInclude.lst"));
     bOK |= LoadFileList(_afnmBaseBrowseExc, CTString("BaseBrowseExclude.lst"));
 
@@ -165,11 +162,11 @@ void InitStreams(void)
       // the mod is not valid
       _fnmMod = CTString("");
       CPrintF(TRANS("Error: MOD not found!\n"));
-    // if mod is ok
+      // if mod is ok
     } else {
       // remember mod name (the parameter that is passed on cmdline)
       _strModName = _fnmMod;
-      _strModName.DeleteChar(_strModName.Length()-1);
+      _strModName.DeleteChar(_strModName.Length() - 1);
       _strModName = CTFileName(_strModName).FileName();
     }
   }
@@ -187,7 +184,7 @@ void InitStreams(void)
   findGroInsideDirectory(_fnmApplicationPath);
 
   // if there is a mod active
-  if (_fnmMod!="") {
+  if (_fnmMod != "") {
 //    // for each group file in mod directory
 //    struct _finddata_t c_file;
 //    long hFile;
@@ -204,7 +201,7 @@ void InitStreams(void)
   }
 
   // if there is a CD path
-  if (_fnmCDPath!="") {
+  if (_fnmCDPath != "") {
     // for each group file on the CD
 //    struct _finddata_t c_file;
 //    long hFile;
@@ -220,7 +217,7 @@ void InitStreams(void)
 //    _findclose( hFile );
 
     // if there is a mod active
-    if (_fnmMod!="") {
+    if (_fnmMod != "") {
       // for each group file in mod directory
 //      struct _finddata_t c_file;
 //      long hFile;
@@ -241,10 +238,10 @@ void InitStreams(void)
   try {
     // read the zip directories
     UNZIPReadDirectoriesReverse_t();
-  // if failed
-  } catch( char *strError) {
+    // if failed
+  } catch (char *strError) {
     // report warning
-    CPrintF( TRANS("There were group file errors:\n%s"), strError);
+    CPrintF(TRANS("There were group file errors:\n%s"), strError);
   }
   CPrintF("\n");
 
@@ -253,18 +250,15 @@ void InitStreams(void)
 //  _pShell->SetINDEX((CTString("sys")+"_iCPU"+"Misc").str_String, 1);
 }
 
-void EndStreams(void)
-{
+void EndStreams(void) {
 }
 
 
-void UseApplicationPath(void) 
-{
+void UseApplicationPath(void) {
   _fnmApplicationPath = _fnmApp;
 }
 
-void IgnoreApplicationPath(void)
-{
+void IgnoreApplicationPath(void) {
   _fnmApplicationPath = CTString("");
 }
 
@@ -273,8 +267,7 @@ void IgnoreApplicationPath(void)
 // Helper functions
 
 /* Static function enable stream handling. */
-void CTStream::EnableStreamHandling(void)
-{
+void CTStream::EnableStreamHandling(void) {
   ASSERT(!_bThreadCanHandleStreams && _plhOpenedStreams == NULL);
 
   _bThreadCanHandleStreams = TRUE;
@@ -282,8 +275,7 @@ void CTStream::EnableStreamHandling(void)
 }
 
 /* Static function disable stream handling. */
-void CTStream::DisableStreamHandling(void)
-{
+void CTStream::DisableStreamHandling(void) {
   ASSERT(_bThreadCanHandleStreams && _plhOpenedStreams != NULL);
 
   _bThreadCanHandleStreams = FALSE;
@@ -333,8 +325,7 @@ int CTStream::ExceptionFilter(DWORD dwCode, _EXCEPTION_POINTERS *pExceptionInfoP
 /*
  * Static function to report fatal exception error.
  */
-void CTStream::ExceptionFatalError(void)
-{
+void CTStream::ExceptionFatalError(void) {
 //  FatalError( GetWindowsError( GetLastError()) );
   FatalError("Fatal error");
 }
@@ -348,7 +339,8 @@ void CTStream::Throw_t(char *strFormat, ...)  // throws char *
   char strFormatBuffer[slBufferSize];
   static thread_local char strBuffer[slBufferSize];
   // add the stream description to the format string
-  _snprintf(strFormatBuffer, slBufferSize, "%s (%s)", strFormat, strm_strStreamDescription.str_String);
+  _snprintf(strFormatBuffer, slBufferSize, "%s (%s)", strFormat,
+            strm_strStreamDescription.str_String);
   // format the message in buffer
   va_list arg;
   va_start(arg, strFormat); // variable arguments start after this argument
@@ -360,8 +352,7 @@ void CTStream::Throw_t(char *strFormat, ...)  // throws char *
 // Binary access methods
 
 /* Get CRC32 of stream */
-ULONG CTStream::GetStreamCRC32_t(void)
-{
+ULONG CTStream::GetStreamCRC32_t(void) {
   // remember where stream is now
   SLONG slOldPos = GetPos_t();
   // go to start of file
@@ -374,10 +365,10 @@ ULONG CTStream::GetStreamCRC32_t(void)
 
   // for each block in file
   const SLONG slBlockSize = 4096;
-  for(SLONG slPos=0; slPos<slFileSize; slPos+=slBlockSize) {
+  for (SLONG slPos = 0; slPos < slFileSize; slPos += slBlockSize) {
     // read the block
     UBYTE aubBlock[slBlockSize];
-    SLONG slThisBlockSize = Min(slFileSize-slPos, slBlockSize);
+    SLONG slThisBlockSize = Min(slFileSize - slPos, slBlockSize);
     Read_t(aubBlock, slThisBlockSize);
     // checksum it
     CRC_AddBlock(ulCRC, aubBlock, slThisBlockSize);
@@ -395,16 +386,15 @@ ULONG CTStream::GetStreamCRC32_t(void)
 
 /* Get a line of text from file. */
 // throws char *
-void CTStream::GetLine_t(char *strBuffer, SLONG slBufferSize, char cDelimiter /*='\n'*/ )
-{
+void CTStream::GetLine_t(char *strBuffer, SLONG slBufferSize, char cDelimiter /*='\n'*/ ) {
   // check parameters
-  ASSERT(strBuffer!=NULL && slBufferSize>0);
+  ASSERT(strBuffer != NULL && slBufferSize > 0);
   // check that the stream can be read
   ASSERT(IsReadable());
   // letters slider
   INDEX iLetters = 0;
   // test if EOF reached
-  if(AtEOF()) {
+  if (AtEOF()) {
     ThrowF_t(TRANS("EOF reached, file %s"), strm_strStreamDescription);
   }
   // get line from istream
@@ -413,19 +403,19 @@ void CTStream::GetLine_t(char *strBuffer, SLONG slBufferSize, char cDelimiter /*
     char c;
     Read_t(&c, 1);
 
-    if(AtEOF()) {
+    if (AtEOF()) {
       // cut off
-      strBuffer[ iLetters] = 0;
+      strBuffer[iLetters] = 0;
       break;
     }
 
     // don't read "\r" characters but rather act like they don't exist
-    if( c != '\r') {
-      strBuffer[ iLetters] = c;
+    if (c != '\r') {
+      strBuffer[iLetters] = c;
       // stop reading when delimiter loaded
-      if( strBuffer[ iLetters] == cDelimiter) {
+      if (strBuffer[iLetters] == cDelimiter) {
         // convert delimiter to zero
-        strBuffer[ iLetters] = 0;
+        strBuffer[iLetters] = 0;
         // jump over delimiter
         //Seek_t(1, SD_CUR);
         break;
@@ -434,7 +424,7 @@ void CTStream::GetLine_t(char *strBuffer, SLONG slBufferSize, char cDelimiter /*
       iLetters++;
     }
     // test if maximum buffer lenght reached
-    if( iLetters==slBufferSize) {
+    if (iLetters == slBufferSize) {
       return;
     }
   }
@@ -443,7 +433,7 @@ void CTStream::GetLine_t(char *strBuffer, SLONG slBufferSize, char cDelimiter /*
 void CTStream::GetLine_t(CTString &strLine, char cDelimiter/*='\n'*/) // throw char *
 {
   char strBuffer[1024];
-  GetLine_t(strBuffer, sizeof(strBuffer)-1, cDelimiter);
+  GetLine_t(strBuffer, sizeof(strBuffer) - 1, cDelimiter);
   strLine = strBuffer;
 }
 
@@ -452,7 +442,7 @@ void CTStream::GetLine_t(CTString &strLine, char cDelimiter/*='\n'*/) // throw c
 void CTStream::PutLine_t(const char *strBuffer) // throws char *
 {
   // check parameters
-  ASSERT(strBuffer!=NULL);
+  ASSERT(strBuffer != NULL);
   // check that the stream is writteable
   ASSERT(IsWriteable());
   // get string length
@@ -466,15 +456,14 @@ void CTStream::PutLine_t(const char *strBuffer) // throws char *
 void CTStream::PutString_t(const char *strString) // throw char *
 {
   // check parameters
-  ASSERT(strString!=NULL);
+  ASSERT(strString != NULL);
   // check that the stream is writteable
   ASSERT(IsWriteable());
   // get string length
   INDEX iStringLength = strlen(strString);
   // put line into stream
-  for( INDEX iLetter=0; iLetter<iStringLength; iLetter++)
-  {
-    if (*strString=='\n') {
+  for (INDEX iLetter = 0; iLetter < iStringLength; iLetter++) {
+    if (*strString == '\n') {
       // write "\r\n" into stream
       Write_t("\r\n", 2);
       strString++;
@@ -501,39 +490,39 @@ void CTStream::FPrintF_t(const char *strFormat, ...) // throw char *
 
 CChunkID CTStream::GetID_t(void) // throws char *
 {
-	CChunkID cidToReturn;
-	Read_t( &cidToReturn.cid_ID[0], CID_LENGTH);
-	return( cidToReturn);
+  CChunkID cidToReturn;
+  Read_t(&cidToReturn.cid_ID[0], CID_LENGTH);
+  return (cidToReturn);
 }
 
 CChunkID CTStream::PeekID_t(void) // throw char *
 {
   // read the chunk id
-	CChunkID cidToReturn;
-	Read_t( &cidToReturn.cid_ID[0], CID_LENGTH);
+  CChunkID cidToReturn;
+  Read_t(&cidToReturn.cid_ID[0], CID_LENGTH);
   // return the stream back
   Seek_t(-CID_LENGTH, SD_CUR);
-	return( cidToReturn);
+  return (cidToReturn);
 }
 
 void CTStream::ExpectID_t(const CChunkID &cidExpected) // throws char *
 {
-	CChunkID cidToCompare;
+  CChunkID cidToCompare;
 
-	Read_t( &cidToCompare.cid_ID[0], CID_LENGTH);
-	if( !(cidToCompare == cidExpected))
-	{
-		ThrowF_t(TRANS("Chunk ID validation failed.\nExpected ID \"%s\" but found \"%s\"\n"),
-      cidExpected.cid_ID, cidToCompare.cid_ID);
-	}
+  Read_t(&cidToCompare.cid_ID[0], CID_LENGTH);
+  if (!(cidToCompare == cidExpected)) {
+    ThrowF_t(TRANS("Chunk ID validation failed.\nExpected ID \"%s\" but found \"%s\"\n"),
+             cidExpected.cid_ID, cidToCompare.cid_ID);
+  }
 }
+
 void CTStream::ExpectKeyword_t(const CTString &strKeyword) // throw char *
 {
   // check that the keyword is present
-  for(INDEX iKeywordChar=0; iKeywordChar<(INDEX)strlen(strKeyword); iKeywordChar++) {
+  for (INDEX iKeywordChar = 0; iKeywordChar < (INDEX) strlen(strKeyword); iKeywordChar++) {
     SBYTE chKeywordChar;
-    (*this)>>chKeywordChar;
-    if (chKeywordChar!=strKeyword[iKeywordChar]) {
+    (*this) >> chKeywordChar;
+    if (chKeywordChar != strKeyword[iKeywordChar]) {
       ThrowF_t(TRANS("Expected keyword %s not found"), strKeyword);
     }
   }
@@ -542,46 +531,47 @@ void CTStream::ExpectKeyword_t(const CTString &strKeyword) // throw char *
 
 SLONG CTStream::GetSize_t(void) // throws char *
 {
-	SLONG chunkSize;
+  SLONG chunkSize;
 
-	Read_t( (char *) &chunkSize, sizeof( SLONG));
-	return( chunkSize);
+  Read_t((char *) &chunkSize, sizeof(SLONG));
+  return (chunkSize);
 }
 
 void CTStream::ReadRawChunk_t(void *pvBuffer, SLONG slSize)  // throws char *
 {
-	Read_t((char *)pvBuffer, slSize);
+  Read_t((char *) pvBuffer, slSize);
 }
 
 void CTStream::ReadChunk_t(void *pvBuffer, SLONG slExpectedSize) // throws char *
 {
-	if( slExpectedSize != GetSize_t())
-		throw TRANS("Chunk size not equal as expected size");
-	Read_t((char *)pvBuffer, slExpectedSize);
+  if (slExpectedSize != GetSize_t())
+    throw TRANS("Chunk size not equal as expected size");
+  Read_t((char *) pvBuffer, slExpectedSize);
 }
 
 void CTStream::ReadFullChunk_t(const CChunkID &cidExpected, void *pvBuffer,
-                             SLONG slExpectedSize) // throws char *
+                               SLONG slExpectedSize) // throws char *
 {
-	ExpectID_t( cidExpected);
-	ReadChunk_t( pvBuffer, slExpectedSize);
+  ExpectID_t(cidExpected);
+  ReadChunk_t(pvBuffer, slExpectedSize);
 };
 
-void* CTStream::ReadChunkAlloc_t(SLONG slSize) // throws char *
+void *CTStream::ReadChunkAlloc_t(SLONG slSize) // throws char *
 {
-	UBYTE *buffer;
-	SLONG chunkSize;
+  UBYTE *buffer;
+  SLONG chunkSize;
 
-	if( slSize != 0)
-		chunkSize = slSize;
-	else
-		chunkSize = GetSize_t(); // throws char *
-	buffer = (UBYTE *) AllocMemory( chunkSize);
-	if( buffer == NULL)
-		throw TRANS("ReadChunkAlloc: Unable to allocate needed amount of memory.");
-	Read_t((char *)buffer, chunkSize); // throws char *
-	return buffer;
+  if (slSize != 0)
+    chunkSize = slSize;
+  else
+    chunkSize = GetSize_t(); // throws char *
+  buffer = (UBYTE *) AllocMemory(chunkSize);
+  if (buffer == NULL)
+    throw TRANS("ReadChunkAlloc: Unable to allocate needed amount of memory.");
+  Read_t((char *) buffer, chunkSize); // throws char *
+  return buffer;
 }
+
 void CTStream::ReadStream_t(CTStream &strmOther) // throw char *
 {
   // implement this !!!! @@@@
@@ -589,39 +579,39 @@ void CTStream::ReadStream_t(CTStream &strmOther) // throw char *
 
 void CTStream::WriteID_t(const CChunkID &cidSave) // throws char *
 {
-	Write_t( &cidSave.cid_ID[0], CID_LENGTH);
+  Write_t(&cidSave.cid_ID[0], CID_LENGTH);
 }
 
 void CTStream::WriteSize_t(SLONG slSize) // throws char *
 {
-	Write_t( (char *)&slSize, sizeof( SLONG));
+  Write_t((char *) &slSize, sizeof(SLONG));
 }
 
 void CTStream::WriteRawChunk_t(void *pvBuffer, SLONG slSize) // throws char *
 {
-	Write_t( (char *)pvBuffer, slSize);
+  Write_t((char *) pvBuffer, slSize);
 }
 
 void CTStream::WriteChunk_t(void *pvBuffer, SLONG slSize) // throws char *
 {
-	WriteSize_t( slSize);
-	WriteRawChunk_t( pvBuffer, slSize);
+  WriteSize_t(slSize);
+  WriteRawChunk_t(pvBuffer, slSize);
 }
 
 void CTStream::WriteFullChunk_t(const CChunkID &cidSave, void *pvBuffer,
-                              SLONG slSize) // throws char *
+                                SLONG slSize) // throws char *
 {
-	WriteID_t( cidSave); // throws char *
-	WriteChunk_t( pvBuffer, slSize); // throws char *
+  WriteID_t(cidSave); // throws char *
+  WriteChunk_t(pvBuffer, slSize); // throws char *
 }
+
 void CTStream::WriteStream_t(CTStream &strmOther) // throw char *
 {
   // implement this !!!! @@@@
 }
 
 // whether or not the given pointer is coming from this stream (mainly used for exception handling)
-BOOL CTStream::PointerInStream(void* pPointer)
-{
+BOOL CTStream::PointerInStream(void *pPointer) {
   // safe to return FALSE, we're using virtual functions anyway
   return FALSE;
 }
@@ -630,15 +620,14 @@ BOOL CTStream::PointerInStream(void* pPointer)
 // filename dictionary operations
 
 // enable dictionary in writable file from this point
-void CTStream::DictionaryWriteBegin_t(const CTFileName &fnmImportFrom, SLONG slImportOffset)
-{
-  ASSERT(strm_slDictionaryPos==0);
+void CTStream::DictionaryWriteBegin_t(const CTFileName &fnmImportFrom, SLONG slImportOffset) {
+  ASSERT(strm_slDictionaryPos == 0);
   ASSERT(strm_dmDictionaryMode == DM_NONE);
   strm_ntDictionary.SetAllocationParameters(100, 5, 5);
   strm_ctDictionaryImported = 0;
 
   // if importing an existing dictionary to start with
-  if (fnmImportFrom!="") {
+  if (fnmImportFrom != "") {
     // open that file
     CTFileStream strmOther;
     strmOther.Open_t(fnmImportFrom);
@@ -648,7 +637,7 @@ void CTStream::DictionaryWriteBegin_t(const CTFileName &fnmImportFrom, SLONG slI
     CopyDictionary(strmOther);
     // write dictionary importing data
     WriteID_t("DIMP");  // dictionary import
-    *this<<fnmImportFrom<<slImportOffset;
+    *this << fnmImportFrom << slImportOffset;
     // remember how many filenames were imported
     strm_ctDictionaryImported = strm_afnmDictionary.Count();
   }
@@ -658,17 +647,16 @@ void CTStream::DictionaryWriteBegin_t(const CTFileName &fnmImportFrom, SLONG slI
   // remember where position will be placed
   strm_slDictionaryPos = GetPos_t();
   // leave space for position
-  *this<<SLONG(0);
+  *this << SLONG(0);
 
   // start dictionary
   strm_dmDictionaryMode = DM_ENABLED;
 }
 
 // write the dictionary (usually at the end of file)
-void CTStream::DictionaryWriteEnd_t(void)
-{
+void CTStream::DictionaryWriteEnd_t(void) {
   ASSERT(strm_dmDictionaryMode == DM_ENABLED);
-  ASSERT(strm_slDictionaryPos>0);
+  ASSERT(strm_slDictionaryPos > 0);
   // remember the dictionary position chunk position
   SLONG slDictPos = strm_slDictionaryPos;
   // mark that now saving dictionary
@@ -681,12 +669,12 @@ void CTStream::DictionaryWriteEnd_t(void)
   WriteID_t("DICT");  // dictionary
   // write number of used filenames
   INDEX ctFileNames = strm_afnmDictionary.Count();
-  INDEX ctFileNamesNew = ctFileNames-strm_ctDictionaryImported;
-  *this<<ctFileNamesNew;
+  INDEX ctFileNamesNew = ctFileNames - strm_ctDictionaryImported;
+  *this << ctFileNamesNew;
   // for each filename
-  for(INDEX iFileName=strm_ctDictionaryImported; iFileName<ctFileNames; iFileName++) {
+  for (INDEX iFileName = strm_ctDictionaryImported; iFileName < ctFileNames; iFileName++) {
     // write it to disk
-    *this<<strm_afnmDictionary[iFileName];
+    *this << strm_afnmDictionary[iFileName];
   }
   WriteID_t("DEND");  // dictionary end
 
@@ -695,7 +683,7 @@ void CTStream::DictionaryWriteEnd_t(void)
 
   // write the position back to dictionary position chunk
   SetPos_t(slDictPos);
-  *this<<slDictBegin;
+  *this << slDictBegin;
 
   // stop dictionary processing
   strm_dmDictionaryMode = DM_NONE;
@@ -704,12 +692,11 @@ void CTStream::DictionaryWriteEnd_t(void)
 
   // return to end of dictionary
   SetPos_t(slContinue);
-  strm_slDictionaryPos=0;
+  strm_slDictionaryPos = 0;
 }
 
 // read the dictionary from given offset in file (internal function)
-void CTStream::ReadDictionary_intenal_t(SLONG slOffset)
-{
+void CTStream::ReadDictionary_intenal_t(SLONG slOffset) {
   // remember where to continue loading
   SLONG slContinue = GetPos_t();
 
@@ -723,15 +710,16 @@ void CTStream::ReadDictionary_intenal_t(SLONG slOffset)
   // read number of new filenames
   INDEX ctFileNamesOld = strm_afnmDictionary.Count();
   INDEX ctFileNamesNew;
-  *this>>ctFileNamesNew;
+  *this >> ctFileNamesNew;
   // if there are any new filenames
-  if (ctFileNamesNew>0) {
+  if (ctFileNamesNew > 0) {
     // create that much space
     strm_afnmDictionary.Push(ctFileNamesNew);
     // for each filename
-    for(INDEX iFileName=ctFileNamesOld; iFileName<ctFileNamesOld+ctFileNamesNew; iFileName++) {
+    for (INDEX iFileName = ctFileNamesOld;
+         iFileName < ctFileNamesOld + ctFileNamesNew; iFileName++) {
       // read it
-      *this>>strm_afnmDictionary[iFileName];
+      *this >> strm_afnmDictionary[iFileName];
     }
   }
   ExpectID_t("DEND");  // dictionary end
@@ -744,27 +732,25 @@ void CTStream::ReadDictionary_intenal_t(SLONG slOffset)
 }
 
 // copy filename dictionary from another stream
-void CTStream::CopyDictionary(CTStream &strmOther)
-{
-   strm_afnmDictionary = strmOther.strm_afnmDictionary;
-   for (INDEX i=0; i<strm_afnmDictionary.Count(); i++) {
-     strm_ntDictionary.Add(&strm_afnmDictionary[i]);
-   }
+void CTStream::CopyDictionary(CTStream &strmOther) {
+  strm_afnmDictionary = strmOther.strm_afnmDictionary;
+  for (INDEX i = 0; i < strm_afnmDictionary.Count(); i++) {
+    strm_ntDictionary.Add(&strm_afnmDictionary[i]);
+  }
 }
 
-SLONG CTStream::DictionaryReadBegin_t(void)
-{
+SLONG CTStream::DictionaryReadBegin_t(void) {
   ASSERT(strm_dmDictionaryMode == DM_NONE);
-  ASSERT(strm_slDictionaryPos==0);
+  ASSERT(strm_slDictionaryPos == 0);
   strm_ntDictionary.SetAllocationParameters(100, 5, 5);
 
   SLONG slImportOffset = 0;
   // if there is imported dictionary
-  if (PeekID_t()==CChunkID("DIMP")) {  // dictionary import
+  if (PeekID_t() == CChunkID("DIMP")) {  // dictionary import
     // read dictionary importing data
     ExpectID_t("DIMP");  // dictionary import
     CTFileName fnmImportFrom;
-    *this>>fnmImportFrom>>slImportOffset;
+    *this >> fnmImportFrom >> slImportOffset;
 
     // open that file
     CTFileStream strmOther;
@@ -776,7 +762,7 @@ SLONG CTStream::DictionaryReadBegin_t(void)
   }
 
   // if the dictionary is not here
-  if (PeekID_t()!=CChunkID("DPOS")) {  // dictionary position
+  if (PeekID_t() != CChunkID("DPOS")) {  // dictionary position
     // do nothing
     return 0;
   }
@@ -784,7 +770,7 @@ SLONG CTStream::DictionaryReadBegin_t(void)
   // read dictionary position
   ExpectID_t("DPOS"); // dictionary position
   SLONG slDictBeg;
-  *this>>slDictBeg;
+  *this >> slDictBeg;
 
   // read the dictionary from that offset in file
   ReadDictionary_intenal_t(slDictBeg);
@@ -793,61 +779,60 @@ SLONG CTStream::DictionaryReadBegin_t(void)
   strm_dmDictionaryMode = DM_ENABLED;
 
   // return offset of dictionary for later cross-file importing
-  if (slImportOffset!=0) {
+  if (slImportOffset != 0) {
     return slImportOffset;
   } else {
     return slDictBeg;
   }
 }
 
-void CTStream::DictionaryReadEnd_t(void)
-{
+void CTStream::DictionaryReadEnd_t(void) {
   if (strm_dmDictionaryMode == DM_ENABLED) {
-    ASSERT(strm_slDictionaryPos>0);
+    ASSERT(strm_slDictionaryPos > 0);
     // just skip the dictionary (it was already read)
     SetPos_t(strm_slDictionaryPos);
-    strm_slDictionaryPos=0;
+    strm_slDictionaryPos = 0;
     strm_dmDictionaryMode = DM_NONE;
     strm_ntDictionary.Clear();
 
     // for each filename
     INDEX ctFileNames = strm_afnmDictionary.Count();
-    for(INDEX iFileName=0; iFileName<ctFileNames; iFileName++) {
+    for (INDEX iFileName = 0; iFileName < ctFileNames; iFileName++) {
       CTFileName &fnm = strm_afnmDictionary[iFileName];
       // if not preloaded
-      if (fnm.fnm_pserPreloaded==NULL) {
+      if (fnm.fnm_pserPreloaded == NULL) {
         // skip
         continue;
       }
       // free preloaded instance
       CTString strExt = fnm.FileExt();
-      if (strExt==".tex") {
-        _pTextureStock->Release((CTextureData*)fnm.fnm_pserPreloaded);
-      } else if (strExt==".mdl") {
-        _pModelStock->Release((CModelData*)fnm.fnm_pserPreloaded);
+      if (strExt == ".tex") {
+        _pTextureStock->Release((CTextureData *) fnm.fnm_pserPreloaded);
+      } else if (strExt == ".mdl") {
+        _pModelStock->Release((CModelData *) fnm.fnm_pserPreloaded);
       }
     }
 
     strm_afnmDictionary.Clear();
   }
 }
-void CTStream::DictionaryPreload_t(void)
-{
+
+void CTStream::DictionaryPreload_t(void) {
   INDEX ctFileNames = strm_afnmDictionary.Count();
   // for each filename
-  for(INDEX iFileName=0; iFileName<ctFileNames; iFileName++) {
+  for (INDEX iFileName = 0; iFileName < ctFileNames; iFileName++) {
     // preload it
     CTFileName &fnm = strm_afnmDictionary[iFileName];
     CTString strExt = fnm.FileExt();
-    CallProgressHook_t(FLOAT(iFileName)/ctFileNames);
+    CallProgressHook_t(FLOAT(iFileName) / ctFileNames);
     try {
-      if (strExt==".tex") {
+      if (strExt == ".tex") {
         fnm.fnm_pserPreloaded = _pTextureStock->Obtain_t(fnm);
-      } else if (strExt==".mdl") {
+      } else if (strExt == ".mdl") {
         fnm.fnm_pserPreloaded = _pModelStock->Obtain_t(fnm);
       }
     } catch (char *strError) {
-      CPrintF( TRANS("Cannot preload %s: %s\n"), (CTString&)fnm, strError);
+      CPrintF(TRANS("Cannot preload %s: %s\n"), (CTString &) fnm, strError);
     }
   }
 }
@@ -856,16 +841,14 @@ void CTStream::DictionaryPreload_t(void)
 // General construction/destruction
 
 /* Default constructor. */
-CTStream::CTStream(void) : strm_ntDictionary(*new CNameTable_CTFileName)
-{
+CTStream::CTStream(void) : strm_ntDictionary(*new CNameTable_CTFileName) {
   strm_strStreamDescription = "";
   strm_slDictionaryPos = 0;
   strm_dmDictionaryMode = DM_NONE;
 }
 
 /* Destructor. */
-CTStream::~CTStream(void)
-{
+CTStream::~CTStream(void) {
   strm_ntDictionary.Clear();
   strm_afnmDictionary.Clear();
 
@@ -878,8 +861,7 @@ CTStream::~CTStream(void)
 /*
  * Default constructor.
  */
-CTFileStream::CTFileStream(void)
-{
+CTFileStream::CTFileStream(void) {
   fstrm_pFile = NULL;
   // mark that file is created for writing
   fstrm_bReadOnly = TRUE;
@@ -891,10 +873,9 @@ CTFileStream::CTFileStream(void)
 /*
  * Destructor.
  */
-CTFileStream::~CTFileStream(void)
-{
+CTFileStream::~CTFileStream(void) {
   // close stream
-  if (fstrm_pFile != NULL || fstrm_iZipHandle!=-1) {
+  if (fstrm_pFile != NULL || fstrm_iZipHandle != -1) {
     Close();
   }
 }
@@ -903,64 +884,84 @@ CTFileStream::~CTFileStream(void)
  * Open an existing file.
  */
 // throws char *
-void CTFileStream::Open_t(const CTFileName &fnFileName, CTStream::OpenMode om/*=OM_READ*/)
-{
+void CTFileStream::Open_t(const CTFileName &fnFileName, CTStream::OpenMode om/*=OM_READ*/) {
   // if current thread has not enabled stream handling
   if (!_bThreadCanHandleStreams) {
     // error
     ::ThrowF_t(TRANS("Cannot open file `%s', stream handling is not enabled for this thread"),
-      (CTString&)fnFileName);
+               (CTString &) fnFileName);
   }
 
   // check parameters
-  ASSERT(strlen(fnFileName)>0);
+  ASSERT(strlen(fnFileName) > 0);
   // check that the file is not open
-  ASSERT(fstrm_pFile==NULL && fstrm_iZipHandle==-1);
+  ASSERT(fstrm_pFile == NULL && fstrm_iZipHandle == -1);
 
   // expand the filename to full path
   CTFileName fnmFullFileName;
-  INDEX iFile = ExpandFilePath((om == OM_READ)?EFP_READ:EFP_WRITE, fnFileName, fnmFullFileName);
-  
+  INDEX iFile = ExpandFilePath((om == OM_READ) ? EFP_READ : EFP_WRITE, fnFileName, fnmFullFileName);
+
   // if read only mode requested
-  if( om == OM_READ) {
+  if (om == OM_READ) {
     // initially, no physical file
     fstrm_pFile = NULL;
     // if zip file
-    if( iFile==EFP_MODZIP || iFile==EFP_BASEZIP) {
+    if (iFile == EFP_MODZIP || iFile == EFP_BASEZIP) {
       // open from zip
       fstrm_iZipHandle = UNZIPOpen_t(fnmFullFileName);
       fstrm_slZipSize = UNZIPGetSize(fstrm_iZipHandle);
       // load the file from the zip in the buffer
-      fstrm_pubZipBuffer = (UBYTE*)malloc(fstrm_slZipSize);
-      UNZIPReadBlock_t(fstrm_iZipHandle, (UBYTE*)fstrm_pubZipBuffer, 0, fstrm_slZipSize);
-    // if it is a physical file
-    } else if (iFile==EFP_FILE) {
+      fstrm_pubZipBuffer = (UBYTE *) malloc(fstrm_slZipSize);
+      UNZIPReadBlock_t(fstrm_iZipHandle, (UBYTE *) fstrm_pubZipBuffer, 0, fstrm_slZipSize);
+      // if it is a physical file
+    } else if (iFile == EFP_FILE) {
       // open file in read only mode
       fstrm_pFile = fopen(fnmFullFileName, "rb");
     }
     fstrm_bReadOnly = TRUE;
-  
-  // if write mode requested
-  } else if( om == OM_WRITE) {
+
+    // if write mode requested
+  } else if (om == OM_WRITE) {
     // open file for reading and writing
     fstrm_pFile = fopen(fnmFullFileName, "rb+");
     fstrm_bReadOnly = FALSE;
-  // if unknown mode
+    // if unknown mode
   } else {
     FatalError(TRANS("File stream opening requested with unknown open mode: %d\n"), om);
   }
 
   // if openning operation was not successfull
-  if(fstrm_pFile == NULL && fstrm_iZipHandle==-1) {
+  if (fstrm_pFile == NULL && fstrm_iZipHandle == -1) {
     // throw exception
     Throw_t(TRANS("Cannot open file `%s' (%s)"), fnmFullFileName.str_String,
-      strerror(errno));
+            strerror(errno));
   }
 
   // if file opening was successfull, set stream description to file name
   strm_strStreamDescription = fnmFullFileName;
   // add this newly opened file into opened stream list
-  _plhOpenedStreams->AddTail( strm_lnListNode);
+  _plhOpenedStreams->AddTail(strm_lnListNode);
+}
+
+void MakeSureDirectoryPathExists(CTFileName file) {
+  file = file.FileDir();
+
+
+}
+
+void createFolders(CTString str) {
+  char *s = str.str_String;
+  char *next = strchr(s, '/');
+  while(next) {
+    next[0] = '\0';
+    struct stat st = {0};
+    if (stat(str.str_String, &st) == -1) {
+      mkdir(str.str_String, 0777);
+    }
+    next[0] = '/';
+    s = next + 1;
+    next = strchr(s, '/');
+  }
 }
 
 /*
@@ -969,8 +970,8 @@ void CTFileStream::Open_t(const CTFileName &fnFileName, CTStream::OpenMode om/*=
 void CTFileStream::Create_t(const CTFileName &fnFileName,
                             enum CTStream::CreateMode cm) // throws char *
 {
-  (void)cm; // OBSOLETE!
-  
+  (void) cm; // OBSOLETE!
+
   CTFileName fnFileNameAbsolute = fnFileName;
   fnFileNameAbsolute.SetAbsolutePath();
 
@@ -978,44 +979,42 @@ void CTFileStream::Create_t(const CTFileName &fnFileName,
   if (!_bThreadCanHandleStreams) {
     // error
     ::ThrowF_t(TRANS("Cannot create file `%s', stream handling is not enabled for this thread"),
-      (CTString&)fnFileNameAbsolute);
+               (CTString &) fnFileNameAbsolute);
   }
 
   CTFileName fnmFullFileName;
   INDEX iFile = ExpandFilePath(EFP_WRITE, fnFileNameAbsolute, fnmFullFileName);
 
   // check parameters
-  ASSERT(strlen(fnFileNameAbsolute)>0);
+  ASSERT(strlen(fnFileNameAbsolute) > 0);
   // check that the file is not open
   ASSERT(fstrm_pFile == NULL);
 
   // create the directory for the new file if it doesn't exist yet
-//  TODO: MakeSureDirectoryPathExists(fnmFullFileName);
+  createFolders(fnmFullFileName);
 
   // open file stream for writing (destroy file context if file existed before)
   fstrm_pFile = fopen(fnmFullFileName, "wb+");
   // if not successfull
-  if(fstrm_pFile == NULL)
-  {
+  if (fstrm_pFile == NULL) {
     // throw exception
     Throw_t(TRANS("Cannot create file `%s' (%s)"), fnmFullFileName.str_String,
-      strerror(errno));
+            strerror(errno));
   }
   // if file creation was successfull, set stream description to file name
   strm_strStreamDescription = fnFileNameAbsolute;
   // mark that file is created for writing
   fstrm_bReadOnly = FALSE;
   // add this newly created file into opened stream list
-  _plhOpenedStreams->AddTail( strm_lnListNode);
+  _plhOpenedStreams->AddTail(strm_lnListNode);
 }
 
 /*
  * Close an open file.
  */
-void CTFileStream::Close(void)
-{
+void CTFileStream::Close(void) {
   // if file is not open
-  if (fstrm_pFile==NULL && fstrm_iZipHandle==-1) {
+  if (fstrm_pFile == NULL && fstrm_iZipHandle == -1) {
     ASSERT(FALSE);
     return;
   }
@@ -1028,10 +1027,10 @@ void CTFileStream::Close(void)
   // if file on disk
   if (fstrm_pFile != NULL) {
     // close file
-    fclose( fstrm_pFile);
+    fclose(fstrm_pFile);
     fstrm_pFile = NULL;
-  // if file in zip
-  } else if (fstrm_iZipHandle>=0) {
+    // if file in zip
+  } else if (fstrm_iZipHandle >= 0) {
     // close zip entry
     UNZIPClose(fstrm_iZipHandle);
     fstrm_iZipHandle = -1;
@@ -1046,18 +1045,17 @@ void CTFileStream::Close(void)
   strm_dmDictionaryMode = DM_NONE;
   strm_ntDictionary.Clear();
   strm_afnmDictionary.Clear();
-  strm_slDictionaryPos=0;
+  strm_slDictionaryPos = 0;
 }
 
 /* Get CRC32 of stream */
-ULONG CTFileStream::GetStreamCRC32_t(void)
-{
+ULONG CTFileStream::GetStreamCRC32_t(void) {
   // if file on disk
   if (fstrm_pFile != NULL) {
     // use base class implementation (really calculates the CRC)
     return CTStream::GetStreamCRC32_t();
-  // if file in zip
-  } else if (fstrm_iZipHandle >=0) {
+    // if file in zip
+  } else if (fstrm_iZipHandle >= 0) {
     return UNZIPGetCRC(fstrm_iZipHandle);
   } else {
     ASSERT(FALSE);
@@ -1066,9 +1064,8 @@ ULONG CTFileStream::GetStreamCRC32_t(void)
 }
 
 /* Read a block of data from stream. */
-void CTFileStream::Read_t(void *pvBuffer, SLONG slSize)
-{
-  if(fstrm_iZipHandle != -1) {
+void CTFileStream::Read_t(void *pvBuffer, SLONG slSize) {
+  if (fstrm_iZipHandle != -1) {
     memcpy(pvBuffer, fstrm_pubZipBuffer + fstrm_iZipLocation, slSize);
     fstrm_iZipLocation += slSize;
     return;
@@ -1078,9 +1075,8 @@ void CTFileStream::Read_t(void *pvBuffer, SLONG slSize)
 }
 
 /* Write a block of data to stream. */
-void CTFileStream::Write_t(const void *pvBuffer, SLONG slSize)
-{
-  if(fstrm_bReadOnly || fstrm_iZipHandle != -1) {
+void CTFileStream::Write_t(const void *pvBuffer, SLONG slSize) {
+  if (fstrm_bReadOnly || fstrm_iZipHandle != -1) {
     throw "Stream is read-only!";
   }
 
@@ -1088,13 +1084,18 @@ void CTFileStream::Write_t(const void *pvBuffer, SLONG slSize)
 }
 
 /* Seek in stream. */
-void CTFileStream::Seek_t(SLONG slOffset, enum SeekDir sd)
-{
-  if(fstrm_iZipHandle != -1) {
-    switch(sd) {
-    case SD_BEG: fstrm_iZipLocation = slOffset; break;
-    case SD_CUR: fstrm_iZipLocation += slOffset; break;
-    case SD_END: fstrm_iZipLocation = GetSize_t() + slOffset; break;
+void CTFileStream::Seek_t(SLONG slOffset, enum SeekDir sd) {
+  if (fstrm_iZipHandle != -1) {
+    switch (sd) {
+      case SD_BEG:
+        fstrm_iZipLocation = slOffset;
+            break;
+      case SD_CUR:
+        fstrm_iZipLocation += slOffset;
+            break;
+      case SD_END:
+        fstrm_iZipLocation = GetSize_t() + slOffset;
+            break;
     }
   } else {
     fseek(fstrm_pFile, slOffset, sd);
@@ -1102,15 +1103,13 @@ void CTFileStream::Seek_t(SLONG slOffset, enum SeekDir sd)
 }
 
 /* Set absolute position in stream. */
-void CTFileStream::SetPos_t(SLONG slPosition)
-{
+void CTFileStream::SetPos_t(SLONG slPosition) {
   Seek_t(slPosition, SD_BEG);
 }
 
 /* Get absolute position in stream. */
-SLONG CTFileStream::GetPos_t(void)
-{
-  if(fstrm_iZipHandle != -1) {
+SLONG CTFileStream::GetPos_t(void) {
+  if (fstrm_iZipHandle != -1) {
     return fstrm_iZipLocation;
   } else {
     return ftell(fstrm_pFile);
@@ -1118,9 +1117,8 @@ SLONG CTFileStream::GetPos_t(void)
 }
 
 /* Get size of stream */
-SLONG CTFileStream::GetStreamSize(void)
-{
-  if(fstrm_iZipHandle != -1) {
+SLONG CTFileStream::GetStreamSize(void) {
+  if (fstrm_iZipHandle != -1) {
     return UNZIPGetSize(fstrm_iZipHandle);
   } else {
     long lCurrentPos = ftell(fstrm_pFile);
@@ -1132,9 +1130,8 @@ SLONG CTFileStream::GetStreamSize(void)
 }
 
 /* Check if file position points to the EOF */
-BOOL CTFileStream::AtEOF(void)
-{
-  if(fstrm_iZipHandle != -1) {
+BOOL CTFileStream::AtEOF(void) {
+  if (fstrm_iZipHandle != -1) {
     return fstrm_iZipLocation >= fstrm_slZipSize;
   } else {
     int eof = feof(fstrm_pFile);
@@ -1143,8 +1140,7 @@ BOOL CTFileStream::AtEOF(void)
 }
 
 // whether or not the given pointer is coming from this stream (mainly used for exception handling)
-BOOL CTFileStream::PointerInStream(void* pPointer)
-{
+BOOL CTFileStream::PointerInStream(void *pPointer) {
   // we're not using virtual allocation buffers so it's fine to return FALSE here.
   return FALSE;
 }
@@ -1155,8 +1151,7 @@ BOOL CTFileStream::PointerInStream(void* pPointer)
 /*
  * Create dynamically resizing stream for reading/writing.
  */
-CTMemoryStream::CTMemoryStream(void)
-{
+CTMemoryStream::CTMemoryStream(void) {
   // if current thread has not enabled stream handling
   if (!_bThreadCanHandleStreams) {
     // error
@@ -1170,9 +1165,9 @@ CTMemoryStream::CTMemoryStream(void)
   // set stream description
   strm_strStreamDescription = "dynamic memory stream";
   // add this newly created memory stream into opened stream list
-  _plhOpenedStreams->AddTail( strm_lnListNode);
+  _plhOpenedStreams->AddTail(strm_lnListNode);
   // allocate amount of memory needed to hold maximum allowed file length (when saving)
-  mstrm_pubBuffer = (UBYTE*)malloc(_ulMaxLenghtOfSavingFile);
+  mstrm_pubBuffer = (UBYTE *) malloc(_ulMaxLenghtOfSavingFile);
   mstrm_pubBufferEnd = mstrm_pubBuffer + _ulMaxLenghtOfSavingFile;
   mstrm_pubBufferMax = mstrm_pubBuffer;
 }
@@ -1181,8 +1176,7 @@ CTMemoryStream::CTMemoryStream(void)
  * Create static stream from given buffer.
  */
 CTMemoryStream::CTMemoryStream(void *pvBuffer, SLONG slSize,
-                               CTStream::OpenMode om /*= CTStream::OM_READ*/)
-{
+                               CTStream::OpenMode om /*= CTStream::OM_READ*/) {
   // if current thread has not enabled stream handling
   if (!_bThreadCanHandleStreams) {
     // error
@@ -1190,35 +1184,32 @@ CTMemoryStream::CTMemoryStream(void *pvBuffer, SLONG slSize,
   }
 
   // allocate amount of memory needed to hold maximum allowed file length (when saving)
-  mstrm_pubBuffer = (UBYTE*)malloc(_ulMaxLenghtOfSavingFile);
+  mstrm_pubBuffer = (UBYTE *) malloc(_ulMaxLenghtOfSavingFile);
   mstrm_pubBufferEnd = mstrm_pubBuffer + _ulMaxLenghtOfSavingFile;
   mstrm_pubBufferMax = mstrm_pubBuffer + slSize;
   // copy given block of memory into memory file
-  memcpy( mstrm_pubBuffer, pvBuffer, slSize);
+  memcpy(mstrm_pubBuffer, pvBuffer, slSize);
 
   mstrm_ctLocked = 0;
   mstrm_bReadable = TRUE;
   mstrm_slLocation = 0;
   // if stram is opened in read only mode
-  if( om == OM_READ)
-  {
+  if (om == OM_READ) {
     mstrm_bWriteable = FALSE;
   }
-  // otherwise, write is enabled
-  else
-  {
+    // otherwise, write is enabled
+  else {
     mstrm_bWriteable = TRUE;
   }
   // set stream description
   strm_strStreamDescription = "dynamic memory stream";
   // add this newly created memory stream into opened stream list
-  _plhOpenedStreams->AddTail( strm_lnListNode);
+  _plhOpenedStreams->AddTail(strm_lnListNode);
 }
 
 /* Destructor. */
-CTMemoryStream::~CTMemoryStream(void)
-{
-  ASSERT(mstrm_ctLocked==0);
+CTMemoryStream::~CTMemoryStream(void) {
+  ASSERT(mstrm_ctLocked == 0);
   free(mstrm_pubBuffer);
   // remove memory stream from list of curently opened streams
   strm_lnListNode.Remove();
@@ -1230,10 +1221,9 @@ CTMemoryStream::~CTMemoryStream(void)
 /*
  * Lock the buffer contents and it's size.
  */
-void CTMemoryStream::LockBuffer(void **ppvBuffer, SLONG *pslSize)
-{
+void CTMemoryStream::LockBuffer(void **ppvBuffer, SLONG *pslSize) {
   mstrm_ctLocked++;
-  ASSERT(mstrm_ctLocked>0);
+  ASSERT(mstrm_ctLocked > 0);
 
   *ppvBuffer = mstrm_pubBuffer;
   *pslSize = GetSize_t();
@@ -1242,103 +1232,96 @@ void CTMemoryStream::LockBuffer(void **ppvBuffer, SLONG *pslSize)
 /*
  * Unlock buffer.
  */
-void CTMemoryStream::UnlockBuffer()
-{
+void CTMemoryStream::UnlockBuffer() {
   mstrm_ctLocked--;
-  ASSERT(mstrm_ctLocked>=0);
+  ASSERT(mstrm_ctLocked >= 0);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // Memory stream overrides from CTStream
 
-BOOL CTMemoryStream::IsReadable(void)
-{
-  return mstrm_bReadable && (mstrm_ctLocked==0);
+BOOL CTMemoryStream::IsReadable(void) {
+  return mstrm_bReadable && (mstrm_ctLocked == 0);
 }
-BOOL CTMemoryStream::IsWriteable(void)
-{
-  return mstrm_bWriteable && (mstrm_ctLocked==0);
+
+BOOL CTMemoryStream::IsWriteable(void) {
+  return mstrm_bWriteable && (mstrm_ctLocked == 0);
 }
-BOOL CTMemoryStream::IsSeekable(void)
-{
+
+BOOL CTMemoryStream::IsSeekable(void) {
   return TRUE;
 }
 
 /* Read a block of data from stream. */
-void CTMemoryStream::Read_t(void *pvBuffer, SLONG slSize)
-{
+void CTMemoryStream::Read_t(void *pvBuffer, SLONG slSize) {
   memcpy(pvBuffer, mstrm_pubBuffer + mstrm_slLocation, slSize);
   mstrm_slLocation += slSize;
 }
 
 /* Write a block of data to stream. */
-void CTMemoryStream::Write_t(const void *pvBuffer, SLONG slSize)
-{
+void CTMemoryStream::Write_t(const void *pvBuffer, SLONG slSize) {
   memcpy(mstrm_pubBuffer + mstrm_slLocation, pvBuffer, slSize);
   mstrm_slLocation += slSize;
 
-  if(mstrm_pubBuffer + mstrm_slLocation > mstrm_pubBufferMax) {
+  if (mstrm_pubBuffer + mstrm_slLocation > mstrm_pubBufferMax) {
     mstrm_pubBufferMax = mstrm_pubBuffer + mstrm_slLocation;
   }
 }
 
 /* Seek in stream. */
-void CTMemoryStream::Seek_t(SLONG slOffset, enum SeekDir sd)
-{
-  switch(sd) {
-  case SD_BEG: mstrm_slLocation = slOffset; break;
-  case SD_CUR: mstrm_slLocation += slOffset; break;
-  case SD_END: mstrm_slLocation = GetStreamSize() + slOffset; break;
+void CTMemoryStream::Seek_t(SLONG slOffset, enum SeekDir sd) {
+  switch (sd) {
+    case SD_BEG:
+      mstrm_slLocation = slOffset;
+          break;
+    case SD_CUR:
+      mstrm_slLocation += slOffset;
+          break;
+    case SD_END:
+      mstrm_slLocation = GetStreamSize() + slOffset;
+          break;
   }
 }
 
 /* Set absolute position in stream. */
-void CTMemoryStream::SetPos_t(SLONG slPosition)
-{
+void CTMemoryStream::SetPos_t(SLONG slPosition) {
   mstrm_slLocation = slPosition;
 }
 
 /* Get absolute position in stream. */
-SLONG CTMemoryStream::GetPos_t(void)
-{
+SLONG CTMemoryStream::GetPos_t(void) {
   return mstrm_slLocation;
 }
 
 /* Get size of stream. */
-SLONG CTMemoryStream::GetSize_t(void)
-{
+SLONG CTMemoryStream::GetSize_t(void) {
   return GetStreamSize();
 }
 
 /* Get size of stream */
-SLONG CTMemoryStream::GetStreamSize(void)
-{
+SLONG CTMemoryStream::GetStreamSize(void) {
   return mstrm_pubBufferMax - mstrm_pubBuffer;
 }
 
 /* Get CRC32 of stream */
-ULONG CTMemoryStream::GetStreamCRC32_t(void)
-{
+ULONG CTMemoryStream::GetStreamCRC32_t(void) {
   return CTStream::GetStreamCRC32_t();
 }
 
 /* Check if file position points to the EOF */
-BOOL CTMemoryStream::AtEOF(void)
-{
+BOOL CTMemoryStream::AtEOF(void) {
   return mstrm_slLocation >= GetStreamSize();
 }
 
 // whether or not the given pointer is coming from this stream (mainly used for exception handling)
-BOOL CTMemoryStream::PointerInStream(void* pPointer)
-{
+BOOL CTMemoryStream::PointerInStream(void *pPointer) {
   return pPointer >= mstrm_pubBuffer && pPointer < mstrm_pubBufferEnd;
 }
 
 // Test if a file exists.
-BOOL FileExists(const CTFileName &fnmFile)
-{
+BOOL FileExists(const CTFileName &fnmFile) {
   // if no file
-  if (fnmFile=="") {
+  if (fnmFile == "") {
     // it doesn't exist
     return FALSE;
   }
@@ -1349,7 +1332,7 @@ BOOL FileExists(const CTFileName &fnmFile)
     strmFile.Open_t(fnmFile);
     // if successful, it means that it exists,
     return TRUE;
-  // if failed, it means that it doesn't exist
+    // if failed, it means that it doesn't exist
   } catch (char *strError) {
     (void) strError;
     return FALSE;
@@ -1358,10 +1341,9 @@ BOOL FileExists(const CTFileName &fnmFile)
 
 // Test if a file exists for writing. 
 // (this is can be diferent than normal FileExists() if a mod uses basewriteexclude.lst
-BOOL FileExistsForWriting(const CTFileName &fnmFile)
-{
+BOOL FileExistsForWriting(const CTFileName &fnmFile) {
   // if no file
-  if (fnmFile=="") {
+  if (fnmFile == "") {
     // it doesn't exist
     return FALSE;
   }
@@ -1371,7 +1353,7 @@ BOOL FileExistsForWriting(const CTFileName &fnmFile)
 
   // check if it exists
   FILE *f = fopen(fnmFullFileName, "rb");
-  if (f!=NULL) { 
+  if (f != NULL) {
     fclose(f);
     return TRUE;
   } else {
@@ -1380,12 +1362,11 @@ BOOL FileExistsForWriting(const CTFileName &fnmFile)
 }
 
 // Get file timestamp
-SLONG GetFileTimeStamp_t(const CTFileName &fnm)
-{
+SLONG GetFileTimeStamp_t(const CTFileName &fnm) {
   // expand the filename to full path
   CTFileName fnmExpanded;
   INDEX iFile = ExpandFilePath(EFP_READ, fnm, fnmExpanded);
-  if (iFile!=EFP_FILE) {
+  if (iFile != EFP_FILE) {
     return FALSE;
   }
 
@@ -1402,11 +1383,11 @@ SLONG GetFileTimeStamp_t(const CTFileName &fnm)
 //  _close( file_handle);
 //  ASSERT(statFileStatus.st_mtime<=time(NULL));
 //  return statFileStatus.st_mtime;
-    struct stat st;
-    int ierr = stat (fnmExpanded.str_String, &st);
-    if (ierr == 0) {
-        return st.st_mtime;
-    }
+  struct stat st;
+  int ierr = stat(fnmExpanded.str_String, &st);
+  if (ierr == 0) {
+    return st.st_mtime;
+  }
 }
 
 // Get CRC32 of a file
@@ -1420,12 +1401,11 @@ ULONG GetFileCRC32_t(const CTFileName &fnmFile) // throw char *
 }
 
 // Test if a file is read only (also returns FALSE if file does not exist)
-BOOL IsFileReadOnly(const CTFileName &fnm)
-{
+BOOL IsFileReadOnly(const CTFileName &fnm) {
   // expand the filename to full path
   CTFileName fnmExpanded;
   INDEX iFile = ExpandFilePath(EFP_READ, fnm, fnmExpanded);
-  if (iFile!=EFP_FILE) {
+  if (iFile != EFP_FILE) {
     return FALSE;
   }
 
@@ -1441,28 +1421,26 @@ BOOL IsFileReadOnly(const CTFileName &fnm)
 //  _close( file_handle);
 //  ASSERT(statFileStatus.st_mtime<=time(NULL));
 //  return !(statFileStatus.st_mode&_S_IWRITE);
-    return true;
+  return true;
 }
 
 // Delete a file
-BOOL RemoveFile(const CTFileName &fnmFile)
-{
+BOOL RemoveFile(const CTFileName &fnmFile) {
   // expand the filename to full path
   CTFileName fnmExpanded;
   INDEX iFile = ExpandFilePath(EFP_WRITE, fnmFile, fnmExpanded);
-  if (iFile==EFP_FILE) {
+  if (iFile == EFP_FILE) {
     int ires = remove(fnmExpanded);
-    return ires==0;
+    return ires == 0;
   } else {
     return FALSE;
   }
 }
 
 
-static BOOL IsFileReadable_internal(CTFileName &fnmFullFileName)
-{
+static BOOL IsFileReadable_internal(CTFileName &fnmFullFileName) {
   FILE *pFile = fopen(fnmFullFileName, "rb");
-  if (pFile!=NULL) {
+  if (pFile != NULL) {
     fclose(pFile);
     return TRUE;
   } else {
@@ -1471,13 +1449,12 @@ static BOOL IsFileReadable_internal(CTFileName &fnmFullFileName)
 }
 
 // check for some file extensions that can be substituted
-static BOOL SubstExt_internal(CTFileName &fnmFullFileName)
-{
-  if (fnmFullFileName.FileExt()==".mp3") {
-    fnmFullFileName = fnmFullFileName.NoExt()+".ogg";
+static BOOL SubstExt_internal(CTFileName &fnmFullFileName) {
+  if (fnmFullFileName.FileExt() == ".mp3") {
+    fnmFullFileName = fnmFullFileName.NoExt() + ".ogg";
     return TRUE;
-  } else if (fnmFullFileName.FileExt()==".ogg") {
-    fnmFullFileName = fnmFullFileName.NoExt()+".mp3";
+  } else if (fnmFullFileName.FileExt() == ".ogg") {
+    fnmFullFileName = fnmFullFileName.NoExt() + ".mp3";
     return TRUE;
   } else {
     return TRUE;
@@ -1485,26 +1462,25 @@ static BOOL SubstExt_internal(CTFileName &fnmFullFileName)
 }
 
 
-static INDEX ExpandFilePath_read(ULONG ulType, const CTFileName &fnmFile, CTFileName &fnmExpanded)
-{
+static INDEX ExpandFilePath_read(ULONG ulType, const CTFileName &fnmFile, CTFileName &fnmExpanded) {
   // search for the file in zips
   INDEX iFileInZip = UNZIPGetFileIndex(fnmFile);
 
   // if a mod is active
-  if (_fnmMod!="") {
+  if (_fnmMod != "") {
 
     // first try in the mod's dir
     if (!fil_bPreferZips) {
-      fnmExpanded = _fnmApplicationPath+_fnmMod+fnmFile;
+      fnmExpanded = _fnmApplicationPath + _fnmMod + fnmFile;
       if (IsFileReadable_internal(fnmExpanded)) {
         return EFP_FILE;
       }
     }
 
     // if not disallowing zips
-    if (!(ulType&EFP_NOZIPS)) {
+    if (!(ulType & EFP_NOZIPS)) {
       // if exists in mod's zip
-      if (iFileInZip>=0 && UNZIPIsFileAtIndexMod(iFileInZip)) {
+      if (iFileInZip >= 0 && UNZIPIsFileAtIndexMod(iFileInZip)) {
         // use that one
         fnmExpanded = fnmFile;
         return EFP_MODZIP;
@@ -1513,7 +1489,7 @@ static INDEX ExpandFilePath_read(ULONG ulType, const CTFileName &fnmFile, CTFile
 
     // try in the mod's dir after
     if (fil_bPreferZips) {
-      fnmExpanded = _fnmApplicationPath+_fnmMod+fnmFile;
+      fnmExpanded = _fnmApplicationPath + _fnmMod + fnmFile;
       if (IsFileReadable_internal(fnmExpanded)) {
         return EFP_FILE;
       }
@@ -1525,10 +1501,10 @@ static INDEX ExpandFilePath_read(ULONG ulType, const CTFileName &fnmFile, CTFile
     CTFileName fnmAppPath = _fnmApplicationPath;
     fnmAppPath.SetAbsolutePath();
 
-    if(fnmFile.HasPrefix(fnmAppPath)) {
+    if (fnmFile.HasPrefix(fnmAppPath)) {
       fnmExpanded = fnmFile;
     } else {
-      fnmExpanded = _fnmApplicationPath+fnmFile;
+      fnmExpanded = _fnmApplicationPath + fnmFile;
     }
 
     if (IsFileReadable_internal(fnmExpanded)) {
@@ -1537,9 +1513,9 @@ static INDEX ExpandFilePath_read(ULONG ulType, const CTFileName &fnmFile, CTFile
   }
 
   // if not disallowing zips
-  if (!(ulType&EFP_NOZIPS)) {
+  if (!(ulType & EFP_NOZIPS)) {
     // if exists in any zip
-    if (iFileInZip>=0) {
+    if (iFileInZip >= 0) {
       // use that one
       fnmExpanded = fnmFile;
       return EFP_BASEZIP;
@@ -1548,25 +1524,25 @@ static INDEX ExpandFilePath_read(ULONG ulType, const CTFileName &fnmFile, CTFile
 
   // try in the app's base dir
   if (fil_bPreferZips) {
-    fnmExpanded = _fnmApplicationPath+fnmFile;
+    fnmExpanded = _fnmApplicationPath + fnmFile;
     if (IsFileReadable_internal(fnmExpanded)) {
       return EFP_FILE;
     }
   }
 
   // finally, try in the CD path
-  if (_fnmCDPath!="") {
+  if (_fnmCDPath != "") {
 
     // if a mod is active
-    if (_fnmMod!="") {
+    if (_fnmMod != "") {
       // first try in the mod's dir
-      fnmExpanded = _fnmCDPath+_fnmMod+fnmFile;
+      fnmExpanded = _fnmCDPath + _fnmMod + fnmFile;
       if (IsFileReadable_internal(fnmExpanded)) {
         return EFP_FILE;
       }
     }
 
-    fnmExpanded = _fnmCDPath+fnmFile;
+    fnmExpanded = _fnmCDPath + fnmFile;
     if (IsFileReadable_internal(fnmExpanded)) {
       return EFP_FILE;
     }
@@ -1575,34 +1551,34 @@ static INDEX ExpandFilePath_read(ULONG ulType, const CTFileName &fnmFile, CTFile
 }
 
 // Expand a file's filename to full path
-INDEX ExpandFilePath(ULONG ulType, const CTFileName &fnmFile, CTFileName &fnmExpanded)
-{
+INDEX ExpandFilePath(ULONG ulType, const CTFileName &fnmFile, CTFileName &fnmExpanded) {
   CTFileName fnmFileAbsolute = fnmFile;
   fnmFileAbsolute.SetAbsolutePath();
 
   // if writing
-  if (ulType&EFP_WRITE) {
+  if (ulType & EFP_WRITE) {
     // if should write to mod dir
-    if (_fnmMod!="" && (!FileMatchesList(_afnmBaseWriteInc, fnmFileAbsolute) || FileMatchesList(_afnmBaseWriteExc, fnmFileAbsolute))) {
+    if (_fnmMod != "" && (!FileMatchesList(_afnmBaseWriteInc, fnmFileAbsolute) ||
+                          FileMatchesList(_afnmBaseWriteExc, fnmFileAbsolute))) {
       // do that
-      fnmExpanded = _fnmApplicationPath+_fnmMod+fnmFileAbsolute;
+      fnmExpanded = _fnmApplicationPath + _fnmMod + fnmFileAbsolute;
       fnmExpanded.SetAbsolutePath();
       return EFP_FILE;
-    // if should not write to mod dir
+      // if should not write to mod dir
     } else {
       // write to base dir
-      fnmExpanded = _fnmApplicationPath+fnmFileAbsolute;
+      fnmExpanded = _fnmApplicationPath + fnmFileAbsolute;
       fnmExpanded.SetAbsolutePath();
       return EFP_FILE;
     }
 
-  // if reading
-  } else if (ulType&EFP_READ) {
+    // if reading
+  } else if (ulType & EFP_READ) {
 
     // check for expansions for reading
     INDEX iRes = ExpandFilePath_read(ulType, fnmFileAbsolute, fnmExpanded);
     // if not found
-    if (iRes==EFP_NONE) {
+    if (iRes == EFP_NONE) {
       //check for some file extensions that can be substituted
       CTFileName fnmSubst = fnmFileAbsolute;
       if (SubstExt_internal(fnmSubst)) {
@@ -1612,19 +1588,19 @@ INDEX ExpandFilePath(ULONG ulType, const CTFileName &fnmFile, CTFileName &fnmExp
 
     fnmExpanded.SetAbsolutePath();
 
-    if (iRes!=EFP_NONE) {
+    if (iRes != EFP_NONE) {
       return iRes;
     }
 
-  // in other cases
-  } else  {
+    // in other cases
+  } else {
     ASSERT(FALSE);
-    fnmExpanded = _fnmApplicationPath+fnmFileAbsolute;
+    fnmExpanded = _fnmApplicationPath + fnmFileAbsolute;
     fnmExpanded.SetAbsolutePath();
     return EFP_FILE;
   }
 
-  fnmExpanded = _fnmApplicationPath+fnmFileAbsolute;
+  fnmExpanded = _fnmApplicationPath + fnmFileAbsolute;
   fnmExpanded.SetAbsolutePath();
   return EFP_NONE;
 }

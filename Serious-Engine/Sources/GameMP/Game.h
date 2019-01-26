@@ -266,7 +266,7 @@ public:
   // game start/end functions
   virtual BOOL NewGame(const CTString &strSessionName, const CTFileName &fnWorld,
     class CSessionProperties &sp);
-  virtual BOOL JoinGame(CNetworkSession &session);
+  virtual BOOL JoinGame(const CNetworkSession &session);
   virtual BOOL LoadGame(const CTFileName &fnGame);
   virtual BOOL SaveGame(const CTFileName &fnGame);
   virtual void StopGame(void);

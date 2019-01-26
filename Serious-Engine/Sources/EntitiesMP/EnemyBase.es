@@ -1587,7 +1587,7 @@ functions:
 
   // prepare propelled projectile
   void PreparePropelledProjectile(CPlacement3D &plProjectile, FLOAT3D vShootTarget,
-    FLOAT3D &vOffset, ANGLE3D &aOffset)
+    const FLOAT3D &vOffset, const ANGLE3D &aOffset)
   {
     FLOAT3D vDiff = (vShootTarget - (GetPlacement().pl_PositionVector + vOffset*GetRotationMatrix())).SafeNormalize();
     
@@ -1611,7 +1611,7 @@ functions:
 
   // prepare free flying projectile
   void PrepareFreeFlyingProjectile(CPlacement3D &plProjectile, FLOAT3D vShootTarget,
-    FLOAT3D &vOffset, ANGLE3D &aOffset)
+    const FLOAT3D &vOffset, const ANGLE3D &aOffset)
   {
     FLOAT3D vDiff = (vShootTarget - (GetPlacement().pl_PositionVector + vOffset*GetRotationMatrix())).SafeNormalize();
     
@@ -1634,7 +1634,7 @@ functions:
   };
 
   // shoot projectile on enemy
-  CEntity *ShootProjectile(enum ProjectileType pt, FLOAT3D &vOffset, ANGLE3D &aOffset) {
+  CEntity *ShootProjectile(enum ProjectileType pt, const FLOAT3D &vOffset, const ANGLE3D &aOffset) {
     ASSERT(m_penEnemy != NULL);
 
     // target enemy body
@@ -1656,7 +1656,7 @@ functions:
   };
 
   // shoot projectile at an exact spot
-  CEntity *ShootProjectileAt(FLOAT3D vShootTarget, enum ProjectileType pt, FLOAT3D &vOffset, ANGLE3D &aOffset) {
+  CEntity *ShootProjectileAt(FLOAT3D vShootTarget, enum ProjectileType pt, const FLOAT3D &vOffset, const ANGLE3D &aOffset) {
   
     // launch
     CPlacement3D pl;
@@ -1671,7 +1671,7 @@ functions:
   };
 
   // shoot projectile on enemy
-  CEntity *ShootPredictedProjectile(enum ProjectileType pt, FLOAT3D vPredictedPos, FLOAT3D &vOffset, ANGLE3D &aOffset) {
+  CEntity *ShootPredictedProjectile(enum ProjectileType pt, FLOAT3D vPredictedPos, const FLOAT3D &vOffset, const ANGLE3D &aOffset) {
     ASSERT(m_penEnemy != NULL);
 
     // target enemy body (predicted)

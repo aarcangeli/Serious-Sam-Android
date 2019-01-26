@@ -30,6 +30,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #ifdef PLATFORM_WIN32 /* rcg10042001 */
 #include <Engine/Sound/DSound.h>
 #include <Engine/Sound/EAX.h>
+#else
+#include <Engine/Sound/eax_posix.h>
 #endif
 
 /* !!! FIXME: rcg10042001 This is going to need OpenAL or SDL_audio... */

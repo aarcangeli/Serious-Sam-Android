@@ -304,7 +304,7 @@ enum_declaration
     _strCurrentEnum = $2.strString;
     fprintf(_fTables, "EP_ENUMBEG(%s)\n", _strCurrentEnum );
     fprintf(_fDeclaration, "extern DECL_DLL CEntityPropertyEnumType %s_enum;\n", _strCurrentEnum );
-    fprintf(_fDeclaration, "enum %s {\n", _strCurrentEnum );
+    fprintf(_fDeclaration, "enum %s : int {\n", _strCurrentEnum );
   } '{' enum_values_list opt_comma '}' ';' {
     fprintf(_fTables, "EP_ENUMEND(%s);\n\n", _strCurrentEnum);
     fprintf(_fDeclaration, "};\n");

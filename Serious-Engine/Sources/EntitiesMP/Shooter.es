@@ -156,7 +156,7 @@ functions:
   }
 
   // shoot projectile on enemy
-  CEntity *ShootProjectile(enum ProjectileType pt, FLOAT3D &vOffset, ANGLE3D &aOffset) {
+  CEntity *ShootProjectile(enum ProjectileType pt, const FLOAT3D &vOffset, const ANGLE3D &aOffset) {
     // launch
     CPlacement3D pl;
     pl = GetPlacement();

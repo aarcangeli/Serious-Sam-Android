@@ -22,7 +22,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <Engine/Base/Profiling.h>
 #include <Engine/Build.h>
-#include <direct.h>
+#include <dirent.h>
 
 #ifdef _DEBUG
 #undef new
