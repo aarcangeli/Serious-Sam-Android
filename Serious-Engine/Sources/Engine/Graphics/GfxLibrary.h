@@ -61,7 +61,7 @@ struct CTVERTEX {
 #define D3DFVF_CTVERTEX (D3DFVF_XYZ|D3DFVF_DIFFUSE|D3DFVF_TEX1)
 
 
-// Gfx API type 
+// Gfx API type
 enum GfxAPIType
 {
   GAT_NONE = -1,     // no gfx API (gfx functions are disabled)
@@ -106,7 +106,7 @@ enum VtxType
 #define GLF_EXT_CLIPHINT            (1UL<<22)   // GL_EXT_clip_volume_hint
 #define GLF_EXT_OCCLUSIONTEST       (1UL<<23)   // GL_HP_occlusion_test
 #define GLF_EXT_OCCLUSIONQUERY      (1UL<<24)   // GL_NV_occlusion_query
-	
+
 #define GLF_EXTC_ARB    (1UL<<27)   // GL_ARB_texture_compression
 #define GLF_EXTC_S3TC   (1UL<<28)   // GL_EXT_texture_compression_s3tc
 #define GLF_EXTC_FXT1   (1UL<<29)   // GL_3DFX_texture_compression_FXT1
@@ -123,10 +123,10 @@ public:
   CViewPort *gl_pvpActive;   // active viewport
   HINSTANCE  gl_hiDriver;    // DLL handle
 
-  GfxAPIType   gl_eCurrentAPI;  // (0=none, 1=OpenGL, 2=DirectX8) 
+  GfxAPIType   gl_eCurrentAPI;  // (0=none, 1=OpenGL, 2=DirectX8)
   CDisplayMode gl_dmCurrentDisplayMode;
   INDEX gl_iCurrentAdapter;
-  INDEX gl_iCurrentDepth; 
+  INDEX gl_iCurrentDepth;
   INDEX gl_ctDriverChanges;        // count of driver changes
   ULONG gl_ulFlags;
 
@@ -157,7 +157,7 @@ public:
   INDEX go_iCurrentWriteBuffer;       // current buffer enabled for writing
 
   // common stuff
-  
+
   PIX   gl_pixMaxTextureDimension;  // maximum allowed texture dimension by driver
   INDEX gl_iSwapInterval;           // current swap interval (0=immediate, n=VSyncs to wait)
   INDEX gl_ctTextureUnits;          // maximum supported texture units (1=no multitexturing)
@@ -168,8 +168,8 @@ public:
   INDEX gl_iMaxTessellationLevel;   // maximum possible truform tesselation level (0=no truform)
   INDEX gl_iTessellationLevel;      // current tesselation level
 
-  INDEX gl_iFrameNumber;           // frame number currently rendering 
-  CTimerValue gl_tvFrameTime;      // time when swapbuffer occured 
+  INDEX gl_iFrameNumber;           // frame number currently rendering
+  CTimerValue gl_tvFrameTime;      // time when swapbuffer occured
   SLONG gl_slAllowedUploadBurst;   // remain upload burst size for this frame (max texture or shadowmap size *2)
   CListHead gl_lhCachedShadows;    // list of all cached shadowmaps
   CListHead gl_lhRenderTextures;   // list of all render-textures
@@ -200,7 +200,7 @@ private:
 #endif
   void InitContext_OGL(void);
   BOOL SetCurrentViewport_OGL( CViewPort *pvp);
-  void UploadPattern_OGL( ULONG ulPatternEven); 
+  void UploadPattern_OGL( ULONG ulPatternEven);
   void SwapBuffers_OGL( CViewPort *pvpToSwap);
 
   // Direct3D specific
@@ -242,7 +242,7 @@ public:
   void UnlockDrawPort( CDrawPort *pdpToUnlock);
 
   // initialize library
-  void Init(void);  
+  void Init(void);
 
   // set new display mode
   BOOL SetDisplayMode( enum GfxAPIType eAPI, INDEX iAdapter, PIX pixSizeI, PIX pixSizeJ,
@@ -323,7 +323,7 @@ extern void DitherBitmap( INDEX iDitherType, ULONG *pulSrc, ULONG *pulDst, PIX p
 extern void DitherMipmaps( INDEX iDitherType, ULONG *pulSrc, ULONG *pulDst, PIX pixWidth, PIX pixHeight);
 
 // adjust bitmap's saturation and/or hue (hue 0 and saturation 256 are defaults)
-extern void AdjustBitmapColor( ULONG *pulSrc, ULONG *pulDst, PIX pixWidth, PIX pixHeight, 
+extern void AdjustBitmapColor( ULONG *pulSrc, ULONG *pulDst, PIX pixWidth, PIX pixHeight,
                                SLONG const slHueShift, SLONG const slSaturation);
 
 // applies filter to 32-bit bitmap (iFilter from -6 to 6; negative=sharpen, positive=blur, 0=none)

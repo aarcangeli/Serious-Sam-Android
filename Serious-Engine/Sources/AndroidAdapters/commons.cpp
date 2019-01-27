@@ -58,3 +58,7 @@ size_t WINAPI inet_addr(const char *cp) {
 int WINAPI gethostname(char *name, int namelen) {
     FatalError("gethostname()");
 }
+
+void reportError(const char *func) {
+  WarningMessage("Missing OpenGL: %s", func);
+}

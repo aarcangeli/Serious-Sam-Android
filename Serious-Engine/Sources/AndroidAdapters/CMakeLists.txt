@@ -1,6 +1,7 @@
 set(
   ANDROID_ADAPTER_SOURCE
 
+  gles_adapter.cpp
   commons.cpp
   test.cpp
 )

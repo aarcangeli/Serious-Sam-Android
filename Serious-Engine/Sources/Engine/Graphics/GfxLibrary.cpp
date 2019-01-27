@@ -1555,7 +1555,8 @@ void CGfxLibrary::CreateWindowCanvas(void *hWnd, CViewPort **ppvpNew, CDrawPort 
     *ppvpNew = NULL;
   }
 #else
-  FatalError("TODO");
+  *ppvpNew = new CViewPort(128, 128, nullptr);
+  *ppdpNew = &(*ppvpNew)->vp_Raster.ra_MainDrawPort;
 #endif
 }
 

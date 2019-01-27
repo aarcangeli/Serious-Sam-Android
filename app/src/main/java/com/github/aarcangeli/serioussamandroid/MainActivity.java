@@ -80,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onDrawFrame(GL10 gl) {
-                draw();
+                doGame();
             }
         });
         setContentView(glSurfaceView);
@@ -94,6 +94,6 @@ public class MainActivity extends AppCompatActivity {
 
     private native void resize(int width, int height);
 
-    private native void draw();
+    private native void doGame();
 
 }

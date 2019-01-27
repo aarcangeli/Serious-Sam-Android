@@ -11,12 +11,44 @@
 #include <dirent.h>
 #include <dlfcn.h>
 #include <GameMP/Game.h>
+#include <EGL/egl.h>
 
 typedef CGame *(*GAME_Create_t)(void);
 
-void StartNewMode() {
-  CPrintF(TRANS("\n* START NEW DISPLAY MODE ...\n"));
+BOOL TryToSetDisplayMode(enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI, PIX pixSizeJ,
+                         enum DisplayDepth eColorDepth, BOOL bFullScreenMode) {
+  CDisplayMode dmTmp;
+  dmTmp.dm_ddDepth = eColorDepth;
+
+  CPrintF(TRANS("  Starting display mode: %dx%dx%s (%s)\n"),
+          pixSizeI, pixSizeJ, dmTmp.DepthString(),
+          bFullScreenMode ? TRANS("fullscreen") : TRANS("window"));
+
+  if (bFullScreenMode) {
+    FatalError("Fullscreen???");
+  } else {
+    BOOL success = _pGfx->ResetDisplayMode(eGfxAPI);
+    if (!success) {
+      FatalError("Cannot set display mode");
+    }
+  }
+
+  return true;
 }
+
+void StartNewMode(enum GfxAPIType eGfxAPI,
+                  INDEX iAdapter, PIX pixSizeI,
+                  PIX pixSizeJ, enum DisplayDepth eColorDepth, BOOL bFullScreenMode) {
+  CPrintF(TRANS("\n* START NEW DISPLAY MODE ...\n"));
+
+  BOOL bSuccess = TryToSetDisplayMode(eGfxAPI, iAdapter, pixSizeI, pixSizeJ, eColorDepth,
+                                      bFullScreenMode);
+}
+
+CGame *game;
+
+CDrawPort *pdp;
+CViewPort *pvpViewPort;
 
 void startSeriousSamAndroid() {
   CTStream::EnableStreamHandling();
@@ -45,13 +77,17 @@ void startSeriousSamAndroid() {
   CPrintF("  GAME_Create found\n");
   CPrintF("\n");
 
-  CGame *game = GAME_Create();
+  _pNetwork->md_strGameID = "SeriousSam";
+
+  game = GAME_Create();
   game->Initialize(CTString("Data\\SeriousSam.gms"));
   game->LCDInit();
 
   // todo: sound library
+//  snd_iFormat = Clamp( snd_iFormat, (INDEX)CSoundLibrary::SF_NONE, (INDEX)CSoundLibrary::SF_44100_16);
+//  _pSound->SetFormat( (enum CSoundLibrary::SoundFormat)snd_iFormat);
 
-  CPrintF("Level list:\n");
+  CPrintF("Level list:\n"); // TODO: GetLevelInfo
   CDynamicStackArray <CTFileName> afnmDir;
   MakeDirList(afnmDir, CTString("Levels\\"), "*.wld", DLI_RECURSIVE | DLI_SEARCHCD);
   for (INDEX i = 0; i < afnmDir.Count(); i++) {
@@ -68,6 +104,8 @@ void startSeriousSamAndroid() {
     CPrintF("  level: '%s'\n", fnm);
   }
   CPrintF("\n");
+
+  StartNewMode(GAT_OGL, 0, 640, 480, DD_DEFAULT, false);
 
   // load
   CTString sam_strIntroLevel = "Levels\\LevelsMP\\Intro.wld";
@@ -87,12 +125,50 @@ void startSeriousSamAndroid() {
 
   game->gm_bFirstLoading = TRUE;
 
-  if (game->NewGame( sam_strIntroLevel, sam_strIntroLevel, sp)) {
+  if (game->NewGame(sam_strIntroLevel, sam_strIntroLevel, sp)) {
     CPrintF("Started '%s'\n", sam_strIntroLevel);
   } else {
     CPrintF("Demo '%s' NOT STARTED\n", sam_strIntroLevel);
     return;
   }
 
+  const char *string = (const char *) pglGetString(GL_EXTENSIONS);
+  _pGfx->CreateWindowCanvas(0, &pvpViewPort, &pdp);
+
   CPrintF(TRANS("\n--- Serious Engine CPP End ---\n"));
+}
+
+void seriousSamInit() {
+  // todo: init opengl
+  // first time
+//  if (pdp != NULL && pdp->Lock()) {
+//    pdp->Fill(C_GREEN | CT_OPAQUE);
+//    pdp->Unlock();
+//    pvpViewPort->SwapBuffers();
+//    pdp->Lock();
+//    pdp->Fill(C_GREEN | CT_OPAQUE);
+//    pdp->Unlock();
+//    pvpViewPort->SwapBuffers();
+//  }
+}
+
+void seriousSamResize(uint32_t width, uint32_t height) {
+  pglViewport(0, 0, width, height);
+}
+
+void seriousSamDoGame() {
+  CTStream::EnableStreamHandling();
+
+  const char *string = (const char *) pglGetString(GL_EXTENSIONS);
+  game->GameMainLoop();
+
+  // todo: draw screen
+
+  static float red = 0;
+  red += 0.01;
+  if (red > 1) red -= 1;
+  pglClearColor(red, 0, 0, 1);
+  pglClear(GL_COLOR_BUFFER_BIT);
+
+  CTStream::DisableStreamHandling();
 }

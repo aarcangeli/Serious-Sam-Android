@@ -28,6 +28,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Templates/Stock_CTextureData.h>
 
 #include <Engine/Base/ListIterator.inl>
+#include <EGL/egl.h>
+#include <GLES2/gl2.h>
+#include <AndroidAdapters/gles_adapter.h>
 
 extern INDEX ogl_iTBufferEffect;
 extern INDEX ogl_iTBufferSamples;
@@ -134,7 +137,7 @@ static void OGL_SetFunctionPointers_t(HINSTANCE hiOGL)
   // get gl function pointers
   #define DLLFUNCTION(dll, output, name, inputs, params, required) \
     strName = #name;  \
-    p##name = (output (__stdcall*) inputs) GetProcAddress( hi##dll, strName); \
+    p##name = &gles_adapter::gles_adp_##name; \
     if( required && p##name == NULL) FailFunction_t(strName);
   #include "gl_functions.h"
   #undef DLLFUNCTION
@@ -151,6 +154,7 @@ static void OGL_ClearFunctionPointers(void)
 
 
 
+static BOOL _TBCapability = FALSE;
 #ifdef PLATFORM_WIN32
 
 #define BACKOFF pwglMakeCurrent( NULL, NULL); \
@@ -162,7 +166,6 @@ static void OGL_ClearFunctionPointers(void)
 
 
 // helper for choosing t-buffer's pixel format
-static BOOL _TBCapability = FALSE;
 static INDEX ChoosePixelFormatTB( HDC hdc, const PIXELFORMATDESCRIPTOR *ppfd,
                                   PIX pixResWidth, PIX pixResHeight)
 {
@@ -230,7 +233,7 @@ static INDEX ChoosePixelFormatTB( HDC hdc, const PIXELFORMATDESCRIPTOR *ppfd,
 	// get the wgl extension list.
 	if( strstr((const char*)extensions, "WGL_EXT_extensions_string ") != NULL)
   { // windows extension string supported
-    pwglGetExtensionsStringARB = (char* (__stdcall*)(HDC))pwglGetProcAddress( "wglGetExtensionsStringARB");
+    pwglGetExtensionsStringARB = (char* (__stdcall*)(HDC))eglGetProcAddress( "wglGetExtensionsStringARB");
     if( pwglGetExtensionsStringARB == NULL) {
       BACKOFF
       return 0;
@@ -249,9 +252,9 @@ static INDEX ChoosePixelFormatTB( HDC hdc, const PIXELFORMATDESCRIPTOR *ppfd,
       (strstr((const char*)extensions,    "GL_3DFX_multisample ")  != NULL)) {
     // 3dfx extensions present
     _TBCapability = TRUE;
-    pwglChoosePixelFormatARB      = (BOOL (__stdcall*)(HDC,const int*,const FLOAT*,UINT,int*,UINT*))pwglGetProcAddress( "wglChoosePixelFormatARB");
-    pwglGetPixelFormatAttribivARB = (BOOL (__stdcall*)(HDC,int,int,UINT,int*,int*)                 )pwglGetProcAddress( "wglGetPixelFormatAttribivARB");
-		pglTBufferMask3DFX = (void (__stdcall*)(GLuint))pwglGetProcAddress("glTBufferMask3DFX");
+    pwglChoosePixelFormatARB      = (BOOL (__stdcall*)(HDC,const int*,const FLOAT*,UINT,int*,UINT*))eglGetProcAddress( "wglChoosePixelFormatARB");
+    pwglGetPixelFormatAttribivARB = (BOOL (__stdcall*)(HDC,int,int,UINT,int*,int*)                 )eglGetProcAddress( "wglGetPixelFormatAttribivARB");
+		pglTBufferMask3DFX = (void (__stdcall*)(GLuint))eglGetProcAddress("glTBufferMask3DFX");
     if( pwglChoosePixelFormatARB==NULL && pglTBufferMask3DFX==NULL) {
       BACKOFF
       return 0;
@@ -469,7 +472,6 @@ BOOL CGfxLibrary::CreateContext_OGL(HDC hdc)
 // prepares OpenGL drawing context
 void CGfxLibrary::InitContext_OGL(void)
 {
-#ifdef PLATFORM_WIN32
   // must have context
   ASSERT( gl_pvpActive!=NULL);
 
@@ -544,12 +546,12 @@ void CGfxLibrary::InitContext_OGL(void)
 
   // check for WGL extensions, too
   go_strWinExtensions = "";
-  pwglGetExtensionsStringARB = (char* (__stdcall*)(HDC))pwglGetProcAddress("wglGetExtensionsStringARB");
-  if( pwglGetExtensionsStringARB != NULL) {
-    AddExtension_OGL( NONE, "WGL_ARB_extensions_string"); // register
-    CTempDC tdc(gl_pvpActive->vp_hWnd);
-    go_strWinExtensions = (char*)pwglGetExtensionsStringARB(tdc.hdc);
-  }
+//  pwglGetExtensionsStringARB = (char* (__stdcall*)(HDC))eglGetProcAddress("wglGetExtensionsStringARB");
+//  if( pwglGetExtensionsStringARB != NULL) {
+//    AddExtension_OGL( NONE, "WGL_ARB_extensions_string"); // register
+//    CTempDC tdc(gl_pvpActive->vp_hWnd);
+//    go_strWinExtensions = (char *) pwglGetExtensionsStringARB(tdc.hdc);
+//  }
 
   // multitexture is supported only thru GL_EXT_texture_env_combine extension
   gl_ctTextureUnits = 1;
@@ -561,8 +563,8 @@ void CGfxLibrary::InitContext_OGL(void)
     if( gl_ctRealTextureUnits>1 && HasExtension( go_strExtensions, "GL_EXT_texture_env_combine")) {
       AddExtension_OGL( NONE, "GL_ARB_multitexture");
       AddExtension_OGL( NONE, "GL_EXT_texture_env_combine");
-      pglActiveTextureARB       = (void (__stdcall*)(GLenum))pwglGetProcAddress( "glActiveTextureARB");
-      pglClientActiveTextureARB = (void (__stdcall*)(GLenum))pwglGetProcAddress( "glClientActiveTextureARB");
+      pglActiveTextureARB       = (void (__stdcall*)(GLenum))eglGetProcAddress( "glActiveTextureARB");
+      pglClientActiveTextureARB = (void (__stdcall*)(GLenum))eglGetProcAddress( "glClientActiveTextureARB");
       ASSERT( pglActiveTextureARB!=NULL && pglClientActiveTextureARB!=NULL);
       gl_ctTextureUnits = Min( GFX_MAXTEXUNITS, gl_ctRealTextureUnits);
     } else {
@@ -613,8 +615,8 @@ void CGfxLibrary::InitContext_OGL(void)
   pglUnlockArraysEXT = NULL;
   if( HasExtension( go_strExtensions, "GL_EXT_compiled_vertex_array")) {
     AddExtension_OGL( GLF_EXT_COMPILEDVERTEXARRAY, "GL_EXT_compiled_vertex_array");
-    pglLockArraysEXT   = (void (__stdcall*)(GLint,GLsizei))pwglGetProcAddress( "glLockArraysEXT");
-    pglUnlockArraysEXT = (void (__stdcall*)(void)         )pwglGetProcAddress( "glUnlockArraysEXT");
+    pglLockArraysEXT   = (void (__stdcall*)(GLint,GLsizei))eglGetProcAddress( "glLockArraysEXT");
+    pglUnlockArraysEXT = (void (__stdcall*)(void)         )eglGetProcAddress( "glUnlockArraysEXT");
     ASSERT( pglLockArraysEXT!=NULL && pglUnlockArraysEXT!=NULL);
   }
 
@@ -623,8 +625,8 @@ void CGfxLibrary::InitContext_OGL(void)
   pwglGetSwapIntervalEXT = NULL;
   if( HasExtension( go_strExtensions, "WGL_EXT_swap_control")) {
     AddExtension_OGL( GLF_VSYNC, "WGL_EXT_swap_control");
-    pwglSwapIntervalEXT    = (GLboolean (__stdcall*)(GLint))pwglGetProcAddress( "wglSwapIntervalEXT");
-    pwglGetSwapIntervalEXT = (GLint     (__stdcall*)(void) )pwglGetProcAddress( "wglGetSwapIntervalEXT");
+    pwglSwapIntervalEXT    = (GLboolean (__stdcall*)(GLint))eglGetProcAddress( "wglSwapIntervalEXT");
+    pwglGetSwapIntervalEXT = (GLint     (__stdcall*)(void) )eglGetProcAddress( "wglGetSwapIntervalEXT");
     ASSERT( pwglSwapIntervalEXT!=NULL && pwglGetSwapIntervalEXT!=NULL);
   }
 
@@ -639,8 +641,8 @@ void CGfxLibrary::InitContext_OGL(void)
   gl_iMaxTessellationLevel = 0;
   if( HasExtension( go_strExtensions, "GL_ATI_pn_triangles")) {
     AddExtension_OGL( NONE, "GL_ATI_pn_triangles");
-    pglPNTrianglesiATI = (void (__stdcall*)(GLenum,GLint  ))pwglGetProcAddress( "glPNTrianglesiATI");
-    pglPNTrianglesfATI = (void (__stdcall*)(GLenum,GLfloat))pwglGetProcAddress( "glPNTrianglesfATI");
+    pglPNTrianglesiATI = (void (__stdcall*)(GLenum,GLint  ))eglGetProcAddress( "glPNTrianglesiATI");
+    pglPNTrianglesfATI = (void (__stdcall*)(GLenum,GLfloat))eglGetProcAddress( "glPNTrianglesfATI");
     ASSERT( pglPNTrianglesiATI!=NULL && pglPNTrianglesfATI!=NULL);
     // check max possible tessellation
     pglGetIntegerv( GL_MAX_PN_TRIANGLES_TESSELATION_LEVEL_ATI, &gliRet);
@@ -755,7 +757,6 @@ void CGfxLibrary::InitContext_OGL(void)
   extern void CacheShadows(void);
   ReloadTextures();
   if( shd_bCacheAll) CacheShadows();
-#endif
 }
 
 
@@ -820,6 +821,10 @@ BOOL CGfxLibrary::InitDriver_OGL( BOOL b3Dfx/*=FALSE*/)
   }
   // done
 #endif
+
+  // set all pgl... to correct implementation
+  OGL_SetFunctionPointers_t(0);
+
   return TRUE;
 }
 

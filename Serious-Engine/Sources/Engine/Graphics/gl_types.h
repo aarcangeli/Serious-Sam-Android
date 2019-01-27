@@ -1005,7 +1005,7 @@ typedef enum {
 	GL_TEXTURE_MAX_LOD			= 0x813B,
 	GL_TEXTURE_BASE_LEVEL			= 0x813C,
 	GL_TEXTURE_MAX_LEVEL			= 0x813D
-} GLenum;
+} GLenum__;
 
 
 /* GL_NO_ERROR must be zero */
@@ -1067,6 +1067,7 @@ typedef float		GLclampf;	/* single precision float in [0,1] */
 typedef double		GLdouble;	/* double precision float */
 typedef double		GLclampd;	/* double precision float in [0,1] */
 
+#include <GLES2/gl2.h>
 
 
 #endif /* PLATFORM_UNIX */

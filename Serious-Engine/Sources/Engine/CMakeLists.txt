@@ -259,7 +259,7 @@ add_library(Engine SHARED ${SE_ENGINE_SOURCES})
 add_dependencies(Engine se-ecc)
 target_link_libraries(Engine android-adapters)
 target_link_libraries(Engine libvorbis)
-target_link_libraries(Engine GLESv2 log)
+target_link_libraries(Engine GLESv2 EGL log)
 
 target_include_directories(Engine PUBLIC "${SE_SOURCES}")
 target_include_directories(Engine PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")

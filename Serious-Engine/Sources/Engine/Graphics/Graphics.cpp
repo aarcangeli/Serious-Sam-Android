@@ -459,9 +459,11 @@ static ULONG *pulDitherTable;
 void DitherBitmap( INDEX iDitherType, ULONG *pulSrc, ULONG *pulDst, PIX pixWidth, PIX pixHeight,
                    PIX pixCanvasWidth, PIX pixCanvasHeight)
 {
-    FatalError("ASM");
-//  _pfGfxProfile.StartTimer( CGfxProfile::PTI_DITHERBITMAP);
-//
+  _pfGfxProfile.StartTimer( CGfxProfile::PTI_DITHERBITMAP);
+  WarningMessage("TODO: DitherBitmap ASM");
+  memcpy(pulDst, pulSrc, pixCanvasWidth * pixCanvasHeight * BYTES_PER_TEXEL);
+  goto theEnd;
+
 //  // determine row modulo
 //  if( pixCanvasWidth ==0) pixCanvasWidth  = pixWidth;
 //  if( pixCanvasHeight==0) pixCanvasHeight = pixHeight;
@@ -682,11 +684,11 @@ void DitherBitmap( INDEX iDitherType, ULONG *pulSrc, ULONG *pulDst, PIX pixWidth
 //allDoneE:
 //    emms;
 //  }
-//  goto theEnd;
-//
-//  // all done
-//theEnd:
-//  _pfGfxProfile.StopTimer( CGfxProfile::PTI_DITHERBITMAP);
+  goto theEnd;
+
+  // all done
+theEnd:
+  _pfGfxProfile.StopTimer( CGfxProfile::PTI_DITHERBITMAP);
 }
 
 
