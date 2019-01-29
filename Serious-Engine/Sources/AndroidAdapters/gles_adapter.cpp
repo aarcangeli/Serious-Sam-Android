@@ -49,17 +49,17 @@ void blockingError(const char *func);
 #define GL_QUADS 0x0007
 
 namespace gles_adapter {
-  struct VertePointer {
-      const GLvoid *ptr;
+  struct GenericBuffer {
       GLint size;
       GLenum type;
       GLsizei stride;
+      const GLvoid *ptr;
   };
 
   GLuint INDEX_POSITION = 1;
   GLuint INDEX_NORMAL = 2;
   GLuint INDEX_COLOR = 3;
-  GLuint INDEX_UV = 4;
+  GLuint INDEX_TEXTURE_COORD = 4;
 
   // used in glDrawArrays to convert GL_QUADS into GL_TRIANGLES
   GLuint INDEX_DUMMY_ELEMENT_BUFFER = 10;
@@ -68,28 +68,35 @@ namespace gles_adapter {
   GLuint program;
   GLenum lastError = 0;
 
-  VertePointer vp;
+  GenericBuffer vp, tp;
 
   const char *VERTEX_SHADER = R"***(
+    precision highp float;
 
     attribute vec3 position;
     attribute vec3 normal;
     attribute vec3 color;
-    attribute vec3 uv;
+    attribute vec4 textureCoord;
 
     uniform mat4 projMat;
     uniform mat4 modelViewMat;
 
+    varying vec4 vColor;
+
     void main() {
       gl_Position = projMat * modelViewMat * vec4(position.xyz, 1.0);
+      vColor = textureCoord;
     }
 
   )***";
 
   const char *FRAGMENT_SHADER = R"***(
+    precision highp float;
+
+    varying vec4 vColor;
 
     void main() {
-      gl_FragColor = vec4(1.0, 0.0, 1.0, 1.0);
+      gl_FragColor = vec4(vColor.xy, 0.0, 1.0);
     }
 
   )***";
@@ -119,8 +126,10 @@ namespace gles_adapter {
     GLint success;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
     if (!success) {
+      char buffer[2001] = "";
+      glGetShaderInfoLog(shader, 2000, nullptr, buffer);
       static char error[100];
-      sprintf(error, "Cannot compile %s", name);
+      sprintf(error, "Cannot compile %s: %s", name, buffer);
       throw error;
     }
 
@@ -137,7 +146,7 @@ namespace gles_adapter {
     glBindAttribLocation(program, INDEX_POSITION, "position");
     glBindAttribLocation(program, INDEX_NORMAL, "normal");
     glBindAttribLocation(program, INDEX_COLOR, "color");
-    glBindAttribLocation(program, INDEX_UV, "uv");
+    glBindAttribLocation(program, INDEX_TEXTURE_COORD, "textureCoord");
     glLinkProgram(program);
 
     glGetProgramiv(program, GL_LINK_STATUS, &success);
@@ -374,7 +383,7 @@ namespace gles_adapter {
 
 
   void gles_adp_glClearDepth(GLclampd depth) {
-    reportError("glClearDepth");
+    glClearDepthf(depth);
   };
 
   void gles_adp_glDepthFunc(GLenum func) {
@@ -1124,7 +1133,10 @@ namespace gles_adapter {
   }
 
   void gles_adp_glTexCoordPointer(GLint size, GLenum type, GLsizei stride, const GLvoid *ptr) {
-    reportError("glTexCoordPointer");
+    tp.size = size;
+    tp.type = type;
+    tp.stride = stride;
+    tp.ptr = ptr;
   }
 
   void gles_adp_glEdgeFlagPointer(GLsizei stride, const GLboolean *ptr) {
@@ -1175,6 +1187,17 @@ namespace gles_adapter {
     glVertexAttribPointer(INDEX_POSITION, vp.size, vp.type, GL_FALSE, vp.stride, 0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+    // upload Texture buffer
+    if (isGL_TEXTURE_COORD_ARRAY) {
+      if (tp.type != GL_FLOAT) blockingError("unimplemented mode");
+      uint32_t totalSize = tp.size * vertices * sizeof(float);
+      glBindBuffer(GL_ARRAY_BUFFER, INDEX_TEXTURE_COORD);
+      glBufferData(GL_ARRAY_BUFFER, totalSize, tp.ptr, GL_STATIC_DRAW);
+      glVertexAttribPointer(INDEX_TEXTURE_COORD, tp.size, tp.type, GL_FALSE, tp.stride, 0);
+      glBindBuffer(GL_ARRAY_BUFFER, 0);
+      glEnableVertexAttribArray(INDEX_TEXTURE_COORD);
+    }
+
     syncBuffers();
     glEnableVertexAttribArray(INDEX_POSITION);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, INDEX_DUMMY_ELEMENT_BUFFER);
@@ -1182,6 +1205,11 @@ namespace gles_adapter {
 //    glDrawElements(GL_LINE_STRIP, vertices, GL_UNSIGNED_SHORT, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glDisableVertexAttribArray(INDEX_POSITION);
+
+
+    if (isGL_TEXTURE_COORD_ARRAY) {
+      glDisableVertexAttribArray(INDEX_TEXTURE_COORD);
+    }
   }
 
   void gles_adp_glDrawElements(GLenum mode, GLsizei count, GLenum type, const GLvoid *indices) {
