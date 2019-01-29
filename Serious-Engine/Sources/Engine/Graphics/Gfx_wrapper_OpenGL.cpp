@@ -607,8 +607,8 @@ static void ogl_BlendFunc( GfxBlend eSrc, GfxBlend eDst)
   GLenum gleSrc, gleDst;
 #ifndef NDEBUG
   GfxBlend gfxSrc, gfxDst; 
-  pglGetIntegerv( GL_BLEND_SRC, (GLint*)&gleSrc);
-  pglGetIntegerv( GL_BLEND_DST, (GLint*)&gleDst);
+  pglGetIntegerv( GL_BLEND_SRC_RGB, (GLint*)&gleSrc);
+  pglGetIntegerv( GL_BLEND_DST_RGB, (GLint*)&gleDst);
   OGL_CHECKERROR;
   gfxSrc = BlendFromOGL(gleSrc);
   gfxDst = BlendFromOGL(gleDst);
@@ -948,11 +948,11 @@ static void ogl_SetTextureWrapping( enum GfxWrap eWrapU, enum GfxWrap eWrapV)
   ASSERT( _pGfx->gl_eCurrentAPI==GAT_OGL);
 #ifndef NDEBUG
   // check texture unit consistency
-  GLint gliRet;
-  pglGetIntegerv( GL_ACTIVE_TEXTURE_ARB, &gliRet);
-  ASSERT( GFX_iActiveTexUnit==(gliRet-GL_TEXTURE0_ARB));
-  pglGetIntegerv( GL_CLIENT_ACTIVE_TEXTURE_ARB, &gliRet);
-  ASSERT( GFX_iActiveTexUnit==(gliRet-GL_TEXTURE0_ARB));
+//  GLint gliRet;
+//  pglGetIntegerv( GL_ACTIVE_TEXTURE_ARB, &gliRet);
+//  ASSERT( GFX_iActiveTexUnit==(gliRet-GL_TEXTURE0_ARB));
+//  pglGetIntegerv( GL_CLIENT_ACTIVE_TEXTURE_ARB, &gliRet);
+//  ASSERT( GFX_iActiveTexUnit==(gliRet-GL_TEXTURE0_ARB));
 #endif
 
   _tpGlobal[GFX_iActiveTexUnit].tp_eWrapU = eWrapU;

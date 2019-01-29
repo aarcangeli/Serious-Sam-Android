@@ -47,6 +47,8 @@ void blockingError(const char *func);
 #define GL_TEXTURE 0x1702
 #define GL_COLOR 0x1800
 #define GL_QUADS 0x0007
+#define GL_NORMAL_ARRAY 0x8075
+#define GL_COLOR_ARRAY 0x8076
 
 namespace gles_adapter {
   struct GenericBuffer {
@@ -82,10 +84,12 @@ namespace gles_adapter {
     uniform mat4 modelViewMat;
 
     varying vec4 vColor;
+    varying vec2 vTexCoord;
 
     void main() {
       gl_Position = projMat * modelViewMat * vec4(position.xyz, 1.0);
       vColor = textureCoord;
+      vTexCoord = textureCoord.xy;
     }
 
   )***";
@@ -93,10 +97,13 @@ namespace gles_adapter {
   const char *FRAGMENT_SHADER = R"***(
     precision highp float;
 
+    uniform sampler2D mainTexture;
+
     varying vec4 vColor;
+    varying vec2 vTexCoord;
 
     void main() {
-      gl_FragColor = vec4(vColor.xy, 0.0, 1.0);
+      gl_FragColor = texture2D(mainTexture, vTexCoord);
     }
 
   )***";
@@ -104,6 +111,8 @@ namespace gles_adapter {
   bool isGL_TEXTURE_2D = false;
   bool isGL_VERTEX_ARRAY = false;
   bool isGL_TEXTURE_COORD_ARRAY = false;
+  bool isGL_NORMAL_ARRAY = false;
+  bool isGL_COLOR_ARRAY = false;
 
   void installGlLogger();
 
@@ -111,7 +120,7 @@ namespace gles_adapter {
   glm::mat4 projMat = glm::mat4(1);
   glm::mat4 *currentMatrix = &modelViewMat;
 
-  GLint projMatIdx, modelViewMatIdx;
+  GLint projMatIdx, modelViewMatIdx, mainTextureLoc;
 
   std::string toStr(glm::mat4 &mat) {
     return glm::to_string(mat);
@@ -128,7 +137,7 @@ namespace gles_adapter {
     if (!success) {
       char buffer[2001] = "";
       glGetShaderInfoLog(shader, 2000, nullptr, buffer);
-      static char error[100];
+      static char error[2500];
       sprintf(error, "Cannot compile %s: %s", name, buffer);
       throw error;
     }
@@ -162,6 +171,8 @@ namespace gles_adapter {
 
     projMatIdx = glGetUniformLocation(program, "projMat");
     modelViewMatIdx = glGetUniformLocation(program, "modelViewMat");
+    mainTextureLoc = glGetUniformLocation(program, "mainTexture");
+    if (mainTextureLoc >= 0) glUniform1i(mainTextureLoc, 0);
   }
 
   void syncBuffers() {
@@ -195,6 +206,12 @@ namespace gles_adapter {
     }
     if (cap == GL_TEXTURE_COORD_ARRAY) {
       return isGL_TEXTURE_COORD_ARRAY;
+    }
+    if (cap == GL_NORMAL_ARRAY) {
+      return isGL_NORMAL_ARRAY;
+    }
+    if (cap == GL_COLOR_ARRAY) {
+      return isGL_COLOR_ARRAY;
     }
     return glIsEnabled(cap);
   };
@@ -302,6 +319,10 @@ namespace gles_adapter {
       isGL_VERTEX_ARRAY = true;
     } else if (cap == GL_TEXTURE_COORD_ARRAY) {
       isGL_TEXTURE_COORD_ARRAY = true;
+    } else if (cap == GL_NORMAL_ARRAY) {
+      isGL_NORMAL_ARRAY = true;
+    } else if (cap == GL_COLOR_ARRAY) {
+      isGL_COLOR_ARRAY = true;
     } else {
       reportError("glEnableClientState");
     }
@@ -312,6 +333,10 @@ namespace gles_adapter {
       isGL_VERTEX_ARRAY = false;
     } else if (cap == GL_TEXTURE_COORD_ARRAY) {
       isGL_TEXTURE_COORD_ARRAY = false;
+    } else if (cap == GL_NORMAL_ARRAY) {
+      isGL_NORMAL_ARRAY = false;
+    } else if (cap == GL_COLOR_ARRAY) {
+      isGL_COLOR_ARRAY = false;
     } else {
       reportError("glDisableClientState");
     }
@@ -362,6 +387,10 @@ namespace gles_adapter {
     GLenum result = glGetError();
     if (lastError) result = lastError;
     lastError = 0;
+    if (result) {
+      int t = 0;
+      result = 0;
+    }
     return result;
   };
 
@@ -1446,23 +1475,23 @@ namespace gles_adapter {
   };
 
   void gles_adp_glTexParameteri(GLenum target, GLenum pname, GLint param) {
-    reportError("glTexParameteri");
+    glTexParameteri(target, pname, param);
   };
 
   void gles_adp_glTexParameterfv(GLenum target, GLenum pname, const GLfloat *params) {
-    reportError("glTexParameterfv");
+    glTexParameterfv(target, pname, params);
   }
 
   void gles_adp_glTexParameteriv(GLenum target, GLenum pname, const GLint *params) {
-    reportError("glTexParameteriv");
+    glTexParameteriv(target, pname, params);
   }
 
   void gles_adp_glGetTexParameterfv(GLenum target, GLenum pname, GLfloat *params) {
-    reportError("glGetTexParameterfv");
+    glGetTexParameterfv(target, pname, params);
   }
 
   void gles_adp_glGetTexParameteriv(GLenum target, GLenum pname, GLint *params) {
-    reportError("glGetTexParameteriv");
+    glGetTexParameteriv(target, pname, params);
   }
 
   void

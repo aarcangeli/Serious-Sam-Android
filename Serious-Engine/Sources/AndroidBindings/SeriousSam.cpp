@@ -142,6 +142,7 @@ void startSeriousSamAndroid() {
   game->SetSinglePlayerSession(sp);
 
   game->gm_bFirstLoading = TRUE;
+  game->gm_csConsoleState = CS_TURNINGON;
 
   if (game->NewGame(sam_strIntroLevel, sam_strIntroLevel, sp)) {
     CPrintF("Started '%s'\n", sam_strIntroLevel);
@@ -185,7 +186,7 @@ void seriousSamResize(uint32_t width, uint32_t height) {
   }
 }
 
-void seriousSamDoGame() {
+void seriousSamDoGameInner() {
 //  glClear(GL_COLOR_BUFFER_BIT);
 //
 //  float positions[] = {
@@ -242,11 +243,17 @@ void seriousSamDoGame() {
 //    pdp->Fill(LCDGetColor(C_dGREEN | CT_OPAQUE, "bcg fill"));
 
     pdp->Lock();
-//    _pGame->ComputerRender(pdp);
 
     SLONG slDPWidth = pdp->GetWidth();
     SLONG slDPHeight = pdp->GetHeight();
     FLOAT fTextScale = 1;
+
+    pdp->Unlock();
+
+//    game->GameRedrawView(pdp, ulFlags);
+
+    pdp->Lock();
+//    game->ComputerRender(pdp);
 
     InfoMessage("Before PutText");
     pdp->SetFont(_pfdDisplayFont);
@@ -256,9 +263,9 @@ void seriousSamDoGame() {
                  LCDGetColor(C_GREEN | 255, "display mode"));
     InfoMessage("After PutText");
 
-    pdp->Unlock();
+    game->ConsoleRender(pdp);
 
-//    game->GameRedrawView(pdp, ulFlags);
+    pdp->Unlock();
 
     InfoMessage("Frame End");
 
@@ -267,4 +274,11 @@ void seriousSamDoGame() {
   }
 
   CTStream::DisableStreamHandling();
+}
+
+void seriousSamDoGame() {
+  try {
+    seriousSamDoGameInner();
+  } catch (...) {
+  }
 }

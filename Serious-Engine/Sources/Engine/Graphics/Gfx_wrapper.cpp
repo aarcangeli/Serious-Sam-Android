@@ -319,11 +319,11 @@ extern void gfxSetTextureUnit( INDEX iUnit)
   // check consistency
 #ifndef NDEBUG
   if( eAPI==GAT_OGL) {
-    GLint gliRet;
-    pglGetIntegerv( GL_ACTIVE_TEXTURE_ARB, &gliRet);
-    ASSERT( GFX_iActiveTexUnit==(gliRet-GL_TEXTURE0_ARB));
-    pglGetIntegerv( GL_CLIENT_ACTIVE_TEXTURE_ARB, &gliRet);
-    ASSERT( GFX_iActiveTexUnit==(gliRet-GL_TEXTURE0_ARB));
+//    GLint gliRet;
+//    pglGetIntegerv( GL_ACTIVE_TEXTURE_ARB, &gliRet);
+//    ASSERT( GFX_iActiveTexUnit==(gliRet-GL_TEXTURE0_ARB));
+//    pglGetIntegerv( GL_CLIENT_ACTIVE_TEXTURE_ARB, &gliRet);
+//    ASSERT( GFX_iActiveTexUnit==(gliRet-GL_TEXTURE0_ARB));
   }
 #endif
 
