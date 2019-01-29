@@ -3,12 +3,192 @@ typedef double GLclampd;
 
 #include <GLES2/gl2.h>
 #include <AndroidAdapters/gles_adapter.h>
+#include <stdlib.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/ext.hpp>
+#include <vector>
+
+#define GLM_ENABLE_EXPERIMENTAL
+
+#include <glm/gtx/string_cast.hpp>
 
 void reportError(const char *func);
 
+void blockingError(const char *func);
+
+/**
+ * TODO:
+ *   glBegin, glColor and other direct mode
+ *   glMatrixMode and other transformations
+ *   modes:
+ *     GL_ALPHA_TEST
+ *     GL_CLIP_PLANE0
+ *   glShadeModel
+ *   glPolygonMode
+ *   glDrawBuffer
+ *   glEnableClientState
+ */
+
+#ifndef GL_VERTEX_ARRAY
+#define GL_VERTEX_ARRAY 0x8074
+#endif
+#ifndef GL_TEXTURE_COORD_ARRAY
+#define GL_TEXTURE_COORD_ARRAY 0x8078
+#endif
+#ifndef GL_DOUBLE
+#define GL_DOUBLE 0x140A
+#endif
+
+#define GL_MATRIX_MODE 0x0BA0
+#define GL_MODELVIEW 0x1700
+#define GL_PROJECTION 0x1701
+#define GL_TEXTURE 0x1702
+#define GL_COLOR 0x1800
+#define GL_QUADS 0x0007
+
 namespace gles_adapter {
+  struct VertePointer {
+      const GLvoid *ptr;
+      GLint size;
+      GLenum type;
+      GLsizei stride;
+  };
+
+  GLuint INDEX_POSITION = 1;
+  GLuint INDEX_NORMAL = 2;
+  GLuint INDEX_COLOR = 3;
+  GLuint INDEX_UV = 4;
+
+  // used in glDrawArrays to convert GL_QUADS into GL_TRIANGLES
+  GLuint INDEX_DUMMY_ELEMENT_BUFFER = 10;
+  std::vector<uint16_t> dummyElementBuffer;
+
+  GLuint program;
+  GLenum lastError = 0;
+
+  VertePointer vp;
+
+  const char *VERTEX_SHADER = R"***(
+
+    attribute vec3 position;
+    attribute vec3 normal;
+    attribute vec3 color;
+    attribute vec3 uv;
+
+    uniform mat4 projMat;
+    uniform mat4 modelViewMat;
+
+    void main() {
+      gl_Position = projMat * modelViewMat * vec4(position.xyz, 1.0);
+    }
+
+  )***";
+
+  const char *FRAGMENT_SHADER = R"***(
+
+    void main() {
+      gl_FragColor = vec4(1.0, 0.0, 1.0, 1.0);
+    }
+
+  )***";
 
   bool isGL_TEXTURE_2D = false;
+  bool isGL_VERTEX_ARRAY = false;
+  bool isGL_TEXTURE_COORD_ARRAY = false;
+
+  void installGlLogger();
+
+  glm::mat4 modelViewMat = glm::mat4(1);
+  glm::mat4 projMat = glm::mat4(1);
+  glm::mat4 *currentMatrix = &modelViewMat;
+
+  GLint projMatIdx, modelViewMatIdx;
+
+  std::string toStr(glm::mat4 &mat) {
+    return glm::to_string(mat);
+  }
+
+  GLuint compileShader(GLenum type, const char *name, const char *source) {
+    GLuint shader = glCreateShader(type);
+    glShaderSource(shader, 1, &source, nullptr);
+    glCompileShader(shader);
+
+    // check status
+    GLint success;
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+    if (!success) {
+      static char error[100];
+      sprintf(error, "Cannot compile %s", name);
+      throw error;
+    }
+
+    return shader;
+  }
+
+  void gles_adp_init() {
+    GLint success;
+
+    // create program
+    program = glCreateProgram();
+    glAttachShader(program, compileShader(GL_VERTEX_SHADER, "vertex shader", VERTEX_SHADER));
+    glAttachShader(program, compileShader(GL_FRAGMENT_SHADER, "fragment shader", FRAGMENT_SHADER));
+    glBindAttribLocation(program, INDEX_POSITION, "position");
+    glBindAttribLocation(program, INDEX_NORMAL, "normal");
+    glBindAttribLocation(program, INDEX_COLOR, "color");
+    glBindAttribLocation(program, INDEX_UV, "uv");
+    glLinkProgram(program);
+
+    glGetProgramiv(program, GL_LINK_STATUS, &success);
+    if (!success) {
+      throw "Cannot link program";
+    }
+
+    if (glGetError()) {
+      throw "Cannot create program";
+    }
+
+    glUseProgram(program);
+
+    projMatIdx = glGetUniformLocation(program, "projMat");
+    modelViewMatIdx = glGetUniformLocation(program, "modelViewMat");
+  }
+
+  void syncBuffers() {
+    glUniformMatrix4fv(projMatIdx, 1, GL_FALSE, glm::value_ptr(projMat));
+    glUniformMatrix4fv(modelViewMatIdx, 1, GL_FALSE, glm::value_ptr(modelViewMat));
+  }
+
+  // state managment
+  void gles_adp_glEnable(GLenum cap) {
+    if (cap == GL_TEXTURE_2D) {
+      isGL_TEXTURE_2D = true;
+      return;
+    }
+    glEnable(cap);
+  };
+
+  void gles_adp_glDisable(GLenum cap) {
+    if (cap == GL_TEXTURE_2D) {
+      isGL_TEXTURE_2D = false;
+      return;
+    }
+    glDisable(cap);
+  };
+
+  GLboolean gles_adp_glIsEnabled(GLenum cap) {
+    if (cap == GL_TEXTURE_2D) {
+      return isGL_TEXTURE_2D;
+    }
+    if (cap == GL_VERTEX_ARRAY) {
+      return isGL_VERTEX_ARRAY;
+    }
+    if (cap == GL_TEXTURE_COORD_ARRAY) {
+      return isGL_TEXTURE_COORD_ARRAY;
+    }
+    return glIsEnabled(cap);
+  };
 
   void gles_adp_glClearIndex(GLfloat c) {
     reportError("glClearIndex");
@@ -35,7 +215,7 @@ namespace gles_adapter {
   };
 
   void gles_adp_glBlendFunc(GLenum sfactor, GLenum dfactor) {
-    reportError("glBlendFunc");
+    glBlendFunc(sfactor, dfactor);
   };
 
   void gles_adp_glLogicOp(GLenum opcode) {
@@ -43,11 +223,11 @@ namespace gles_adapter {
   };
 
   void gles_adp_glCullFace(GLenum mode) {
-    reportError("glCullFace");
+    glCullFace(mode);
   };
 
   void gles_adp_glFrontFace(GLenum mode) {
-    reportError("glFrontFace");
+    glFrontFace(mode);
   };
 
   void gles_adp_glPointSize(GLfloat size) {
@@ -87,7 +267,7 @@ namespace gles_adapter {
   };
 
   void gles_adp_glScissor(GLint x, GLint y, GLsizei width, GLsizei height) {
-    reportError("glScissor");
+    glScissor(x, y, width, height);
   }
 
   void gles_adp_glClipPlane(GLenum plane, const GLdouble *equation) {
@@ -99,6 +279,7 @@ namespace gles_adapter {
   };
 
   void gles_adp_glDrawBuffer(GLenum mode) {
+    if (!isGL_VERTEX_ARRAY) return;
     reportError("glDrawBuffer");
   };
 
@@ -106,42 +287,30 @@ namespace gles_adapter {
     reportError("glReadBuffer");
   };
 
-// state managment
-  void gles_adp_glEnable(GLenum cap) {
-    if (cap == GL_TEXTURE_2D) {
-      isGL_TEXTURE_2D = true;
-      return;
-    }
-    glEnable(cap);
-  };
-
-  void gles_adp_glDisable(GLenum cap) {
-    if (cap == GL_TEXTURE_2D) {
-      isGL_TEXTURE_2D = false;
-      return;
-    }
-    glDisable(cap);
-  };
-
-  GLboolean gles_adp_glIsEnabled(GLenum cap) {
-    if (cap == GL_TEXTURE_2D) {
-      return isGL_TEXTURE_2D;
-    }
-    return glIsEnabled(cap);
-  };
-
 
   void gles_adp_glEnableClientState(GLenum cap) {
-    reportError("glEnableClientState");
+    if (cap == GL_VERTEX_ARRAY) {
+      isGL_VERTEX_ARRAY = true;
+    } else if (cap == GL_TEXTURE_COORD_ARRAY) {
+      isGL_TEXTURE_COORD_ARRAY = true;
+    } else {
+      reportError("glEnableClientState");
+    }
   };
 
   void gles_adp_glDisableClientState(GLenum cap) {
-    reportError("glDisableClientState");
+    if (cap == GL_VERTEX_ARRAY) {
+      isGL_VERTEX_ARRAY = false;
+    } else if (cap == GL_TEXTURE_COORD_ARRAY) {
+      isGL_TEXTURE_COORD_ARRAY = false;
+    } else {
+      reportError("glDisableClientState");
+    }
   };
 
 
   void gles_adp_glGetBooleanv(GLenum pname, GLboolean *params) {
-    reportError("glGetBooleanv");
+    glGetBooleanv(pname, params);
   };
 
   void gles_adp_glGetDoublev(GLenum pname, GLdouble *params) {
@@ -149,11 +318,11 @@ namespace gles_adapter {
   };
 
   void gles_adp_glGetFloatv(GLenum pname, GLfloat *params) {
-    reportError("glGetFloatv");
+    glGetFloatv(pname, params);
   };
 
   void gles_adp_glGetIntegerv(GLenum pname, GLint *params) {
-    reportError("glGetIntegerv");
+    glGetIntegerv(pname, params);
   };
 
 
@@ -181,8 +350,10 @@ namespace gles_adapter {
   };
 
   GLenum gles_adp_glGetError(void) {
-    reportError("glGetError");
-    return 0;
+    GLenum result = glGetError();
+    if (lastError) result = lastError;
+    lastError = 0;
+    return result;
   };
 
   const GLubyte *gles_adp_glGetString(GLenum name) {
@@ -198,7 +369,7 @@ namespace gles_adapter {
   };
 
   void gles_adp_glHint(GLenum target, GLenum mode) {
-    reportError("glHint");
+    glHint(target, mode);
   };
 
 
@@ -207,11 +378,11 @@ namespace gles_adapter {
   };
 
   void gles_adp_glDepthFunc(GLenum func) {
-    reportError("glDepthFunc");
+    glDepthFunc(func);
   };
 
   void gles_adp_glDepthMask(GLboolean flag) {
-    reportError("glDepthMask");
+    glDepthMask(flag);
   };
 
   void gles_adp_glDepthRange(GLclampd near_val, GLclampd far_val) {
@@ -229,25 +400,43 @@ namespace gles_adapter {
 
 
   void gles_adp_glMatrixMode(GLenum mode) {
-    reportError("glMatrixMode");
+    switch (mode) {
+      case GL_MODELVIEW:
+        currentMatrix = &modelViewMat;
+        break;
+      case GL_PROJECTION:
+        currentMatrix = &projMat;
+        break;
+      case GL_TEXTURE:
+        reportError("glMatrixMode(GL_TEXTURE)");
+        break;
+      case GL_COLOR:
+        reportError("glMatrixMode(GL_COLOR)");
+        break;
+      default:
+        lastError = GL_INVALID_ENUM;
+        break;
+    }
   };
 
   void
   gles_adp_glOrtho(GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble near_val,
-                 GLdouble far_val) {
-    reportError("glOrtho");
+                   GLdouble far_val) {
+    glm::mat4 toMult = glm::ortho(left, right, bottom, top, near_val, far_val);
+    (*currentMatrix) *= toMult;
   }
 
 
   void
-  gles_adp_glFrustum(GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble near_val,
-                   GLdouble far_val) {
+  gles_adp_glFrustum(GLdouble left, GLdouble right, GLdouble bottom, GLdouble top,
+                     GLdouble near_val,
+                     GLdouble far_val) {
     reportError("glFrustum");
   }
 
 
   void gles_adp_glViewport(GLint x, GLint y, GLsizei width, GLsizei height) {
-    reportError("glViewport");
+    glViewport(x, y, width, height);
   }
 
   void gles_adp_glPushMatrix(void) {
@@ -259,7 +448,7 @@ namespace gles_adapter {
   };
 
   void gles_adp_glLoadIdentity(void) {
-    reportError("glLoadIdentity");
+    *currentMatrix = glm::mat4(1);
   };
 
   void gles_adp_glLoadMatrixd(const GLdouble *m) {
@@ -915,7 +1104,11 @@ namespace gles_adapter {
 
 
   void gles_adp_glVertexPointer(GLint size, GLenum type, GLsizei stride, const GLvoid *ptr) {
-    reportError("glVertexPointer");
+//    glVertexAttribPointer(INDEX_POSITION, size, type, GL_FALSE, stride, ptr);
+    vp.size = size;
+    vp.type = type;
+    vp.stride = stride;
+    vp.ptr = ptr;
   }
 
   void gles_adp_glNormalPointer(GLenum type, GLsizei stride, const GLvoid *ptr) {
@@ -947,7 +1140,48 @@ namespace gles_adapter {
   };
 
   void gles_adp_glDrawArrays(GLenum mode, GLint first, GLsizei count) {
-    reportError("glDrawArrays");
+    if (!isGL_VERTEX_ARRAY) return;
+
+    if (mode != GL_QUADS || first != 0) {
+      blockingError("unimplemented mode");
+    }
+
+    std::vector<uint16_t> &buffer = dummyElementBuffer;
+
+    GLsizei vertices = count / 4 * 6;
+    if (vertices > buffer.size()) {
+      uint32_t i = buffer.size();
+      buffer.resize(vertices);
+      uint32_t faceNumber = i / 6;
+      while (i < vertices) {
+        buffer[i++] = faceNumber * 4 + 0;
+        buffer[i++] = faceNumber * 4 + 1;
+        buffer[i++] = faceNumber * 4 + 2;
+        buffer[i++] = faceNumber * 4 + 2;
+        buffer[i++] = faceNumber * 4 + 3;
+        buffer[i++] = faceNumber * 4 + 0;
+        faceNumber++;
+      }
+      // upload
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, INDEX_DUMMY_ELEMENT_BUFFER);
+      glBufferData(GL_ELEMENT_ARRAY_BUFFER, vertices * 2, buffer.data(), GL_STATIC_DRAW);
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    }
+
+    // upload vertex buffer
+    uint32_t totalSize = 3 * vertices * sizeof(float);
+    glBindBuffer(GL_ARRAY_BUFFER, INDEX_POSITION);
+    glBufferData(GL_ARRAY_BUFFER, totalSize, vp.ptr, GL_STATIC_DRAW);
+    glVertexAttribPointer(INDEX_POSITION, vp.size, vp.type, GL_FALSE, vp.stride, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    syncBuffers();
+    glEnableVertexAttribArray(INDEX_POSITION);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, INDEX_DUMMY_ELEMENT_BUFFER);
+    glDrawElements(GL_TRIANGLES, vertices, GL_UNSIGNED_SHORT, 0);
+//    glDrawElements(GL_LINE_STRIP, vertices, GL_UNSIGNED_SHORT, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glDisableVertexAttribArray(INDEX_POSITION);
   }
 
   void gles_adp_glDrawElements(GLenum mode, GLsizei count, GLenum type, const GLvoid *indices) {
@@ -1041,7 +1275,7 @@ namespace gles_adapter {
   };
 
   void gles_adp_glPixelStorei(GLenum pname, GLint param) {
-    reportError("glPixelStorei");
+    glPixelStorei(pname, param);
   };
 
   void gles_adp_glPixelTransferf(GLenum pname, GLfloat param) {
@@ -1077,20 +1311,20 @@ namespace gles_adapter {
   };
 
   void gles_adp_glBitmap(GLsizei width, GLsizei height, GLfloat xorig, GLfloat yorig, GLfloat xmove,
-                       GLfloat ymove, const GLubyte *bitmap) {
+                         GLfloat ymove, const GLubyte *bitmap) {
     reportError("glBitmap");
   }
 
 
   void
   gles_adp_glReadPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type,
-                      GLvoid *pixels) {
+                        GLvoid *pixels) {
     reportError("glReadPixels");
   }
 
 
   void gles_adp_glDrawPixels(GLsizei width, GLsizei height, GLenum format, GLenum type,
-                           const GLvoid *pixels) {
+                             const GLvoid *pixels) {
     reportError("glDrawPixels");
   }
 
@@ -1203,26 +1437,30 @@ namespace gles_adapter {
     reportError("glGetTexParameteriv");
   }
 
-  void gles_adp_glGetTexLevelParameterfv(GLenum target, GLint level, GLenum pname, GLfloat *params) {
+  void
+  gles_adp_glGetTexLevelParameterfv(GLenum target, GLint level, GLenum pname, GLfloat *params) {
     reportError("glGetTexLevelParameterfv");
   }
 
   void gles_adp_glGetTexLevelParameteriv(GLenum target, GLint level, GLenum pname, GLint *params) {
+    // eglGetProcAddress("glGetTexLevelParameteriv") ??
     reportError("glGetTexLevelParameteriv");
   }
 
 
   void
-  gles_adp_glTexImage1D(GLenum target, GLint level, GLint internalFormat, GLsizei width, GLint border,
-                      GLenum format, GLenum type, const GLvoid *pixels) {
+  gles_adp_glTexImage1D(GLenum target, GLint level, GLint internalFormat, GLsizei width,
+                        GLint border, GLenum format, GLenum type, const GLvoid *pixels) {
     reportError("glTexImage1D");
   }
 
 
   void gles_adp_glTexImage2D(GLenum target, GLint level, GLint internalFormat, GLsizei width,
-                           GLsizei height, GLint border, GLenum format, GLenum type,
-                           const GLvoid *pixels) {
-    reportError("glTexImage2D");
+                             GLsizei height, GLint border, GLenum format, GLenum type,
+                             const GLvoid *pixels) {
+    // NB: internalFormat is ignored, the type should be managed by shader
+    (void) internalFormat;
+    glTexImage2D(target, level, format, width, height, border, format, type, pixels);
   }
 
 
@@ -1244,12 +1482,14 @@ namespace gles_adapter {
     glBindTexture(target, texture);
   };
 
-  void gles_adp_glPrioritizeTextures(GLsizei n, const GLuint *textures, const GLclampf *priorities) {
+  void
+  gles_adp_glPrioritizeTextures(GLsizei n, const GLuint *textures, const GLclampf *priorities) {
     reportError("glPrioritizeTextures");
   }
 
 
-  GLboolean gles_adp_glAreTexturesResident(GLsizei n, const GLuint *textures, GLboolean *residences) {
+  GLboolean
+  gles_adp_glAreTexturesResident(GLsizei n, const GLuint *textures, GLboolean *residences) {
     reportError("glAreTexturesResident");
   }
 
@@ -1261,38 +1501,41 @@ namespace gles_adapter {
 
   void
   gles_adp_glTexSubImage1D(GLenum target, GLint level, GLint xoffset, GLsizei width, GLenum format,
-                         GLenum type, const GLvoid *pixels) {
+                           GLenum type, const GLvoid *pixels) {
     reportError("glTexSubImage1D");
   }
 
 
   void
   gles_adp_glTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
-                         GLsizei height, GLenum format, GLenum type, const GLvoid *pixels) {
+                           GLsizei height, GLenum format, GLenum type, const GLvoid *pixels) {
     reportError("glTexSubImage2D");
   }
 
 
-  void gles_adp_glCopyTexImage1D(GLenum target, GLint level, GLenum internalformat, GLint x, GLint y,
-                               GLsizei width, GLint border) {
+  void
+  gles_adp_glCopyTexImage1D(GLenum target, GLint level, GLenum internalformat, GLint x, GLint y,
+                            GLsizei width, GLint border) {
     reportError("glCopyTexImage1D");
   }
 
 
-  void gles_adp_glCopyTexImage2D(GLenum target, GLint level, GLenum internalformat, GLint x, GLint y,
-                               GLsizei width, GLsizei height, GLint border) {
+  void
+  gles_adp_glCopyTexImage2D(GLenum target, GLint level, GLenum internalformat, GLint x, GLint y,
+                            GLsizei width, GLsizei height, GLint border) {
     reportError("glCopyTexImage2D");
   }
 
 
   void gles_adp_glCopyTexSubImage1D(GLenum target, GLint level, GLint xoffset, GLint x, GLint y,
-                                  GLsizei width) {
+                                    GLsizei width) {
     reportError("glCopyTexSubImage1D");
   }
 
 
-  void gles_adp_glCopyTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x,
-                                  GLint y, GLsizei width, GLsizei height) {
+  void
+  gles_adp_glCopyTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x,
+                               GLint y, GLsizei width, GLsizei height) {
     reportError("glCopyTexSubImage2D");
   }
 
@@ -1300,26 +1543,27 @@ namespace gles_adapter {
 # 642 "gl_impl.cpp"
 
   void gles_adp_glMap1d(GLenum target, GLdouble u1, GLdouble u2, GLint stride, GLint order,
-                      const GLdouble *points) {
+                        const GLdouble *points) {
     reportError("glMap1d");
   }
 
   void gles_adp_glMap1f(GLenum target, GLfloat u1, GLfloat u2, GLint stride, GLint order,
-                      const GLfloat *points) {
+                        const GLfloat *points) {
     reportError("glMap1f");
   }
 
 
   void
-  gles_adp_glMap2d(GLenum target, GLdouble u1, GLdouble u2, GLint ustride, GLint uorder, GLdouble v1,
-                 GLdouble v2, GLint vstride, GLint vorder, const GLdouble *points) {
+  gles_adp_glMap2d(GLenum target, GLdouble u1, GLdouble u2, GLint ustride, GLint uorder,
+                   GLdouble v1,
+                   GLdouble v2, GLint vstride, GLint vorder, const GLdouble *points) {
     reportError("glMap2d");
   }
 
 
   void
   gles_adp_glMap2f(GLenum target, GLfloat u1, GLfloat u2, GLint ustride, GLint uorder, GLfloat v1,
-                 GLfloat v2, GLint vstride, GLint vorder, const GLfloat *points) {
+                   GLfloat v2, GLint vstride, GLint vorder, const GLfloat *points) {
     reportError("glMap2f");
   }
 
@@ -1376,7 +1620,8 @@ namespace gles_adapter {
     reportError("glMapGrid1f");
   };
 
-  void gles_adp_glMapGrid2d(GLint un, GLdouble u1, GLdouble u2, GLint vn, GLdouble v1, GLdouble v2) {
+  void
+  gles_adp_glMapGrid2d(GLint un, GLdouble u1, GLdouble u2, GLint vn, GLdouble v1, GLdouble v2) {
     reportError("glMapGrid2d");
   }
 
@@ -1463,7 +1708,7 @@ namespace gles_adapter {
 
 
   void gles_adp_glVertexPointerEXT(GLint size, GLenum type, GLsizei stride, GLsizei count,
-                                 const GLvoid *ptr) {
+                                   const GLvoid *ptr) {
     reportError("glVertexPointerEXT");
   }
 
@@ -1473,7 +1718,7 @@ namespace gles_adapter {
   }
 
   void gles_adp_glColorPointerEXT(GLint size, GLenum type, GLsizei stride, GLsizei count,
-                                const GLvoid *ptr) {
+                                  const GLvoid *ptr) {
     reportError("glColorPointerEXT");
   }
 
@@ -1483,7 +1728,7 @@ namespace gles_adapter {
   }
 
   void gles_adp_glTexCoordPointerEXT(GLint size, GLenum type, GLsizei stride, GLsizei count,
-                                   const GLvoid *ptr) {
+                                     const GLvoid *ptr) {
     reportError("glTexCoordPointerEXT");
   }
 
@@ -1535,36 +1780,38 @@ namespace gles_adapter {
 
 
   void gles_adp_glTexImage3DEXT(GLenum target, GLint level, GLenum internalFormat, GLsizei width,
-                              GLsizei height, GLsizei depth, GLint border, GLenum format,
-                              GLenum type, const GLvoid *pixels) {
+                                GLsizei height, GLsizei depth, GLint border, GLenum format,
+                                GLenum type, const GLvoid *pixels) {
     reportError("glTexImage3DEXT");
   }
 
 
   void
-  gles_adp_glTexSubImage3DEXT(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset,
-                            GLsizei width, GLsizei height, GLsizei depth, GLenum format,
-                            GLenum type, const GLvoid *pixels) {
+  gles_adp_glTexSubImage3DEXT(GLenum target, GLint level, GLint xoffset, GLint yoffset,
+                              GLint zoffset,
+                              GLsizei width, GLsizei height, GLsizei depth, GLenum format,
+                              GLenum type, const GLvoid *pixels) {
     reportError("glTexSubImage3DEXT");
   }
 
 
   void gles_adp_glCopyTexSubImage3DEXT(GLenum target, GLint level, GLint xoffset, GLint yoffset,
-                                     GLint zoffset, GLint x, GLint y, GLsizei width,
-                                     GLsizei height) {
+                                       GLint zoffset, GLint x, GLint y, GLsizei width,
+                                       GLsizei height) {
     reportError("glCopyTexSubImage3DEXT");
   }
 
 
   void gles_adp_glColorTableEXT(GLenum target, GLenum internalformat, GLsizei width, GLenum format,
-                              GLenum type, const GLvoid *table) {
+                                GLenum type, const GLvoid *table) {
     reportError("glColorTableEXT");
   }
 
 
   void
-  gles_adp_glColorSubTableEXT(GLenum target, GLsizei start, GLsizei count, GLenum format, GLenum type,
-                            const GLvoid *data) {
+  gles_adp_glColorSubTableEXT(GLenum target, GLsizei start, GLsizei count, GLenum format,
+                              GLenum type,
+                              const GLvoid *data) {
     reportError("glColorSubTableEXT");
   }
 
@@ -1679,7 +1926,8 @@ namespace gles_adapter {
     reportError("glMultiTexCoord3svSGIS");
   };
 
-  void gles_adp_glMultiTexCoord4dSGIS(GLenum target, GLdouble s, GLdouble t, GLdouble r, GLdouble q) {
+  void
+  gles_adp_glMultiTexCoord4dSGIS(GLenum target, GLdouble s, GLdouble t, GLdouble r, GLdouble q) {
     reportError("glMultiTexCoord4dSGIS");
   };
 
@@ -1712,7 +1960,7 @@ namespace gles_adapter {
   };
 
   void gles_adp_glMultiTexCoordPointerSGIS(GLenum target, GLint size, GLenum type, GLsizei stride,
-                                         const GLvoid *pointer) {
+                                           const GLvoid *pointer) {
     reportError("glMultiTexCoordPointerSGIS");
   };
 
@@ -1821,7 +2069,8 @@ namespace gles_adapter {
     reportError("glMultiTexCoord3svEXT");
   };
 
-  void gles_adp_glMultiTexCoord4dEXT(GLenum target, GLdouble s, GLdouble t, GLdouble r, GLdouble q) {
+  void
+  gles_adp_glMultiTexCoord4dEXT(GLenum target, GLdouble s, GLdouble t, GLdouble r, GLdouble q) {
     reportError("glMultiTexCoord4dEXT");
   };
 
@@ -1879,28 +2128,31 @@ namespace gles_adapter {
   }
 
 
-  void gles_adp_glDrawRangeElements(GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type,
-                                  const GLvoid *indices) {
+  void
+  gles_adp_glDrawRangeElements(GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type,
+                               const GLvoid *indices) {
     reportError("glDrawRangeElements");
   }
 
   void gles_adp_glTexImage3D(GLenum target, GLint level, GLenum internalFormat, GLsizei width,
-                           GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type,
-                           const GLvoid *pixels) {
+                             GLsizei height, GLsizei depth, GLint border, GLenum format,
+                             GLenum type,
+                             const GLvoid *pixels) {
     reportError("glTexImage3D");
   }
 
 
   void
   gles_adp_glTexSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset,
-                         GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type,
-                         const GLvoid *pixels) {
+                           GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type,
+                           const GLvoid *pixels) {
     reportError("glTexSubImage3D");
   }
 
 
   void gles_adp_glCopyTexSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
-                                  GLint zoffset, GLint x, GLint y, GLsizei width, GLsizei height) {
+                                    GLint zoffset, GLint x, GLint y, GLsizei width,
+                                    GLsizei height) {
     reportError("glCopyTexSubImage3D");
   }
 

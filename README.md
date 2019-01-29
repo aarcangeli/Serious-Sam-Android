@@ -10,3 +10,6 @@ This project wants to make Serious Sam running natively on Android.
   - error: non-const lvalue reference to type 'Vector<...>' cannot bind to a temporary of type 'Vector<...>'
   - error: cannot initialize a parameter of type 'void *' with an rvalue of type 'BOOL (*)()'
   - OpenGL is not compatible with OpenGL ES
+
+### inline asm
+The original engine has many

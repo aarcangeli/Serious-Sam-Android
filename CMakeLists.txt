@@ -2,6 +2,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 SET(CMAKE_USE_RELATIVE_PATHS OFF)
 set(PROJECT_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 set(SE_SOURCES "${PROJECT_ROOT}/Serious-Engine/Sources")
+set(LIBS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/libs)
 
 add_compile_options(-Wnon-pod-varargs)
 add_compile_options(-Wextern-initializer)

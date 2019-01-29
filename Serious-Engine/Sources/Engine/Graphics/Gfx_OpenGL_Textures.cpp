@@ -165,7 +165,6 @@ extern void UploadTexture_OGL( ULONG *pulTexture, PIX pixSizeU, PIX pixSizeV,
       if( pixSizeU==0) pixSizeU=1;
       if( pixSizeV==0) pixSizeV=1;
       pixSize = pixSizeU*pixSizeV;
-      FatalError("ASM");
 //      __asm {
 //        pxor    mm0,mm0
 //        mov     esi,D [pulSrc]
@@ -186,6 +185,20 @@ extern void UploadTexture_OGL( ULONG *pulTexture, PIX pixSizeU, PIX pixSizeV,
 //        jnz     pixLoop
 //        emms
 //      }
+      // translated to c++
+      uint64_t mm0 = 0;
+      ULONG *esi = pulSrc;
+      ULONG *edi = pulDst;
+      for (PIX ecx = pixSize; ecx; ecx--) {
+        uint8_t *pix1 = (uint8_t*) &esi[0];
+        uint8_t *pix2 = (uint8_t*) &esi[1];
+        uint8_t *dest = (uint8_t * ) & edi[0];
+        for (int i = 0; i < 4; i++) {
+          dest[i] = (uint8_t)(((uint32_t) pix1[i] + (uint32_t) pix2[i]) / 2);
+        }
+        edi += 1;
+        esi += 2;
+      }
       // upload mipmap
       if( bUseSubImage) {
         pglTexSubImage2D( GL_TEXTURE_2D, iMip, 0, 0, pixSizeU, pixSizeV,

@@ -272,6 +272,7 @@ public:
 
   // canvas functions
   void CreateWindowCanvas( void *hWnd, CViewPort **ppvpNew, CDrawPort **ppdpNew);   // Create a new window canvas
+  void CreateWindowCanvas( PIX pixWidth, PIX pixHeight, CViewPort **ppvpNew, CDrawPort **ppdpNew);   // Create a new window canvas
   void DestroyWindowCanvas( CViewPort *pvpOld);                                     // Destroy a window canvas
   void CreateWorkCanvas( PIX pixWidth, PIX pixHeight, CDrawPort **ppdpNew);         // Create a work canvas
   void DestroyWorkCanvas( CDrawPort *pdpOld);                                       // Destroy a work canvas

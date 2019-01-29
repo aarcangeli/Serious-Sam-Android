@@ -12,8 +12,15 @@
 #include <dlfcn.h>
 #include <GameMP/Game.h>
 #include <EGL/egl.h>
+#include <GLES2/gl2.h>
 
 typedef CGame *(*GAME_Create_t)(void);
+
+namespace gles_adapter {
+  void gles_adp_init();
+
+  void syncBuffers();
+}
 
 BOOL TryToSetDisplayMode(enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI, PIX pixSizeJ,
                          enum DisplayDepth eColorDepth, BOOL bFullScreenMode) {
@@ -47,8 +54,19 @@ void StartNewMode(enum GfxAPIType eGfxAPI,
 
 CGame *game;
 
-CDrawPort *pdp;
+CDrawPort *pdp = nullptr;
 CViewPort *pvpViewPort;
+
+extern COLOR LCDGetColor(COLOR colDefault, const char *strName) {
+  return game->LCDGetColor(colDefault, strName);
+}
+
+void printGlError(const char *name) {
+  EGLint err = glGetError();
+  if (err) {
+    WarningMessage("OpenGL Error %s: 0x%04X", name, err);
+  };
+}
 
 void startSeriousSamAndroid() {
   CTStream::EnableStreamHandling();
@@ -132,15 +150,66 @@ void startSeriousSamAndroid() {
     return;
   }
 
-  const char *string = (const char *) pglGetString(GL_EXTENSIONS);
-  _pGfx->CreateWindowCanvas(0, &pvpViewPort, &pdp);
-
   CPrintF(TRANS("\n--- Serious Engine CPP End ---\n"));
 }
 
 void seriousSamInit() {
-  // todo: init opengl
+  try {
+    gles_adapter::gles_adp_init();
+  } catch (const char *txt) {
+    FatalError("OpenGL init error: %s", txt);
+  }
+
+  CTStream::EnableStreamHandling();
+
   // first time
+  if (pdp != NULL && pdp->Lock()) {
+    pdp->Fill(C_BLACK | CT_OPAQUE);
+    pdp->Unlock();
+    pvpViewPort->SwapBuffers();
+    pdp->Lock();
+    pdp->Fill(C_BLACK | CT_OPAQUE);
+    pdp->Unlock();
+    pvpViewPort->SwapBuffers();
+  }
+
+  CTStream::DisableStreamHandling();
+}
+
+void seriousSamResize(uint32_t width, uint32_t height) {
+  // todo: resize pdp
+  glViewport(0, 0, width, height);
+
+  if (!pdp) {
+    _pGfx->CreateWindowCanvas(width, height, &pvpViewPort, &pdp);
+  }
+}
+
+void seriousSamDoGame() {
+//  glClear(GL_COLOR_BUFFER_BIT);
+//
+//  float positions[] = {
+//    0, 0, 0,
+//    0, 1, 0,
+//    1, 0, 0,
+//  };
+//
+////  glBindBuffer(GL_ARRAY_BUFFER, 2);
+////  glBufferData(GL_ARRAY_BUFFER, sizeof(positions), positions, GL_STATIC_DRAW);
+////  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+//  glEnableClientState(GL_VERTEX_ARRAY);
+//  glVertexPointer(3, GL_FLOAT, 0, positions);
+////  glBindBuffer(GL_ARRAY_BUFFER, 0);
+//  glColor4f(0, 1, 1, 1);
+//
+//  printGlError("glVertexAttribPointer");
+////  glEnableVertexAttribArray(1);
+////  gles_adapter::syncBuffers();
+//  glDrawArrays(GL_TRIANGLES, 0, 3);
+//  printGlError("glDrawArrays");
+//  return;
+
+//  CTStream::EnableStreamHandling();
 //  if (pdp != NULL && pdp->Lock()) {
 //    pdp->Fill(C_GREEN | CT_OPAQUE);
 //    pdp->Unlock();
@@ -150,13 +219,10 @@ void seriousSamInit() {
 //    pdp->Unlock();
 //    pvpViewPort->SwapBuffers();
 //  }
-}
+//  CTStream::DisableStreamHandling();
+//
+//  return;
 
-void seriousSamResize(uint32_t width, uint32_t height) {
-  pglViewport(0, 0, width, height);
-}
-
-void seriousSamDoGame() {
   CTStream::EnableStreamHandling();
 
   const char *string = (const char *) pglGetString(GL_EXTENSIONS);
@@ -164,11 +230,41 @@ void seriousSamDoGame() {
 
   // todo: draw screen
 
-  static float red = 0;
-  red += 0.01;
-  if (red > 1) red -= 1;
-  pglClearColor(red, 0, 0, 1);
-  pglClear(GL_COLOR_BUFFER_BIT);
+  if (pdp != NULL && pdp->Lock()) {
+    InfoMessage("Frame Start");
+    pdp->Fill(C_GREEN | CT_OPAQUE);
+
+    // handle pretouching of textures and shadowmaps
+    pdp->Unlock();
+
+//    ULONG ulFlags = (game->gm_csConsoleState != CS_OFF || bMenuActive) ? 0 : GRV_SHOWEXTRAS;
+    ULONG ulFlags = 0;
+//    pdp->Fill(LCDGetColor(C_dGREEN | CT_OPAQUE, "bcg fill"));
+
+    pdp->Lock();
+//    _pGame->ComputerRender(pdp);
+
+    SLONG slDPWidth = pdp->GetWidth();
+    SLONG slDPHeight = pdp->GetHeight();
+    FLOAT fTextScale = 1;
+
+    InfoMessage("Before PutText");
+    pdp->SetFont(_pfdDisplayFont);
+    pdp->SetTextScaling(fTextScale);
+    pdp->SetTextAspect(1.0f);
+    pdp->PutText("SeriousSam", slDPWidth * 0.05f, slDPHeight * 0.85f,
+                 LCDGetColor(C_GREEN | 255, "display mode"));
+    InfoMessage("After PutText");
+
+    pdp->Unlock();
+
+//    game->GameRedrawView(pdp, ulFlags);
+
+    InfoMessage("Frame End");
+
+//    pdp->Fill(LCDGetColor(C_dGREEN | CT_OPAQUE, "bcg fill"));
+//    pdp->Unlock();
+  }
 
   CTStream::DisableStreamHandling();
 }

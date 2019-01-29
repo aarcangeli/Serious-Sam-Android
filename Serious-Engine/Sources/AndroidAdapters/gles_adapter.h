@@ -2,6 +2,7 @@
 // glue between opengl 1.2 and opengl es 2.0
 
 namespace gles_adapter {
+  void gles_adp_init();
 
     /*
      * Miscellaneous

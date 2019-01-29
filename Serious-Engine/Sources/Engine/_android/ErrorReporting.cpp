@@ -47,5 +47,5 @@ const char *ErrorDescription(const struct ErrorTable *pet, SLONG ulErrCode) {
 
 void AndroidCloseApplication() {
   // kill process
-  throw;
+  throw 0;
 }
