@@ -48,7 +48,7 @@ enum FPUPrecisionType GetFPUPrecision(void)
 /* Set current precision setting of FPU. */
 void SetFPUPrecision(enum FPUPrecisionType fptNew)
 {
-  WarningMessage("SetFPUPrecision()");
+//  WarningMessage("SetFPUPrecision()");
   currentPrecisionValue = fptNew;
 //  ULONG fpcw;
 //  // create FPU flags from the precision

@@ -52,6 +52,7 @@ void blockingError(const char *func);
 #define GL_MODULATE 0x2100
 #define GL_TEXTURE_ENV 0x2300
 #define GL_TEXTURE_ENV_MODE 0x2200
+#define GL_CLAMP 0x2900
 
 namespace gles_adapter {
   struct GenericBuffer {
@@ -70,18 +71,20 @@ namespace gles_adapter {
   GLuint INDEX_DUMMY_ELEMENT_BUFFER = 10;
   std::vector<uint16_t> dummyElementBuffer;
 
+  // Used to convert GL_UNSIGNED_INT into GL_UNSIGNED_SHORT in glDrawElements
+  std::vector<uint16_t> dummyIndexBuffer;
+
   GLuint program;
   GLenum lastError = 0;
 
-  GenericBuffer vp, tp;
-  GLfloat depthRange[2] = {0, 1}; // TODO implement
+  GenericBuffer vp, tp, cp;
 
   const char *VERTEX_SHADER = R"***(
     precision highp float;
 
     attribute vec3 position;
     attribute vec3 normal;
-    attribute vec3 color;
+    attribute vec4 color;
     attribute vec4 textureCoord;
 
     uniform mat4 projMat;
@@ -92,7 +95,7 @@ namespace gles_adapter {
 
     void main() {
       gl_Position = projMat * modelViewMat * vec4(position.xyz, 1.0);
-      vColor = textureCoord;
+      vColor = color;
       vTexCoord = textureCoord.xy;
     }
 
@@ -102,12 +105,15 @@ namespace gles_adapter {
     precision highp float;
 
     uniform sampler2D mainTexture;
+    uniform float enableTexture;
 
     varying vec4 vColor;
     varying vec2 vTexCoord;
 
     void main() {
-      gl_FragColor = texture2D(mainTexture, vTexCoord);
+      vec4 finalColor = vColor;
+      if (enableTexture > 0.5) finalColor = finalColor * texture2D(mainTexture, vTexCoord);
+      gl_FragColor = finalColor * vColor;
     }
 
   )***";
@@ -127,7 +133,7 @@ namespace gles_adapter {
   glm::mat4 projMat = glm::mat4(1);
   glm::mat4 *currentMatrix = &modelViewMat;
 
-  GLint projMatIdx, modelViewMatIdx, mainTextureLoc;
+  GLint projMatIdx, modelViewMatIdx, mainTextureLoc, enableTextureLoc;
 
   std::string toStr(glm::mat4 &mat) {
     return glm::to_string(mat);
@@ -180,11 +186,58 @@ namespace gles_adapter {
     modelViewMatIdx = glGetUniformLocation(program, "modelViewMat");
     mainTextureLoc = glGetUniformLocation(program, "mainTexture");
     if (mainTextureLoc >= 0) glUniform1i(mainTextureLoc, 0);
+    enableTextureLoc = glGetUniformLocation(program, "enableTexture");
   }
 
-  void syncBuffers() {
+  void syncBuffers(GLsizei vertices) {
+    if (vp.stride) {
+      int t = 0;
+    }
+    // upload vertex buffer
+    if (vp.type != GL_FLOAT) blockingError("unimplemented mode");
+    uint32_t totalSize = (vp.stride ? vp.stride : 3 * sizeof(float)) * vertices;
+    glBindBuffer(GL_ARRAY_BUFFER, INDEX_POSITION);
+    glBufferData(GL_ARRAY_BUFFER, totalSize, vp.ptr, GL_STREAM_DRAW);
+    glVertexAttribPointer(INDEX_POSITION, vp.size, vp.type, GL_FALSE, vp.stride, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glEnableVertexAttribArray(INDEX_POSITION);
+
+    // upload Texture buffer
+    if (isGL_TEXTURE_COORD_ARRAY) {
+      if (tp.type != GL_FLOAT) blockingError("unimplemented mode");
+      uint32_t totalSize = (tp.stride ? tp.stride : tp.size * sizeof(float)) * vertices;
+      glBindBuffer(GL_ARRAY_BUFFER, INDEX_TEXTURE_COORD);
+      glBufferData(GL_ARRAY_BUFFER, totalSize, tp.ptr, GL_STREAM_DRAW);
+      glVertexAttribPointer(INDEX_TEXTURE_COORD, tp.size, tp.type, GL_FALSE, tp.stride, 0);
+      glBindBuffer(GL_ARRAY_BUFFER, 0);
+      glEnableVertexAttribArray(INDEX_TEXTURE_COORD);
+    }
+
+    // upload Color buffer
+    if (isGL_COLOR_ARRAY) {
+      if (cp.type != GL_UNSIGNED_BYTE) blockingError("unimplemented mode");
+      uint32_t totalSize = (cp.stride ? cp.stride : cp.size) * vertices;
+      glBindBuffer(GL_ARRAY_BUFFER, INDEX_COLOR);
+      glBufferData(GL_ARRAY_BUFFER, totalSize, cp.ptr, GL_STREAM_DRAW);
+      glVertexAttribPointer(INDEX_COLOR, cp.size, cp.type, GL_TRUE, cp.stride, 0);
+      glBindBuffer(GL_ARRAY_BUFFER, 0);
+      glEnableVertexAttribArray(INDEX_COLOR);
+    }
+
+    // uniforms
     glUniformMatrix4fv(projMatIdx, 1, GL_FALSE, glm::value_ptr(projMat));
     glUniformMatrix4fv(modelViewMatIdx, 1, GL_FALSE, glm::value_ptr(modelViewMat));
+    glUniform1f(enableTextureLoc, isGL_TEXTURE_2D ? 1 : 0);
+  }
+
+  void syncBuffersPost() {
+    glDisableVertexAttribArray(INDEX_POSITION);
+    if (isGL_TEXTURE_COORD_ARRAY) {
+      glDisableVertexAttribArray(INDEX_TEXTURE_COORD);
+    }
+    if (isGL_COLOR_ARRAY) {
+      glDisableVertexAttribArray(INDEX_COLOR);
+    }
   }
 
   // state managment
@@ -240,7 +293,7 @@ namespace gles_adapter {
   };
 
   void gles_adp_glColorMask(GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha) {
-    reportError("glColorMask");
+    glColorMask(red, green, blue, alpha);
   }
 
   void gles_adp_glAlphaFunc(GLenum func, GLclampf ref) {
@@ -312,7 +365,6 @@ namespace gles_adapter {
   };
 
   void gles_adp_glDrawBuffer(GLenum mode) {
-    if (!isGL_VERTEX_ARRAY) return;
     reportError("glDrawBuffer");
   };
 
@@ -360,11 +412,6 @@ namespace gles_adapter {
 
   void gles_adp_glGetFloatv(GLenum pname, GLfloat *params) {
     if (!params) return;
-    if (pname == GL_DEPTH_RANGE) {
-      params[0] = depthRange[0];
-      params[1] = depthRange[1];
-      return;
-    }
     glGetFloatv(pname, params);
   };
 
@@ -402,7 +449,7 @@ namespace gles_adapter {
     lastError = 0;
     if (result) {
       int t = 0;
-      result = 0;
+//      result = 0;
     }
     return result;
   };
@@ -437,8 +484,7 @@ namespace gles_adapter {
   };
 
   void gles_adp_glDepthRange(GLclampd near_val, GLclampd far_val) {
-    depthRange[0] = near_val;
-    depthRange[1] = far_val;
+    glDepthRangef(near_val, far_val);
   };
 
 
@@ -505,19 +551,21 @@ namespace gles_adapter {
   };
 
   void gles_adp_glLoadMatrixd(const GLdouble *m) {
-    reportError("glLoadMatrixd");
+    (*currentMatrix) = glm::make_mat4(m);
   };
 
   void gles_adp_glLoadMatrixf(const GLfloat *m) {
-    reportError("glLoadMatrixf");
+    (*currentMatrix) = glm::make_mat4(m);
   };
 
   void gles_adp_glMultMatrixd(const GLdouble *m) {
-    reportError("glMultMatrixd");
+    glm::mat4 toMult = glm::make_mat4(m);
+    (*currentMatrix) *= toMult;
   };
 
   void gles_adp_glMultMatrixf(const GLfloat *m) {
-    reportError("glMultMatrixf");
+    glm::mat4 toMult = glm::make_mat4(m);
+    (*currentMatrix) *= toMult;
   };
 
   void gles_adp_glRotated(GLdouble angle, GLdouble x, GLdouble y, GLdouble z) {
@@ -1169,7 +1217,10 @@ namespace gles_adapter {
   }
 
   void gles_adp_glColorPointer(GLint size, GLenum type, GLsizei stride, const GLvoid *ptr) {
-    reportError("glColorPointer");
+    cp.size = size;
+    cp.type = type;
+    cp.stride = stride;
+    cp.ptr = ptr;
   }
 
   void gles_adp_glIndexPointer(GLenum type, GLsizei stride, const GLvoid *ptr) {
@@ -1202,6 +1253,7 @@ namespace gles_adapter {
       blockingError("unimplemented mode");
     }
 
+    // index buffer
     std::vector<uint16_t> &buffer = dummyElementBuffer;
 
     GLsizei vertices = count / 4 * 6;
@@ -1224,44 +1276,57 @@ namespace gles_adapter {
       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
-    // upload vertex buffer
-    uint32_t totalSize = 3 * vertices * sizeof(float);
-    glBindBuffer(GL_ARRAY_BUFFER, INDEX_POSITION);
-    glBufferData(GL_ARRAY_BUFFER, totalSize, vp.ptr, GL_STATIC_DRAW);
-    glVertexAttribPointer(INDEX_POSITION, vp.size, vp.type, GL_FALSE, vp.stride, 0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    // upload Texture buffer
-    if (isGL_TEXTURE_COORD_ARRAY) {
-      if (tp.type != GL_FLOAT) blockingError("unimplemented mode");
-      uint32_t totalSize = tp.size * vertices * sizeof(float);
-      glBindBuffer(GL_ARRAY_BUFFER, INDEX_TEXTURE_COORD);
-      glBufferData(GL_ARRAY_BUFFER, totalSize, tp.ptr, GL_STATIC_DRAW);
-      glVertexAttribPointer(INDEX_TEXTURE_COORD, tp.size, tp.type, GL_FALSE, tp.stride, 0);
-      glBindBuffer(GL_ARRAY_BUFFER, 0);
-      glEnableVertexAttribArray(INDEX_TEXTURE_COORD);
-    }
-
-    syncBuffers();
-    glEnableVertexAttribArray(INDEX_POSITION);
+    syncBuffers(vertices);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, INDEX_DUMMY_ELEMENT_BUFFER);
     glDrawElements(GL_TRIANGLES, vertices, GL_UNSIGNED_SHORT, 0);
 //    glDrawElements(GL_LINE_STRIP, vertices, GL_UNSIGNED_SHORT, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    glDisableVertexAttribArray(INDEX_POSITION);
-
-
-    if (isGL_TEXTURE_COORD_ARRAY) {
-      glDisableVertexAttribArray(INDEX_TEXTURE_COORD);
-    }
+    syncBuffersPost();
   }
 
   void gles_adp_glDrawElements(GLenum mode, GLsizei count, GLenum type, const GLvoid *indices) {
-    glDrawElements(mode, count, type, indices);
-    return;
-    if (mode == GL_TRIANGLES) {
+    if (!isGL_VERTEX_ARRAY) return;
+
+    if (mode != GL_TRIANGLES) {
+      blockingError("unimplemented mode");
     }
-    reportError("glDrawElements");
+
+    uint32_t totalVertices = 0;
+    if (type == GL_UNSIGNED_INT) {
+      if (count > dummyIndexBuffer.size()) {
+        dummyIndexBuffer.resize(count);
+      }
+      uint32_t *bf = (uint32_t *) indices;
+      for (uint32_t i = 0; i < count; i++) {
+        dummyIndexBuffer[i] = (uint16_t) bf[i];
+        if (dummyIndexBuffer[i] != bf[i]) {
+          blockingError("Panic!: uint16_t overflow");
+        }
+        if (bf[i] >= totalVertices) {
+          totalVertices = bf[i] + 1;
+        }
+      }
+    } else if (type == GL_UNSIGNED_SHORT) {
+      uint16_t *bf = (uint16_t *) indices;
+      for (uint32_t i = 0; i < count; i++) {
+        if (bf[i] >= totalVertices) {
+          totalVertices = bf[i] + 1;
+        }
+      }
+    } else if (type == GL_UNSIGNED_BYTE) {
+      uint8_t *bf = (uint8_t *) indices;
+      for (uint32_t i = 0; i < count; i++) {
+        if (bf[i] >= totalVertices) {
+          totalVertices = bf[i] + 1;
+        }
+      }
+    } else {
+      blockingError("Invalid type in glDrawElements");
+    }
+
+    syncBuffers(totalVertices);
+    glDrawElements(mode, count, type, indices);
+    syncBuffersPost();
   }
 
   void gles_adp_glInterleavedArrays(GLenum format, GLsizei stride, const GLvoid *pointer) {
@@ -1395,7 +1460,7 @@ namespace gles_adapter {
   void
   gles_adp_glReadPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type,
                         GLvoid *pixels) {
-    reportError("glReadPixels");
+    glReadPixels(x, y, width, height, format, type, pixels);
   }
 
 
@@ -1423,7 +1488,7 @@ namespace gles_adapter {
   };
 
   void gles_adp_glClearStencil(GLint s) {
-    reportError("glClearStencil");
+    glClearStencil(s);
   };
 
 
@@ -1499,6 +1564,14 @@ namespace gles_adapter {
   };
 
   void gles_adp_glTexParameteri(GLenum target, GLenum pname, GLint param) {
+    if (target == GL_TEXTURE_2D) {
+      if (pname == GL_TEXTURE_WRAP_S && param == GL_CLAMP) {
+        param = GL_CLAMP_TO_EDGE;
+      }
+      if (pname == GL_TEXTURE_WRAP_T && param == GL_CLAMP) {
+        param = GL_CLAMP_TO_EDGE;
+      }
+    }
     glTexParameteri(target, pname, param);
   };
 
@@ -1590,7 +1663,7 @@ namespace gles_adapter {
   void
   gles_adp_glTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
                            GLsizei height, GLenum format, GLenum type, const GLvoid *pixels) {
-    reportError("glTexSubImage2D");
+    glTexSubImage2D(target, level, xoffset, yoffset, width, height, format, type, pixels);
   }
 
 

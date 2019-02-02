@@ -244,32 +244,12 @@ void seriousSamDoGame() {
     ULONG ulFlags = 0;
 //    pdp->Fill(LCDGetColor(C_dGREEN | CT_OPAQUE, "bcg fill"));
 
-//    pdp->Lock();
-//
-//    SLONG slDPWidth = pdp->GetWidth();
-//    SLONG slDPHeight = pdp->GetHeight();
-//    FLOAT fTextScale = 1;
-//
-//    pdp->Unlock();
-
     game->GameRedrawView(pdp, ulFlags);
 
-//    pdp->Lock();
-////    game->ComputerRender(pdp);
-//
-//    InfoMessage("Before PutText");
-//    pdp->SetFont(_pfdDisplayFont);
-//    pdp->SetTextScaling(fTextScale);
-//    pdp->SetTextAspect(1.0f);
-//    pdp->PutText("SeriousSam", slDPWidth * 0.05f, slDPHeight * 0.85f,
-//                 LCDGetColor(C_GREEN | 255, "display mode"));
-//    InfoMessage("After PutText");
-//
-////    game->ConsoleRender(pdp);
-//
-//    pdp->Unlock();
-
-    InfoMessage("Frame End");
+    pdp->Lock();
+//    game->ComputerRender(pdp);
+//    game->ConsoleRender(pdp);
+    pdp->Unlock();
 
 //    pdp->Fill(LCDGetColor(C_dGREEN | CT_OPAQUE, "bcg fill"));
 //    pdp->Unlock();
