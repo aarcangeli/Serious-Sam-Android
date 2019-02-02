@@ -32,6 +32,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <Engine/Templates/StaticArray.cpp>
 #include <Engine/Templates/DynamicArray.cpp>
+#include <cstdint>
 
 // asm shortcuts
 #define O offset
@@ -268,7 +269,8 @@ void CLayerMixer::AddAmbientPoint(void)
   _slLightMax<<=7;
   _slLightStep>>=1;
 
-    FatalError("ASM");
+  WarningMessage("TODO: ASM");
+  return;
 //  __asm {
 //    // prepare interpolants
 //    movd    mm0,D [_slL2Row]
@@ -435,7 +437,8 @@ skipPixel:
 
 #else
 
-    FatalError("ASM");
+  WarningMessage("TODO: ASM");
+  return;
 //  for( PIX pixV=0; pixV<_iRowCt; pixV++)
 //  {
 //    SLONG slL2Point = _slL2Row;
@@ -487,7 +490,8 @@ void CLayerMixer::AddDiffusionPoint(void)
   _slLightMax<<=7;
   _slLightStep>>=1;
 
-    FatalError("ASM");
+    WarningMessage("TODO: ASM");
+    return;
 //  __asm {
 //    // prepare interpolants
 //    movd    mm0,D [_slL2Row]
@@ -558,6 +562,20 @@ void CLayerMixer::AddDiffusionPoint(void)
 //    jnz     rowLoop
 //    emms
 //  }
+  // prepare interpolants
+  uint64_t mm1 = (uint64_t) _slDL2oDURow << 32 | _slL2Row;
+  uint64_t mm2 = (uint64_t) _slDDL2oDUoDV << 32 | _slDL2oDV;
+  // prepare color
+  uint64_t mm7 = ulLightRGB;
+  // unpack mm7
+  mm7 <<= 1;
+  ULONG *edi = _pulLayer;
+  for (uint32_t ebx = _iRowCt; ebx; ebx--) {
+    uint32_t ebx_in = mm1;
+    for (uint32_t ecx = _iPixCt; ecx; ecx--) {
+      edi++;
+    }
+  }
 }
 
 // add one layer point light with diffusion and mask
@@ -1259,6 +1277,12 @@ static INDEX GetDither(void)
   return iDither;
 }
 
+template<typename T>
+void SwapEndianess(T &var) {
+  char *varArray = reinterpret_cast<char *>(&var);
+  for (long i = 0; i < static_cast<long>(sizeof(var) / 2); i++)
+    std::swap(varArray[sizeof(var) - 1 - i], varArray[i]);
+}
 
 // mix one mip-map
 void CLayerMixer::MixOneMipmap(CBrushShadowMap *pbsm, INDEX iMipmap)
@@ -1285,7 +1309,6 @@ void CLayerMixer::MixOneMipmap(CBrushShadowMap *pbsm, INDEX iMipmap)
       }}
     }
   } // set initial color
-    FatalError("ASM");
 //  __asm {
 //    cld
 //    mov     ebx,D [this]
@@ -1296,6 +1319,14 @@ void CLayerMixer::MixOneMipmap(CBrushShadowMap *pbsm, INDEX iMipmap)
 //    bswap   eax
 //    rep     stosd
 //  }
+  uint32_t ecx = lm_pixCanvasSizeU * lm_pixCanvasSizeV;
+  ULONG *edi = lm_pulShadowMap;
+  uint32_t eax = colAmbient;
+  SwapEndianess(eax);
+  for (uint32_t i = 0; i < ecx; i++) {
+    *edi = eax;
+    edi++;
+  }
   _pfWorldEditingProfile.StopTimer(CWorldEditingProfile::PTI_AMBIENTFILL);
 
   // find gradient layer
@@ -1371,7 +1402,8 @@ void CLayerMixer::MixOneMipmap(CBrushShadowMap *pbsm, INDEX iMipmap)
 // copy from static shadow map to dynamic layer
 __forceinline void CLayerMixer::CopyShadowLayer(void)
 {
-    FatalError("ASM");
+  WarningMessage("TODO: ASM");
+  return;
 //  __asm {
 //    cld
 //    mov     ebx,D [this]
@@ -1387,7 +1419,8 @@ __forceinline void CLayerMixer::CopyShadowLayer(void)
 // copy from static shadow map to dynamic layer
 __forceinline void CLayerMixer::FillShadowLayer( COLOR col)
 {
-    FatalError("ASM");
+  WarningMessage("TODO: ASM");
+  return;
 //  __asm {
 //    cld
 //    mov     ebx,D [this]

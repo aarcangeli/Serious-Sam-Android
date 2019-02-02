@@ -406,7 +406,6 @@ BOOL CCommunicationInterface::Server_IsClientLocal(INDEX iClient) {
 
 BOOL CCommunicationInterface::Server_IsClientUsed(INDEX iClient) {
   CTSingleLock slComm(&cm_csComm, TRUE);
-
   ASSERT(iClient >= 0 && iClient < SERVER_CLIENTS);
   return cm_aciClients[iClient].ci_bUsed;
 };

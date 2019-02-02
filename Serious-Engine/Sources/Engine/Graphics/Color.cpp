@@ -18,6 +18,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Graphics/Color.h>
 #include <Engine/Math/Functions.h>
 #include <Engine/Base/ErrorReporting.h>
+#include <cstdint>
 
 // asm shortcuts
 #define O offset
@@ -249,7 +250,13 @@ COLOR MulColors( COLOR col1, COLOR col2)
   if( col1==0 || col2==0) return 0;
   COLOR colRet;
 #if PLATFORM_UNIX
-  FatalError("TODO");
+  uint8_t *c1 = (uint8_t *) &col1;
+  uint8_t *c2 = (uint8_t *) &col2;
+  uint8_t *cr = (uint8_t *) &colRet;
+  cr[0] = (uint32_t) c1[0] * (uint32_t) c2[0] >> 8;
+  cr[1] = (uint32_t) c1[1] * (uint32_t) c2[1] >> 8;
+  cr[2] = (uint32_t) c1[2] * (uint32_t) c2[2] >> 8;
+  cr[3] = (uint32_t) c1[3] * (uint32_t) c2[3] >> 8;
 #else
   __asm {
     xor     ebx,ebx

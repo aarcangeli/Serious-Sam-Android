@@ -438,9 +438,9 @@ static void RSBinToGroups( ScenePolygon *pspoFirst)
     }
   }
 
-    FatalError("ASM");
-//  // determine maximum used groups
-//  ASSERT( _ctGroupsCount);
+  // determine maximum used groups
+  ASSERT( _ctGroupsCount);
+  _ctGroupsCount = 1 << (FastLog2(_ctGroupsCount) + 1);
 //  __asm {
 //    mov     eax,2
 //    bsr     ecx,D [_ctGroupsCount]

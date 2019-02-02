@@ -49,6 +49,9 @@ void blockingError(const char *func);
 #define GL_QUADS 0x0007
 #define GL_NORMAL_ARRAY 0x8075
 #define GL_COLOR_ARRAY 0x8076
+#define GL_MODULATE 0x2100
+#define GL_TEXTURE_ENV 0x2300
+#define GL_TEXTURE_ENV_MODE 0x2200
 
 namespace gles_adapter {
   struct GenericBuffer {
@@ -71,6 +74,7 @@ namespace gles_adapter {
   GLenum lastError = 0;
 
   GenericBuffer vp, tp;
+  GLfloat depthRange[2] = {0, 1}; // TODO implement
 
   const char *VERTEX_SHADER = R"***(
     precision highp float;
@@ -113,6 +117,9 @@ namespace gles_adapter {
   bool isGL_TEXTURE_COORD_ARRAY = false;
   bool isGL_NORMAL_ARRAY = false;
   bool isGL_COLOR_ARRAY = false;
+
+  // glGetTexEnv
+  int val_GL_TEXTURE_ENV_MODE = GL_MODULATE;
 
   void installGlLogger();
 
@@ -352,6 +359,12 @@ namespace gles_adapter {
   };
 
   void gles_adp_glGetFloatv(GLenum pname, GLfloat *params) {
+    if (!params) return;
+    if (pname == GL_DEPTH_RANGE) {
+      params[0] = depthRange[0];
+      params[1] = depthRange[1];
+      return;
+    }
     glGetFloatv(pname, params);
   };
 
@@ -424,7 +437,8 @@ namespace gles_adapter {
   };
 
   void gles_adp_glDepthRange(GLclampd near_val, GLclampd far_val) {
-    reportError("glDepthRange");
+    depthRange[0] = near_val;
+    depthRange[1] = far_val;
   };
 
 
@@ -469,7 +483,8 @@ namespace gles_adapter {
   gles_adp_glFrustum(GLdouble left, GLdouble right, GLdouble bottom, GLdouble top,
                      GLdouble near_val,
                      GLdouble far_val) {
-    reportError("glFrustum");
+    glm::mat4 toMult = glm::frustum(left, right, bottom, top, near_val, far_val);
+    (*currentMatrix) *= toMult;
   }
 
 
@@ -1242,6 +1257,10 @@ namespace gles_adapter {
   }
 
   void gles_adp_glDrawElements(GLenum mode, GLsizei count, GLenum type, const GLvoid *indices) {
+    glDrawElements(mode, count, type, indices);
+    return;
+    if (mode == GL_TRIANGLES) {
+    }
     reportError("glDrawElements");
   }
 
@@ -1466,6 +1485,11 @@ namespace gles_adapter {
   };
 
   void gles_adp_glGetTexEnviv(GLenum target, GLenum pname, GLint *params) {
+    if (!params) return;
+    if (target == GL_TEXTURE_ENV && pname == GL_TEXTURE_ENV_MODE) {
+      *params = val_GL_TEXTURE_ENV_MODE;
+      return;
+    }
     reportError("glGetTexEnviv");
   };
 

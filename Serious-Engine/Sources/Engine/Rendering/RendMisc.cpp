@@ -104,7 +104,6 @@ static SLONG slTmp;
 
 static inline PIX PIXCoord(FLOAT f) // (f+0.9999f) or (ceil(f))
 {
-    FatalError("ASM");
 //  PIX pixRet;
 //  __asm {
 //    fld     dword ptr [f]
@@ -118,6 +117,7 @@ static inline PIX PIXCoord(FLOAT f) // (f+0.9999f) or (ceil(f))
 //    mov     dword ptr [pixRet],eax
 //  }
 //  return pixRet;
+  return ceil(f);
 }
 
 

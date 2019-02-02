@@ -15,6 +15,7 @@
 #include <GLES2/gl2.h>
 
 typedef CGame *(*GAME_Create_t)(void);
+void CTimer_TimerFunc_internal(void);
 
 namespace gles_adapter {
   void gles_adp_init();
@@ -186,7 +187,7 @@ void seriousSamResize(uint32_t width, uint32_t height) {
   }
 }
 
-void seriousSamDoGameInner() {
+void seriousSamDoGame() {
 //  glClear(GL_COLOR_BUFFER_BIT);
 //
 //  float positions[] = {
@@ -223,6 +224,7 @@ void seriousSamDoGameInner() {
 //  CTStream::DisableStreamHandling();
 //
 //  return;
+  CTimer_TimerFunc_internal();
 
   CTStream::EnableStreamHandling();
 
@@ -242,30 +244,30 @@ void seriousSamDoGameInner() {
     ULONG ulFlags = 0;
 //    pdp->Fill(LCDGetColor(C_dGREEN | CT_OPAQUE, "bcg fill"));
 
-    pdp->Lock();
+//    pdp->Lock();
+//
+//    SLONG slDPWidth = pdp->GetWidth();
+//    SLONG slDPHeight = pdp->GetHeight();
+//    FLOAT fTextScale = 1;
+//
+//    pdp->Unlock();
 
-    SLONG slDPWidth = pdp->GetWidth();
-    SLONG slDPHeight = pdp->GetHeight();
-    FLOAT fTextScale = 1;
+    game->GameRedrawView(pdp, ulFlags);
 
-    pdp->Unlock();
-
-//    game->GameRedrawView(pdp, ulFlags);
-
-    pdp->Lock();
-//    game->ComputerRender(pdp);
-
-    InfoMessage("Before PutText");
-    pdp->SetFont(_pfdDisplayFont);
-    pdp->SetTextScaling(fTextScale);
-    pdp->SetTextAspect(1.0f);
-    pdp->PutText("SeriousSam", slDPWidth * 0.05f, slDPHeight * 0.85f,
-                 LCDGetColor(C_GREEN | 255, "display mode"));
-    InfoMessage("After PutText");
-
-    game->ConsoleRender(pdp);
-
-    pdp->Unlock();
+//    pdp->Lock();
+////    game->ComputerRender(pdp);
+//
+//    InfoMessage("Before PutText");
+//    pdp->SetFont(_pfdDisplayFont);
+//    pdp->SetTextScaling(fTextScale);
+//    pdp->SetTextAspect(1.0f);
+//    pdp->PutText("SeriousSam", slDPWidth * 0.05f, slDPHeight * 0.85f,
+//                 LCDGetColor(C_GREEN | 255, "display mode"));
+//    InfoMessage("After PutText");
+//
+////    game->ConsoleRender(pdp);
+//
+//    pdp->Unlock();
 
     InfoMessage("Frame End");
 
@@ -274,11 +276,4 @@ void seriousSamDoGameInner() {
   }
 
   CTStream::DisableStreamHandling();
-}
-
-void seriousSamDoGame() {
-  try {
-    seriousSamDoGameInner();
-  } catch (...) {
-  }
 }
