@@ -25,6 +25,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Graphics/Fog_internal.h>
 #include <Engine/Graphics/GfxProfile.h>
 #include <Engine/Graphics/ImageInfo.h>
+#include <cstdint>
 
 
 // asm shortcuts
@@ -65,9 +66,15 @@ extern BOOL _bMultiPlayer;
 // prepares fog and haze parameters and eventualy converts texture
 ULONG PrepareTexture( UBYTE *pubTexture, PIX pixSizeI, PIX pixSizeJ)
 {
-    FatalError("TODO:PrepareTexture");
-//  // need to upload from RGBA format
-//  const PIX pixTextureSize = pixSizeI*pixSizeJ;
+  // need to upload from RGBA format
+  const PIX pixTextureSize = pixSizeI * pixSizeJ;
+  UBYTE *src = pubTexture;
+  uint32_t *dest = (uint32_t *) &pubTexture[pixTextureSize];
+  for (PIX i = 0; i < pixTextureSize; i++) {
+    *dest = (uint32_t) *src << 24 | 0x00FFFFFF;
+    src++;
+    dest++;
+  }
 //  __asm {
 //    mov     esi,D [pubTexture]
 //    mov     edi,D [pubTexture]
