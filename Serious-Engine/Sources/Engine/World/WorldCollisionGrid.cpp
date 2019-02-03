@@ -20,6 +20,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Templates/StaticStackArray.cpp>
 #include <Engine/Templates/AllocationArray.h>
 #include <Engine/Templates/AllocationArray.cpp>
+#include <cmath>
 
 #define DEBUG_COLLIDEWITHALL 0
 
@@ -47,10 +48,10 @@ static inline void BoxToGrid(
   FLOAT fMinZ = boxEntity.Min()(3);
   FLOAT fMaxX = boxEntity.Max()(1);
   FLOAT fMaxZ = boxEntity.Max()(3);
-  iMinX = INDEX(floor(fMinX/GRID_CELLSIZE));
-  iMinZ = INDEX(floor(fMinZ/GRID_CELLSIZE));
-  iMaxX = INDEX(ceil(fMaxX/GRID_CELLSIZE));
-  iMaxZ = INDEX(ceil(fMaxZ/GRID_CELLSIZE));
+  iMinX = std::isinf(fMinX) ? GRID_MIN : INDEX(floor(fMinX/GRID_CELLSIZE));
+  iMinZ = std::isinf(fMinZ) ? GRID_MIN : INDEX(floor(fMinZ/GRID_CELLSIZE));
+  iMaxX = std::isinf(fMaxX) ? GRID_MIN : INDEX(ceil(fMaxX/GRID_CELLSIZE));
+  iMaxZ = std::isinf(fMaxZ) ? GRID_MIN : INDEX(ceil(fMaxZ/GRID_CELLSIZE));
 
   iMinX = Clamp(iMinX, (INDEX)GRID_MIN, (INDEX)GRID_MAX);
   iMinZ = Clamp(iMinZ, (INDEX)GRID_MIN, (INDEX)GRID_MAX);
