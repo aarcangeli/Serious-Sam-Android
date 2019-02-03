@@ -23,7 +23,6 @@ void blockingError(const char *func);
  *   glBegin, glColor and other direct mode
  *   glMatrixMode and other transformations
  *   modes:
- *     GL_ALPHA_TEST
  *     GL_CLIP_PLANE0
  *   glShadeModel
  *   glPolygonMode
@@ -53,6 +52,7 @@ void blockingError(const char *func);
 #define GL_TEXTURE_ENV 0x2300
 #define GL_TEXTURE_ENV_MODE 0x2200
 #define GL_CLAMP 0x2900
+#define GL_ALPHA_TEST 0x0BC0
 
 namespace gles_adapter {
   struct GenericBuffer {
@@ -106,6 +106,7 @@ namespace gles_adapter {
 
     uniform sampler2D mainTexture;
     uniform float enableTexture;
+    uniform float enableAlphaTest;
 
     varying vec4 vColor;
     varying vec2 vTexCoord;
@@ -114,10 +115,16 @@ namespace gles_adapter {
       vec4 finalColor = vColor;
       if (enableTexture > 0.5) finalColor = finalColor * texture2D(mainTexture, vTexCoord);
       gl_FragColor = finalColor * vColor;
+
+      // alpha test
+      if (enableAlphaTest > 0.5 && gl_FragColor.w < 0.5) {
+        discard;
+      }
     }
 
   )***";
 
+  bool isGL_ALPHA_TEST = false;
   bool isGL_TEXTURE_2D = false;
   bool isGL_VERTEX_ARRAY = false;
   bool isGL_TEXTURE_COORD_ARRAY = false;
@@ -133,7 +140,9 @@ namespace gles_adapter {
   glm::mat4 projMat = glm::mat4(1);
   glm::mat4 *currentMatrix = &modelViewMat;
 
-  GLint projMatIdx, modelViewMatIdx, mainTextureLoc, enableTextureLoc;
+  GLint projMatIdx, modelViewMatIdx, mainTextureLoc, enableTextureLoc, enableAlphaTestLoc;
+  GLenum alphaTestFunc;
+  GLclampf alphaTestRef;
 
   std::string toStr(glm::mat4 &mat) {
     return glm::to_string(mat);
@@ -187,6 +196,7 @@ namespace gles_adapter {
     mainTextureLoc = glGetUniformLocation(program, "mainTexture");
     if (mainTextureLoc >= 0) glUniform1i(mainTextureLoc, 0);
     enableTextureLoc = glGetUniformLocation(program, "enableTexture");
+    enableAlphaTestLoc = glGetUniformLocation(program, "enableAlphaTest");
   }
 
   void syncBuffers(GLsizei vertices) {
@@ -228,6 +238,11 @@ namespace gles_adapter {
     glUniformMatrix4fv(projMatIdx, 1, GL_FALSE, glm::value_ptr(projMat));
     glUniformMatrix4fv(modelViewMatIdx, 1, GL_FALSE, glm::value_ptr(modelViewMat));
     glUniform1f(enableTextureLoc, isGL_TEXTURE_2D ? 1 : 0);
+
+    if (alphaTestFunc != GL_GEQUAL || alphaTestRef != 0.5f) {
+      blockingError("glAlphaFunc with invalid arguments");
+    }
+    glUniform1f(enableAlphaTestLoc, isGL_ALPHA_TEST ? 1 : 0);
   }
 
   void syncBuffersPost() {
@@ -246,12 +261,20 @@ namespace gles_adapter {
       isGL_TEXTURE_2D = true;
       return;
     }
+    if (cap == GL_ALPHA_TEST) {
+      isGL_ALPHA_TEST = true;
+      return;
+    }
     glEnable(cap);
   };
 
   void gles_adp_glDisable(GLenum cap) {
     if (cap == GL_TEXTURE_2D) {
       isGL_TEXTURE_2D = false;
+      return;
+    }
+    if (cap == GL_ALPHA_TEST) {
+      isGL_ALPHA_TEST = false;
       return;
     }
     glDisable(cap);
@@ -272,6 +295,9 @@ namespace gles_adapter {
     }
     if (cap == GL_COLOR_ARRAY) {
       return isGL_COLOR_ARRAY;
+    }
+    if (cap == GL_ALPHA_TEST) {
+      return isGL_ALPHA_TEST;
     }
     return glIsEnabled(cap);
   };
@@ -297,7 +323,8 @@ namespace gles_adapter {
   }
 
   void gles_adp_glAlphaFunc(GLenum func, GLclampf ref) {
-    reportError("glAlphaFunc");
+    alphaTestFunc = func;
+    alphaTestRef = ref;
   };
 
   void gles_adp_glBlendFunc(GLenum sfactor, GLenum dfactor) {
@@ -2324,3 +2351,4 @@ namespace gles_adapter {
   }
 
 }
+             
