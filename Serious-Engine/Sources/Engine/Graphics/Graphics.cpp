@@ -22,6 +22,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Graphics/Texture.h>
 #include <Engine/Graphics/GfxProfile.h>
 #include <Engine/Base/ErrorReporting.h>
+#include <AndroidAdapters/LargeColor.h>
 
 // asm shortcuts
 #define O offset
@@ -196,10 +197,6 @@ static void MakeOneMipmap( ULONG *pulSrcMipmap, ULONG *pulDstMipmap, PIX pixWidt
   ASSERT(pixWidth == 1L << FastLog2(pixWidth));
   ASSERT(pixHeight == 1L << FastLog2(pixHeight));
 
-  if (bBilinear) {
-    WarningMessage("TODO: bBilinear mipmap");
-  }
-
   PIX pixDestWidth = pixWidth >> 1;
   PIX pixDestHeight = pixHeight >> 1;
 
@@ -207,12 +204,17 @@ static void MakeOneMipmap( ULONG *pulSrcMipmap, ULONG *pulDstMipmap, PIX pixWidt
     for (PIX x = 0; x < pixDestWidth; x++) {
       PIX ys = y * 2;
       PIX xs = x * 2;
-      ULONG pix1 = pulSrcMipmap[0];
-      // TODO: bilinear
-      //      ULONG pix2 = pulSrcMipmap[1];
-      //      ULONG pix3 = pulSrcMipmap[pixWidth];
-      //      ULONG pix4 = pulSrcMipmap[pixWidth + 1];
-      *pulDstMipmap = pix1;
+      ULONG dest;
+      if (bBilinear) {
+        auto sum = LC(pulSrcMipmap[0]) +
+                   LC(pulSrcMipmap[1]) +
+                   LC(pulSrcMipmap[pixWidth]) +
+                   LC(pulSrcMipmap[pixWidth + 1]);
+        dest = (sum / 4).packUnsignedSaturate();
+      } else {
+        dest = pulSrcMipmap[0];
+      }
+      *pulDstMipmap = dest;
       // advance dest
       pulDstMipmap++;
       // advance src 2 pixels
@@ -459,10 +461,19 @@ static ULONG *pulDitherTable;
 void DitherBitmap( INDEX iDitherType, ULONG *pulSrc, ULONG *pulDst, PIX pixWidth, PIX pixHeight,
                    PIX pixCanvasWidth, PIX pixCanvasHeight)
 {
-  _pfGfxProfile.StartTimer( CGfxProfile::PTI_DITHERBITMAP);
-  WarningMessage("TODO: DitherBitmap ASM");
-  memcpy(pulDst, pulSrc, pixCanvasWidth * pixCanvasHeight * BYTES_PER_TEXEL);
-  goto theEnd;
+  if (true) {
+    WarningMessage("TODO: DitherBitmap ASM");
+    _pfGfxProfile.StartTimer( CGfxProfile::PTI_DITHERBITMAP);
+    if (pulSrc != pulDst) {
+      for (PIX y = 0; y < pixHeight; y++) {
+        memcpy(pulDst, pulSrc, pixWidth * BYTES_PER_TEXEL);
+        pulSrc += pixCanvasWidth;
+        pulDst += pixCanvasWidth;
+      }
+    }
+    _pfGfxProfile.StopTimer( CGfxProfile::PTI_DITHERBITMAP);
+    return;
+  }
 
 //  // determine row modulo
 //  if( pixCanvasWidth ==0) pixCanvasWidth  = pixWidth;
@@ -773,11 +784,41 @@ static void GenerateConvolutionMatrix( INDEX iFilter)
   mm = iCm  & 0xFFFF;  mmCm = (mm<<48) | (mm<<32) | (mm<<16) | mm;
 }
 
- 
+
+/**
+ * +---+---+---+
+ * | 1 | 2 | 3 |
+ * +---+---+---+
+ * | 4 | 5 | 6 |
+ * +---+---+---+
+ * | 7 | 8 | 9 |
+ * +---+---+---+
+ *
+ * Weighted average filter (https://www.tutorialspoint.com/dip/concept_of_blurring.htm)
+ * p5 = ((p1+p3+p7+p9) * cornerMultiplier + (p2+p4+p6+p8) * edgeMultiplier + p5 * middleMultiplier + 7) / sumOfMultipliers;
+ *
+ */
 // applies filter to bitmap
+// slCanvasWidth, pixCanvasHeight:= pixel allocati in pulSrc e pulDst
+// pixWidth, pixHeight:= pixel di processare
 void FilterBitmap( INDEX iFilter, ULONG *pulSrc, ULONG *pulDst, PIX pixWidth, PIX pixHeight,
                    PIX pixCanvasWidth, PIX pixCanvasHeight)
 {
+  // skip filtering for now
+  if (true) {
+    WarningMessage("TODO: FilterBitmap ASM");
+    _pfGfxProfile.StartTimer( CGfxProfile::PTI_FILTERBITMAP);
+    if (pulSrc != pulDst) {
+      for (PIX y = 0; y < pixHeight; y++) {
+        memcpy(pulDst, pulSrc, pixWidth * BYTES_PER_TEXEL);
+        pulSrc += pixCanvasWidth;
+        pulDst += pixCanvasWidth;
+      }
+    }
+    _pfGfxProfile.StopTimer( CGfxProfile::PTI_FILTERBITMAP);
+    return;
+  }
+
   _pfGfxProfile.StartTimer( CGfxProfile::PTI_FILTERBITMAP);
   ASSERT( iFilter>=-6 && iFilter<=+6);
 
@@ -800,8 +841,6 @@ void FilterBitmap( INDEX iFilter, ULONG *pulSrc, ULONG *pulDst, PIX pixWidth, PI
   SLONG slModulo1 = (pixCanvasWidth-pixWidth+1) *BYTES_PER_TEXEL;
   SLONG slCanvasWidth = pixCanvasWidth *BYTES_PER_TEXEL;
 
-  WarningMessage("FilterBitmap: ASM");
-  if (pulDst != pulSrc) memcpy(pulDst, pulSrc, pixCanvasWidth * pixCanvasHeight * BYTES_PER_TEXEL);
   // lets roll ...
 //  __asm {
 //    cld

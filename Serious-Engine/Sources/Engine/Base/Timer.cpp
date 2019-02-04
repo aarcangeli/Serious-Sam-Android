@@ -215,7 +215,6 @@ CTimer::~CTimer(void)
  */
 void CTimer::AddHandler(CTimerHandler *pthNew)
 {
-  WarningMessage("CTimer::AddHandler will be ignored");
   // access to the list of handlers must be locked
   CTSingleLock slHooks(&tm_csHooks, TRUE);
 

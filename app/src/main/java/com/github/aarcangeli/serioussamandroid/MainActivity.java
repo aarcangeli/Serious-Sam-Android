@@ -66,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
         startEngine();
 
         glSurfaceView = new GLSurfaceView(this);
+//        glSurfaceView.getHolder().setFixedSize(100, 100);
         glSurfaceView.setEGLContextClientVersion(2);
         glSurfaceView.setRenderer(new GLSurfaceView.Renderer() {
             @Override

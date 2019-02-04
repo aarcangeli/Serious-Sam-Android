@@ -235,7 +235,7 @@ void seriousSamDoGame() {
 
   if (pdp != NULL && pdp->Lock()) {
     InfoMessage("Frame Start");
-    pdp->Fill(C_GREEN | CT_OPAQUE);
+    pdp->Fill(C_BLACK | CT_OPAQUE);
 
     // handle pretouching of textures and shadowmaps
     pdp->Unlock();
