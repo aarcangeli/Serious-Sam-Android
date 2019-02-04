@@ -175,7 +175,10 @@ SetFormat_internal(CSoundLibrary &sl, CSoundLibrary::SoundFormat EsfNew, BOOL bR
 /*
  *  Initialization
  */
-void CSoundLibrary::Init(void) {}
+void CSoundLibrary::Init(void) {
+  // initialize any installed sound decoders
+  CSoundDecoder::InitPlugins();
+}
 
 
 /*

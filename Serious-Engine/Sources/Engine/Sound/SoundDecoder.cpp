@@ -31,48 +31,7 @@ static void FailFunction_t(const char *strName) {
 
 
 // ------------------------------------ AMP11
-
-// amp11lib vars
-extern BOOL _bAMP11Enabled = FALSE;
-static HINSTANCE _hAmp11lib = NULL;
-
-// amp11lib types
-typedef signed char ALsint8;
-typedef unsigned char ALuint8;
-typedef signed short ALsint16;
-typedef unsigned short ALuint16;
-typedef signed int ALsint32;
-typedef unsigned int ALuint32;
-typedef signed int ALsize;
-typedef int ALbool;
-typedef float ALfloat;
-#define ALtrue  1
-#define ALfalse 0
-typedef ALsint32 ALhandle;
-
-// define amp11lib function pointers
-#define DLLFUNCTION(dll, output, name, inputs, params, required) \
-  output (__stdcall *p##name) inputs = NULL;
-#include "al_functions.h"
-#undef DLLFUNCTION
-
-static void AMP11_SetFunctionPointers_t(void) {
-  const char *strName;
-  // get amp11lib function pointers
-  #define DLLFUNCTION(dll, output, name, inputs, params, required) \
-    strName = "_" #name "@" #params;  \
-    p##name = (output (__stdcall*) inputs) GetProcAddress( _hAmp11lib, strName); \
-    if(p##name == NULL) FailFunction_t(strName);
-  #include "al_functions.h"
-  #undef DLLFUNCTION
-}
-
-static void AMP11_ClearFunctionPointers(void) {
-  // clear amp11lib function pointers
-  #define DLLFUNCTION(dll, output, name, inputs, params, required) p##name = NULL;
-  #include "al_functions.h"
-  #undef DLLFUNCTION
-}
+#include <amp11lib/amp11lib.h>
 
 class CDecodeData_MPEG {
 public:
@@ -214,40 +173,15 @@ void CSoundDecoder::InitPlugins(void)
     CPrintF(TRANS("OGG playing disabled: %s\n"), strError);
   }
 
-  try {
-    // load amp11lib
-    if (_hAmp11lib==NULL) {
-      _hAmp11lib = ::LoadLibraryA( "amp11lib.dll");
-    }
-    if( _hAmp11lib == NULL) {
-      ThrowF_t(TRANS("Cannot load amp11lib.dll."));
-    }
-    // prepare function pointers
-    AMP11_SetFunctionPointers_t();
+  // initialize amp11lib before calling any of its functions
+  alInitLibrary();
 
-    // initialize amp11lib before calling any of its functions
-    palInitLibrary();
-
-    // if all successful, enable mpx playing
-    _bAMP11Enabled = TRUE;
-    CPrintF(TRANS("  amp11lib.dll loaded, mpx playing enabled\n"));
-
-  } catch (char *strError) {
-    CPrintF(TRANS("MPX playing disabled: %s\n"), strError);
-  }
+  // if all successful, enable mpx playing
+  CPrintF(TRANS("  alInitLibrary initialized, mpx playing enabled\n"));
 }
 
 void CSoundDecoder::EndPlugins(void)
 {
-  // cleanup amp11lib when not needed anymore
-  if (_bAMP11Enabled) {
-    palEndLibrary();
-    AMP11_ClearFunctionPointers();
-    FreeLibrary(_hAmp11lib);
-    _hAmp11lib = NULL;
-    _bAMP11Enabled = FALSE;
-  }
-
   // cleanup vorbis when not needed anymore
   if (_bOVEnabled) {
     OV_ClearFunctionPointers();
@@ -378,10 +312,6 @@ CSoundDecoder::CSoundDecoder(const CTFileName &fnm)
   // if mp3
   } else if (fnmExpanded.FileExt()==".mp3") {
 
-    if (!_bAMP11Enabled) {
-      return;
-    }
-
     sdc_pmpeg = new CDecodeData_MPEG;
     sdc_pmpeg->mpeg_hMainFile = 0;
     sdc_pmpeg->mpeg_hFile = 0;
@@ -406,13 +336,13 @@ CSoundDecoder::CSoundDecoder(const CTFileName &fnm)
           ThrowF_t(TRANS("encoded audio in archives must not be compressed!\n"));
         }
         // open the zip file
-        sdc_pmpeg->mpeg_hMainFile = palOpenInputFile(fnmZip);
+        sdc_pmpeg->mpeg_hMainFile = alOpenInputFile(fnmZip);
         // if error
         if (sdc_pmpeg->mpeg_hMainFile==0) {
           ThrowF_t(TRANS("cannot open archive '%s'"), (const char*)fnmZip);
         }
         // open the subfile
-        sdc_pmpeg->mpeg_hFile = palOpenSubFile(sdc_pmpeg->mpeg_hMainFile, slOffset, slSizeUncompressed);
+        sdc_pmpeg->mpeg_hFile = alOpenSubFile(sdc_pmpeg->mpeg_hMainFile, slOffset, slSizeUncompressed);
         // if error
         if (sdc_pmpeg->mpeg_hFile==0) {
           ThrowF_t(TRANS("cannot open encoded audio file"));
@@ -421,7 +351,7 @@ CSoundDecoder::CSoundDecoder(const CTFileName &fnm)
       // if not in zip
       } else if (iFileType==EFP_FILE) {
         // open mpx file
-        sdc_pmpeg->mpeg_hFile = palOpenInputFile(fnmExpanded);
+        sdc_pmpeg->mpeg_hFile = alOpenInputFile(fnmExpanded);
         // if error
         if (sdc_pmpeg->mpeg_hFile==0) {
           ThrowF_t(TRANS("cannot open mpx file"));
@@ -433,7 +363,7 @@ CSoundDecoder::CSoundDecoder(const CTFileName &fnm)
 
       // get info on the file
       int layer, ver, freq, stereo, rate;
-      if (!palGetMPXHeader(sdc_pmpeg->mpeg_hFile, &layer, &ver, &freq, &stereo, &rate)) {
+      if (!alGetMPXHeader(sdc_pmpeg->mpeg_hFile, &layer, &ver, &freq, &stereo, &rate)) {
         ThrowF_t(TRANS("not a valid mpeg audio file."));
       }
 
@@ -455,7 +385,7 @@ CSoundDecoder::CSoundDecoder(const CTFileName &fnm)
       sdc_pmpeg->mpeg_wfeFormat = form;
 
       // initialize decoder
-      sdc_pmpeg->mpeg_hDecoder = palOpenDecoder(sdc_pmpeg->mpeg_hFile);
+      sdc_pmpeg->mpeg_hDecoder = alOpenDecoder(sdc_pmpeg->mpeg_hFile);
 
       // if error
       if (sdc_pmpeg->mpeg_hDecoder==0) {
@@ -473,7 +403,7 @@ CSoundDecoder::CSoundDecoder(const CTFileName &fnm)
     if (iZipHandle!=0) {
       UNZIPClose(iZipHandle);
     }
-    sdc_pmpeg->mpeg_fSecondsLen = palDecGetLen(sdc_pmpeg->mpeg_hDecoder);
+    sdc_pmpeg->mpeg_fSecondsLen = alDecGetLen(sdc_pmpeg->mpeg_hDecoder);
   }
 }
 
@@ -485,9 +415,9 @@ CSoundDecoder::~CSoundDecoder(void)
 void CSoundDecoder::Clear(void)
 {
   if (sdc_pmpeg!=NULL) {
-    if (sdc_pmpeg->mpeg_hDecoder!=0)  palClose(sdc_pmpeg->mpeg_hDecoder);
-    if (sdc_pmpeg->mpeg_hFile!=0)     palClose(sdc_pmpeg->mpeg_hFile);
-    if (sdc_pmpeg->mpeg_hMainFile!=0) palClose(sdc_pmpeg->mpeg_hMainFile);
+    if (sdc_pmpeg->mpeg_hDecoder!=0)  alClose(sdc_pmpeg->mpeg_hDecoder);
+    if (sdc_pmpeg->mpeg_hFile!=0)     alClose(sdc_pmpeg->mpeg_hFile);
+    if (sdc_pmpeg->mpeg_hMainFile!=0) alClose(sdc_pmpeg->mpeg_hMainFile);
 
     sdc_pmpeg->mpeg_hMainFile = 0;
     sdc_pmpeg->mpeg_hFile = 0;
@@ -515,7 +445,7 @@ void CSoundDecoder::Clear(void)
 void CSoundDecoder::Reset(void)
 {
   if (sdc_pmpeg!=NULL) {
-    palDecSeekAbs(sdc_pmpeg->mpeg_hDecoder, 0.0f);
+    alDecSeekAbs(sdc_pmpeg->mpeg_hDecoder, 0.0f);
   } else if (sdc_pogg!=NULL) {
     // so instead, we reinit
     pov_clear(sdc_pogg->ogg_vfVorbisFile);
@@ -571,7 +501,7 @@ INDEX CSoundDecoder::Decode(void *pvDestBuffer, INDEX ctBytesToDecode)
   // if mpeg
   } else if (sdc_pmpeg!=NULL && sdc_pmpeg->mpeg_hDecoder!=0) {
     // decode mpeg
-    return palRead(sdc_pmpeg->mpeg_hDecoder, pvDestBuffer, ctBytesToDecode);
+    return alRead(sdc_pmpeg->mpeg_hDecoder, pvDestBuffer, ctBytesToDecode);
 
   // if no decoder
   } else {
