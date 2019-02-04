@@ -98,19 +98,20 @@ public:
 
   SoundFormat  sl_EsfFormat;             // sound format (external)
   WAVEFORMATEX sl_SwfeFormat;            // primary sound buffer format
-  SLONG *sl_pslMixerBuffer;              // buffer for mixing sounds (32-bit!)
   SWORD *sl_pswDecodeBuffer;             // buffer for decoding encoded sounds (ogg, mpeg...)
   SLONG  sl_slMixerBufferSize;           // mixer buffer size
   SLONG  sl_slDecodeBufferSize;          // decoder buffer size
-
-  CListHead sl_ClhAwareList;	 					         // list of sound mode aware objects
-  CListHead sl_lhActiveListeners;                // active listeners for current frame of listening
 
 #else
 
   SoundFormat  sl_EsfFormat;
 
 #endif
+
+  SLONG *sl_pslMixerBuffer;              // buffer for mixing sounds (32-bit!)
+
+  CListHead sl_ClhAwareList;	 					         // list of sound mode aware objects
+  CListHead sl_lhActiveListeners;                // active listeners for current frame of listening
 
   /* Return library state (active <==> format <> NONE */
   inline BOOL IsActive(void) {return sl_EsfFormat != SF_NONE;};

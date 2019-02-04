@@ -168,8 +168,10 @@ static BOOL StartUp_waveout(CSoundLibrary &sl, BOOL bReport = TRUE) {}
 /*
  *  set sound format
  */
-static void
-SetFormat_internal(CSoundLibrary &sl, CSoundLibrary::SoundFormat EsfNew, BOOL bReport) {}
+static void SetFormat_internal(CSoundLibrary &sl, CSoundLibrary::SoundFormat EsfNew, BOOL bReport) {
+  // add timer handler
+  _pTimer->AddHandler(&sl.sl_thTimerHandler);
+}
 
 
 /*
@@ -212,7 +214,9 @@ void CSoundLibrary::UpdateSounds(void) {}
 /*
  * This is called every TickQuantum seconds.
  */
-void CSoundTimerHandler::HandleTimer(void) {}
+void CSoundTimerHandler::HandleTimer(void) {
+  _pSound->MixSounds();
+}
 
 
 /*
@@ -230,16 +234,12 @@ static void CopyMixerBuffer_dsound(CSoundLibrary &sl, SLONG slMixedSize) {}
 
 static void CopyMixerBuffer_waveout(CSoundLibrary &sl) {}
 
-
-// finds room in sound buffer to copy in next crop of samples
-static SLONG PrepareSoundBuffer_dsound(CSoundLibrary &sl) {}
-
-
 static SLONG PrepareSoundBuffer_waveout(CSoundLibrary &sl) {}
 
 
 /* Update Mixer */
-void CSoundLibrary::MixSounds(void) {}
+void CSoundLibrary::MixSounds(void) {
+}
 
 
 //
@@ -249,12 +249,24 @@ void CSoundLibrary::MixSounds(void) {}
 /*
  *  Add sound in sound aware list
  */
-void CSoundLibrary::AddSoundAware(CSoundData &CsdAdd) {};
+void CSoundLibrary::AddSoundAware(CSoundData &CsdAdd) {
+  // add sound to list tail
+  sl_ClhAwareList.AddTail(CsdAdd.sd_Node);
+};
 
 /*
  *  Remove a display mode aware object.
  */
-void CSoundLibrary::RemoveSoundAware(CSoundData &CsdRemove) {};
+void CSoundLibrary::RemoveSoundAware(CSoundData &CsdRemove) {
+  // remove it from list
+  CsdRemove.sd_Node.Remove();
+};
 
 // listen from this listener this frame
-void CSoundLibrary::Listen(CSoundListener &sl) {}
+void CSoundLibrary::Listen(CSoundListener &sl) {
+  // just add it to list
+  if (sl.sli_lnInActiveListeners.IsLinked()) {
+    sl.sli_lnInActiveListeners.Remove();
+  }
+  sl_lhActiveListeners.AddTail(sl.sli_lnInActiveListeners);
+}

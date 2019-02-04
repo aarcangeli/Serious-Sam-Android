@@ -220,7 +220,7 @@ set(
   ${SE_BASE}/_android/ErrorReporting.cpp
   ${SE_BASE}/_android/Synchronization.cpp
   ${SE_BASE}/_android/Input.cpp
-  ${SE_BASE}/_android/SoundLibrary.cpp
+  ${SE_BASE}/Sound/SoundLibrary_android.cpp
   ${SE_BASE}/_android/Registry.cpp
   ${SE_BASE}/_android/MultiMonitor.cpp
   ${SE_BASE}/_android/CommunicationInterface.cpp
