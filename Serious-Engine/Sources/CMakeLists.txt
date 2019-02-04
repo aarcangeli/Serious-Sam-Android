@@ -1,6 +1,7 @@
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${SE_GENERATED_DIR})
 
+add_subdirectory(amp11lib)
 add_subdirectory(AndroidAdapters)
 add_subdirectory(AndroidBindings)
 add_subdirectory(libvorbis)
