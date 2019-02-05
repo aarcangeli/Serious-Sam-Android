@@ -25,5 +25,5 @@ set(
 )
 add_library(libvorbis STATIC ${SOURCES})
 target_link_libraries(libvorbis libogg)
-target_include_directories(libvorbis PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
-target_include_directories(libvorbis PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/lib")
+target_compile_options(libvorbis PUBLIC "-I${CMAKE_CURRENT_SOURCE_DIR}/include")
+target_compile_options(libvorbis PRIVATE "-I${CMAKE_CURRENT_SOURCE_DIR}/lib")

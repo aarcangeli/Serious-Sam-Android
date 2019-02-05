@@ -261,10 +261,7 @@ target_link_libraries(Engine android-adapters)
 target_link_libraries(Engine libvorbis amp11lib)
 target_link_libraries(Engine GLESv2 EGL log)
 
-target_include_directories(Engine PUBLIC "${SE_SOURCES}")
-target_include_directories(Engine PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
-target_include_directories(Engine PRIVATE "${SE_BASE}")
-target_include_directories(Engine PUBLIC "${SE_GENERATED_DIR}")
+target_compile_options(Engine PRIVATE "-I${CMAKE_CURRENT_SOURCE_DIR}")
 
 target_compile_definitions(Engine PUBLIC ENGINE_API=)
 target_compile_definitions(Engine PUBLIC PLATFORM_UNIX)

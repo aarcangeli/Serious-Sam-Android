@@ -163,10 +163,10 @@ run_ecc(
 message("EntitiesMP srcs: ${SOURCES}")
 
 add_library(EntitiesMP SHARED ${SOURCES})
-target_include_directories(EntitiesMP PUBLIC .)
-target_include_directories(EntitiesMP PUBLIC ${SE_CURRENT_GENERATED_DIR})
-target_include_directories(EntitiesMP PRIVATE StdH)
-target_include_directories(EntitiesMP PRIVATE ${SE_CURRENT_GENERATED_DIR}/StdH)
+target_compile_options(EntitiesMP PUBLIC "-I${CMAKE_CURRENT_SOURCE_DIR}")
+target_compile_options(EntitiesMP PRIVATE "-I${CMAKE_CURRENT_SOURCE_DIR}/StdH")
+target_compile_options(EntitiesMP PUBLIC "-I${SE_CURRENT_GENERATED_DIR}")
+target_compile_options(EntitiesMP PRIVATE "-I${SE_CURRENT_GENERATED_DIR}/StdH")
 
 target_link_libraries(EntitiesMP Engine)
 target_compile_options(EntitiesMP PUBLIC -Wpedantic)

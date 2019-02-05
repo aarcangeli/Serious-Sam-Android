@@ -4,4 +4,4 @@ set(
         src/framing.c
 )
 add_library(libogg STATIC ${SOURCES})
-target_include_directories(libogg PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
+target_compile_options(libogg PUBLIC "-I${CMAKE_CURRENT_SOURCE_DIR}/include")
