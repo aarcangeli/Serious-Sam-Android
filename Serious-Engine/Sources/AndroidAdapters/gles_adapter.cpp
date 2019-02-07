@@ -62,6 +62,8 @@ namespace gles_adapter {
       const GLvoid *ptr;
   };
 
+  bool USE_BUFFER_DATA = false;
+
   GLuint INDEX_POSITION = 1;
   GLuint INDEX_NORMAL = 2;
   GLuint INDEX_COLOR = 3;
@@ -144,10 +146,6 @@ namespace gles_adapter {
   GLenum alphaTestFunc;
   GLclampf alphaTestRef;
 
-  std::string toStr(glm::mat4 &mat) {
-    return glm::to_string(mat);
-  }
-
   GLuint compileShader(GLenum type, const char *name, const char *source) {
     GLuint shader = glCreateShader(type);
     glShaderSource(shader, 1, &source, nullptr);
@@ -189,6 +187,16 @@ namespace gles_adapter {
       throw "Cannot create program";
     }
 
+    // check if client buffer is enabled on this system
+    float dummy[10];
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glVertexAttribPointer(INDEX_POSITION, 1, GL_FLOAT, false, 0, &dummy);
+    glEnableVertexAttribArray(INDEX_COLOR);
+    glDrawArrays(GL_TRIANGLES, 0, 0);
+    if (glGetError()){
+      USE_BUFFER_DATA = true;
+    }
+
     glUseProgram(program);
 
     projMatIdx = glGetUniformLocation(program, "projMat");
@@ -200,37 +208,47 @@ namespace gles_adapter {
   }
 
   void syncBuffers(GLsizei vertices) {
-    if (vp.stride) {
-      int t = 0;
-    }
+    uint32_t totalSize;
     // upload vertex buffer
     if (vp.type != GL_FLOAT) blockingError("unimplemented mode");
-    uint32_t totalSize = (vp.stride ? vp.stride : 3 * sizeof(float)) * vertices;
-//    glBindBuffer(GL_ARRAY_BUFFER, INDEX_POSITION);
-//    glBufferData(GL_ARRAY_BUFFER, totalSize, vp.ptr, GL_STREAM_DRAW);
-    glVertexAttribPointer(INDEX_POSITION, vp.size, vp.type, GL_FALSE, vp.stride, vp.ptr);
-//    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    if (USE_BUFFER_DATA) {
+      totalSize = (vp.stride ? vp.stride : 3 * sizeof(float)) * vertices;
+      glBindBuffer(GL_ARRAY_BUFFER, INDEX_POSITION);
+      glBufferData(GL_ARRAY_BUFFER, totalSize, vp.ptr, GL_STREAM_DRAW);
+      glVertexAttribPointer(INDEX_POSITION, vp.size, vp.type, GL_FALSE, vp.stride, 0);
+      glBindBuffer(GL_ARRAY_BUFFER, 0);
+    } else {
+      glVertexAttribPointer(INDEX_POSITION, vp.size, vp.type, GL_FALSE, vp.stride, vp.ptr);
+    }
     glEnableVertexAttribArray(INDEX_POSITION);
 
     // upload Texture buffer
     if (isGL_TEXTURE_COORD_ARRAY) {
       if (tp.type != GL_FLOAT) blockingError("unimplemented mode");
-//      uint32_t totalSize = (tp.stride ? tp.stride : tp.size * sizeof(float)) * vertices;
-//      glBindBuffer(GL_ARRAY_BUFFER, INDEX_TEXTURE_COORD);
-//      glBufferData(GL_ARRAY_BUFFER, totalSize, tp.ptr, GL_STREAM_DRAW);
-      glVertexAttribPointer(INDEX_TEXTURE_COORD, tp.size, tp.type, GL_FALSE, tp.stride, tp.ptr);
-//      glBindBuffer(GL_ARRAY_BUFFER, 0);
+      if (USE_BUFFER_DATA) {
+        totalSize = (tp.stride ? tp.stride : tp.size * sizeof(float)) * vertices;
+        glBindBuffer(GL_ARRAY_BUFFER, INDEX_TEXTURE_COORD);
+        glBufferData(GL_ARRAY_BUFFER, totalSize, tp.ptr, GL_STREAM_DRAW);
+        glVertexAttribPointer(INDEX_TEXTURE_COORD, tp.size, tp.type, GL_FALSE, tp.stride, 0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+      } else {
+        glVertexAttribPointer(INDEX_TEXTURE_COORD, tp.size, tp.type, GL_FALSE, tp.stride, tp.ptr);
+      }
       glEnableVertexAttribArray(INDEX_TEXTURE_COORD);
     }
 
     // upload Color buffer
     if (isGL_COLOR_ARRAY) {
       if (cp.type != GL_UNSIGNED_BYTE) blockingError("unimplemented mode");
-//      uint32_t totalSize = (cp.stride ? cp.stride : cp.size) * vertices;
-//      glBindBuffer(GL_ARRAY_BUFFER, INDEX_COLOR);
-//      glBufferData(GL_ARRAY_BUFFER, totalSize, cp.ptr, GL_STREAM_DRAW);
-      glVertexAttribPointer(INDEX_COLOR, cp.size, cp.type, GL_TRUE, cp.stride, cp.ptr);
-//      glBindBuffer(GL_ARRAY_BUFFER, 0);
+      if (USE_BUFFER_DATA) {
+        totalSize = (cp.stride ? cp.stride : cp.size) * vertices;
+        glBindBuffer(GL_ARRAY_BUFFER, INDEX_COLOR);
+        glBufferData(GL_ARRAY_BUFFER, totalSize, cp.ptr, GL_STREAM_DRAW);
+        glVertexAttribPointer(INDEX_COLOR, cp.size, cp.type, GL_TRUE, cp.stride, 0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+      } else {
+        glVertexAttribPointer(INDEX_COLOR, cp.size, cp.type, GL_TRUE, cp.stride, cp.ptr);
+      }
       glEnableVertexAttribArray(INDEX_COLOR);
     }
 
@@ -1733,8 +1751,6 @@ namespace gles_adapter {
     reportError("glCopyTexSubImage2D");
   }
 
-
-# 642 "gl_impl.cpp"
 
   void gles_adp_glMap1d(GLenum target, GLdouble u1, GLdouble u2, GLint stride, GLint order,
                         const GLdouble *points) {
