@@ -103,7 +103,7 @@ set(
   #                "${SE_BASE}/Sound/SoundMixer.cpp"
   "${SE_BASE}/Sound/SoundObject.cpp"
   "${SE_BASE}/Sound/SoundProfile.cpp"
-  #                "${SE_BASE}/Sound/Wave.cpp"
+  "${SE_BASE}/Sound/Wave.cpp"
   "${SE_BASE}/Models/EditModel.cpp"
   "${SE_BASE}/Models/MipMaker.cpp"
   "${SE_BASE}/Models/Model.cpp"

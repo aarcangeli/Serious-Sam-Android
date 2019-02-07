@@ -127,7 +127,9 @@ void startSeriousSamAndroid() {
   StartNewMode(GAT_OGL, 0, 640, 480, DD_DEFAULT, false);
 
   // load
-  CTString sam_strIntroLevel = "Levels\\LevelsMP\\Intro.wld";
+//  CTString sam_strIntroLevel = "Levels\\LevelsMP\\Intro.wld";
+//  CTString sam_strIntroLevel = "Levels/LevelsMP/1_0_InTheLastEpisode.wld";
+  CTString sam_strIntroLevel = "Levels/LevelsMP/1_1_Palenque.wld";
 
   game->gm_aiStartLocalPlayers[0] = 0;
   game->gm_aiStartLocalPlayers[1] = -1;
@@ -234,7 +236,7 @@ void seriousSamDoGame() {
   // todo: draw screen
 
   if (pdp != NULL && pdp->Lock()) {
-    InfoMessage("Frame Start");
+//    InfoMessage("Frame Start");
     pdp->Fill(C_BLACK | CT_OPAQUE);
 
     // handle pretouching of textures and shadowmaps

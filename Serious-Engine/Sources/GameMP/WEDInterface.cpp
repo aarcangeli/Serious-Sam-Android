@@ -76,7 +76,7 @@ void UpdatePauseState(void)
 void CGame::QuickTest(const CTFileName &fnMapName, 
   CDrawPort *pdp, CViewPort *pvp)
 {
-  FatalError("TODO");
+  WarningMessage("QuickTest: unimplemented");
 //  UINT uiMessengerMsg = RegisterWindowMessageA("Croteam Messenger: Incoming Message");
 //  EnableLoadingHook(pdp);
 //

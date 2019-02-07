@@ -336,6 +336,10 @@ COLOR MulColors( COLOR col1, COLOR col2)
 }
 
 
+uint32_t clampNumber(uint32_t num) {
+  return num <= 255 ? num : 255;
+}
+
 // fast color additon function - RES = clamp (1ST + 2ND)
 COLOR AddColors( COLOR col1, COLOR col2) 
 {
@@ -344,7 +348,12 @@ COLOR AddColors( COLOR col1, COLOR col2)
   if( col1==0xFFFFFFFF || col2==0xFFFFFFFF) return 0xFFFFFFFF;
   COLOR colRet;
 #if PLATFORM_UNIX
-    FatalError("TODO");
+  COLOR result = 0;
+  result |= clampNumber(((col1 & CT_RMASK) >> CT_RSHIFT) + ((col2 & CT_RMASK) >> CT_RSHIFT)) << CT_RSHIFT;
+  result |= clampNumber(((col1 & CT_GMASK) >> CT_GSHIFT) + ((col2 & CT_GMASK) >> CT_GSHIFT)) << CT_GSHIFT;
+  result |= clampNumber(((col1 & CT_BMASK) >> CT_BSHIFT) + ((col2 & CT_BMASK) >> CT_BSHIFT)) << CT_BSHIFT;
+  result |= clampNumber(((col1 & CT_AMASK) >> CT_ASHIFT) + ((col2 & CT_AMASK) >> CT_ASHIFT)) << CT_ASHIFT;
+  return result;
 #else
   __asm {
     xor     ebx,ebx
@@ -418,7 +427,7 @@ COLOR AddColors( COLOR col1, COLOR col2)
 extern void abgr2argb( ULONG *pulSrc, ULONG *pulDst, INDEX ct)
 {
 #if PLATFORM_UNIX
-    FatalError("TODO");
+    FatalError("Never called since we are using opengl");
 #else
   __asm {
     mov   esi,dword ptr [pulSrc]

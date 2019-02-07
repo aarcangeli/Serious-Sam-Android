@@ -136,49 +136,49 @@ void CSoundData::Read_t(CTStream *inFile)  // throw char *
   ASSERT( sd_pswBuffer==NULL);
   sd_ulFlags = NONE;
 
-//  // get filename
-//  CTFileName fnm = inFile->GetDescription();
-//  // if this is encoded file
-//  if (fnm.FileExt()==".ogg" || fnm.FileExt()==".mp3") {
-//    CSoundDecoder *pmpd = new CSoundDecoder(fnm);
-//    if (pmpd->IsOpen()) {
-//      pmpd->GetFormat(sd_wfeFormat);
-//    }
-//    delete pmpd;
-//    // mark that this is streaming encoded file
-//    sd_ulFlags = SDF_ENCODED|SDF_STREAMING;
-//
-//  // if this is wave file
-//  } else {
-//    // load wave info
-//    PCMWaveInput CpwiLoad;
-//    sd_wfeFormat = CpwiLoad.LoadInfo_t(inFile);
-//    // store sample length in seconds and average byte rate
-//    sd_dSecondsLength = CpwiLoad.GetSecondsLength();
-//
-//    // if sound library is in lower format convert sound to library format
-//    if ((_pSound->sl_SwfeFormat).nSamplesPerSec < sd_wfeFormat.nSamplesPerSec) {
-//      sd_wfeFormat.nSamplesPerSec = (_pSound->sl_SwfeFormat).nSamplesPerSec;
-//    }
-//    // same goes for bits/sample (must be 16)
-//    sd_wfeFormat.wBitsPerSample = 16;
-//
-//    // if library is active create buffer and load sound data
-//    if (_pSound->IsActive()) {
-//      // create Buffer
-//      sd_slBufferSampleSize = CpwiLoad.GetDataLength(sd_wfeFormat);
-//      SLONG slBufferSize = CpwiLoad.DetermineBufferSize(sd_wfeFormat);
-//      sd_pswBuffer = (SWORD*)AllocMemory( slBufferSize+8);
-//      // load data into buffer
-//      CpwiLoad.LoadData_t( inFile, sd_pswBuffer, sd_wfeFormat);
-//      // copy first sample to the last one (this is needed for linear interpolation)
-//      (ULONG&)(((UBYTE*)sd_pswBuffer)[slBufferSize]) = *(ULONG*)sd_pswBuffer;
-//    }
-//  }
-//
-//  // add to sound aware list
-//  _pSound->AddSoundAware(*this);
-  WarningMessage("CSoundData::Read_t TODO");
+  // get filename
+  CTFileName fnm = inFile->GetDescription();
+  // if this is encoded file
+  if (fnm.FileExt()==".ogg" || fnm.FileExt()==".mp3") {
+    CSoundDecoder *pmpd = new CSoundDecoder(fnm);
+    if (pmpd->IsOpen()) {
+      pmpd->GetFormat(sd_wfeFormat);
+    }
+    delete pmpd;
+    // mark that this is streaming encoded file
+    sd_ulFlags = SDF_ENCODED|SDF_STREAMING;
+
+  // if this is wave file
+  } else {
+    // load wave info
+    PCMWaveInput CpwiLoad;
+    sd_wfeFormat = CpwiLoad.LoadInfo_t(inFile);
+    // store sample length in seconds and average byte rate
+    sd_dSecondsLength = CpwiLoad.GetSecondsLength();
+
+    // if sound library is in lower format convert sound to library format
+    ULONG samplePerSec = _pSound->getSamplesPerSec();
+    if (samplePerSec < sd_wfeFormat.nSamplesPerSec) {
+      sd_wfeFormat.nSamplesPerSec = samplePerSec;
+    }
+    // same goes for bits/sample (must be 16)
+    sd_wfeFormat.wBitsPerSample = 16;
+
+    // if library is active create buffer and load sound data
+    if (_pSound->IsActive()) {
+      // create Buffer
+      sd_slBufferSampleSize = CpwiLoad.GetDataLength(sd_wfeFormat);
+      SLONG slBufferSize = CpwiLoad.DetermineBufferSize(sd_wfeFormat);
+      sd_pswBuffer = (SWORD*)AllocMemory( slBufferSize+8);
+      // load data into buffer
+      CpwiLoad.LoadData_t( inFile, sd_pswBuffer, sd_wfeFormat);
+      // copy first sample to the last one (this is needed for linear interpolation)
+      (ULONG&)(((UBYTE*)sd_pswBuffer)[slBufferSize]) = *(ULONG*)sd_pswBuffer;
+    }
+  }
+
+  // add to sound aware list
+  _pSound->AddSoundAware(*this);
 }
 
 

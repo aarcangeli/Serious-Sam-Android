@@ -36,6 +36,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 /* !!! FIXME: rcg10042001 This is going to need OpenAL or SDL_audio... */
 
+#include <cstdint>
 
 // Mixer
 // set master volume and resets mixer buffer (wipes it with zeroes and keeps pointers)
@@ -93,14 +94,10 @@ public:
   LPDIRECTSOUND3DBUFFER   sl_pDSSourceLeft;
   LPDIRECTSOUND3DBUFFER   sl_pDSSourceRight;
 
-  UBYTE *sl_pubBuffersMemory;            // memory allocated for the sound buffer(s) output
   CStaticArray<WAVEHDR> sl_awhWOBuffers; // the waveout buffers
 
   SoundFormat  sl_EsfFormat;             // sound format (external)
   WAVEFORMATEX sl_SwfeFormat;            // primary sound buffer format
-  SWORD *sl_pswDecodeBuffer;             // buffer for decoding encoded sounds (ogg, mpeg...)
-  SLONG  sl_slMixerBufferSize;           // mixer buffer size
-  SLONG  sl_slDecodeBufferSize;          // decoder buffer size
 
 #else
 
@@ -109,9 +106,19 @@ public:
 #endif
 
   SLONG *sl_pslMixerBuffer;              // buffer for mixing sounds (32-bit!)
+  UBYTE *sl_pubBuffersMemory;            // memory allocated for the sound buffer(s) output
+
+  int64_t sl_sentSamples;                 // total number of samples sent to buffer
+  int64_t sl_lastPosition;                // position of device in last loop
 
   CListHead sl_ClhAwareList;	 					         // list of sound mode aware objects
   CListHead sl_lhActiveListeners;                // active listeners for current frame of listening
+
+
+  SWORD *sl_pswDecodeBuffer;             // buffer for decoding encoded sounds (ogg, mpeg...)
+  SLONG  sl_slSamplePerLoop;             // number of samples per loop
+  SLONG  sl_slMixerBufferSize;           // mixer buffer size
+  SLONG  sl_slDecodeBufferSize;          // decoder buffer size
 
   /* Return library state (active <==> format <> NONE */
   inline BOOL IsActive(void) {return sl_EsfFormat != SF_NONE;};
@@ -129,8 +136,11 @@ public:
   /* Clear Sound Library */
   void Clear(void);
 
+private:
   /* Set Format */
-  SoundFormat SetFormat( SoundFormat EsfNew, BOOL bReport=FALSE);
+  void SetFormat(SoundFormat EsfNew);
+
+public:
   /* Get Format */
   inline SoundFormat GetFormat(void) { return sl_EsfFormat; };
 
@@ -148,6 +158,8 @@ public:
   void AddSoundAware( CSoundData &CsdAdd);
   /* Remove a sound mode aware object */
   void RemoveSoundAware( CSoundData &CsdRemove);
+
+  ULONG getSamplesPerSec();
 
   // listen from this listener this frame
   void Listen(CSoundListener &sl);

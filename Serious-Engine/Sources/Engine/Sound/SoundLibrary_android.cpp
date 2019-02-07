@@ -37,7 +37,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Templates/StaticArray.cpp>
 #include <Engine/Templates/StaticStackArray.cpp>
 
-template CStaticArray<CSoundListener>;
 
 // pointer to global sound library object
 CSoundLibrary *_pSound = NULL;
@@ -106,78 +105,53 @@ static BOOL _bOpened = FALSE;
 /*
  *  Construct uninitialized sound library.
  */
-CSoundLibrary::CSoundLibrary(void) {}
+CSoundLibrary::CSoundLibrary(void) {
+  sl_csSound.cs_iIndex = 3000;
+
+  // access to the list of handlers must be locked
+  CTSingleLock slHooks(&_pTimer->tm_csHooks, TRUE);
+  // synchronize access to sounds
+  CTSingleLock slSounds(&sl_csSound, TRUE);
+
+  sl_EsfFormat = SF_NONE;
+
+  sl_pslMixerBuffer = NULL;
+  sl_pswDecodeBuffer = NULL;
+  sl_pubBuffersMemory = NULL;
+}
 
 
 /*
  *  Destruct (and clean up).
  */
-CSoundLibrary::~CSoundLibrary(void) {}
+CSoundLibrary::~CSoundLibrary(void) {
+  // access to the list of handlers must be locked
+  CTSingleLock slHooks(&_pTimer->tm_csHooks, TRUE);
+  // synchronize access to sounds
+  CTSingleLock slSounds(&sl_csSound, TRUE);
 
+  // clear sound enviroment
+  Clear();
 
-
-// post sound console variables' functions
-
-static FLOAT _tmLastMixAhead = 1234;
-static INDEX _iLastFormat = 1234;
-static INDEX _iLastDevice = 1234;
-static INDEX _iLastAPI = 1234;
-
-static void SndPostFunc(void *pArgs) {}
-
-
-
-/*
- *  some internal functions
- */
-
-
-// DirectSound shutdown procedure
-static void ShutDown_dsound(CSoundLibrary &sl) {}
-
-
-/*
- *  Set wave format from library format
- */
-static void SetWaveFormat(CSoundLibrary::SoundFormat EsfFormat, WAVEFORMATEX &wfeFormat) {}
-
-
-/*
- *  Set library format from wave format
- */
-static void SetLibraryFormat(CSoundLibrary &sl) {}
-
-
-static BOOL DSFail(CSoundLibrary &sl, char *strError) {}
-
-static void DSPlayBuffers(CSoundLibrary &sl) {}
-
-
-// init and set DirectSound format (internal)
-
-static BOOL StartUp_dsound(CSoundLibrary &sl, BOOL bReport = TRUE) {}
-
-
-// set WaveOut format (internal)
-
-static INDEX _ctChannelsOpened = 0;
-
-static BOOL StartUp_waveout(CSoundLibrary &sl, BOOL bReport = TRUE) {}
-
-
-/*
- *  set sound format
- */
-static void SetFormat_internal(CSoundLibrary &sl, CSoundLibrary::SoundFormat EsfNew, BOOL bReport) {
-  // add timer handler
-  _pTimer->AddHandler(&sl.sl_thTimerHandler);
+  // clear any installed sound decoders
+  CSoundDecoder::EndPlugins();
 }
-
 
 /*
  *  Initialization
  */
 void CSoundLibrary::Init(void) {
+  // access to the list of handlers must be locked
+  CTSingleLock slHooks(&_pTimer->tm_csHooks, TRUE);
+  // synchronize access to sounds
+  CTSingleLock slSounds(&sl_csSound, TRUE);
+
+  // print header
+  CPrintF(TRANS("Initializing sound...\n"));
+
+  // initialize sound library and set no-sound format
+  SetFormat(SF_NONE);
+
   // initialize any installed sound decoders
   CSoundDecoder::InitPlugins();
 }
@@ -186,15 +160,40 @@ void CSoundLibrary::Init(void) {
 /*
  *  Clear Sound Library
  */
-void CSoundLibrary::Clear(void) {}
+void CSoundLibrary::Clear(void) {
+  // access to the list of handlers must be locked
+  CTSingleLock slHooks(&_pTimer->tm_csHooks, TRUE);
+  // synchronize access to sounds
+  CTSingleLock slSounds(&sl_csSound, TRUE);
+
+  // clear all sounds and datas buffers
+  FOREACHINLIST(CSoundData, sd_Node, sl_ClhAwareList, itCsdStop) {
+    FOREACHINLIST(CSoundObject, so_Node, (itCsdStop->sd_ClhLinkList), itCsoStop) {
+      itCsoStop->Stop();
+    }
+    itCsdStop->ClearBuffer();
+  }
+
+  // clear wave out data
+  ClearLibrary();
+  _fLastNormalizeValue = 1;
+}
 
 /* Clear Library WaveOut */
-void CSoundLibrary::ClearLibrary(void) {}
+void CSoundLibrary::ClearLibrary(void) {
+  // access to the list of handlers must be locked
+  CTSingleLock slHooks(&_pTimer->tm_csHooks, TRUE);
 
+  // synchronize access to sounds
+  CTSingleLock slSounds(&sl_csSound, TRUE);
 
-// set listener enviroment properties (EAX)
-BOOL CSoundLibrary::SetEnvironment(INDEX iEnvNo, FLOAT fEnvSize/*=0*/) {}
+  // remove timer handler if added
+  if (sl_thTimerHandler.th_Node.IsLinked()) {
+    _pTimer->RemHandler(&sl_thTimerHandler);
+  }
 
+  // close audio output
+}
 
 // mute all sounds (erase playing buffer(s) and supress mixer)
 void CSoundLibrary::Mute(void) {}
@@ -203,12 +202,79 @@ void CSoundLibrary::Mute(void) {}
 /*
  * set sound format
  */
-CSoundLibrary::SoundFormat
-CSoundLibrary::SetFormat(CSoundLibrary::SoundFormat EsfNew, BOOL bReport/*=FALSE*/) {}
+void CSoundLibrary::SetFormat(CSoundLibrary::SoundFormat EsfNew) {
+  // access to the list of handlers must be locked
+  CTSingleLock slHooks(&_pTimer->tm_csHooks, TRUE);
+  // synchronize access to sounds
+  CTSingleLock slSounds(&sl_csSound, TRUE);
+
+  sl_EsfFormat = EsfNew;
+
+  // pause playing all sounds
+  FOREACHINLIST(CSoundData, sd_Node, sl_ClhAwareList, itCsdStop) {
+    itCsdStop->PausePlayingObjects();
+  }
+
+  if (sl_EsfFormat == SF_NONE) return;
+
+}
 
 
 /* Update all 3d effects and copy internal data. */
-void CSoundLibrary::UpdateSounds(void) {}
+void CSoundLibrary::UpdateSounds(void) {
+  _sfStats.StartTimer(CStatForm::STI_SOUNDUPDATE);
+  _pfSoundProfile.StartTimer(CSoundProfile::PTI_UPDATESOUNDS);
+
+  // synchronize access to sounds
+  CTSingleLock slSounds(&sl_csSound, TRUE);
+  INDEX ctListeners = 0;
+  CSoundListener *sli;
+  FOREACHINLIST(CSoundListener, sli_lnInActiveListeners, _pSound->sl_lhActiveListeners, itsli) {
+    sli = itsli;
+    ctListeners++;
+  }
+
+  // if there's only one listener environment properties have been changed (in split-screen EAX is not supported)
+  _iLastEnvType = 1;
+  _fLastEnvSize = 1.4f;
+
+  // for each sound
+  FOREACHINLIST(CSoundData, sd_Node, sl_ClhAwareList, itCsdSoundData) {
+    FORDELETELIST(CSoundObject, so_Node, itCsdSoundData->sd_ClhLinkList, itCsoSoundObject) {
+      _sfStats.IncrementCounter(CStatForm::SCI_SOUNDSACTIVE);
+      itCsoSoundObject->Update3DEffects();
+    }
+  }
+
+  // for each sound
+  FOREACHINLIST(CSoundData, sd_Node, sl_ClhAwareList, itCsdSoundData) {
+    FORDELETELIST(CSoundObject, so_Node, itCsdSoundData->sd_ClhLinkList, itCsoSoundObject) {
+      CSoundObject &so = *itCsoSoundObject;
+      // if sound is playing
+      if (so.so_slFlags & SOF_PLAY) {
+        // copy parameters
+        so.so_sp = so.so_spNew;
+        // prepare sound if not prepared already
+        if (!(so.so_slFlags & SOF_PREPARE)) {
+          so.PrepareSound();
+          so.so_slFlags |= SOF_PREPARE;
+        }
+        // if it is not playing
+      } else {
+        // remove it from list
+        so.so_Node.Remove();
+      }
+    }
+  }
+
+  // remove all listeners
+  FORDELETELIST(CSoundListener, sli_lnInActiveListeners, sl_lhActiveListeners, itsli) {
+    itsli->sli_lnInActiveListeners.Remove();
+  }
+
+  _pfSoundProfile.StopTimer(CSoundProfile::PTI_UPDATESOUNDS);
+  _sfStats.StopTimer(CStatForm::STI_SOUNDUPDATE);
+}
 
 
 /*
@@ -217,25 +283,6 @@ void CSoundLibrary::UpdateSounds(void) {}
 void CSoundTimerHandler::HandleTimer(void) {
   _pSound->MixSounds();
 }
-
-
-/*
- *  MIXER helper functions
- */
-
-
-// copying of mixer buffer to sound buffer(s)
-
-static LPVOID _lpData, _lpData2;
-static DWORD _dwSize, _dwSize2;
-
-static void CopyMixerBuffer_dsound(CSoundLibrary &sl, SLONG slMixedSize) {}
-
-
-static void CopyMixerBuffer_waveout(CSoundLibrary &sl) {}
-
-static SLONG PrepareSoundBuffer_waveout(CSoundLibrary &sl) {}
-
 
 /* Update Mixer */
 void CSoundLibrary::MixSounds(void) {
@@ -270,3 +317,19 @@ void CSoundLibrary::Listen(CSoundListener &sl) {
   }
   sl_lhActiveListeners.AddTail(sl.sli_lnInActiveListeners);
 }
+
+ULONG CSoundLibrary::getSamplesPerSec() {
+  switch (sl_EsfFormat) {
+    case CSoundLibrary::SF_11025_16:
+      return 11025;
+    case CSoundLibrary::SF_22050_16:
+      return 22050;
+    case CSoundLibrary::SF_44100_16:
+      return 44100;
+    case CSoundLibrary::SF_NONE:
+      return 0;
+    default:
+      ASSERTALWAYS("Unknown Sound format");
+      break;
+  }
+};
