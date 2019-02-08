@@ -171,6 +171,7 @@ void CTString::PrintF(const char *strPattern, Types... t) {
 
 template<typename ... Types>
 CTString::CTString(INDEX iDummy, const char *strPattern, Types... t) {
+  str_String = StringDuplicate("");
   *this = stringFormatter::format(strPattern, t...);
 }
 

@@ -55,7 +55,7 @@ void UpdateInputEnabledState(CViewPort *pvp)
   // if should be turned on
   if (bShouldBeEnabled && !_bInputEnabled) {
     // enable it
-    _pInput->EnableInput(pvp);
+    _pInput->EnableInput();
 
     // remember new state
     _bInputEnabled = TRUE;

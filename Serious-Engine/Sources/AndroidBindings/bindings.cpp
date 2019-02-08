@@ -10,6 +10,9 @@ void seriousSamInit();
 void seriousSamResize(uint32_t width, uint32_t hight);
 void seriousSamDoGame();
 void seriousSamDoGame();
+void toggleConsoleState();
+void processInputs();
+void setAxisValue(uint32_t key, float value);
 
 extern "C"
 JNIEXPORT void JNICALL
@@ -47,4 +50,23 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_github_aarcangeli_serioussamandroid_MainActivity_doGame(JNIEnv *env, jobject instance) {
   seriousSamDoGame();
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_github_aarcangeli_serioussamandroid_MainActivity_toggleConsoleState(JNIEnv *env, jobject instance) {
+  toggleConsoleState();
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_github_aarcangeli_serioussamandroid_MainActivity_processInputs(JNIEnv *env, jobject instance) {
+  processInputs();
+}
+
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_github_aarcangeli_serioussamandroid_MainActivity_setAxisValue(JNIEnv *env, jobject instance, jint key, jfloat value) {
+  setAxisValue(key, value);
 }

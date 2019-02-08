@@ -13,6 +13,7 @@
 #include <GameMP/Game.h>
 #include <EGL/egl.h>
 #include <GLES2/gl2.h>
+#include <cstdint>
 
 typedef CGame *(*GAME_Create_t)(void);
 void CTimer_TimerFunc_internal(void);
@@ -58,6 +59,17 @@ CGame *game;
 CDrawPort *pdp = nullptr;
 CViewPort *pvpViewPort;
 
+int64_t lastTick = 0;
+uint32_t tickCount = 0;
+float tickTime = 0;
+bool started = false;
+bool initialized = false;
+
+#define MAX_AXIS 10
+#define AXIS_SHIFT 1
+#define NS_IN_S 1000000000
+float axisValue[MAX_AXIS];
+
 extern COLOR LCDGetColor(COLOR colDefault, const char *strName) {
   return game->LCDGetColor(colDefault, strName);
 }
@@ -70,6 +82,9 @@ void printGlError(const char *name) {
 }
 
 void startSeriousSamAndroid() {
+  if (started) return;
+  started = true;
+
   CTStream::EnableStreamHandling();
   SE_InitEngine("SeriousSam");
   SE_LoadDefaultFonts();
@@ -102,12 +117,14 @@ void startSeriousSamAndroid() {
   game->Initialize(CTString("Data\\SeriousSam.gms"));
   game->LCDInit();
 
+  _pInput->EnableInput();
+
   // todo: sound library
 //  snd_iFormat = Clamp( snd_iFormat, (INDEX)CSoundLibrary::SF_NONE, (INDEX)CSoundLibrary::SF_44100_16);
 //  _pSound->SetFormat( (enum CSoundLibrary::SoundFormat)snd_iFormat);
 
   CPrintF("Level list:\n"); // TODO: GetLevelInfo
-  CDynamicStackArray <CTFileName> afnmDir;
+  CDynamicStackArray<CTFileName> afnmDir;
   MakeDirList(afnmDir, CTString("Levels\\"), "*.wld", DLI_RECURSIVE | DLI_SEARCHCD);
   for (INDEX i = 0; i < afnmDir.Count(); i++) {
     CTFileName fnm = afnmDir[i];
@@ -116,7 +133,7 @@ void startSeriousSamAndroid() {
   CPrintF("\n");
 
   CPrintF("Demos:\n");
-  CDynamicStackArray <CTFileName> demoDir;
+  CDynamicStackArray<CTFileName> demoDir;
   MakeDirList(demoDir, CTString("Demos\\"), "Demos/Auto-*.dem", DLI_RECURSIVE);
   for (INDEX i = 0; i < demoDir.Count(); i++) {
     CTFileName fnm = demoDir[i];
@@ -126,12 +143,27 @@ void startSeriousSamAndroid() {
 
   StartNewMode(GAT_OGL, 0, 640, 480, DD_DEFAULT, false);
 
+  // override key settings
+  CControls &ctrl = game->gm_actrlControls[0];
+  for (int i = 0; i < MAX_AXIS; i++) {
+    ctrl.ctrl_aaAxisActions[i].aa_iAxisAction = i + AXIS_SHIFT;
+    ctrl.ctrl_aaAxisActions[i].aa_fSensitivity = 80;
+    ctrl.ctrl_aaAxisActions[i].aa_fDeadZone = 10;
+    ctrl.ctrl_aaAxisActions[i].aa_bInvert = false;
+    ctrl.ctrl_aaAxisActions[i].aa_bRelativeControler = true;
+    ctrl.ctrl_aaAxisActions[i].aa_bSmooth = false;
+    axisValue[i] = 0;
+  }
+
   // load
 //  CTString sam_strIntroLevel = "Levels\\LevelsMP\\Intro.wld";
 //  CTString sam_strIntroLevel = "Levels/LevelsMP/1_0_InTheLastEpisode.wld";
   CTString sam_strIntroLevel = "Levels/LevelsMP/1_1_Palenque.wld";
 
-  game->gm_aiStartLocalPlayers[0] = 0;
+  _pShell->SetINDEX("gam_iStartDifficulty", CSessionProperties::GD_NORMAL);
+  _pShell->SetINDEX("gam_iStartMode", CSessionProperties::GM_COOPERATIVE);
+  game->gm_StartSplitScreenCfg = CGame::SSC_PLAY1;
+  game->gm_aiStartLocalPlayers[0] = game->gm_iSinglePlayer;
   game->gm_aiStartLocalPlayers[1] = -1;
   game->gm_aiStartLocalPlayers[2] = -1;
   game->gm_aiStartLocalPlayers[3] = -1;
@@ -145,7 +177,6 @@ void startSeriousSamAndroid() {
   game->SetSinglePlayerSession(sp);
 
   game->gm_bFirstLoading = TRUE;
-  game->gm_csConsoleState = CS_TURNINGON;
 
   if (game->NewGame(sam_strIntroLevel, sam_strIntroLevel, sp)) {
     CPrintF("Started '%s'\n", sam_strIntroLevel);
@@ -155,9 +186,13 @@ void startSeriousSamAndroid() {
   }
 
   CPrintF(TRANS("\n--- Serious Engine CPP End ---\n"));
+  CTStream::DisableStreamHandling();
 }
 
 void seriousSamInit() {
+  if (initialized) return;
+  initialized = true;
+
   try {
     gles_adapter::gles_adp_init();
   } catch (const char *txt) {
@@ -178,6 +213,8 @@ void seriousSamInit() {
   }
 
   CTStream::DisableStreamHandling();
+
+  lastTick = getTimeNsec();
 }
 
 void seriousSamResize(uint32_t width, uint32_t height) {
@@ -189,48 +226,53 @@ void seriousSamResize(uint32_t width, uint32_t height) {
   }
 }
 
-void seriousSamDoGame() {
-//  glClear(GL_COLOR_BUFFER_BIT);
-//
-//  float positions[] = {
-//    0, 0, 0,
-//    0, 1, 0,
-//    1, 0, 0,
-//  };
-//
-////  glBindBuffer(GL_ARRAY_BUFFER, 2);
-////  glBufferData(GL_ARRAY_BUFFER, sizeof(positions), positions, GL_STATIC_DRAW);
-////  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
-//  glEnableClientState(GL_VERTEX_ARRAY);
-//  glVertexPointer(3, GL_FLOAT, 0, positions);
-////  glBindBuffer(GL_ARRAY_BUFFER, 0);
-//  glColor4f(0, 1, 1, 1);
-//
-//  printGlError("glVertexAttribPointer");
-////  glEnableVertexAttribArray(1);
-////  gles_adapter::syncBuffers();
-//  glDrawArrays(GL_TRIANGLES, 0, 3);
-//  printGlError("glDrawArrays");
-//  return;
+void toggleConsoleState() {
+  if (game->gm_csComputerState == CS_ON || game->gm_csComputerState == CS_TURNINGON) {
+    game->gm_csComputerState = CS_TURNINGOFF;
+    return;
+  }
+  if (game->gm_csConsoleState == CS_ON || game->gm_csComputerState == CS_TURNINGON || game->gm_csComputerState == CS_TALK) {
+    game->gm_csConsoleState = CS_TURNINGOFF;
+    return;
+  }
+}
 
-//  CTStream::EnableStreamHandling();
-//  if (pdp != NULL && pdp->Lock()) {
-//    pdp->Fill(C_GREEN | CT_OPAQUE);
-//    pdp->Unlock();
-//    pvpViewPort->SwapBuffers();
-//    pdp->Lock();
-//    pdp->Fill(C_GREEN | CT_OPAQUE);
-//    pdp->Unlock();
-//    pvpViewPort->SwapBuffers();
-//  }
-//  CTStream::DisableStreamHandling();
-//
-//  return;
-  CTimer_TimerFunc_internal();
+// automaticaly manage pause toggling
+void UpdatePauseState(void)
+{
+  BOOL bShouldPause = game->gm_csConsoleState == CS_ON ||
+                      game->gm_csConsoleState == CS_TURNINGON ||
+                      game->gm_csConsoleState == CS_TURNINGOFF ||
+                      game->gm_csComputerState == CS_ON ||
+                      game->gm_csComputerState == CS_TURNINGON ||
+                      game->gm_csComputerState == CS_TURNINGOFF;
+  _pNetwork->SetLocalPause(bShouldPause);
+}
+
+void setAxisValue(uint32_t key, float value) {
+  ASSERT(key >= 0 && key < 10);
+  axisValue[key] = value;
+}
+
+void processInputs() {
+  for (int i = 0; i < 10; i++) {
+    _pInput->inp_caiAllAxisInfo[i + AXIS_SHIFT].cai_fReading = axisValue[i];
+  }
+}
+
+void seriousSamDoGame() {
+
+  int64_t now = getTimeNsec();
+  int64_t nanoPerTick = (int64_t)(CTimer::TickQuantum * NS_IN_S);
+  while (now > lastTick + nanoPerTick) {
+    tickTime = (float) (now - lastTick) / NS_IN_S;
+    CTimer_TimerFunc_internal();
+    lastTick += nanoPerTick;
+    tickCount++;
+  }
 
   CTStream::EnableStreamHandling();
 
-  const char *string = (const char *) pglGetString(GL_EXTENSIONS);
   game->GameMainLoop();
 
   // todo: draw screen
@@ -246,12 +288,26 @@ void seriousSamDoGame() {
     ULONG ulFlags = 0;
 //    pdp->Fill(LCDGetColor(C_dGREEN | CT_OPAQUE, "bcg fill"));
 
-    game->GameRedrawView(pdp, ulFlags);
+    game->GameRedrawView(pdp, GRV_SHOWEXTRAS);
 
+    // draw computer if needed
     pdp->Lock();
-//    game->ComputerRender(pdp);
-//    game->ConsoleRender(pdp);
+    game->ComputerRender(pdp);
+    game->ConsoleRender(pdp);
+
+    SLONG slDPWidth = pdp->GetWidth();
+    SLONG slDPHeight = pdp->GetHeight();
+    FLOAT fTextScale = 3;
+    pdp->SetFont(_pfdDisplayFont);
+    pdp->SetTextScaling(fTextScale);
+    pdp->SetTextAspect(1.0f);
+    CTString str = CTString(0, "tickTime: %.3f", tickTime);
+    pdp->PutText(str, slDPWidth * 0.05f, slDPHeight * 0.15f,
+                 LCDGetColor(C_GREEN | 255, "display mode"));
+
     pdp->Unlock();
+
+    UpdatePauseState();
 
 //    pdp->Fill(LCDGetColor(C_dGREEN | CT_OPAQUE, "bcg fill"));
 //    pdp->Unlock();
