@@ -1,42 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <android.opengl.GLSurfaceView
+    <com.github.aarcangeli.serioussamandroid.MyGLSurface
         android:id="@+id/main_content"
-        layout_height="match_parent"
-        layout_width="match_parent"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <LinearLayout
+    <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="horizontal">
+        android:layout_height="match_parent">
 
-        <com.erz.joysticklibrary.JoyStick
+        <com.github.aarcangeli.serioussamandroid.MyBgRecognizer
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.48"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <com.github.aarcangeli.serioussamandroid.JoyStick
             android:id="@+id/left_stick"
-            android:layout_width="150dp"
-            android:layout_height="150dp"
-            android:layout_gravity="bottom"
-            app:buttonColor="#55ff0000"
-            app:padColor="#55ffffff" />
-
-        <Space
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1" />
-
-        <com.erz.joysticklibrary.JoyStick
-            android:id="@+id/right_stick"
-            android:layout_width="150dp"
-            android:layout_height="150dp"
-            android:layout_gravity="bottom|end"
+            android:layout_gravity="bottom"
             app:buttonColor="#55ff0000"
-            app:padColor="#55ffffff"
-            app:percentage="25" />
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintWidth_percent=".5"
+            app:padColor="#55ffffff" />
 
-    </LinearLayout>
+        <com.github.aarcangeli.serioussamandroid.JoyStick
+            android:id="@+id/right_stick"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            app:buttonColor="#55ff0000"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_percent=".5"
+            app:padColor="#55ffffff" />
+
+        <Button
+            android:id="@+id/menuBtn"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="20dp"
+            android:background="@android:drawable/arrow_down_float"
+            android:onClick="hideMenu"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </android.support.constraint.ConstraintLayout>
+
 </FrameLayout>

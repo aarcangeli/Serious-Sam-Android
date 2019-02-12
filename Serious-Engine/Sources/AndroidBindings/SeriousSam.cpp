@@ -291,21 +291,21 @@ void seriousSamDoGame() {
     game->GameRedrawView(pdp, GRV_SHOWEXTRAS);
 
     // draw computer if needed
-    pdp->Lock();
-    game->ComputerRender(pdp);
-    game->ConsoleRender(pdp);
-
-    SLONG slDPWidth = pdp->GetWidth();
-    SLONG slDPHeight = pdp->GetHeight();
-    FLOAT fTextScale = 3;
-    pdp->SetFont(_pfdDisplayFont);
-    pdp->SetTextScaling(fTextScale);
-    pdp->SetTextAspect(1.0f);
-    CTString str = CTString(0, "tickTime: %.3f", tickTime);
-    pdp->PutText(str, slDPWidth * 0.05f, slDPHeight * 0.15f,
-                 LCDGetColor(C_GREEN | 255, "display mode"));
-
-    pdp->Unlock();
+//    pdp->Lock();
+//    game->ComputerRender(pdp);
+//    game->ConsoleRender(pdp);
+//
+//    SLONG slDPWidth = pdp->GetWidth();
+//    SLONG slDPHeight = pdp->GetHeight();
+//    FLOAT fTextScale = 3;
+//    pdp->SetFont(_pfdDisplayFont);
+//    pdp->SetTextScaling(fTextScale);
+//    pdp->SetTextAspect(1.0f);
+//    CTString str = CTString(0, "tickTime: %.3f", tickTime);
+//    pdp->PutText(str, slDPWidth * 0.05f, slDPHeight * 0.15f,
+//                 LCDGetColor(C_GREEN | 255, "display mode"));
+//
+//    pdp->Unlock();
 
     UpdatePauseState();
 

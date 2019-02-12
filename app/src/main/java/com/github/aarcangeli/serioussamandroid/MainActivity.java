@@ -1,8 +1,10 @@
 package com.github.aarcangeli.serioussamandroid;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.hardware.input.InputManager;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.os.Environment;
@@ -15,12 +17,8 @@ import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.WindowManager;
-
-import com.erz.joysticklibrary.JoyStick;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -40,49 +38,57 @@ public class MainActivity extends AppCompatActivity {
     private static final int AXIS_LOOK_LR = 7;
     private static final int AXIS_LOOK_BK = 8;
 
-    private GLSurfaceView glSurfaceView;
+    private MyGLSurface glSurfaceView;
     private File homeDir;
     private JoyStick leftStick, rightStick;
-    private final Object GAME_INPUT_LOCK = new Object();
+    public static final Object GAME_INPUT_LOCK = new Object();
 
     private AtomicBoolean toggleConsoleState = new AtomicBoolean();
+    private float DRAG_SENSIBILITY = 0.3f;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         System.loadLibrary("SeriousSamNatives");
         super.onCreate(savedInstanceState);
 
-        // hide verything from the screen
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_IMMERSIVE | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
-
         homeDir = new File(Environment.getExternalStorageDirectory(), "SeriousSam");
 
         setContentView(R.layout.main_screen);
-//        JoyStick joyStick = new JoyStick(this);
-//        setContentView(joyStick);
-        glSurfaceView = findViewById(R.id.main_content);
         leftStick = findViewById(R.id.left_stick);
         rightStick = findViewById(R.id.right_stick);
-        rightStick.setVisibility(View.INVISIBLE);
-        leftStick.setVisibility(View.INVISIBLE);
+        glSurfaceView = findViewById(R.id.main_content);
 
-        leftStick.setListener(new JoyStick.JoyStickListener() {
+        InputManager systemService = (InputManager) getSystemService(Context.INPUT_SERVICE);
+        systemService.registerInputDeviceListener(new InputManager.InputDeviceListener() {
             @Override
-            public void onMove(JoyStick joyStick, double angle, double power, int direction) {
+            public void onInputDeviceAdded(int deviceId) {
+                updateSoftKeyboardVisible();
             }
 
             @Override
-            public void onTap() {
+            public void onInputDeviceRemoved(int deviceId) {
+                updateSoftKeyboardVisible();
             }
 
             @Override
-            public void onDoubleTap() {
+            public void onInputDeviceChanged(int deviceId) {
+                updateSoftKeyboardVisible();
             }
-        });
+        }, null);
+
+        leftStick.setListener(new LeftJoystickListener());
+        rightStick.setListener(new RightJoystickListener());
 
         checkPermission();
+        updateSoftKeyboardVisible();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // hide verything from the screen
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
     }
 
     private void checkPermission() {
@@ -110,9 +116,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
         if (event.getAction() == KeyEvent.ACTION_DOWN && event.getRepeatCount() == 0) {
-            Log.i(TAG, "dispatchKeyEvent: " + event.getKeyCode());
-        }
-        if (event.getAction() == KeyEvent.ACTION_DOWN && event.getRepeatCount() == 0) {
             switch (event.getKeyCode()) {
                 case KeyEvent.KEYCODE_BUTTON_START:
                     toggleConsoleState.set(true);
@@ -137,23 +140,64 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public ArrayList<Integer> getGameControllerIds() {
-        ArrayList<Integer> gameControllerDeviceIds = new ArrayList<Integer>();
-        int[] deviceIds = InputDevice.getDeviceIds();
-        for (int deviceId : deviceIds) {
-            InputDevice dev = InputDevice.getDevice(deviceId);
-            int sources = dev.getSources();
+    public void updateSoftKeyboardVisible() {
+        int keyboardVisibility = isThereControllers() ? View.GONE : View.VISIBLE;
+        leftStick.setVisibility(keyboardVisibility);
+        rightStick.setVisibility(keyboardVisibility);
+    }
 
-            // Verify that the device has gamepad buttons, control sticks, or both.
-            if (((sources & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD) ||
-                    ((sources & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK)) {
-                // This device is a game controller. Store its device ID.
-                if (!gameControllerDeviceIds.contains(deviceId)) {
-                    gameControllerDeviceIds.add(deviceId);
-                }
+    private boolean isThereControllers() {
+        for (int id : InputDevice.getDeviceIds()) {
+            InputDevice dev = InputDevice.getDevice(id);
+            int sources = dev.getSources();
+            if ((sources & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD) {
+                return true;
+            } else if ((sources & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK) {
+                return true;
             }
         }
-        return gameControllerDeviceIds;
+        return false;
+    }
+
+    // ui listeners
+    public void hideMenu(View view) {
+        toggleConsoleState.set(true);
+    }
+
+    private class LeftJoystickListener implements JoyStick.JoyStickListener {
+        @Override
+        public void onMove(JoyStick joyStick, double angle, double power, int direction) {
+            synchronized (GAME_INPUT_LOCK) {
+                setAxisValue(AXIS_MOVE_FB, (float) (Math.sin(angle) * power / 100));
+                setAxisValue(AXIS_MOVE_LR, (float) (Math.cos(angle) * power / 100));
+            }
+        }
+
+        @Override
+        public void onTap() {
+        }
+
+        @Override
+        public void onDoubleTap() {
+        }
+    }
+
+    private class RightJoystickListener implements JoyStick.JoyStickListener {
+        @Override
+        public void onMove(JoyStick joyStick, double angle, double power, int direction) {
+            synchronized (GAME_INPUT_LOCK) {
+                setAxisValue(AXIS_LOOK_UD, (float) (Math.sin(angle) * power / 100));
+                setAxisValue(AXIS_LOOK_LR, (float) (Math.cos(angle) * power / 100));
+            }
+        }
+
+        @Override
+        public void onTap() {
+        }
+
+        @Override
+        public void onDoubleTap() {
+        }
     }
 
     private void setup() {
@@ -162,7 +206,6 @@ public class MainActivity extends AppCompatActivity {
         setHomeDir(homeDir.getAbsolutePath());
 
         glSurfaceView.getHolder().setKeepScreenOn(true);
-//        glSurfaceView.getHolder().setFixedSize(100, 100);
         glSurfaceView.setEGLContextClientVersion(2);
         glSurfaceView.setRenderer(new GLSurfaceView.Renderer() {
             @Override

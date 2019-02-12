@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="JoyStick">
+        <attr name="padColor" format="color" />
+        <attr name="buttonColor" format="color" />
+        <attr name="stayPut" format="boolean" />
+        <attr name="percentage" format="integer" />
+        <attr name="backgroundDrawable" format="reference" />
+        <attr name="buttonDrawable" format="reference" />
+    </declare-styleable>
+</resources>
