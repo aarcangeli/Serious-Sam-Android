@@ -14,7 +14,6 @@
 #include <EGL/egl.h>
 #include <GLES2/gl2.h>
 #include <cstdint>
-#include <Engine/Base/Statistics_internal.h>
 #include <vector>
 
 typedef CGame *(*GAME_Create_t)(void);
@@ -268,41 +267,7 @@ void setUIScale(float scale) {
 }
 
 void printProfilingData() {
-  CTString totalString;
-  CTString it;
-
-  totalString += " ------------------------------------------------------------\n";
-  totalString += " ---------------------- PROFILING DATA ----------------------\n";
-  totalString += " ------------------------------------------------------------\n";
-
-  _pfRenderProfile.Report(it);
-  totalString += "RenderProfile:\n" + it + "\n";
-
-  _pfSoundProfile.Report(it);
-  totalString += "SoundProfile:\n" + it + "\n";
-
-  _pfModelProfile.Report(it);
-  totalString += "ModelProfile:\n" + it + "\n";
-
-  _pfGfxProfile.Report(it);
-  totalString += "GfxProfile:\n" + it + "\n";
-
-  _pfPhysicsProfile.Report(it);
-  totalString += "PhysicsProfile:\n" + it + "\n";
-
-  _pfNetworkProfile.Report(it);
-  totalString += "NetworkProfile:\n" + it + "\n";
-
-  totalString += "\n";
-
-  CPrintF(totalString);
-
-  _pfRenderProfile.Reset();
-  _pfSoundProfile.Reset();
-  _pfModelProfile.Reset();
-  _pfGfxProfile.Reset();
-  _pfPhysicsProfile.Reset();
-  _pfNetworkProfile.Reset();
+  _pShell->Execute("RecordProfile();");
 }
 
 void seriousSamDoGame() {
