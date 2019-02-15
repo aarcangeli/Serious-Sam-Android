@@ -815,6 +815,8 @@ void CClipMove::CacheNearPolygons(void)
       _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_CACHENEARPOLYGONS_MAINLOOPFOUND);
     }
 
+    _pfPhysicsProfile.StartTimer(CPhysicsProfile::PTI_CLIPMOVETOBRUSHES_FINDNONZONING);
+
     // for non-zoning non-movable brush entities in the sector
     {FOREACHDSTOFSRC(itbsc->bsc_rsEntities, CEntity, en_rdSectors, pen)
       if (pen->en_RenderType==CEntity::RT_TERRAIN) {

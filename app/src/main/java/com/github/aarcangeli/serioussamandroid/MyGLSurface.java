@@ -7,9 +7,8 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 
 public class MyGLSurface extends GLSurfaceView implements GestureDetector.OnGestureListener, GestureDetector.OnDoubleTapListener {
-    private static final String TAG = "SeriousSam::GL";
     private final GestureDetector gestureDetector;
-    private float ratio = 0.5f;
+    private float scale = 0.5f;
 
     public MyGLSurface(Context context) {
         this(context, null);
@@ -28,7 +27,11 @@ public class MyGLSurface extends GLSurfaceView implements GestureDetector.OnGest
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         float width = MeasureSpec.getSize(widthMeasureSpec);
         float height = MeasureSpec.getSize(heightMeasureSpec);
-        getHolder().setFixedSize((int) (width * ratio), (int) (height * ratio));
+        getHolder().setFixedSize((int) (width * scale), (int) (height * scale));
+    }
+
+    public float getScale() {
+        return scale;
     }
 
     @Override

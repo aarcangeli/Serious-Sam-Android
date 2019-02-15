@@ -52,6 +52,7 @@ private:
   CTimerValue pt_tvElapsed; // total elapsed time of the timer
   CTString pt_strAveragingName; // name of averaging counter
   INDEX pt_ctAveraging;         // averaging counter for this timer
+  INDEX pt_ctRunningTimers;     // counter of currently running timers
 
   /* Print one timer in report. */
   void Report(char *&strBuffer, INDEX ctAveragingCount,

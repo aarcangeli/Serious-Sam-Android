@@ -14,6 +14,8 @@
 #include <EGL/egl.h>
 #include <GLES2/gl2.h>
 #include <cstdint>
+#include <Engine/Base/Statistics_internal.h>
+#include <vector>
 
 typedef CGame *(*GAME_Create_t)(void);
 void CTimer_TimerFunc_internal(void);
@@ -22,6 +24,7 @@ namespace gles_adapter {
   void gles_adp_init();
 
   void syncBuffers();
+  extern bool enableDraws;
 }
 
 BOOL TryToSetDisplayMode(enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI, PIX pixSizeJ,
@@ -61,9 +64,9 @@ CViewPort *pvpViewPort;
 
 int64_t lastTick = 0;
 uint32_t tickCount = 0;
-float tickTime = 0;
 bool started = false;
 bool initialized = false;
+float g_uiScale = 1;
 
 #define MAX_AXIS 10
 #define AXIS_SHIFT 1
@@ -260,16 +263,81 @@ void processInputs() {
   }
 }
 
-void seriousSamDoGame() {
+void setUIScale(float scale) {
+  g_uiScale = scale;
+}
 
-  int64_t now = getTimeNsec();
+void printProfilingData() {
+  CTString totalString;
+  CTString it;
+
+  totalString += " ------------------------------------------------------------\n";
+  totalString += " ---------------------- PROFILING DATA ----------------------\n";
+  totalString += " ------------------------------------------------------------\n";
+
+  _pfRenderProfile.Report(it);
+  totalString += "RenderProfile:\n" + it + "\n";
+
+  _pfSoundProfile.Report(it);
+  totalString += "SoundProfile:\n" + it + "\n";
+
+  _pfModelProfile.Report(it);
+  totalString += "ModelProfile:\n" + it + "\n";
+
+  _pfGfxProfile.Report(it);
+  totalString += "GfxProfile:\n" + it + "\n";
+
+  _pfPhysicsProfile.Report(it);
+  totalString += "PhysicsProfile:\n" + it + "\n";
+
+  _pfNetworkProfile.Report(it);
+  totalString += "NetworkProfile:\n" + it + "\n";
+
+  totalString += "\n";
+
+  CPrintF(totalString);
+
+  _pfRenderProfile.Reset();
+  _pfSoundProfile.Reset();
+  _pfModelProfile.Reset();
+  _pfGfxProfile.Reset();
+  _pfPhysicsProfile.Reset();
+  _pfNetworkProfile.Reset();
+}
+
+void seriousSamDoGame() {
+  gles_adapter::enableDraws = true;
+
+  int64_t start = getTimeNsec();
+  static int64_t lastFrameDraw = start;
+  int64_t deltaFrame = start - lastFrameDraw;
+  lastFrameDraw = start;
   int64_t nanoPerTick = (int64_t)(CTimer::TickQuantum * NS_IN_S);
-  while (now > lastTick + nanoPerTick) {
-    tickTime = (float) (now - lastTick) / NS_IN_S;
-    CTimer_TimerFunc_internal();
-    lastTick += nanoPerTick;
-    tickCount++;
+  for (int i = 0; i < 4; i++) {
+    if (start > lastTick + nanoPerTick) {
+      CTimer_TimerFunc_internal();
+      lastTick += nanoPerTick;
+      tickCount++;
+    } else {
+      break;
+    }
   }
+  if (start > lastTick + nanoPerTick) {
+    lastTick = start;
+  }
+
+  static int64_t seriousSamDoGameTime = 0;
+
+  const int64_t UPDATE_TIME = 2000000000; // 2s
+  static int64_t lastFpsNow = start;
+  static int64_t times = 0;
+  static float fps;
+  if (start - lastFpsNow > UPDATE_TIME) {
+    fps = (float) times / (start - lastFpsNow) * 1000 * 1000 * 1000;
+    lastFpsNow += UPDATE_TIME;
+    times = 0;
+  }
+  times++;
 
   CTStream::EnableStreamHandling();
 
@@ -291,21 +359,19 @@ void seriousSamDoGame() {
     game->GameRedrawView(pdp, GRV_SHOWEXTRAS);
 
     // draw computer if needed
-//    pdp->Lock();
-//    game->ComputerRender(pdp);
-//    game->ConsoleRender(pdp);
-//
-//    SLONG slDPWidth = pdp->GetWidth();
-//    SLONG slDPHeight = pdp->GetHeight();
-//    FLOAT fTextScale = 3;
-//    pdp->SetFont(_pfdDisplayFont);
-//    pdp->SetTextScaling(fTextScale);
-//    pdp->SetTextAspect(1.0f);
-//    CTString str = CTString(0, "tickTime: %.3f", tickTime);
-//    pdp->PutText(str, slDPWidth * 0.05f, slDPHeight * 0.15f,
-//                 LCDGetColor(C_GREEN | 255, "display mode"));
-//
-//    pdp->Unlock();
+    pdp->Lock();
+    game->ComputerRender(pdp);
+    game->ConsoleRender(pdp);
+
+    SLONG slDPWidth = pdp->GetWidth();
+    SLONG slDPHeight = pdp->GetHeight();
+    pdp->SetFont(_pfdDisplayFont);
+    pdp->SetTextScaling(1);
+    pdp->SetTextAspect(1.0f);
+    CTString str = CTString(0, "fps: %.2f; frame: %.2f ms", fps, deltaFrame / 1000000.f);
+    pdp->PutText(str, slDPWidth * 0.05f, slDPHeight * 0.15f, LCDGetColor(C_GREEN | 255, "display mode"));
+
+    pdp->Unlock();
 
     UpdatePauseState();
 
@@ -314,4 +380,9 @@ void seriousSamDoGame() {
   }
 
   CTStream::DisableStreamHandling();
+
+  // manual call since we never call SwapBuffers
+  _pfGfxProfile.IncrementAveragingCounter(1);
+
+  seriousSamDoGameTime = getTimeNsec() - start;
 }

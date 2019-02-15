@@ -21,19 +21,14 @@ public class MyBgRecognizer extends View {
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                Log.i(TAG, "ACTION_DOWN");
                 return true;
             case MotionEvent.ACTION_MOVE:
-                Log.i(TAG, "ACTION_MOVE");
                 break;
             case MotionEvent.ACTION_UP:
-                Log.i(TAG, "ACTION_UP");
                 break;
             case MotionEvent.ACTION_CANCEL:
-                Log.i(TAG, "ACTION_CANCEL");
                 break;
             default:
-                Log.i(TAG, "OTHER");
                 break;
         }
 

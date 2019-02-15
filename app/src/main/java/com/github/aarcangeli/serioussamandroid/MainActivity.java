@@ -44,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
     public static final Object GAME_INPUT_LOCK = new Object();
 
     private AtomicBoolean toggleConsoleState = new AtomicBoolean();
+    private AtomicBoolean printProfiling = new AtomicBoolean();
     private float DRAG_SENSIBILITY = 0.3f;
 
     @Override
@@ -78,6 +79,8 @@ public class MainActivity extends AppCompatActivity {
 
         leftStick.setListener(new LeftJoystickListener());
         rightStick.setListener(new RightJoystickListener());
+
+        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
 
         checkPermission();
         updateSoftKeyboardVisible();
@@ -164,6 +167,10 @@ public class MainActivity extends AppCompatActivity {
         toggleConsoleState.set(true);
     }
 
+    public void doProfiling(View view) {
+        printProfiling.set(true);
+    }
+
     private class LeftJoystickListener implements JoyStick.JoyStickListener {
         @Override
         public void onMove(JoyStick joyStick, double angle, double power, int direction) {
@@ -225,7 +232,9 @@ public class MainActivity extends AppCompatActivity {
                     processInputs();
                 }
                 if (toggleConsoleState.getAndSet(false)) toggleConsoleState();
+                setUIScale(glSurfaceView.getScale() * Utils.convertDpToPixel(1, MainActivity.this));
                 doGame();
+                if (printProfiling.getAndSet(false)) printProfilingData();
             }
         });
     }
@@ -242,7 +251,11 @@ public class MainActivity extends AppCompatActivity {
 
     private native void doGame();
 
+    private native void setUIScale(float scale);
+
     private native void toggleConsoleState();
 
     private native void setAxisValue(int key, float value);
+
+    private native void printProfilingData();
 }

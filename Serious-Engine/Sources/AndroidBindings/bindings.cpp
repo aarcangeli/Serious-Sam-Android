@@ -9,10 +9,11 @@ void startSeriousSamAndroid();
 void seriousSamInit();
 void seriousSamResize(uint32_t width, uint32_t hight);
 void seriousSamDoGame();
-void seriousSamDoGame();
 void toggleConsoleState();
 void processInputs();
 void setAxisValue(uint32_t key, float value);
+void setUIScale(float value);
+void printProfilingData();
 
 extern "C"
 JNIEXPORT void JNICALL
@@ -69,4 +70,17 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_github_aarcangeli_serioussamandroid_MainActivity_setAxisValue(JNIEnv *env, jobject instance, jint key, jfloat value) {
   setAxisValue(key, value);
+}
+
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_github_aarcangeli_serioussamandroid_MainActivity_setUIScale(JNIEnv *env, jobject instance, jfloat value) {
+  setUIScale( value);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_github_aarcangeli_serioussamandroid_MainActivity_printProfilingData(JNIEnv *env, jobject instance) {
+  printProfilingData();
 }

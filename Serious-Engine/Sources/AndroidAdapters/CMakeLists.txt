@@ -4,6 +4,7 @@ set(
   ANDROID_ADAPTER_SOURCE
 
   gles_adapter.cpp
+  gles_adapter_unused.cpp
   commons.cpp
   gles_glMessageCallback.cpp
 )

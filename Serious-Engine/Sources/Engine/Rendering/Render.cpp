@@ -899,6 +899,8 @@ void CRenderer::Render(void)
   extern void EndSelectOnRender(void);
   EndSelectOnRender();
 
+  _pfRenderProfile.StopTimer(CRenderProfile::PTI_RENDERING);
+
   // assure that FPU precision was low all the rendering time
   ASSERT( GetFPUPrecision()==FPT_24BIT);
   StopStatsMode();

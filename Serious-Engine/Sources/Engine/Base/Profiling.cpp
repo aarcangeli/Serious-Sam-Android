@@ -191,6 +191,7 @@ void CProfileForm::StartTimer_internal(INDEX iTimer)
   CProfileTimer &pt = pf_aptTimers[iTimer];
   //ASSERT(pt.pt_tvStarted.tv_llValue<0);
   CTimerValue tvNow = CTimerValue(ReadTSC_profile())-_tvCurrentProfilingEpsilon;
+  pt.pt_ctRunningTimers++;
   pt.pt_tvStarted = tvNow;
   pf_ctRunningTimers++;
   if (pf_ctRunningTimers==1) {
@@ -204,6 +205,7 @@ void CProfileForm::StopTimer_internal(INDEX iTimer)
 {
   CProfileTimer &pt = pf_aptTimers[iTimer];
   //ASSERT(pt.pt_tvStarted.tv_llValue>0);
+  pt.pt_ctRunningTimers--;
   CTimerValue tvNow = CTimerValue(ReadTSC_profile())-_tvCurrentProfilingEpsilon;
   pt.pt_tvElapsed +=
     tvNow - pf_aptTimers[iTimer].pt_tvStarted - _tvStartStopEpsilon + _tvStartEpsilon;
@@ -275,6 +277,7 @@ void CProfileForm::Reset(void)
     itpt->pt_tvElapsed.Clear();
     itpt->pt_tvStarted.tv_llValue = -__int64(1);
     itpt->pt_ctAveraging = 0;
+    itpt->pt_ctRunningTimers = 0;
   }
 }
 
@@ -298,7 +301,7 @@ void CProfileTimer::Report(char *&strBuffer,
   }
 
   if (pt_strAveragingName=="") {
-    strBuffer += sprintf(strBuffer, "%-45s: %6.2f%% %6.2f%% %6.2f ms\n",
+    strBuffer += sprintf(strBuffer, "%-45s: %6.2f%% %6.2f%% %6.2f ms",
       pt_strName.str_String,
       pt_tvElapsed.GetSeconds()/tvAppElapsed.GetSeconds()*100,
       pt_tvElapsed.GetSeconds()/tvModElapsed.GetSeconds()*100,
@@ -309,7 +312,7 @@ void CProfileTimer::Report(char *&strBuffer,
     if (ctLocalAveraging==0) {
       ctLocalAveraging = 1;
     }
-    strBuffer += sprintf(strBuffer, "%-45s: %6.2f%% %6.2f%% %6.2f ms (%4.0fc/%s x%d)\n",
+    strBuffer += sprintf(strBuffer, "%-45s: %6.2f%% %6.2f%% %6.2f ms (%4.0fc/%s x%d)",
       pt_strName.str_String,
       pt_tvElapsed.GetSeconds()/tvAppElapsed.GetSeconds()*100,
       pt_tvElapsed.GetSeconds()/tvModElapsed.GetSeconds()*100,
@@ -319,6 +322,10 @@ void CProfileTimer::Report(char *&strBuffer,
       pt_ctAveraging/ctAveragingCount
       );
   }
+  if (pt_ctRunningTimers != 0) {
+    strBuffer += sprintf(strBuffer, " --- error here");
+  }
+  strBuffer += sprintf(strBuffer, "\n");
 }
 /*
  * Report profiling results.

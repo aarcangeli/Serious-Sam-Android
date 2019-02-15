@@ -1752,6 +1752,8 @@ void CModelObject::RenderModel_View( CRenderModel &rm)
 #endif // SE1_D3D
   if( _eAPI==GAT_NONE) return;  // must have API
 
+  _pfModelProfile.StartTimer(CModelProfile::PTI_VIEW_RENDERMODEL);
+
   // adjust Truform usage
   extern INDEX mdl_bTruformWeapons;
   extern INDEX gap_bForceTruform;
