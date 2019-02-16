@@ -135,9 +135,7 @@ void CViewPort::SwapBuffers(void) {
   _pfGfxProfile.StartTimer( CGfxProfile::PTI_SWAPBUFFERS);
   _pfGfxProfile.IncrementAveragingCounter(1);
 
-  if (!eglSwapBuffers(display, surface)) {
-    WarningMessage("eglSwapBuffers() returned error %d", eglGetError());
-  }
+  _pGfx->SwapBuffers(this);
 
   _pfGfxProfile.StopTimer( CGfxProfile::PTI_SWAPBUFFERS);
   _sfStats.StopTimer(CStatForm::STI_SWAPBUFFERS);

@@ -1782,9 +1782,9 @@ void CGfxLibrary::SwapBuffers(CViewPort *pvp)
       }
     }
     // swap buffers
-    FatalError("TODO");
-//    CTempDC tdc(pvp->vp_hWnd);
-//    pwglSwapBuffers(tdc.hdc);
+    if (!eglSwapBuffers(pvp->display, pvp->surface)) {
+      WarningMessage("eglSwapBuffers() returned error %d", eglGetError());
+    }
 
     // force finishing of all rendering operations (if required)
     if( ogl_iFinish==3) gfxFinish();

@@ -136,10 +136,6 @@ namespace gles_adapter {
     return 0;
   };
 
-  void gles_adp_glFinish(void) {
-    reportError("glFinish");
-  };
-
   void gles_adp_glFlush(void) {
     reportError("glFlush");
   };

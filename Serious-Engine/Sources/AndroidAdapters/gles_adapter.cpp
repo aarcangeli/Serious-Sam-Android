@@ -180,6 +180,11 @@ namespace gles_adapter {
     return shader;
   }
 
+  void gles_adp_glFinish(void) {
+    glFinish();
+    setError(glGetError());
+  };
+
   void gles_adp_init() {
     GLint success;
 
