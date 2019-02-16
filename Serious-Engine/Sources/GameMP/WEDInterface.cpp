@@ -62,16 +62,6 @@ void UpdateInputEnabledState(CViewPort *pvp)
   }
 }
 
-// automaticaly manage pause toggling
-void UpdatePauseState(void)
-{
-  BOOL bShouldPause = 
-     _pGame->gm_csConsoleState ==CS_ON || _pGame->gm_csConsoleState ==CS_TURNINGON || _pGame->gm_csConsoleState ==CS_TURNINGOFF ||
-     _pGame->gm_csComputerState==CS_ON || _pGame->gm_csComputerState==CS_TURNINGON || _pGame->gm_csComputerState==CS_TURNINGOFF;
-
-  _pNetwork->SetLocalPause(bShouldPause);
-}
-
 // run a quicktest game from within editor
 void CGame::QuickTest(const CTFileName &fnMapName, 
   CDrawPort *pdp, CViewPort *pvp)

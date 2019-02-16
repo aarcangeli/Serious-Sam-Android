@@ -53,6 +53,7 @@ void blockingError(const char *func);
 #define GL_TEXTURE_ENV_MODE 0x2200
 #define GL_CLAMP 0x2900
 #define GL_ALPHA_TEST 0x0BC0
+#define GL_TEXTURE_MAX_ANISOTROPY_EXT 0x84FE
 
 namespace gles_adapter {
   struct GenericBuffer {
@@ -63,7 +64,7 @@ namespace gles_adapter {
   };
 
   bool USE_BUFFER_DATA = false;
-  bool enableDraws = false;
+  bool enableDraws = true;
 
   GLuint INDEX_POSITION = 1;
   GLuint INDEX_NORMAL = 2;
@@ -146,6 +147,19 @@ namespace gles_adapter {
   GLint projMatIdx, modelViewMatIdx, mainTextureLoc, enableTextureLoc, enableAlphaTestLoc;
   GLenum alphaTestFunc;
   GLclampf alphaTestRef;
+
+  GLenum gles_adp_glGetError(void) {
+    GLenum result = lastError;
+    lastError = 0;
+    return result;
+  };
+
+  void setError(GLenum error) {
+    if (error) {
+      int t = 0; // put debugger here
+    }
+    if (error && !lastError) lastError = error;
+  };
 
   GLuint compileShader(GLenum type, const char *name, const char *source) {
     GLuint shader = glCreateShader(type);
@@ -262,6 +276,7 @@ namespace gles_adapter {
       blockingError("glAlphaFunc with invalid arguments");
     }
     glUniform1f(enableAlphaTestLoc, isGL_ALPHA_TEST ? 1 : 0);
+    glUseProgram(program);
   }
 
   void syncBuffersPost() {
@@ -285,6 +300,7 @@ namespace gles_adapter {
       return;
     }
     glEnable(cap);
+    setError(glGetError());
   };
 
   void gles_adp_glDisable(GLenum cap) {
@@ -297,6 +313,7 @@ namespace gles_adapter {
       return;
     }
     glDisable(cap);
+    setError(glGetError());
   };
 
   GLboolean gles_adp_glIsEnabled(GLenum cap) {
@@ -318,15 +335,19 @@ namespace gles_adapter {
     if (cap == GL_ALPHA_TEST) {
       return isGL_ALPHA_TEST;
     }
-    return glIsEnabled(cap);
+    const GLboolean &enabled = glIsEnabled(cap);
+    setError(glGetError());
+    return enabled;
   };
 
   void gles_adp_glClearColor(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha) {
     glClearColor(red, green, blue, alpha);
+    setError(glGetError());
   }
 
   void gles_adp_glClear(GLbitfield mask) {
     glClear(mask);
+    setError(glGetError());
   };
 
   void gles_adp_glColorMask(GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha) {
@@ -340,18 +361,22 @@ namespace gles_adapter {
 
   void gles_adp_glBlendFunc(GLenum sfactor, GLenum dfactor) {
     glBlendFunc(sfactor, dfactor);
+    setError(glGetError());
   };
 
   void gles_adp_glCullFace(GLenum mode) {
     glCullFace(mode);
+    setError(glGetError());
   };
 
   void gles_adp_glFrontFace(GLenum mode) {
     glFrontFace(mode);
+    setError(glGetError());
   };
 
   void gles_adp_glScissor(GLint x, GLint y, GLsizei width, GLsizei height) {
     glScissor(x, y, width, height);
+    setError(glGetError());
   }
 
   void gles_adp_glEnableClientState(GLenum cap) {
@@ -382,58 +407,52 @@ namespace gles_adapter {
     }
   };
 
-
   void gles_adp_glGetBooleanv(GLenum pname, GLboolean *params) {
     glGetBooleanv(pname, params);
-  };
-
-  void gles_adp_glGetDoublev(GLenum pname, GLdouble *params) {
-    reportError("glGetDoublev");
+    setError(glGetError());
   };
 
   void gles_adp_glGetFloatv(GLenum pname, GLfloat *params) {
     if (!params) return;
     glGetFloatv(pname, params);
+    setError(glGetError());
   };
 
   void gles_adp_glGetIntegerv(GLenum pname, GLint *params) {
     glGetIntegerv(pname, params);
-  };
-
-  GLenum gles_adp_glGetError(void) {
-    GLenum result = glGetError();
-    if (lastError) result = lastError;
-    lastError = 0;
-    if (result) {
-      int t = 0;
-//      result = 0;
-    }
-    return result;
+    setError(glGetError());
   };
 
   const GLubyte *gles_adp_glGetString(GLenum name) {
-    return glGetString(name);
+    const GLubyte *string = glGetString(name);
+    setError(glGetError());
+    return string;
   };
 
   void gles_adp_glHint(GLenum target, GLenum mode) {
     glHint(target, mode);
+    setError(glGetError());
   };
 
 
   void gles_adp_glClearDepth(GLclampd depth) {
     glClearDepthf(depth);
+    setError(glGetError());
   };
 
   void gles_adp_glDepthFunc(GLenum func) {
     glDepthFunc(func);
+    setError(glGetError());
   };
 
   void gles_adp_glDepthMask(GLboolean flag) {
     glDepthMask(flag);
+    setError(glGetError());
   };
 
   void gles_adp_glDepthRange(GLclampd near_val, GLclampd far_val) {
     glDepthRangef(near_val, far_val);
+    setError(glGetError());
   };
 
   void gles_adp_glMatrixMode(GLenum mode) {
@@ -451,7 +470,7 @@ namespace gles_adapter {
         reportError("glMatrixMode(GL_COLOR)");
         break;
       default:
-        lastError = GL_INVALID_ENUM;
+        setError(GL_INVALID_ENUM);
         break;
     }
   };
@@ -463,7 +482,6 @@ namespace gles_adapter {
     (*currentMatrix) *= toMult;
   }
 
-
   void
   gles_adp_glFrustum(GLdouble left, GLdouble right, GLdouble bottom, GLdouble top,
                      GLdouble near_val,
@@ -471,7 +489,6 @@ namespace gles_adapter {
     glm::mat4 toMult = glm::frustum(left, right, bottom, top, near_val, far_val);
     (*currentMatrix) *= toMult;
   }
-
 
   void gles_adp_glViewport(GLint x, GLint y, GLsizei width, GLsizei height) {
     glViewport(x, y, width, height);
@@ -498,7 +515,6 @@ namespace gles_adapter {
     glm::mat4 toMult = glm::make_mat4(m);
     (*currentMatrix) *= toMult;
   };
-
 
   void gles_adp_glVertexPointer(GLint size, GLenum type, GLsizei stride, const GLvoid *ptr) {
 //    glVertexAttribPointer(INDEX_POSITION, size, type, GL_FALSE, stride, ptr);
@@ -559,6 +575,7 @@ namespace gles_adapter {
 //    glDrawElements(GL_LINE_STRIP, vertices, GL_UNSIGNED_SHORT, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     syncBuffersPost();
+    setError(glGetError());
   }
 
   void gles_adp_glDrawElements(GLenum mode, GLsizei count, GLenum type, const GLvoid *indices) {
@@ -607,12 +624,13 @@ namespace gles_adapter {
     syncBuffers(totalVertices);
     glDrawElements(mode, count, type, indices);
     syncBuffersPost();
+    setError(glGetError());
   }
 
   void gles_adp_glPixelStorei(GLenum pname, GLint param) {
     glPixelStorei(pname, param);
+    setError(glGetError());
   };
-
 
   void
   gles_adp_glReadPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type,
@@ -628,14 +646,15 @@ namespace gles_adapter {
       reportError("gles_adp_glReadPixels of depth");
       return;
     }
+    setError(glGetError());
     glReadPixels(x, y, width, height, format, type, pixels);
+    setError(glGetError());
   }
-
 
   void gles_adp_glClearStencil(GLint s) {
     glClearStencil(s);
+    setError(glGetError());
   };
-
 
   void gles_adp_glGetTexEnviv(GLenum target, GLenum pname, GLint *params) {
     if (!params) return;
@@ -654,24 +673,33 @@ namespace gles_adapter {
       if (pname == GL_TEXTURE_WRAP_T && param == GL_CLAMP) {
         param = GL_CLAMP_TO_EDGE;
       }
+      if (pname == GL_TEXTURE_MAX_ANISOTROPY_EXT) {
+        // ignore value
+        return;
+      }
     }
     glTexParameteri(target, pname, param);
+    setError(glGetError());
   };
 
   void gles_adp_glTexParameterfv(GLenum target, GLenum pname, const GLfloat *params) {
     glTexParameterfv(target, pname, params);
+    setError(glGetError());
   }
 
   void gles_adp_glTexParameteriv(GLenum target, GLenum pname, const GLint *params) {
     glTexParameteriv(target, pname, params);
+    setError(glGetError());
   }
 
   void gles_adp_glGetTexParameterfv(GLenum target, GLenum pname, GLfloat *params) {
     glGetTexParameterfv(target, pname, params);
+    setError(glGetError());
   }
 
   void gles_adp_glGetTexParameteriv(GLenum target, GLenum pname, GLint *params) {
     glGetTexParameteriv(target, pname, params);
+    setError(glGetError());
   }
 
   void gles_adp_glTexImage2D(GLenum target, GLint level, GLint internalFormat, GLsizei width,
@@ -680,24 +708,29 @@ namespace gles_adapter {
     // NB: internalFormat is ignored, the type should be managed by shader
     (void) internalFormat;
     glTexImage2D(target, level, format, width, height, border, format, type, pixels);
+    setError(glGetError());
   }
 
   void gles_adp_glGenTextures(GLsizei n, GLuint *textures) {
     glGenTextures(n, textures);
+    setError(glGetError());
   };
 
   void gles_adp_glDeleteTextures(GLsizei n, const GLuint *textures) {
     glDeleteTextures(n, textures);
+    setError(glGetError());
   };
 
   void gles_adp_glBindTexture(GLenum target, GLuint texture) {
     glBindTexture(target, texture);
+    setError(glGetError());
   };
 
   void
   gles_adp_glTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
                            GLsizei height, GLenum format, GLenum type, const GLvoid *pixels) {
     glTexSubImage2D(target, level, xoffset, yoffset, width, height, format, type, pixels);
+    setError(glGetError());
   }
 
 }

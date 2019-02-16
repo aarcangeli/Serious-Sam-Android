@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.hardware.input.InputManager;
-import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.NonNull;
@@ -21,9 +20,6 @@ import android.view.View;
 import java.io.File;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.microedition.khronos.egl.EGLConfig;
-import javax.microedition.khronos.opengles.GL10;
-
 public class MainActivity extends AppCompatActivity {
     public static final String TAG = "SeriousSamJava";
     private final int REQUEST_WRITE_STORAGE = 1;
@@ -38,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int AXIS_LOOK_LR = 7;
     private static final int AXIS_LOOK_BK = 8;
 
-    private MyGLSurface glSurfaceView;
+    private SeriousSamSurface glSurfaceView;
     private File homeDir;
     private JoyStick leftStick, rightStick;
     public static final Object GAME_INPUT_LOCK = new Object();
@@ -47,17 +43,20 @@ public class MainActivity extends AppCompatActivity {
     private AtomicBoolean printProfiling = new AtomicBoolean();
     private float DRAG_SENSIBILITY = 0.3f;
 
+    private boolean isGameStarted = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        System.loadLibrary("SeriousSamNatives");
         super.onCreate(savedInstanceState);
-
-        homeDir = new File(Environment.getExternalStorageDirectory(), "SeriousSam");
 
         setContentView(R.layout.main_screen);
         leftStick = findViewById(R.id.left_stick);
         rightStick = findViewById(R.id.right_stick);
         glSurfaceView = findViewById(R.id.main_content);
+
+        homeDir = new File(Environment.getExternalStorageDirectory(), "SeriousSam");
+        Log.i(TAG, "HomeDir: " + homeDir.getAbsolutePath());
+        glSurfaceView.setHomeDir(homeDir.getAbsolutePath());
 
         InputManager systemService = (InputManager) getSystemService(Context.INPUT_SERVICE);
         systemService.registerInputDeviceListener(new InputManager.InputDeviceListener() {
@@ -92,6 +91,16 @@ public class MainActivity extends AppCompatActivity {
         // hide verything from the screen
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+
+        if (isGameStarted) {
+            glSurfaceView.start();
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        glSurfaceView.stop();
     }
 
     private void checkPermission() {
@@ -99,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
         if (permission != PackageManager.PERMISSION_GRANTED) {
             requestPermission();
         } else {
-            setup();
+            startGame();
         }
     }
 
@@ -136,7 +145,7 @@ public class MainActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == REQUEST_WRITE_STORAGE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                setup();
+                startGame();
             } else {
                 requestPermission();
             }
@@ -207,49 +216,25 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void setup() {
+    private void startGame() {
         if (!homeDir.exists()) homeDir.mkdirs();
-        Log.i(TAG, "HomeDir: " + homeDir.getAbsolutePath());
-        setHomeDir(homeDir.getAbsolutePath());
+        isGameStarted = true;
+        glSurfaceView.start();
 
-        glSurfaceView.getHolder().setKeepScreenOn(true);
-        glSurfaceView.setEGLContextClientVersion(2);
-        glSurfaceView.setRenderer(new GLSurfaceView.Renderer() {
-            @Override
-            public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-                startEngine();
-                init();
-            }
-
-            @Override
-            public void onSurfaceChanged(GL10 gl, int width, int height) {
-                resize(width, height);
-            }
-
-            @Override
-            public void onDrawFrame(GL10 gl) {
-                synchronized (GAME_INPUT_LOCK) {
-                    processInputs();
-                }
-                if (toggleConsoleState.getAndSet(false)) toggleConsoleState();
-                setUIScale(glSurfaceView.getScale() * Utils.convertDpToPixel(1, MainActivity.this));
-                doGame();
-                if (printProfiling.getAndSet(false)) printProfilingData();
-            }
-        });
+        // TODO: remove
+//        glSurfaceView.setRenderer(new GLSurfaceView.Renderer() {
+//            @Override
+//            public void onDrawFrame(GL10 gl) {
+//                if (toggleConsoleState.getAndSet(false)) toggleConsoleState();
+//                setUIScale(glSurfaceView.getScale() * Utils.convertDpToPixel(1, MainActivity.this));
+//                if (printProfiling.getAndSet(false)) printProfilingData();
+//            }
+//        });
     }
 
     public native void setHomeDir(String homeDir);
 
-    public native void init();
-
-    private native void startEngine();
-
     private native void resize(int width, int height);
-
-    private native void processInputs();
-
-    private native void doGame();
 
     private native void setUIScale(float scale);
 

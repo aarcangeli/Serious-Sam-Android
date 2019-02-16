@@ -24,6 +24,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <d3d8.h>
 #endif // SE1_D3D
 
+#include <android/native_window.h>
+#include <EGL/egl.h>
+
 /*
  *  ViewPort
  */
@@ -56,9 +59,12 @@ public:
   void OpenCanvas(void);
   void CloseCanvas(BOOL bRelease=FALSE);
 
+  // initialize for specific window
+  void Initialize(ANativeWindow *window);
+
 // interface
   /* Constructor for given window. */
-  CViewPort(PIX pixWidth, PIX pixHeight, HWND hWnd);
+  CViewPort();
 	/* Destructor. */
   ~CViewPort(void);
 
@@ -66,6 +72,14 @@ public:
   void SwapBuffers(void);
   // change size of this viewport, it's raster and all it's drawports to fit it window
   void Resize(void);
+
+  // EGL
+  EGLDisplay display;
+  EGLSurface surface;
+  EGLContext context;
+  EGLint format;
+
+  static bool hasCViewPort;
 };
 
 

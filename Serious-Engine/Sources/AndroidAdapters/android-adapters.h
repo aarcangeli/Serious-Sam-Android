@@ -7,8 +7,6 @@
 #define PLATFORM_UNIX 1
 #define USE_PORTABLE_C 1
 
-extern const char *gHomeDir;
-
 int64_t getTimeNsec();
 
 unsigned int _rotl(unsigned int value, int shift);

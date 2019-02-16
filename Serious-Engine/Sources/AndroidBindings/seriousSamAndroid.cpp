@@ -1,13 +1,9 @@
-#include <Engine/StdH.h>
-#include <android/log.h>
+#include <AndroidBindings/seriousSamAndroid.h>
 #include <Engine/Templates/DynamicContainer.h>
 #include <Engine/Templates/DynamicContainer.cpp>
 #include <Engine/Base/Synchronization.h>
 #include <Engine/Base/FileName.h>
-#include <Engine/Base/CTString.h>
-#include <Engine/Base/Stream.h>
 #include <Engine/Base/Unzip.h>
-#include <Engine/Engine.h>
 #include <dirent.h>
 #include <dlfcn.h>
 #include <GameMP/Game.h>
@@ -25,6 +21,14 @@ namespace gles_adapter {
   void syncBuffers();
   extern bool enableDraws;
 }
+
+CGame *game;
+
+int64_t lastTick = 0;
+uint32_t tickCount = 0;
+bool initialized = false;
+float g_uiScale = 1;
+float g_AxisValue[MAX_AXIS];
 
 BOOL TryToSetDisplayMode(enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI, PIX pixSizeJ,
                          enum DisplayDepth eColorDepth, BOOL bFullScreenMode) {
@@ -56,22 +60,6 @@ void StartNewMode(enum GfxAPIType eGfxAPI,
                                       bFullScreenMode);
 }
 
-CGame *game;
-
-CDrawPort *pdp = nullptr;
-CViewPort *pvpViewPort;
-
-int64_t lastTick = 0;
-uint32_t tickCount = 0;
-bool started = false;
-bool initialized = false;
-float g_uiScale = 1;
-
-#define MAX_AXIS 10
-#define AXIS_SHIFT 1
-#define NS_IN_S 1000000000
-float axisValue[MAX_AXIS];
-
 extern COLOR LCDGetColor(COLOR colDefault, const char *strName) {
   return game->LCDGetColor(colDefault, strName);
 }
@@ -83,10 +71,7 @@ void printGlError(const char *name) {
   };
 }
 
-void startSeriousSamAndroid() {
-  if (started) return;
-  started = true;
-
+void startSeriousSamAndroid(CDrawPort *pdp) {
   CTStream::EnableStreamHandling();
   SE_InitEngine("SeriousSam");
   SE_LoadDefaultFonts();
@@ -116,6 +101,7 @@ void startSeriousSamAndroid() {
   _pNetwork->md_strGameID = "SeriousSam";
 
   game = GAME_Create();
+  game->EnableLoadingHook(pdp);
   game->Initialize(CTString("Data\\SeriousSam.gms"));
   game->LCDInit();
 
@@ -154,16 +140,14 @@ void startSeriousSamAndroid() {
     ctrl.ctrl_aaAxisActions[i].aa_bInvert = false;
     ctrl.ctrl_aaAxisActions[i].aa_bRelativeControler = true;
     ctrl.ctrl_aaAxisActions[i].aa_bSmooth = false;
-    axisValue[i] = 0;
+    g_AxisValue[i] = 0;
   }
 
   // load
-//  CTString sam_strIntroLevel = "Levels\\LevelsMP\\Intro.wld";
+  CTString sam_strIntroLevel = "Levels/LevelsMP/Intro.wld";
 //  CTString sam_strIntroLevel = "Levels/LevelsMP/1_0_InTheLastEpisode.wld";
-  CTString sam_strIntroLevel = "Levels/LevelsMP/1_1_Palenque.wld";
+//  CTString sam_strIntroLevel = "Levels/LevelsMP/1_1_Palenque.wld";
 
-  _pShell->SetINDEX("gam_iStartDifficulty", CSessionProperties::GD_NORMAL);
-  _pShell->SetINDEX("gam_iStartMode", CSessionProperties::GM_COOPERATIVE);
   game->gm_StartSplitScreenCfg = CGame::SSC_PLAY1;
   game->gm_aiStartLocalPlayers[0] = game->gm_iSinglePlayer;
   game->gm_aiStartLocalPlayers[1] = -1;
@@ -191,43 +175,6 @@ void startSeriousSamAndroid() {
   CTStream::DisableStreamHandling();
 }
 
-void seriousSamInit() {
-  if (initialized) return;
-  initialized = true;
-
-  try {
-    gles_adapter::gles_adp_init();
-  } catch (const char *txt) {
-    FatalError("OpenGL init error: %s", txt);
-  }
-
-  CTStream::EnableStreamHandling();
-
-  // first time
-  if (pdp != NULL && pdp->Lock()) {
-    pdp->Fill(C_BLACK | CT_OPAQUE);
-    pdp->Unlock();
-    pvpViewPort->SwapBuffers();
-    pdp->Lock();
-    pdp->Fill(C_BLACK | CT_OPAQUE);
-    pdp->Unlock();
-    pvpViewPort->SwapBuffers();
-  }
-
-  CTStream::DisableStreamHandling();
-
-  lastTick = getTimeNsec();
-}
-
-void seriousSamResize(uint32_t width, uint32_t height) {
-  // todo: resize pdp
-  glViewport(0, 0, width, height);
-
-  if (!pdp) {
-    _pGfx->CreateWindowCanvas(width, height, &pvpViewPort, &pdp);
-  }
-}
-
 void toggleConsoleState() {
   if (game->gm_csComputerState == CS_ON || game->gm_csComputerState == CS_TURNINGON) {
     game->gm_csComputerState = CS_TURNINGOFF;
@@ -239,38 +186,35 @@ void toggleConsoleState() {
   }
 }
 
-// automaticaly manage pause toggling
-void UpdatePauseState(void)
-{
-  BOOL bShouldPause = game->gm_csConsoleState == CS_ON ||
-                      game->gm_csConsoleState == CS_TURNINGON ||
-                      game->gm_csConsoleState == CS_TURNINGOFF ||
-                      game->gm_csComputerState == CS_ON ||
-                      game->gm_csComputerState == CS_TURNINGON ||
-                      game->gm_csComputerState == CS_TURNINGOFF;
-  _pNetwork->SetLocalPause(bShouldPause);
-}
-
-void setAxisValue(uint32_t key, float value) {
-  ASSERT(key >= 0 && key < 10);
-  axisValue[key] = value;
-}
-
 void processInputs() {
+  if (!initialized) return;
   for (int i = 0; i < 10; i++) {
-    _pInput->inp_caiAllAxisInfo[i + AXIS_SHIFT].cai_fReading = axisValue[i];
+    _pInput->inp_caiAllAxisInfo[i + AXIS_SHIFT].cai_fReading = g_AxisValue[i];
   }
-}
-
-void setUIScale(float scale) {
-  g_uiScale = scale;
 }
 
 void printProfilingData() {
   _pShell->Execute("RecordProfile();");
 }
 
-void seriousSamDoGame() {
+void seriousSamDoGame(CDrawPort *pdp) {
+  gles_adapter::enableDraws = true;
+
+  if (!initialized) {
+    // initialize gles adapter
+    try {
+      gles_adapter::gles_adp_init();
+    } catch (const char *txt) {
+      FatalError("OpenGL init error: %s", txt);
+    }
+
+    // start engine
+    startSeriousSamAndroid(pdp);
+
+    lastTick = getTimeNsec();
+    initialized = true;
+  }
+
   gles_adapter::enableDraws = true;
 
   int64_t start = getTimeNsec();
@@ -328,6 +272,7 @@ void seriousSamDoGame() {
     game->ComputerRender(pdp);
     game->ConsoleRender(pdp);
 
+    // draw fps and frame time
     SLONG slDPWidth = pdp->GetWidth();
     SLONG slDPHeight = pdp->GetHeight();
     pdp->SetFont(_pfdDisplayFont);
@@ -338,16 +283,18 @@ void seriousSamDoGame() {
 
     pdp->Unlock();
 
-    UpdatePauseState();
+    // Update pause state
+    _pNetwork->SetLocalPause(game->gm_csConsoleState == CS_ON ||
+                             game->gm_csConsoleState == CS_TURNINGON ||
+                             game->gm_csConsoleState == CS_TURNINGOFF ||
+                             game->gm_csComputerState == CS_ON ||
+                             game->gm_csComputerState == CS_TURNINGON ||
+                             game->gm_csComputerState == CS_TURNINGOFF);
 
-//    pdp->Fill(LCDGetColor(C_dGREEN | CT_OPAQUE, "bcg fill"));
-//    pdp->Unlock();
+    pdp->dp_Raster->ra_pvpViewPort->SwapBuffers();
   }
 
   CTStream::DisableStreamHandling();
-
-  // manual call since we never call SwapBuffers
-  _pfGfxProfile.IncrementAveragingCounter(1);
 
   seriousSamDoGameTime = getTimeNsec() - start;
 }

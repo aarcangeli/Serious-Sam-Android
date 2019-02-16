@@ -1,25 +1,65 @@
 package com.github.aarcangeli.serioussamandroid;
 
 import android.content.Context;
-import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
+import android.view.Surface;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 
-public class MyGLSurface extends GLSurfaceView implements GestureDetector.OnGestureListener, GestureDetector.OnDoubleTapListener {
+public class SeriousSamSurface extends SurfaceView implements GestureDetector.OnGestureListener, GestureDetector.OnDoubleTapListener {
     private final GestureDetector gestureDetector;
     private float scale = 0.5f;
 
-    public MyGLSurface(Context context) {
+    public SeriousSamSurface(Context context) {
         this(context, null);
     }
 
-    public MyGLSurface(Context context, AttributeSet attrs) {
+    public SeriousSamSurface(Context context, AttributeSet attrs) {
         super(context, attrs);
+
+        // load native library
+        synchronized (SeriousSamSurface.class) {
+            if (!isInitialized) {
+                System.loadLibrary("SeriousSamNatives");
+                nInitialize();
+                isInitialized = true;
+            }
+        }
 
         gestureDetector = new GestureDetector(context, this);
         gestureDetector.setIsLongpressEnabled(false);
         gestureDetector.setOnDoubleTapListener(this);
+
+        getHolder().setKeepScreenOn(true);
+        getHolder().addCallback(new SurfaceHolder.Callback() {
+            @Override
+            public void surfaceCreated(SurfaceHolder holder) {
+            }
+
+            @Override
+            public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+                nSetSurface(holder.getSurface());
+            }
+
+            @Override
+            public void surfaceDestroyed(SurfaceHolder holder) {
+                nSetSurface(null);
+            }
+        });
+    }
+
+    void start() {
+        nOnStart();
+    }
+
+    void stop() {
+        nOnStop();
+    }
+
+    void setHomeDir(String homeDir) {
+        nSetHomeDir(homeDir);
     }
 
     @Override
@@ -82,4 +122,13 @@ public class MyGLSurface extends GLSurfaceView implements GestureDetector.OnGest
     public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
         return false;
     }
+
+    // native bindings
+    private static boolean isInitialized;
+    private static native void nInitialize();
+    private static native void nSetHomeDir(String homeDir);
+    private static native void nSetSurface(Surface surface);
+    private static native void nOnStart();
+    private static native void nOnStop();
+
 }

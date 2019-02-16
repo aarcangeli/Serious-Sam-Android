@@ -1555,16 +1555,9 @@ void CGfxLibrary::CreateWindowCanvas(void *hWnd, CViewPort **ppvpNew, CDrawPort 
     *ppvpNew = NULL;
   }
 #else
-  *ppvpNew = new CViewPort(128, 128, nullptr);
+  *ppvpNew = new CViewPort();
   *ppdpNew = &(*ppvpNew)->vp_Raster.ra_MainDrawPort;
 #endif
-}
-
-/* Create a new window canvas. */
-void CGfxLibrary::CreateWindowCanvas(PIX pixWidth, PIX pixHeight, CViewPort **ppvpNew, CDrawPort **ppdpNew)
-{
-  *ppvpNew = new CViewPort(pixWidth, pixHeight, nullptr);
-  *ppdpNew = &(*ppvpNew)->vp_Raster.ra_MainDrawPort;
 }
 
 /* Destroy a window canvas. */

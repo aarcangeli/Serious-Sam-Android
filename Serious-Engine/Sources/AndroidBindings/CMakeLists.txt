@@ -2,7 +2,7 @@ set(
   SOURCES
 
   bindings.cpp
-  SeriousSam.cpp
+  seriousSamAndroid.cpp
 )
 
 add_library(SeriousSamNatives SHARED ${SOURCES})

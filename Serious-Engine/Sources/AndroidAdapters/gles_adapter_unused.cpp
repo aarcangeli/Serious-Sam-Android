@@ -1700,5 +1700,8 @@ namespace gles_adapter {
     reportError("glCopyTexSubImage3D");
   }
 
+  void gles_adp_glGetDoublev(GLenum pname, GLdouble *params) {
+    reportError("glGetDoublev");
+  };
 }
              

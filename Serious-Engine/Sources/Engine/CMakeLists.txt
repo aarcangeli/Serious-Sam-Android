@@ -224,7 +224,7 @@ set(
   ${SE_BASE}/_android/Registry.cpp
   ${SE_BASE}/_android/MultiMonitor.cpp
   ${SE_BASE}/_android/CommunicationInterface.cpp
-  ${SE_BASE}/_android/ViewPort.cpp
+  ${SE_BASE}/Graphics/ViewPort_android.cpp
   ${SE_BASE}/_android/CGfxLibrary.cpp
   ${SE_BASE}/_android/GameAgent.cpp
 
@@ -259,7 +259,7 @@ add_library(Engine SHARED ${SE_ENGINE_SOURCES})
 add_dependencies(Engine se-ecc)
 target_link_libraries(Engine android-adapters)
 target_link_libraries(Engine libvorbis amp11lib)
-target_link_libraries(Engine GLESv2 EGL log)
+target_link_libraries(Engine GLESv2 EGL log android)
 
 target_compile_options(Engine PRIVATE "-I${CMAKE_CURRENT_SOURCE_DIR}")
 
