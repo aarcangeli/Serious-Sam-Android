@@ -16,6 +16,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 401
 %{
 
+#include <EntitiesMP/Common/playerCommons.h>
 #include "StdH.h"
 #include "GameMP/SEColors.h"
 
@@ -272,8 +273,6 @@ static void KillAllEnemies(CEntity *penKiller)
 #define PLACT_FIREBOMB            (1L<<13)
 #define PLACT_SELECT_WEAPON_SHIFT (14)
 #define PLACT_SELECT_WEAPON_MASK  (0x1FL<<PLACT_SELECT_WEAPON_SHIFT)
-                                     
-#define MAX_WEAPONS 30
 
 #define PICKEDREPORT_TIME   (2.0f)  // how long (picked-up) message stays on screen
 
@@ -281,55 +280,7 @@ static void KillAllEnemies(CEntity *penKiller)
 //extern TIME _tmSnoopingStarted;
 //extern CEntity *_penTargeting;
 
-
-struct PlayerControls {
-  FLOAT3D aRotation;
-  FLOAT3D aViewRotation;
-  FLOAT3D vTranslation;
-
-  BOOL bMoveForward;
-  BOOL bMoveBackward;
-  BOOL bMoveLeft;
-  BOOL bMoveRight;
-  BOOL bMoveUp;
-  BOOL bMoveDown;
-
-  BOOL bTurnLeft;
-  BOOL bTurnRight;
-  BOOL bTurnUp;
-  BOOL bTurnDown;
-  BOOL bTurnBankingLeft;
-  BOOL bTurnBankingRight;
-  BOOL bCenterView;
-
-  BOOL bLookLeft;
-  BOOL bLookRight;
-  BOOL bLookUp;
-  BOOL bLookDown;
-  BOOL bLookBankingLeft;
-  BOOL bLookBankingRight;
-
-  BOOL bSelectWeapon[MAX_WEAPONS+1];
-  BOOL bWeaponNext;
-  BOOL bWeaponPrev;
-  BOOL bWeaponFlip;
-  
-  BOOL bWalk;
-  BOOL bStrafe;
-  BOOL bFire;
-  BOOL bReload;
-  BOOL bUse;
-  BOOL bComputer;
-  BOOL bUseOrComputer;
-  BOOL bUseOrComputerLast;  // for internal use
-  BOOL b3rdPersonView;
-
-  BOOL bSniperZoomIn;
-  BOOL bSniperZoomOut;
-  BOOL bFireBomb;
-};
-
-static struct PlayerControls pctlCurrent;
+PlayerControls pctlCurrent;
 
 // cheats
 static INDEX cht_iGoToMarker = -1;

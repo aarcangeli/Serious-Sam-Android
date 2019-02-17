@@ -27,8 +27,6 @@ CGame *game;
 int64_t lastTick = 0;
 uint32_t tickCount = 0;
 bool initialized = false;
-float g_uiScale = 1;
-float g_AxisValue[MAX_AXIS];
 
 BOOL TryToSetDisplayMode(enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI, PIX pixSizeJ,
                          enum DisplayDepth eColorDepth, BOOL bFullScreenMode) {
@@ -69,6 +67,45 @@ void printGlError(const char *name) {
   if (err) {
     WarningMessage("OpenGL Error %s: 0x%04X", name, err);
   };
+}
+
+void setControls(PlayerControls &ctrls) {
+  static bool bStartLast = false;
+
+  if (initialized) {
+
+    if (ctrls.bUse) {
+      if (game->gm_csComputerState == CS_ON || game->gm_csComputerState == CS_TURNINGON) {
+        game->gm_csComputerState = CS_TURNINGOFF;
+        ctrls.bUse = false;
+      }
+    }
+
+    if (ctrls.bUse) {
+      if (game->gm_csConsoleState == CS_ON || game->gm_csComputerState == CS_TURNINGON ||
+          game->gm_csComputerState == CS_TALK) {
+        game->gm_csConsoleState = CS_TURNINGOFF;
+        ctrls.bUse = false;
+      }
+    }
+
+    if (ctrls.bStart && ctrls.bStart != bStartLast) {
+      if (game->gm_csConsoleState == CS_OFF || game->gm_csConsoleState == CS_TURNINGOFF) {
+        game->gm_csConsoleState = CS_TURNINGON;
+      } else {
+        game->gm_csConsoleState = CS_TURNINGOFF;
+      }
+    }
+
+    bStartLast = ctrls.bStart;
+
+    if (g_printProfiling) {
+      g_printProfiling = false;
+      _pShell->Execute("RecordProfile();");
+    }
+
+    memcpy(game->gm_lpLocalPlayers[0].lp_ubPlayerControlsState, &ctrls, sizeof(ctrls));
+  }
 }
 
 void startSeriousSamAndroid(CDrawPort *pdp) {
@@ -133,20 +170,18 @@ void startSeriousSamAndroid(CDrawPort *pdp) {
 
   // override key settings
   CControls &ctrl = game->gm_actrlControls[0];
-  for (int i = 0; i < MAX_AXIS; i++) {
-    ctrl.ctrl_aaAxisActions[i].aa_iAxisAction = i + AXIS_SHIFT;
+  for (int i = 0; i < 10; i++) {
     ctrl.ctrl_aaAxisActions[i].aa_fSensitivity = 80;
     ctrl.ctrl_aaAxisActions[i].aa_fDeadZone = 10;
     ctrl.ctrl_aaAxisActions[i].aa_bInvert = false;
     ctrl.ctrl_aaAxisActions[i].aa_bRelativeControler = true;
     ctrl.ctrl_aaAxisActions[i].aa_bSmooth = false;
-    g_AxisValue[i] = 0;
   }
 
   // load
-  CTString sam_strIntroLevel = "Levels/LevelsMP/Intro.wld";
+//  CTString sam_strIntroLevel = "Levels/LevelsMP/Intro.wld";
 //  CTString sam_strIntroLevel = "Levels/LevelsMP/1_0_InTheLastEpisode.wld";
-//  CTString sam_strIntroLevel = "Levels/LevelsMP/1_1_Palenque.wld";
+  CTString sam_strIntroLevel = "Levels/LevelsMP/1_1_Palenque.wld";
 
   game->gm_StartSplitScreenCfg = CGame::SSC_PLAY1;
   game->gm_aiStartLocalPlayers[0] = game->gm_iSinglePlayer;
@@ -157,7 +192,7 @@ void startSeriousSamAndroid(CDrawPort *pdp) {
   game->gm_StartSplitScreenCfg = CGame::SSC_PLAY1;
 
   _pShell->SetINDEX("gam_iStartDifficulty", CSessionProperties::GD_NORMAL);
-  _pShell->SetINDEX("gam_iStartMode", CSessionProperties::GM_FLYOVER);
+  _pShell->SetINDEX("gam_iStartMode", CSessionProperties::GM_COOPERATIVE);
 
   CUniversalSessionProperties sp;
   game->SetSinglePlayerSession(sp);
@@ -173,28 +208,6 @@ void startSeriousSamAndroid(CDrawPort *pdp) {
 
   CPrintF(TRANS("\n--- Serious Engine CPP End ---\n"));
   CTStream::DisableStreamHandling();
-}
-
-void toggleConsoleState() {
-  if (game->gm_csComputerState == CS_ON || game->gm_csComputerState == CS_TURNINGON) {
-    game->gm_csComputerState = CS_TURNINGOFF;
-    return;
-  }
-  if (game->gm_csConsoleState == CS_ON || game->gm_csComputerState == CS_TURNINGON || game->gm_csComputerState == CS_TALK) {
-    game->gm_csConsoleState = CS_TURNINGOFF;
-    return;
-  }
-}
-
-void processInputs() {
-  if (!initialized) return;
-  for (int i = 0; i < 10; i++) {
-    _pInput->inp_caiAllAxisInfo[i + AXIS_SHIFT].cai_fReading = g_AxisValue[i];
-  }
-}
-
-void printProfilingData() {
-  _pShell->Execute("RecordProfile();");
 }
 
 void seriousSamDoGame(CDrawPort *pdp) {
@@ -279,7 +292,7 @@ void seriousSamDoGame(CDrawPort *pdp) {
     pdp->SetTextScaling(1);
     pdp->SetTextAspect(1.0f);
     CTString str = CTString(0, "fps: %.2f; frame: %.2f ms", fps, deltaFrame / 1000000.f);
-    pdp->PutText(str, slDPWidth * 0.05f, slDPHeight * 0.15f, LCDGetColor(C_GREEN | 255, "display mode"));
+    pdp->PutText(str, 0, 0, LCDGetColor(C_GREEN | 255, "display mode"));
 
     pdp->Unlock();
 

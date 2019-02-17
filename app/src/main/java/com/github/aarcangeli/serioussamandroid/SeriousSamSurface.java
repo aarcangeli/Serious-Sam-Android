@@ -58,10 +58,6 @@ public class SeriousSamSurface extends SurfaceView implements GestureDetector.On
         nOnStop();
     }
 
-    void setHomeDir(String homeDir) {
-        nSetHomeDir(homeDir);
-    }
-
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
@@ -126,7 +122,6 @@ public class SeriousSamSurface extends SurfaceView implements GestureDetector.On
     // native bindings
     private static boolean isInitialized;
     private static native void nInitialize();
-    private static native void nSetHomeDir(String homeDir);
     private static native void nSetSurface(Surface surface);
     private static native void nOnStart();
     private static native void nOnStop();

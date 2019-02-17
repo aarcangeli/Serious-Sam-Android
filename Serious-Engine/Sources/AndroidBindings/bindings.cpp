@@ -2,20 +2,21 @@
 #include <Engine/Graphics/ViewPort.h>
 #include <jni.h>
 #include <GLES2/gl2.h>
+#include "key_codes.h"
 
-void toggleConsoleState();
 void processInputs();
-void printProfilingData();
 
 pthread_mutex_t g_mySeriousMutex;
 pthread_t g_mySeriousThreadId;
 pthread_t g_gameRunning = false;
 ANativeWindow *g_currentWindow;
 bool g_somethingChanged = false;
+bool g_printProfiling = false;
+PlayerControls g_IncomingControls {};
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_github_aarcangeli_serioussamandroid_SeriousSamSurface_nSetHomeDir(JNIEnv *env, jobject instance,
+Java_com_github_aarcangeli_serioussamandroid_MainActivity_nSetHomeDir(JNIEnv *env, jobject obj,
                                                                            jstring homeDir_) {
   const char *homeDir = env->GetStringUTFChars(homeDir_, 0);
 
@@ -30,34 +31,48 @@ Java_com_github_aarcangeli_serioussamandroid_SeriousSamSurface_nSetHomeDir(JNIEn
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_github_aarcangeli_serioussamandroid_MainActivity_toggleConsoleState(JNIEnv *env, jobject instance) {
-  toggleConsoleState();
+Java_com_github_aarcangeli_serioussamandroid_MainActivity_setAxisValue(JNIEnv *env, jobject obj, jint key, jfloat value) {
+  ASSERT(key >= 0 && key < 10);
+  pthread_mutex_lock(&g_mySeriousMutex);
+  g_IncomingControls.axisValue[key] = value;
+  pthread_mutex_unlock(&g_mySeriousMutex);
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_github_aarcangeli_serioussamandroid_MainActivity_setAxisValue(JNIEnv *env, jobject instance, jint key, jfloat value) {
-  // warning: no locking
-  ASSERT(key >= 0 && key < MAX_AXIS);
-  g_AxisValue[key] = value;
+Java_com_github_aarcangeli_serioussamandroid_MainActivity_nDispatchKeyEvent(JNIEnv *env, jobject obj, jint key, jint isPressed) {
+#define BTN_CASE(cod, name) case cod: name = isPressed != 0; break;
+  pthread_mutex_lock(&g_mySeriousMutex);
+  switch(key) {
+    // Xbox 360
+    BTN_CASE(KEYCODE_BUTTON_R1, g_IncomingControls.bFire)
+    BTN_CASE(KEYCODE_BUTTON_R2, g_IncomingControls.bUse)
+    BTN_CASE(KEYCODE_BUTTON_L1, g_IncomingControls.bWeaponFlip)
+    BTN_CASE(KEYCODE_BUTTON_X, g_IncomingControls.bReload)
+    BTN_CASE(KEYCODE_BUTTON_A, g_IncomingControls.bMoveUp)
+    BTN_CASE(KEYCODE_BUTTON_B, g_IncomingControls.bMoveDown)
+    BTN_CASE(KEYCODE_DPAD_LEFT, g_IncomingControls.bWeaponPrev)
+    BTN_CASE(KEYCODE_DPAD_RIGHT, g_IncomingControls.bWeaponNext)
+    BTN_CASE(KEYCODE_BACK, g_IncomingControls.bComputer)
+    BTN_CASE(KEYCODE_BUTTON_START, g_IncomingControls.bStart)
+  }
+  pthread_mutex_unlock(&g_mySeriousMutex);
+#undef BTN_CASE
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_github_aarcangeli_serioussamandroid_MainActivity_setUIScale(JNIEnv *env, jobject instance, jfloat scale) {
-  // warning: no locking
-  g_uiScale = scale;
-}
-
-extern "C"
-JNIEXPORT void JNICALL
-Java_com_github_aarcangeli_serioussamandroid_MainActivity_printProfilingData(JNIEnv *env, jobject instance) {
-  printProfilingData();
+Java_com_github_aarcangeli_serioussamandroid_MainActivity_printProfilingData(JNIEnv *env, jobject obj) {
+  pthread_mutex_lock(&g_mySeriousMutex);
+  g_printProfiling = true;
+  pthread_mutex_unlock(&g_mySeriousMutex);
 }
 
 void *seriousMain(void *unused) {
   CViewPort *pvpViewPort = new CViewPort();
   CDrawPort *pdp = &pvpViewPort->vp_Raster.ra_MainDrawPort;
+
+  bool bBackLast = false, bStartLast = false;
 
   while(true) {
     // get parameters with mutex
@@ -68,13 +83,13 @@ void *seriousMain(void *unused) {
     bool somethingChanged = g_somethingChanged;
     g_somethingChanged = false;
 
-    // put input values into CInput class
-    processInputs();
+    // resolve input
+    setControls(g_IncomingControls);
 
     pthread_mutex_unlock(&g_mySeriousMutex);
 
     if (!running || !window) {
-      usleep(10000); // wait for 10 ms
+      usleep(50000); // wait for 50 ms
       continue;
     }
 

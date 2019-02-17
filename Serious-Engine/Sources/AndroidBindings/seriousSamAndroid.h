@@ -9,6 +9,8 @@
 #include <Engine/Base/CTString.h>
 #include <Engine/Base/Stream.h>
 #include <Engine/Engine.h>
+#include <EntitiesMP/Common/playerCommons.h>
+#include <stdint.h>
 
 static_assert(sizeof(void *) == 4, "Serious engine require 32 bit address space");
 
@@ -16,13 +18,14 @@ extern pthread_mutex_t g_mySeriousMutex;
 extern pthread_t g_mySeriousThreadId;
 extern pthread_t g_gameRunning;
 extern ANativeWindow *g_currentWindow;
-extern float g_uiScale;
+extern bool g_printProfiling;
 
 void seriousSamDoGame(CDrawPort *pvp);
+void hideComputerConsole();
+void toggleComputer();
 
-#define MAX_AXIS 10
-#define AXIS_SHIFT 1
+void setControls(PlayerControls &ctrls);
+
 #define NS_IN_S 1000000000
-extern float g_AxisValue[MAX_AXIS];
 
 #endif // SERIOUSSAMANDROID_H

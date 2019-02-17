@@ -13,6 +13,7 @@ typedef double GLclampd;
 #define GLM_ENABLE_EXPERIMENTAL
 
 #include <glm/gtx/string_cast.hpp>
+#include <stdint.h>
 
 void reportError(const char *func);
 
@@ -651,7 +652,36 @@ namespace gles_adapter {
       reportError("gles_adp_glReadPixels of depth");
       return;
     }
-    setError(glGetError());
+    if (format == GL_RGB && type == GL_UNSIGNED_BYTE) {
+      if (width <= 0 && height <= 0) {
+        setError(GL_INVALID_VALUE);
+        return;
+      }
+
+      // GL_RGBA/GL_UNSIGNED_BYTE is always accepted
+      uint32_t size = width * height;
+      std::vector<uint32_t> data;
+      data.resize(size);
+      glReadPixels(x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data.data());
+      GLenum error = glGetError();
+      if (error) {
+        setError(error);
+        return;
+      }
+
+      // remove alpha
+      uint8_t *src = (uint8_t *) data.data();
+      uint8_t *dst = (uint8_t *) pixels;
+      for (int i = 0; i < size; i++) {
+        *(dst++) = *(src++);
+        *(dst++) = *(src++);
+        *(dst++) = *(src++);
+        src++;
+      }
+      return;
+    }
+
+    // should never happen
     glReadPixels(x, y, width, height, format, type, pixels);
     setError(glGetError());
   }

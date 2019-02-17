@@ -34,14 +34,12 @@ public class MainActivity extends AppCompatActivity {
     private static final int AXIS_LOOK_LR = 7;
     private static final int AXIS_LOOK_BK = 8;
 
+    private static final float VIEW_MULT = 2;
+
     private SeriousSamSurface glSurfaceView;
     private File homeDir;
-    private JoyStick leftStick, rightStick;
-    public static final Object GAME_INPUT_LOCK = new Object();
 
-    private AtomicBoolean toggleConsoleState = new AtomicBoolean();
     private AtomicBoolean printProfiling = new AtomicBoolean();
-    private float DRAG_SENSIBILITY = 0.3f;
 
     private boolean isGameStarted = false;
 
@@ -50,39 +48,13 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.main_screen);
-        leftStick = findViewById(R.id.left_stick);
-        rightStick = findViewById(R.id.right_stick);
         glSurfaceView = findViewById(R.id.main_content);
 
         homeDir = new File(Environment.getExternalStorageDirectory(), "SeriousSam");
         Log.i(TAG, "HomeDir: " + homeDir.getAbsolutePath());
-        glSurfaceView.setHomeDir(homeDir.getAbsolutePath());
-
-        InputManager systemService = (InputManager) getSystemService(Context.INPUT_SERVICE);
-        systemService.registerInputDeviceListener(new InputManager.InputDeviceListener() {
-            @Override
-            public void onInputDeviceAdded(int deviceId) {
-                updateSoftKeyboardVisible();
-            }
-
-            @Override
-            public void onInputDeviceRemoved(int deviceId) {
-                updateSoftKeyboardVisible();
-            }
-
-            @Override
-            public void onInputDeviceChanged(int deviceId) {
-                updateSoftKeyboardVisible();
-            }
-        }, null);
-
-        leftStick.setListener(new LeftJoystickListener());
-        rightStick.setListener(new RightJoystickListener());
-
-        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+        nSetHomeDir(homeDir.getAbsolutePath());
 
         checkPermission();
-        updateSoftKeyboardVisible();
     }
 
     @Override
@@ -115,23 +87,29 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean dispatchGenericMotionEvent(MotionEvent ev) {
         if (ev.getAction() == MotionEvent.ACTION_MOVE) {
-            synchronized (GAME_INPUT_LOCK) {
-                setAxisValue(AXIS_MOVE_FB, -ev.getAxisValue(MotionEvent.AXIS_Y));
-                setAxisValue(AXIS_MOVE_LR, -ev.getAxisValue(MotionEvent.AXIS_X));
-                setAxisValue(AXIS_LOOK_LR, -ev.getAxisValue(MotionEvent.AXIS_Z));
-                setAxisValue(AXIS_LOOK_UD, -ev.getAxisValue(MotionEvent.AXIS_RZ));
-            }
+            setAxisValue(AXIS_MOVE_FB, -ev.getAxisValue(MotionEvent.AXIS_Y));
+            setAxisValue(AXIS_MOVE_LR, -ev.getAxisValue(MotionEvent.AXIS_X));
+            setAxisValue(AXIS_LOOK_LR, -ev.getAxisValue(MotionEvent.AXIS_Z) * VIEW_MULT);
+            setAxisValue(AXIS_LOOK_UD, -ev.getAxisValue(MotionEvent.AXIS_RZ) * VIEW_MULT);
+            nDispatchKeyEvent(KeyEvent.KEYCODE_BUTTON_R2, ev.getAxisValue(MotionEvent.AXIS_RTRIGGER) > .5f ? 1 : 0);
+            nDispatchKeyEvent(KeyEvent.KEYCODE_BUTTON_L2, ev.getAxisValue(MotionEvent.AXIS_RTRIGGER) < -.5f ? 1 : 0);
+            nDispatchKeyEvent(KeyEvent.KEYCODE_DPAD_LEFT, ev.getAxisValue(MotionEvent.AXIS_HAT_X) < -.5f ? 1 : 0);
+            nDispatchKeyEvent(KeyEvent.KEYCODE_DPAD_RIGHT, ev.getAxisValue(MotionEvent.AXIS_HAT_X) > .5f ? 1 : 0);
+            nDispatchKeyEvent(KeyEvent.KEYCODE_DPAD_UP, ev.getAxisValue(MotionEvent.AXIS_HAT_Y) < -.5f ? 1 : 0);
+            nDispatchKeyEvent(KeyEvent.KEYCODE_DPAD_DOWN, ev.getAxisValue(MotionEvent.AXIS_HAT_Y) > .5f ? 1 : 0);
         }
         return true;
     }
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        if (event.getAction() == KeyEvent.ACTION_DOWN && event.getRepeatCount() == 0) {
-            switch (event.getKeyCode()) {
-                case KeyEvent.KEYCODE_BUTTON_START:
-                    toggleConsoleState.set(true);
-                    break;
+        if (event.getRepeatCount() == 0) {
+            if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                nDispatchKeyEvent(event.getKeyCode(), 1);
+                System.out.println(event.getKeyCode());
+            }
+            if (event.getAction() == KeyEvent.ACTION_UP) {
+                nDispatchKeyEvent(event.getKeyCode(), 0);
             }
         }
         return true;
@@ -152,95 +130,22 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void updateSoftKeyboardVisible() {
-        int keyboardVisibility = isThereControllers() ? View.GONE : View.VISIBLE;
-        leftStick.setVisibility(keyboardVisibility);
-        rightStick.setVisibility(keyboardVisibility);
-    }
-
-    private boolean isThereControllers() {
-        for (int id : InputDevice.getDeviceIds()) {
-            InputDevice dev = InputDevice.getDevice(id);
-            int sources = dev.getSources();
-            if ((sources & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD) {
-                return true;
-            } else if ((sources & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     // ui listeners
     public void hideMenu(View view) {
-        toggleConsoleState.set(true);
     }
 
     public void doProfiling(View view) {
-        printProfiling.set(true);
-    }
-
-    private class LeftJoystickListener implements JoyStick.JoyStickListener {
-        @Override
-        public void onMove(JoyStick joyStick, double angle, double power, int direction) {
-            synchronized (GAME_INPUT_LOCK) {
-                setAxisValue(AXIS_MOVE_FB, (float) (Math.sin(angle) * power / 100));
-                setAxisValue(AXIS_MOVE_LR, (float) (Math.cos(angle) * power / 100));
-            }
-        }
-
-        @Override
-        public void onTap() {
-        }
-
-        @Override
-        public void onDoubleTap() {
-        }
-    }
-
-    private class RightJoystickListener implements JoyStick.JoyStickListener {
-        @Override
-        public void onMove(JoyStick joyStick, double angle, double power, int direction) {
-            synchronized (GAME_INPUT_LOCK) {
-                setAxisValue(AXIS_LOOK_UD, (float) (Math.sin(angle) * power / 100));
-                setAxisValue(AXIS_LOOK_LR, (float) (Math.cos(angle) * power / 100));
-            }
-        }
-
-        @Override
-        public void onTap() {
-        }
-
-        @Override
-        public void onDoubleTap() {
-        }
+        printProfilingData();
     }
 
     private void startGame() {
         if (!homeDir.exists()) homeDir.mkdirs();
         isGameStarted = true;
         glSurfaceView.start();
-
-        // TODO: remove
-//        glSurfaceView.setRenderer(new GLSurfaceView.Renderer() {
-//            @Override
-//            public void onDrawFrame(GL10 gl) {
-//                if (toggleConsoleState.getAndSet(false)) toggleConsoleState();
-//                setUIScale(glSurfaceView.getScale() * Utils.convertDpToPixel(1, MainActivity.this));
-//                if (printProfiling.getAndSet(false)) printProfilingData();
-//            }
-//        });
     }
 
-    public native void setHomeDir(String homeDir);
-
-    private native void resize(int width, int height);
-
-    private native void setUIScale(float scale);
-
-    private native void toggleConsoleState();
-
-    private native void setAxisValue(int key, float value);
-
-    private native void printProfilingData();
+    private static native void setAxisValue(int key, float value);
+    private static native void printProfilingData();
+    private static native void nDispatchKeyEvent(int key, int isPressed);
+    private static native void nSetHomeDir(String homeDir);
 }

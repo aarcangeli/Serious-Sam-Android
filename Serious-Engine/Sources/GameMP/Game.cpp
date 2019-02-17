@@ -27,6 +27,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/Profiling.h>
 #include <Engine/Base/Statistics.h>
 #include <Engine/CurrentVersion.h>
+#include <EntitiesMP/Common/playerCommons.h>
 #include "Camera.h"
 #include "LCDDrawing.h"
 
@@ -398,26 +399,22 @@ FLOAT CControls::GetAxisValue(INDEX iAxis)
 {
   CAxisAction &aa = ctrl_aaAxisActions[iAxis];
 
-  FLOAT fReading = 0.0f;
+  // get the reading
+  FLOAT fReading = ((PlayerControls *) ctl_pvPlayerControls)->axisValue[iAxis];
 
-  if (aa.aa_iAxisAction!=AXIS_NONE) {
-    // get the reading
-    fReading = _pInput->GetAxisValue(aa.aa_iAxisAction);
+  // smooth the reading if needed
+  if ( ctrl_bSmoothAxes || aa.aa_bSmooth) {
+    FLOAT fSmoothed = (aa.aa_fLastReading+fReading)/2.0f;
+    aa.aa_fLastReading = fReading;
+    fReading = fSmoothed;
+  }
 
-    // smooth the reading if needed
-    if ( ctrl_bSmoothAxes || aa.aa_bSmooth) {
-      FLOAT fSmoothed = (aa.aa_fLastReading+fReading)/2.0f;
-      aa.aa_fLastReading = fReading;
-      fReading = fSmoothed;
-    }
+  // integrate to get the absolute reading
+  aa.aa_fAbsolute+=fReading;
 
-    // integrate to get the absolute reading
-    aa.aa_fAbsolute+=fReading;
-
-    // get relative or absolute reading
-    if (!aa.aa_bRelativeControler) {
-      fReading = aa.aa_fAbsolute;
-    }
+  // get relative or absolute reading
+  if (!aa.aa_bRelativeControler) {
+    fReading = aa.aa_fAbsolute;
   }
 
   // compensate for the deadzone

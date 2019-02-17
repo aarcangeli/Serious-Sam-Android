@@ -14,36 +14,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <com.github.aarcangeli.serioussamandroid.MyBgRecognizer
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.48"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <com.github.aarcangeli.serioussamandroid.JoyStick
-            android:id="@+id/left_stick"
-            android:layout_width="0dp"
-            android:layout_height="200dp"
-            android:layout_gravity="bottom"
-            app:buttonColor="#55ff0000"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintWidth_percent=".5"
-            app:padColor="#55ffffff" />
-
-        <com.github.aarcangeli.serioussamandroid.JoyStick
-            android:id="@+id/right_stick"
-            android:layout_width="0dp"
-            android:layout_height="200dp"
-            app:buttonColor="#55ff0000"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintWidth_percent=".5"
-            app:padColor="#55ffffff" />
-
         <Button
             android:id="@+id/menuBtn"
             android:layout_width="20dp"
