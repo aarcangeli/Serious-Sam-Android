@@ -14,18 +14,6 @@ void reportError(const char *func);
 
 void blockingError(const char *func);
 
-/**
- * TODO:
- *   glBegin, glColor and other direct mode
- *   glMatrixMode and other transformations
- *   modes:
- *     GL_CLIP_PLANE0
- *   glShadeModel
- *   glPolygonMode
- *   glDrawBuffer
- *   glEnableClientState
- */
-
 #ifndef GL_VERTEX_ARRAY
 #define GL_VERTEX_ARRAY 0x8074
 #endif
@@ -105,10 +93,6 @@ namespace gles_adapter {
 
   void gles_adp_glGetClipPlane(GLenum plane, GLdouble *equation) {
     reportError("glGetClipPlane");
-  };
-
-  void gles_adp_glDrawBuffer(GLenum mode) {
-    reportError("glDrawBuffer");
   };
 
   void gles_adp_glReadBuffer(GLenum mode) {
@@ -215,21 +199,8 @@ namespace gles_adapter {
   };
 
 
-  void gles_adp_glBegin(GLenum mode) {
-    reportError("glBegin");
-  };
-
-  void gles_adp_glEnd(void) {
-    reportError("glEnd");
-  };
-
-
   void gles_adp_glVertex2d(GLdouble x, GLdouble y) {
     reportError("glVertex2d");
-  };
-
-  void gles_adp_glVertex2f(GLfloat x, GLfloat y) {
-    reportError("glVertex2f");
   };
 
   void gles_adp_glVertex2i(GLint x, GLint y) {
@@ -244,10 +215,6 @@ namespace gles_adapter {
     reportError("glVertex3d");
   };
 
-  void gles_adp_glVertex3f(GLfloat x, GLfloat y, GLfloat z) {
-    reportError("glVertex3f");
-  };
-
   void gles_adp_glVertex3i(GLint x, GLint y, GLint z) {
     reportError("glVertex3i");
   };
@@ -258,10 +225,6 @@ namespace gles_adapter {
 
   void gles_adp_glVertex4d(GLdouble x, GLdouble y, GLdouble z, GLdouble w) {
     reportError("glVertex4d");
-  };
-
-  void gles_adp_glVertex4f(GLfloat x, GLfloat y, GLfloat z, GLfloat w) {
-    reportError("glVertex4f");
   };
 
   void gles_adp_glVertex4i(GLint x, GLint y, GLint z, GLint w) {
@@ -442,10 +405,6 @@ namespace gles_adapter {
     reportError("glColor4d");
   }
 
-  void gles_adp_glColor4f(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha) {
-    reportError("glColor4f");
-  }
-
   void gles_adp_glColor4i(GLint red, GLint green, GLint blue, GLint alpha) {
     reportError("glColor4i");
   }
@@ -519,10 +478,6 @@ namespace gles_adapter {
     reportError("glColor4sv");
   };
 
-  void gles_adp_glColor4ubv(const GLubyte *v) {
-    reportError("glColor4ubv");
-  };
-
   void gles_adp_glColor4uiv(const GLuint *v) {
     reportError("glColor4uiv");
   };
@@ -550,10 +505,6 @@ namespace gles_adapter {
 
   void gles_adp_glTexCoord2d(GLdouble s, GLdouble t) {
     reportError("glTexCoord2d");
-  };
-
-  void gles_adp_glTexCoord2f(GLfloat s, GLfloat t) {
-    reportError("glTexCoord2f");
   };
 
   void gles_adp_glTexCoord2i(GLint s, GLint t) {
@@ -814,10 +765,6 @@ namespace gles_adapter {
   void gles_adp_glInterleavedArrays(GLenum format, GLsizei stride, const GLvoid *pointer) {
     reportError("glInterleavedArrays");
   }
-
-  void gles_adp_glShadeModel(GLenum mode) {
-    reportError("glShadeModel");
-  };
 
   void gles_adp_glLightf(GLenum light, GLenum pname, GLfloat param) {
     reportError("glLightf");

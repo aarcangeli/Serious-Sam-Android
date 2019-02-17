@@ -21,14 +21,10 @@ void blockingError(const char *func);
 
 /**
  * TODO:
- *   glBegin, glColor and other direct mode
  *   glMatrixMode and other transformations
  *   modes:
  *     GL_CLIP_PLANE0
- *   glShadeModel
  *   glPolygonMode
- *   glDrawBuffer
- *   glEnableClientState
  */
 
 #ifndef GL_VERTEX_ARRAY
@@ -233,7 +229,7 @@ namespace gles_adapter {
     // upload vertex buffer
     if (vp.type != GL_FLOAT) blockingError("unimplemented mode");
     if (USE_BUFFER_DATA) {
-      totalSize = (vp.stride ? vp.stride : 3 * sizeof(float)) * vertices;
+      totalSize = (vp.stride ? vp.stride : vp.size * sizeof(float)) * vertices;
       glBindBuffer(GL_ARRAY_BUFFER, INDEX_POSITION);
       glBufferData(GL_ARRAY_BUFFER, totalSize, vp.ptr, GL_STREAM_DRAW);
       glVertexAttribPointer(INDEX_POSITION, vp.size, vp.type, GL_FALSE, vp.stride, 0);
@@ -260,8 +256,8 @@ namespace gles_adapter {
 
     // upload Color buffer
     if (isGL_COLOR_ARRAY) {
-      if (cp.type != GL_UNSIGNED_BYTE) blockingError("unimplemented mode");
       if (USE_BUFFER_DATA) {
+        if (cp.type != GL_UNSIGNED_BYTE) blockingError("unimplemented mode");
         totalSize = (cp.stride ? cp.stride : cp.size) * vertices;
         glBindBuffer(GL_ARRAY_BUFFER, INDEX_COLOR);
         glBufferData(GL_ARRAY_BUFFER, totalSize, cp.ptr, GL_STREAM_DRAW);
@@ -767,6 +763,93 @@ namespace gles_adapter {
     glTexSubImage2D(target, level, xoffset, yoffset, width, height, format, type, pixels);
     setError(glGetError());
   }
+
+  // mocks
+  void gles_adp_glShadeModel(GLenum mode) {
+    // ignored since it is always smooth
+  };
+
+  void gles_adp_glDrawBuffer(GLenum mode) {
+  };
+
+  // direct draw adapter
+  struct ImmediateVertex {
+      float x, y, z, w;
+      float r, g, b, a;
+      float s, t;
+  };
+  ImmediateVertex current {};
+  uint32_t offset;
+  GLenum mode;
+  std::vector<ImmediateVertex> immediateVertices(10);
+
+  void gles_adp_glBegin(GLenum _mode) {
+    offset = 0;
+    mode = _mode;
+  };
+
+  void gles_adp_glColor4f(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha) {
+    current.r = red;
+    current.g = green;
+    current.b = blue;
+    current.a = alpha;
+  }
+
+  void gles_adp_glColor4ubv(const GLubyte *v) {
+    current.r = v[0] / 256.f;
+    current.g = v[1] / 256.f;
+    current.b = v[2] / 256.f;
+    current.a = v[3] / 256.f;
+  };
+
+  void gles_adp_glTexCoord2f(GLfloat s, GLfloat t) {
+    current.s = s;
+    current.t = t;
+  };
+
+  void gles_adp_glVertex2f(GLfloat x, GLfloat y) {
+    gles_adp_glVertex4f(x, y, 0, 1);
+  };
+
+  void gles_adp_glVertex3f(GLfloat x, GLfloat y, GLfloat z) {
+    gles_adp_glVertex4f(x, y, z, 1);
+  };
+
+  void gles_adp_glVertex4f(GLfloat x, GLfloat y, GLfloat z, GLfloat w) {
+    current.x = x;
+    current.y = y;
+    current.z = z;
+    current.w = w;
+    if (offset >= immediateVertices.size()) {
+      immediateVertices.resize(immediateVertices.size() * 2);
+    }
+    immediateVertices[offset++] = current;
+  };
+
+  void gles_adp_glEnd(void) {
+    if (!enableDraws) return;
+
+    bool oldGL_VERTEX_ARRAY = isGL_VERTEX_ARRAY;
+    bool oldGL_TEXTURE_COORD_ARRAY = isGL_TEXTURE_COORD_ARRAY;
+    bool oldGL_COLOR_ARRAY = isGL_COLOR_ARRAY;
+
+    isGL_VERTEX_ARRAY = true;
+    isGL_TEXTURE_COORD_ARRAY = true;
+    isGL_COLOR_ARRAY = true;
+
+    gles_adp_glVertexPointer(4, GL_FLOAT, sizeof(ImmediateVertex), (uint8_t *) immediateVertices.data() + sizeof(float) * 0);
+    gles_adp_glColorPointer(4, GL_FLOAT, sizeof(ImmediateVertex), (uint8_t *) immediateVertices.data() + sizeof(float) * 4);
+    gles_adp_glTexCoordPointer(2, GL_FLOAT, sizeof(ImmediateVertex), (uint8_t *) immediateVertices.data() + sizeof(float) * 8);
+
+    syncBuffers(offset);
+    glDrawArrays(mode, 0, offset);
+    syncBuffersPost();
+    setError(glGetError());
+
+    isGL_VERTEX_ARRAY = oldGL_VERTEX_ARRAY;
+    isGL_TEXTURE_COORD_ARRAY = oldGL_TEXTURE_COORD_ARRAY;
+    isGL_COLOR_ARRAY = oldGL_COLOR_ARRAY;
+  };
 
 }
              
