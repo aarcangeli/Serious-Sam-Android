@@ -37,10 +37,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Templates/StaticArray.cpp>
 #include <Engine/Templates/StaticStackArray.cpp>
 
+#include <stdint.h>
+#include <vector>
+#include <math.h>
 
 // pointer to global sound library object
 CSoundLibrary *_pSound = NULL;
-
 
 // console variables
 extern FLOAT snd_tmMixAhead = 0.2f; // mix-ahead in seconds
@@ -94,7 +96,22 @@ static BOOL _bOpened = FALSE;
 #define MINPAN (1.0f)
 #define MAXPAN (9.0f)
 
+// OpenSL static data
+struct AudioEngineData {
+    SLObjectItf slEngineObj_;
+    SLEngineItf slEngineItf_;
+    SLObjectItf outputMixObjectItf_;
+    SLObjectItf playerObjectItf_;
+    SLBufferQueueItf playBufferQueueItf_;
+    SLPlayItf playItf_;
 
+    // buffers
+    int numBuffers = 2;
+    int whichBuffer;
+    int framesPerBuffer;
+    std::vector<int16_t> buffer;
+};
+AudioEngineData engine;
 
 /**
  * ----------------------------
@@ -154,6 +171,13 @@ void CSoundLibrary::Init(void) {
 
   // initialize any installed sound decoders
   CSoundDecoder::InitPlugins();
+
+  if (!SetFormat(SF_44100_16)) {
+    CPrintF("  disabling audio.\n");
+    return;
+  }
+
+  CPrintF("  audio initialized.\n");
 }
 
 
@@ -198,11 +222,46 @@ void CSoundLibrary::ClearLibrary(void) {
 // mute all sounds (erase playing buffer(s) and supress mixer)
 void CSoundLibrary::Mute(void) {}
 
+const char *getSlError(SLresult res) {
+#define CASE(msg) case msg: return #msg;
+  switch(res) {
+    CASE(SL_RESULT_SUCCESS)
+    CASE(SL_RESULT_PRECONDITIONS_VIOLATED)
+    CASE(SL_RESULT_PARAMETER_INVALID)
+    CASE(SL_RESULT_MEMORY_FAILURE)
+    CASE(SL_RESULT_RESOURCE_ERROR)
+    CASE(SL_RESULT_RESOURCE_LOST)
+    CASE(SL_RESULT_IO_ERROR)
+    CASE(SL_RESULT_BUFFER_INSUFFICIENT)
+    CASE(SL_RESULT_CONTENT_CORRUPTED)
+    CASE(SL_RESULT_CONTENT_UNSUPPORTED)
+    CASE(SL_RESULT_CONTENT_NOT_FOUND)
+    CASE(SL_RESULT_PERMISSION_DENIED)
+    CASE(SL_RESULT_FEATURE_UNSUPPORTED)
+    CASE(SL_RESULT_INTERNAL_ERROR)
+    CASE(SL_RESULT_UNKNOWN_ERROR)
+    CASE(SL_RESULT_OPERATION_ABORTED)
+    CASE(SL_RESULT_CONTROL_LOST)
+    default: return "Unknown";
+  }
+#undef CASE
+}
 
 /*
  * set sound format
  */
-void CSoundLibrary::SetFormat(CSoundLibrary::SoundFormat EsfNew) {
+bool CSoundLibrary::SetFormat(CSoundLibrary::SoundFormat EsfNew) {
+#define PROCESS_RES(msg) if (res != SL_RESULT_SUCCESS) { \
+    CPrintF("  Cannot create OpenSL object: " msg " returned 0x%04X (%s)\n", res, getSlError(res)); \
+    sl_EsfFormat = SF_NONE; \
+    return false; \
+  }
+
+  // remove timer handler if added
+  if (sl_thTimerHandler.th_Node.IsLinked()) {
+    _pTimer->RemHandler(&sl_thTimerHandler);
+  }
+
   // access to the list of handlers must be locked
   CTSingleLock slHooks(&_pTimer->tm_csHooks, TRUE);
   // synchronize access to sounds
@@ -215,10 +274,103 @@ void CSoundLibrary::SetFormat(CSoundLibrary::SoundFormat EsfNew) {
     itCsdStop->PausePlayingObjects();
   }
 
-  if (sl_EsfFormat == SF_NONE) return;
+  if (sl_EsfFormat == SF_NONE) return true;
 
+  memset(&engine, 0, sizeof(engine));
+
+  SLresult res;
+  res = slCreateEngine(&engine.slEngineObj_, 0, NULL, 0, NULL, NULL);
+  PROCESS_RES("slCreateEngine()")
+
+  res = (*engine.slEngineObj_)->Realize(engine.slEngineObj_, SL_BOOLEAN_FALSE);
+  PROCESS_RES("sl->Realize()")
+
+  res = (*engine.slEngineObj_)->GetInterface(engine.slEngineObj_, SL_IID_ENGINE, &engine.slEngineItf_);
+  PROCESS_RES("sl->GetInterface(SL_IID_ENGINE)")
+
+  // mix
+  res = (*engine.slEngineItf_)->CreateOutputMix(engine.slEngineItf_, &engine.outputMixObjectItf_, 0, NULL, NULL);
+  PROCESS_RES("engine->CreateOutputMix()")
+
+  res = (*engine.outputMixObjectItf_)->Realize(engine.outputMixObjectItf_, SL_BOOLEAN_FALSE);
+  PROCESS_RES("mixer->Realize(false)")
+
+  // format
+  SLDataFormat_PCM format_pcm;
+  format_pcm.formatType = SL_DATAFORMAT_PCM;
+  format_pcm.numChannels = 2;
+  format_pcm.samplesPerSec = getFramesPerSec() * 1000;
+  format_pcm.bitsPerSample = 16;
+  format_pcm.containerSize = 16;
+  format_pcm.channelMask = SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT;
+  format_pcm.endianness = SL_BYTEORDER_LITTLEENDIAN;
+
+  SLDataLocator_OutputMix loc_outmix = {SL_DATALOCATOR_OUTPUTMIX, engine.outputMixObjectItf_};
+  SLDataSink audioSnk = {&loc_outmix, NULL};
+
+  SLDataLocator_BufferQueue loc_bufq = {SL_DATALOCATOR_BUFFERQUEUE, 2};
+  SLDataSource audioSrc = {&loc_bufq, &format_pcm};
+
+  // create player
+  SLInterfaceID ids[2] = {SL_IID_BUFFERQUEUE, SL_IID_VOLUME};
+  SLboolean req[2] = {SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE};
+  res = (*engine.slEngineItf_)->CreateAudioPlayer(engine.slEngineItf_, &engine.playerObjectItf_,
+                                                  &audioSrc, &audioSnk,
+                                                  sizeof(ids) / sizeof(ids[0]), ids, req);
+  PROCESS_RES("engine->CreateAudioPlayer()")
+
+  res = (*engine.playerObjectItf_)->Realize(engine.playerObjectItf_, SL_BOOLEAN_FALSE);
+  PROCESS_RES("playerObject->Realize(false)")
+
+  // get buffer queue
+  res = (*engine.playerObjectItf_)->GetInterface(engine.playerObjectItf_, SL_IID_BUFFERQUEUE,
+                                                 &engine.playBufferQueueItf_);
+  PROCESS_RES("player->GetInterface(SL_IID_BUFFERQUEUE)")
+
+  // get the play interface
+  res = (*engine.playerObjectItf_)->GetInterface(engine.playerObjectItf_, SL_IID_PLAY,
+                                                 &engine.playItf_);
+  PROCESS_RES("player->GetInterface(SL_IID_PLAY)");
+
+  res = (*engine.playItf_)->SetPlayState(engine.playItf_, SL_PLAYSTATE_PLAYING);
+  PROCESS_RES("play->SetPlayState(PLAYING)");
+
+  // allocate buffers
+  // numBuffers * framesPerBuffer * 2(channels) * 2(SoundMixer.cpp use 4 bytes for math) * 2(sizeof(short))
+  engine.numBuffers = 2;
+  engine.whichBuffer = 0;
+  engine.framesPerBuffer = (int) (snd_tmMixAhead * getFramesPerSec());
+  engine.buffer.resize(engine.numBuffers * engine.framesPerBuffer * 4);
+
+//    int totalFrames = 44100;
+//    uint32_t current = 0;
+//    uint32_t cycle = getFramesPerSec() * 2 / (440 * octave);
+//    int totalSamples = totalFrames * 2;
+//
+//    for (int count = 0; count < 3; count++) {
+//      int16_t *buffer = new int16_t[totalSamples];
+//      for (int i = 0; i < totalSamples; i++) {
+//        double height = sin((double) current / cycle * M_PI * 2);
+//        buffer[i] = height / octave * 0x7fff;
+//        current++;
+//        if (current == cycle) current = 0;
+//      }
+//      SLBufferQueueState state;
+//      res = (*engine.playBufferQueueItf_)->GetState(engine.playBufferQueueItf_, &state);
+//      PROCESS_RES("play->GetState(PLAYING)");
+//      InfoMessage("data %u, %u", state.count, state.playIndex);
+//
+//      (*engine.playBufferQueueItf_)->Enqueue(engine.playBufferQueueItf_, buffer, totalFrames * 4);
+//      PROCESS_RES("play->Enqueue(PLAYING)");
+//    }
+
+  // add timer handler
+  _pTimer->AddHandler(&sl_thTimerHandler);
+
+  return true;
+
+#undef PROCESS_RES
 }
-
 
 /* Update all 3d effects and copy internal data. */
 void CSoundLibrary::UpdateSounds(void) {
@@ -233,10 +385,6 @@ void CSoundLibrary::UpdateSounds(void) {
     sli = itsli;
     ctListeners++;
   }
-
-  // if there's only one listener environment properties have been changed (in split-screen EAX is not supported)
-  _iLastEnvType = 1;
-  _fLastEnvSize = 1.4f;
 
   // for each sound
   FOREACHINLIST(CSoundData, sd_Node, sl_ClhAwareList, itCsdSoundData) {
@@ -286,6 +434,72 @@ void CSoundTimerHandler::HandleTimer(void) {
 
 /* Update Mixer */
 void CSoundLibrary::MixSounds(void) {
+  SLBufferQueueState state;
+  SLresult res = (*engine.playBufferQueueItf_)->GetState(engine.playBufferQueueItf_, &state);
+  if (res != SL_RESULT_SUCCESS){
+    WarningMessage("GetState returned: 0x%04X (%s)", res, getSlError(res));
+    return;
+  }
+  if (state.count >= engine.numBuffers) {
+    // all buffers are full
+    return;
+  }
+
+  _sfStats.StartTimer(CStatForm::STI_SOUNDMIXING);
+  _pfSoundProfile.IncrementAveragingCounter();
+  _pfSoundProfile.StartTimer(CSoundProfile::PTI_MIXSOUNDS);
+  _pfSoundProfile.IncrementCounter(CSoundProfile::PCI_MIXINGS, 1);
+
+  int framesToMix = engine.framesPerBuffer;
+  int16_t *buffer = &engine.buffer[engine.whichBuffer * engine.framesPerBuffer * 4];
+
+  // prepare mixer buffer
+  ResetMixer((SLONG *) buffer, framesToMix * 4);
+
+  BOOL bGamePaused = _pNetwork->IsPaused() || _pNetwork->IsServer() && _pNetwork->GetLocalPause();
+
+  // for each sound
+  FOREACHINLIST(CSoundData, sd_Node, sl_ClhAwareList, itCsdSoundData) {
+    FORDELETELIST(CSoundObject, so_Node, itCsdSoundData->sd_ClhLinkList, itCsoSoundObject) {
+      CSoundObject & so = *itCsoSoundObject;
+      // if the sound is in-game sound, and the game paused
+      if (!(so.so_slFlags & SOF_NONGAME) && bGamePaused) {
+        // don't mix it it
+        continue;
+      }
+      // if sound is prepared and playing
+      if (so.so_slFlags & SOF_PLAY &&
+          so.so_slFlags & SOF_PREPARE &&
+          !(so.so_slFlags & SOF_PAUSED)) {
+        // mix it
+        MixSound(&so);
+      }
+    }
+  }
+
+  // eventually normalize mixed sounds
+  snd_fNormalizer = Clamp(snd_fNormalizer, 0.0f, 1.0f);
+  NormalizeMixerBuffer(snd_fNormalizer, framesToMix * 4, _fLastNormalizeValue);
+
+  res = (*engine.playBufferQueueItf_)->Enqueue(engine.playBufferQueueItf_, buffer, framesToMix * 4);
+  if (res != SL_RESULT_SUCCESS){
+    WarningMessage("Cannot enqueue frames to audio driver: 0x%04X (%s)", res, getSlError(res));
+  }
+
+  SLuint32 playerState;
+  res = (*engine.playItf_)->GetPlayState(engine.playItf_, &playerState);
+  if (res == SL_RESULT_SUCCESS && playerState != SL_PLAYSTATE_PLAYING) {
+    (*engine.playItf_)->SetPlayState(engine.playItf_, SL_PLAYSTATE_PLAYING);
+  }
+
+  // advance buffer
+  if (++engine.whichBuffer >= engine.numBuffers) {
+    engine.whichBuffer = 0;
+  }
+
+  // all done
+  _pfSoundProfile.StopTimer(CSoundProfile::PTI_MIXSOUNDS);
+  _sfStats.StopTimer(CStatForm::STI_SOUNDMIXING);
 }
 
 
@@ -318,7 +532,7 @@ void CSoundLibrary::Listen(CSoundListener &sl) {
   sl_lhActiveListeners.AddTail(sl.sli_lnInActiveListeners);
 }
 
-ULONG CSoundLibrary::getSamplesPerSec() {
+ULONG CSoundLibrary::getFramesPerSec() {
   switch (sl_EsfFormat) {
     case CSoundLibrary::SF_11025_16:
       return 11025;

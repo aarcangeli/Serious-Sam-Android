@@ -194,6 +194,12 @@ void startSeriousSamAndroid(CDrawPort *pdp) {
   _pShell->SetINDEX("gam_iStartDifficulty", CSessionProperties::GD_NORMAL);
   _pShell->SetINDEX("gam_iStartMode", CSessionProperties::GM_COOPERATIVE);
 
+  bool runIntro = false;
+  if (runIntro) {
+    sam_strIntroLevel = "Levels/LevelsMP/Intro.wld";
+    _pShell->SetINDEX("gam_iStartMode", CSessionProperties::GM_FLYOVER);
+  }
+
   CUniversalSessionProperties sp;
   game->SetSinglePlayerSession(sp);
 

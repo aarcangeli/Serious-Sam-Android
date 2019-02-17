@@ -100,7 +100,7 @@ set(
   "${SE_BASE}/Graphics/TextureRender.cpp"
   "${SE_BASE}/Sound/SoundData.cpp"
   "${SE_BASE}/Sound/SoundDecoder.cpp"
-  #                "${SE_BASE}/Sound/SoundMixer.cpp"
+  "${SE_BASE}/Sound/SoundMixer.cpp"
   "${SE_BASE}/Sound/SoundObject.cpp"
   "${SE_BASE}/Sound/SoundProfile.cpp"
   "${SE_BASE}/Sound/Wave.cpp"
@@ -259,7 +259,7 @@ add_library(Engine SHARED ${SE_ENGINE_SOURCES})
 add_dependencies(Engine se-ecc)
 target_link_libraries(Engine android-adapters)
 target_link_libraries(Engine libvorbis amp11lib)
-target_link_libraries(Engine GLESv2 EGL log android)
+target_link_libraries(Engine GLESv2 EGL log android OpenSLES)
 
 target_compile_options(Engine PRIVATE "-I${CMAKE_CURRENT_SOURCE_DIR}")
 

@@ -44,69 +44,73 @@ void CViewPort::Initialize(ANativeWindow *window) {
     EGL_NONE
   };
 
-  if ((display = eglGetDisplay(EGL_DEFAULT_DISPLAY)) == EGL_NO_DISPLAY) {
-    FatalError("eglGetDisplay() returned error %d", eglGetError());
-  }
+  if (!eglInitialized) {
+    if ((display = eglGetDisplay(EGL_DEFAULT_DISPLAY)) == EGL_NO_DISPLAY) {
+      FatalError("eglGetDisplay() returned error 0x%04X", eglGetError());
+    }
 
-  if (!eglInitialize(display, 0, 0)) {
-    FatalError("eglInitialize() returned error %d", eglGetError());
-  }
+    if (!eglInitialize(display, 0, 0)) {
+      FatalError("eglInitialize() returned error 0x%04X", eglGetError());
+    }
 
-  std::vector<EGLConfig> configs;
+    std::vector <EGLConfig> configs;
 
-  // get configuration count
-  EGLint numConfigs;
-  if (!eglChooseConfig(display, attribs, nullptr, 0, &numConfigs)) {
-    FatalError("eglChooseConfig() returned error %d", eglGetError());
-  }
-  if (numConfigs <= 0) {
-    FatalError("no configuration found");
-  }
+    // get configuration count
+    EGLint numConfigs;
+    if (!eglChooseConfig(display, attribs, nullptr, 0, &numConfigs)) {
+      FatalError("eglChooseConfig() returned error 0x%04X", eglGetError());
+    }
+    if (numConfigs <= 0) {
+      FatalError("no configuration found");
+    }
 
-  // get all configurations
-  configs.resize(numConfigs);
-  if (!eglChooseConfig(display, attribs, configs.data(), numConfigs, &numConfigs)) {
-    FatalError("eglChooseConfig() returned error %d", eglGetError());
-  }
+    // get all configurations
+    configs.resize(numConfigs);
+    if (!eglChooseConfig(display, attribs, configs.data(), numConfigs, &numConfigs)) {
+      FatalError("eglChooseConfig() returned error 0x%04X", eglGetError());
+    }
 
-  int asd = EGL_OPENGL_ES2_BIT;
-  // iterate and choose
-  for (EGLConfig &config : configs) {
-    int d = findConfigAttrib(display, config, EGL_DEPTH_SIZE, 0);
-    int s = findConfigAttrib(display, config, EGL_STENCIL_SIZE, 0);
-    int r = findConfigAttrib(display, config, EGL_RED_SIZE, 0);
-    int g = findConfigAttrib(display, config, EGL_GREEN_SIZE, 0);
-    int b = findConfigAttrib(display, config, EGL_BLUE_SIZE, 0);
-    int a = findConfigAttrib(display, config, EGL_ALPHA_SIZE, 0);
-    int es = findConfigAttrib(display, config, EGL_RENDERABLE_TYPE, 0);
-    int conf = findConfigAttrib(display, config, EGL_CONFORMANT, 0);
-    int surface = findConfigAttrib(display, config, EGL_SURFACE_TYPE, 0);
+    int asd = EGL_OPENGL_ES2_BIT;
+    // iterate and choose
+    for (EGLConfig &config : configs) {
+      int d = findConfigAttrib(display, config, EGL_DEPTH_SIZE, 0);
+      int s = findConfigAttrib(display, config, EGL_STENCIL_SIZE, 0);
+      int r = findConfigAttrib(display, config, EGL_RED_SIZE, 0);
+      int g = findConfigAttrib(display, config, EGL_GREEN_SIZE, 0);
+      int b = findConfigAttrib(display, config, EGL_BLUE_SIZE, 0);
+      int a = findConfigAttrib(display, config, EGL_ALPHA_SIZE, 0);
+      int es = findConfigAttrib(display, config, EGL_RENDERABLE_TYPE, 0);
+      int conf = findConfigAttrib(display, config, EGL_CONFORMANT, 0);
+      int surface = findConfigAttrib(display, config, EGL_SURFACE_TYPE, 0);
 
-    int t = 0;
-  }
+      int t = 0;
+    }
 
-  EGLConfig config = configs[0];
-  if (!eglGetConfigAttrib(display, config, EGL_NATIVE_VISUAL_ID, &format)) {
-    FatalError("eglGetConfigAttrib() returned error %d", eglGetError());
-  }
+    EGLConfig config = configs[0];
+    if (!eglGetConfigAttrib(display, config, EGL_NATIVE_VISUAL_ID, &format)) {
+      FatalError("eglGetConfigAttrib() returned error 0x%04X", eglGetError());
+    }
 
-  ANativeWindow_setBuffersGeometry(window, 0, 0, format);
+    ANativeWindow_setBuffersGeometry(window, 0, 0, format);
 
-  if (!(surface = eglCreateWindowSurface(display, config, window, 0))) {
-    FatalError("eglCreateWindowSurface() returned error %d", eglGetError());
-  }
+    if (!(surface = eglCreateWindowSurface(display, config, window, 0))) {
+      FatalError("eglCreateWindowSurface() returned error 0x%04X", eglGetError());
+    }
 
-  const EGLint context_attrib_list[] = {
-    // request a context using Open GL ES 2.0
-    EGL_CONTEXT_CLIENT_VERSION, 2,
-    EGL_NONE
-  };
-  if (!(context = eglCreateContext(display, config, 0, context_attrib_list))) {
-    FatalError("eglCreateContext() returned error %d", eglGetError());
+    const EGLint context_attrib_list[] = {
+      // request a context using Open GL ES 2.0
+      EGL_CONTEXT_CLIENT_VERSION, 2,
+      EGL_NONE
+    };
+    if (!(context = eglCreateContext(display, config, 0, context_attrib_list))) {
+      FatalError("eglCreateContext() returned error 0x%04X", eglGetError());
+    }
+
+    eglInitialized = true;
   }
 
   if (!eglMakeCurrent(display, surface, surface, context)) {
-    FatalError("eglMakeCurrent() returned error %d", eglGetError());
+    FatalError("eglMakeCurrent() returned error 0x%04X", eglGetError());
   }
 
   Resize();
@@ -122,7 +126,7 @@ void CViewPort::Resize(void) {
   EGLint width, height;
   if (!eglQuerySurface(display, surface, EGL_WIDTH, &width) ||
       !eglQuerySurface(display, surface, EGL_HEIGHT, &height)) {
-    FatalError("eglQuerySurface() returned error %d", eglGetError());
+    FatalError("eglQuerySurface() returned error 0x%04X", eglGetError());
   }
 
   vp_Raster.Resize(width, height);

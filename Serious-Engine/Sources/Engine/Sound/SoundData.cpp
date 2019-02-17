@@ -157,7 +157,7 @@ void CSoundData::Read_t(CTStream *inFile)  // throw char *
     sd_dSecondsLength = CpwiLoad.GetSecondsLength();
 
     // if sound library is in lower format convert sound to library format
-    ULONG samplePerSec = _pSound->getSamplesPerSec();
+    ULONG samplePerSec = _pSound->getFramesPerSec();
     if (samplePerSec < sd_wfeFormat.nSamplesPerSec) {
       sd_wfeFormat.nSamplesPerSec = samplePerSec;
     }

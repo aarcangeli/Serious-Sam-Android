@@ -103,13 +103,17 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
+        int keyCode = event.getKeyCode();
+        if (keyCode == KeyEvent.KEYCODE_VOLUME_UP || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+            return false;
+        }
         if (event.getRepeatCount() == 0) {
             if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                nDispatchKeyEvent(event.getKeyCode(), 1);
-                System.out.println(event.getKeyCode());
+                nDispatchKeyEvent(keyCode, 1);
+                System.out.println(keyCode);
             }
             if (event.getAction() == KeyEvent.ACTION_UP) {
-                nDispatchKeyEvent(event.getKeyCode(), 0);
+                nDispatchKeyEvent(keyCode, 0);
             }
         }
         return true;

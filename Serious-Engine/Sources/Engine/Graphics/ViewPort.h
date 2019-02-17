@@ -74,9 +74,10 @@ public:
   void Resize(void);
 
   // EGL
-  EGLDisplay display;
-  EGLSurface surface;
-  EGLContext context;
+  bool eglInitialized = false;
+  EGLDisplay display = 0;
+  EGLSurface surface = 0;
+  EGLContext context = 0;
   EGLint format;
 
   static bool hasCViewPort;

@@ -38,6 +38,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <cstdint>
 
+// resources OpenSLES
+// https://www.gatewan.com/2018/12/slbufferqueuestate.html
+// https://android.googlesource.com/platform/system/media/+/gingerbread/opensles/tests/sandbox
+#include <SLES/OpenSLES.h>
+
 // Mixer
 // set master volume and resets mixer buffer (wipes it with zeroes and keeps pointers)
 void ResetMixer( const SLONG *pslBuffer, const SLONG slBufferSize);
@@ -96,14 +101,11 @@ public:
 
   CStaticArray<WAVEHDR> sl_awhWOBuffers; // the waveout buffers
 
-  SoundFormat  sl_EsfFormat;             // sound format (external)
   WAVEFORMATEX sl_SwfeFormat;            // primary sound buffer format
 
-#else
-
-  SoundFormat  sl_EsfFormat;
-
 #endif
+
+  SoundFormat  sl_EsfFormat;             // sound format (external)
 
   SLONG *sl_pslMixerBuffer;              // buffer for mixing sounds (32-bit!)
   UBYTE *sl_pubBuffersMemory;            // memory allocated for the sound buffer(s) output
@@ -138,7 +140,7 @@ public:
 
 private:
   /* Set Format */
-  void SetFormat(SoundFormat EsfNew);
+  bool SetFormat(SoundFormat EsfNew);
 
 public:
   /* Get Format */
@@ -159,7 +161,7 @@ public:
   /* Remove a sound mode aware object */
   void RemoveSoundAware( CSoundData &CsdRemove);
 
-  ULONG getSamplesPerSec();
+  ULONG getFramesPerSec();
 
   // listen from this listener this frame
   void Listen(CSoundListener &sl);
