@@ -258,7 +258,7 @@ run_bison("${SE_CURRENT_GENERATED_DIR}/Ska/smcPars.cpp" "${SE_BASE}/Ska/smcPars.
 add_library(Engine SHARED ${SE_ENGINE_SOURCES})
 add_dependencies(Engine se-ecc)
 target_link_libraries(Engine android-adapters)
-target_link_libraries(Engine libvorbis amp11lib)
+target_link_libraries(Engine vorbis amp11lib)
 target_link_libraries(Engine GLESv2 EGL log android OpenSLES)
 
 target_compile_options(Engine PRIVATE "-I${CMAKE_CURRENT_SOURCE_DIR}")

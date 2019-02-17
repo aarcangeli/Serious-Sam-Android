@@ -342,27 +342,9 @@ bool CSoundLibrary::SetFormat(CSoundLibrary::SoundFormat EsfNew) {
   engine.framesPerBuffer = (int) (snd_tmMixAhead * getFramesPerSec());
   engine.buffer.resize(engine.numBuffers * engine.framesPerBuffer * 4);
 
-//    int totalFrames = 44100;
-//    uint32_t current = 0;
-//    uint32_t cycle = getFramesPerSec() * 2 / (440 * octave);
-//    int totalSamples = totalFrames * 2;
-//
-//    for (int count = 0; count < 3; count++) {
-//      int16_t *buffer = new int16_t[totalSamples];
-//      for (int i = 0; i < totalSamples; i++) {
-//        double height = sin((double) current / cycle * M_PI * 2);
-//        buffer[i] = height / octave * 0x7fff;
-//        current++;
-//        if (current == cycle) current = 0;
-//      }
-//      SLBufferQueueState state;
-//      res = (*engine.playBufferQueueItf_)->GetState(engine.playBufferQueueItf_, &state);
-//      PROCESS_RES("play->GetState(PLAYING)");
-//      InfoMessage("data %u, %u", state.count, state.playIndex);
-//
-//      (*engine.playBufferQueueItf_)->Enqueue(engine.playBufferQueueItf_, buffer, totalFrames * 4);
-//      PROCESS_RES("play->Enqueue(PLAYING)");
-//    }
+  // create decoder buffer
+  sl_slDecodeBufferSize = engine.buffer.size() * 5;
+  sl_pswDecodeBuffer = (SWORD *) AllocMemory(sl_slDecodeBufferSize + 4); // (+4 because of linear interpolation of last samples)
 
   // add timer handler
   _pTimer->AddHandler(&sl_thTimerHandler);

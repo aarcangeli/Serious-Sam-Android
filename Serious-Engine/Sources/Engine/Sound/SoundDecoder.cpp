@@ -23,6 +23,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/Unzip.h>
 #include <Engine/Base/Translation.h>
 #include <Engine/Math/Functions.h>
+#include <dlfcn.h>
 
 // generic function called if a dll function is not found
 static void FailFunction_t(const char *strName) {
@@ -44,7 +45,7 @@ public:
 
 
 // ------------------------------------ Ogg Vorbis
-#include <vorbis\vorbisfile.h>  // we define needed stuff ourselves, and ignore the rest
+#include <vorbis/vorbisfile.h>  // we define needed stuff ourselves, and ignore the rest
 
 // vorbis vars
 extern BOOL _bOVEnabled = FALSE;
@@ -70,7 +71,7 @@ static void OV_SetFunctionPointers_t(void) {
   // get vo function pointers
   #define DLLFUNCTION(dll, output, name, inputs, params, required) \
     strName = #name ;  \
-    p##name = (output (__cdecl *) inputs) &name; \
+    p##name = (output (__cdecl *) inputs) dlsym( _hOV, strName); \
     if(p##name == NULL) FailFunction_t(strName);
   #include "ov_functions.h"
   #undef DLLFUNCTION
@@ -153,21 +154,21 @@ void CSoundDecoder::InitPlugins(void)
     // load vorbis
     if (_hOV==NULL) {
 #ifndef NDEBUG
-  #define VORBISLIB "libvorbisfile.dll"
+  #define VORBISLIB "libvorbis.so"
 #else
-  #define VORBISLIB "libvorbisfile.dll"
+  #define VORBISLIB "libvorbis.so"
 #endif
-      _hOV = ::LoadLibraryA(VORBISLIB);
+      _hOV = dlopen(VORBISLIB, RTLD_NOW);
     }
     if( _hOV == NULL) {
-      ThrowF_t(TRANS("Cannot load libvorbisfile.dll."));
+      ThrowF_t(TRANS("Cannot load libvorbis.so."));
     }
     // prepare function pointers
     OV_SetFunctionPointers_t();
 
     // if all successful, enable mpx playing
     _bOVEnabled = TRUE;
-    CPrintF(TRANS("  libvorbisfile.dll loaded, ogg playing enabled\n"));
+    CPrintF(TRANS("  libvorbis.so loaded, ogg playing enabled\n"));
 
   } catch (char *strError) {
     CPrintF(TRANS("OGG playing disabled: %s\n"), strError);
