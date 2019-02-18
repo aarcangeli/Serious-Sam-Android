@@ -180,7 +180,6 @@ void CCommunicationInterface::PrepareForUse(BOOL bUseNetwork, BOOL bClient) {
 
 // shut down the communication interface
 void CCommunicationInterface::Unprepare(void) {
-  FatalError("CCommunicationInterface::Unprepare should not be called");
 };
 
 

@@ -138,6 +138,7 @@ static void LoadingHook_t(CProgressHookInfo *pphi)
     }
   }
 
+  ulLevelMask = 0; // show always loader
   if (ulLevelMask!=0 && !_pNetwork->IsPlayingDemo()) {
     // map hook
     extern void RenderMap( CDrawPort *pdp, ULONG ulLevelMask, CProgressHookInfo *pphi);

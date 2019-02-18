@@ -27,6 +27,8 @@ CGame *game;
 int64_t lastTick = 0;
 uint32_t tickCount = 0;
 bool initialized = false;
+bool g_isRunningIntro = false;
+bool g_runFirstLevel = false;
 
 BOOL TryToSetDisplayMode(enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI, PIX pixSizeJ,
                          enum DisplayDepth eColorDepth, BOOL bFullScreenMode) {
@@ -69,6 +71,37 @@ void printGlError(const char *name) {
   };
 }
 
+void startGame(CTString level, bool isIntro) {
+  game->gm_StartSplitScreenCfg = CGame::SSC_PLAY1;
+  game->gm_aiStartLocalPlayers[0] = game->gm_iSinglePlayer;
+  game->gm_aiStartLocalPlayers[1] = -1;
+  game->gm_aiStartLocalPlayers[2] = -1;
+  game->gm_aiStartLocalPlayers[3] = -1;
+  game->gm_strNetworkProvider = "Local";
+  game->gm_StartSplitScreenCfg = CGame::SSC_PLAY1;
+
+  _pShell->SetINDEX("gam_iStartDifficulty", CSessionProperties::GD_NORMAL);
+
+  bool runIntro = true;
+  if (isIntro) {
+    level = "Levels/LevelsMP/Intro.wld";
+    _pShell->SetINDEX("gam_iStartMode", CSessionProperties::GM_FLYOVER);
+  } else {
+    _pShell->SetINDEX("gam_iStartMode", CSessionProperties::GM_COOPERATIVE);
+  }
+
+  CUniversalSessionProperties sp;
+  game->SetSinglePlayerSession(sp);
+  game->gm_bFirstLoading = TRUE;
+
+  if (game->NewGame(level, level, sp)) {
+    CPrintF("Started '%s'\n", level);
+  } else {
+    FatalError("Cannot start '%s'\n", level);
+  }
+
+}
+
 void setControls(PlayerControls &ctrls) {
   static bool bStartLast = false;
 
@@ -95,6 +128,11 @@ void setControls(PlayerControls &ctrls) {
       } else {
         game->gm_csConsoleState = CS_TURNINGOFF;
       }
+    }
+
+    if (ctrls.bMoveUp && g_isRunningIntro) {
+      g_runFirstLevel = true;
+      g_isRunningIntro = false;
     }
 
     bStartLast = ctrls.bStart;
@@ -181,39 +219,12 @@ void startSeriousSamAndroid(CDrawPort *pdp) {
     ctrl.ctrl_aaAxisActions[i].aa_bSmooth = false;
   }
 
-  // load
-//  CTString sam_strIntroLevel = "Levels/LevelsMP/Intro.wld";
-//  CTString sam_strIntroLevel = "Levels/LevelsMP/1_0_InTheLastEpisode.wld";
-  CTString sam_strIntroLevel = "Levels/LevelsMP/1_1_Palenque.wld";
+  // "Levels/LevelsMP/Intro.wld";
+  // "Levels/LevelsMP/1_0_InTheLastEpisode.wld";
+  // "Levels/LevelsMP/1_1_Palenque.wld";
 
-  game->gm_StartSplitScreenCfg = CGame::SSC_PLAY1;
-  game->gm_aiStartLocalPlayers[0] = game->gm_iSinglePlayer;
-  game->gm_aiStartLocalPlayers[1] = -1;
-  game->gm_aiStartLocalPlayers[2] = -1;
-  game->gm_aiStartLocalPlayers[3] = -1;
-  game->gm_strNetworkProvider = "Local";
-  game->gm_StartSplitScreenCfg = CGame::SSC_PLAY1;
-
-  _pShell->SetINDEX("gam_iStartDifficulty", CSessionProperties::GD_NORMAL);
-  _pShell->SetINDEX("gam_iStartMode", CSessionProperties::GM_COOPERATIVE);
-
-  bool runIntro = false;
-  if (runIntro) {
-    sam_strIntroLevel = "Levels/LevelsMP/Intro.wld";
-    _pShell->SetINDEX("gam_iStartMode", CSessionProperties::GM_FLYOVER);
-  }
-
-  CUniversalSessionProperties sp;
-  game->SetSinglePlayerSession(sp);
-
-  game->gm_bFirstLoading = TRUE;
-
-  if (game->NewGame(sam_strIntroLevel, sam_strIntroLevel, sp)) {
-    CPrintF("Started '%s'\n", sam_strIntroLevel);
-  } else {
-    CPrintF("Demo '%s' NOT STARTED\n", sam_strIntroLevel);
-    return;
-  }
+  startGame("Levels/LevelsMP/Intro.wld", true);
+  g_isRunningIntro = true;
 
   CPrintF(TRANS("\n--- Serious Engine CPP End ---\n"));
   CTStream::DisableStreamHandling();
@@ -271,6 +282,11 @@ void seriousSamDoGame(CDrawPort *pdp) {
   times++;
 
   CTStream::EnableStreamHandling();
+
+  if (g_runFirstLevel) {
+    startGame("Levels/LevelsMP/1_1_Palenque.wld", false);
+    g_runFirstLevel = false;
+  }
 
   game->GameMainLoop();
 
