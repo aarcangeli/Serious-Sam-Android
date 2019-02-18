@@ -20,6 +20,8 @@ extern pthread_t g_gameRunning;
 extern ANativeWindow *g_currentWindow;
 extern bool g_printProfiling;
 
+void *seriousMain(void *unused);
+void startSeriousPrestart();
 void seriousSamDoGame(CDrawPort *pvp);
 void hideComputerConsole();
 void toggleComputer();

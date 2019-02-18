@@ -15,18 +15,16 @@ bool g_printProfiling = false;
 PlayerControls g_IncomingControls {};
 
 extern "C"
-JNIEXPORT void JNICALL
-Java_com_github_aarcangeli_serioussamandroid_MainActivity_nSetHomeDir(JNIEnv *env, jobject obj,
-                                                                           jstring homeDir_) {
+JNIEXPORT void JNICALL Java_com_github_aarcangeli_serioussamandroid_SeriousSamSurface_nInitialize(JNIEnv* env, jobject obj, jstring homeDir_) {
+  // set home dir
   const char *homeDir = env->GetStringUTFChars(homeDir_, 0);
-
-  // NB: no locking since it should be setted before start
-  if (_fnmApplicationPath.Length() == 0) {
-    _fnmApplicationPath = CTString(homeDir) + "/";
-    _fnmApplicationExe = CTFILENAME("Bin/SeriousSam.exe");
-  }
-
+  _fnmApplicationPath = CTString(homeDir) + "/";
+  _fnmApplicationExe = CTFILENAME("Bin/SeriousSam.exe");
   env->ReleaseStringUTFChars(homeDir_, homeDir);
+
+  // start main thread
+  pthread_mutex_init(&g_mySeriousMutex, 0);
+  pthread_create(&g_mySeriousThreadId, 0, &seriousMain, nullptr);
 }
 
 extern "C"
@@ -72,7 +70,7 @@ void *seriousMain(void *unused) {
   CViewPort *pvpViewPort = new CViewPort();
   CDrawPort *pdp = &pvpViewPort->vp_Raster.ra_MainDrawPort;
 
-  bool bBackLast = false, bStartLast = false;
+  startSeriousPrestart();
 
   while(true) {
     // get parameters with mutex
@@ -80,8 +78,11 @@ void *seriousMain(void *unused) {
 
     bool running = g_gameRunning;
     ANativeWindow *window = g_currentWindow;
-    bool somethingChanged = g_somethingChanged;
-    g_somethingChanged = false;
+    bool somethingChanged = false;
+    if (running && window) {
+      somethingChanged = g_somethingChanged;
+      g_somethingChanged = false;
+    }
 
     // resolve input
     setControls(g_IncomingControls);
@@ -99,12 +100,6 @@ void *seriousMain(void *unused) {
 
     seriousSamDoGame(pdp);
   }
-}
-
-extern "C"
-JNIEXPORT void JNICALL Java_com_github_aarcangeli_serioussamandroid_SeriousSamSurface_nInitialize(JNIEnv* env, jobject obj) {
-  pthread_mutex_init(&g_mySeriousMutex, 0);
-  pthread_create(&g_mySeriousThreadId, 0, &seriousMain, nullptr);
 }
 
 extern "C"

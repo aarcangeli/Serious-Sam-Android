@@ -20,13 +20,7 @@ public class SeriousSamSurface extends SurfaceView implements GestureDetector.On
         super(context, attrs);
 
         // load native library
-        synchronized (SeriousSamSurface.class) {
-            if (!isInitialized) {
-                System.loadLibrary("SeriousSamNatives");
-                nInitialize();
-                isInitialized = true;
-            }
-        }
+        loadNativeLibrary();
 
         gestureDetector = new GestureDetector(context, this);
         gestureDetector.setIsLongpressEnabled(false);
@@ -119,9 +113,28 @@ public class SeriousSamSurface extends SurfaceView implements GestureDetector.On
         return false;
     }
 
+    private static void loadNativeLibrary() {
+        synchronized (SeriousSamSurface.class) {
+            if (!isLoaded) {
+                System.loadLibrary("SeriousSamNatives");
+                isLoaded = true;
+            }
+        }
+    }
+
+    public static void initializeLibrary(String homeDir) {
+        loadNativeLibrary();
+        synchronized (SeriousSamSurface.class) {
+            if (!isInitialized) {
+                nInitialize(homeDir);
+                isInitialized = true;
+            }
+        }
+    }
+
     // native bindings
-    private static boolean isInitialized;
-    private static native void nInitialize();
+    private static boolean isLoaded, isInitialized;
+    private static native void nInitialize(String homeDir);
     private static native void nSetSurface(Surface surface);
     private static native void nOnStart();
     private static native void nOnStop();

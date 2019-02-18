@@ -171,7 +171,7 @@ void InitStreams(void) {
     }
   }
   // find eventual extension for the mod's dlls
-  _strModExt = "";
+  _strModExt = "MP"; // default Second Encounter
   LoadStringVar(CTString("ModExt.txt"), _strModExt);
 
 

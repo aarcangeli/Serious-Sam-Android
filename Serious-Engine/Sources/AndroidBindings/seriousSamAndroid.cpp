@@ -108,7 +108,7 @@ void setControls(PlayerControls &ctrls) {
   }
 }
 
-void startSeriousSamAndroid(CDrawPort *pdp) {
+void startSeriousPrestart() {
   CTStream::EnableStreamHandling();
   SE_InitEngine("SeriousSam");
   SE_LoadDefaultFonts();
@@ -138,6 +138,9 @@ void startSeriousSamAndroid(CDrawPort *pdp) {
   _pNetwork->md_strGameID = "SeriousSam";
 
   game = GAME_Create();
+}
+
+void startSeriousSamAndroid(CDrawPort *pdp) {
   game->EnableLoadingHook(pdp);
   game->Initialize(CTString("Data\\SeriousSam.gms"));
   game->LCDInit();

@@ -4,7 +4,6 @@ import android.Manifest;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
-import android.hardware.input.InputManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.NonNull;
@@ -12,13 +11,11 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 
 import java.io.File;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MainActivity extends AppCompatActivity {
     public static final String TAG = "SeriousSamJava";
@@ -39,8 +36,6 @@ public class MainActivity extends AppCompatActivity {
     private SeriousSamSurface glSurfaceView;
     private File homeDir;
 
-    private AtomicBoolean printProfiling = new AtomicBoolean();
-
     private boolean isGameStarted = false;
 
     @Override
@@ -50,11 +45,14 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.main_screen);
         glSurfaceView = findViewById(R.id.main_content);
 
-        homeDir = new File(Environment.getExternalStorageDirectory(), "SeriousSam");
-        Log.i(TAG, "HomeDir: " + homeDir.getAbsolutePath());
-        nSetHomeDir(homeDir.getAbsolutePath());
+        homeDir = getHomeDir();
+        Log.i(TAG, "HomeDir: " + homeDir);
 
-        checkPermission();
+        if (!hasStoragePermission(this)) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_STORAGE);
+        } else {
+            startGame();
+        }
     }
 
     @Override
@@ -75,13 +73,8 @@ public class MainActivity extends AppCompatActivity {
         glSurfaceView.stop();
     }
 
-    private void checkPermission() {
-        int permission = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        if (permission != PackageManager.PERMISSION_GRANTED) {
-            requestPermission();
-        } else {
-            startGame();
-        }
+    private static boolean hasStoragePermission(Context context) {
+        return ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
     }
 
     @Override
@@ -99,6 +92,19 @@ public class MainActivity extends AppCompatActivity {
             nDispatchKeyEvent(KeyEvent.KEYCODE_DPAD_DOWN, ev.getAxisValue(MotionEvent.AXIS_HAT_Y) > .5f ? 1 : 0);
         }
         return true;
+    }
+
+    public static void tryPremain(Context context) {
+        if (hasStoragePermission(context)) {
+            File homeDir = getHomeDir();
+            if (!homeDir.exists()) homeDir.mkdirs();
+            SeriousSamSurface.initializeLibrary(homeDir.getAbsolutePath());
+        }
+    }
+
+    @NonNull
+    private static File getHomeDir() {
+        return new File(Environment.getExternalStorageDirectory(), "SeriousSam").getAbsoluteFile();
     }
 
     @Override
@@ -119,17 +125,13 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-    private void requestPermission() {
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_STORAGE);
-    }
-
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == REQUEST_WRITE_STORAGE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 startGame();
             } else {
-                requestPermission();
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_STORAGE);
             }
         }
     }
@@ -144,6 +146,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void startGame() {
         if (!homeDir.exists()) homeDir.mkdirs();
+        SeriousSamSurface.initializeLibrary(homeDir.getAbsolutePath());
         isGameStarted = true;
         glSurfaceView.start();
     }
@@ -151,5 +154,4 @@ public class MainActivity extends AppCompatActivity {
     private static native void setAxisValue(int key, float value);
     private static native void printProfilingData();
     private static native void nDispatchKeyEvent(int key, int isPressed);
-    private static native void nSetHomeDir(String homeDir);
 }
