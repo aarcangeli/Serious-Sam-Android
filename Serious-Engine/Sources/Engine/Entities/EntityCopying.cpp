@@ -38,6 +38,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Templates/DynamicContainer.cpp>
 #include <Engine/Templates/StaticArray.cpp>
 #include <Engine/Templates/Selection.cpp>
+#include <Engine/Templates/DynamicArray.cpp>
 
 class CPointerRemapping {
 public:

@@ -208,7 +208,7 @@ inline void MatrixMultiply(Matrix12 &c,const Matrix12 &m, const Matrix12 &n)
 }
 
 // multiply two matrices into first one
-inline void MatrixMultiplyCP(Matrix12 &c,const Matrix12 &m, const Matrix12 &n)
+void MatrixMultiplyCP(Matrix12 &c,const Matrix12 &m, const Matrix12 &n)
 {
   Matrix12 mTemp;
   MatrixMultiply(mTemp,m,n);

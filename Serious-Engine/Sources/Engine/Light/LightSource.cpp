@@ -31,6 +31,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Terrain/Terrain.h>
 
 #include <Engine/Light/Shadows_internal.h>
+#include <Engine/Templates/BSP.cpp>
 
 /////////////////////////////////////////////////////////////////////
 // CLightSource

@@ -26,6 +26,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Templates/StaticStackArray.cpp>
 
 #include <Engine/Templates/Stock_CModelData.h>
+#include <Engine/Templates/DynamicArray.cpp>
 
 extern FLOAT mdl_fLODMul;
 extern FLOAT mdl_fLODAdd;

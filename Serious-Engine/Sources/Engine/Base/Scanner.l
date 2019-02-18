@@ -9,6 +9,7 @@
 #include <Engine/Base/Console.h>
 
 #include <Engine/Templates/DynamicStackArray.cpp>
+#include <Engine/Templates/AllocationArray.cpp>
 
 #define YY_DECL int yylex (YYSTYPE *lvalp)
 #define yylval (*lvalp)

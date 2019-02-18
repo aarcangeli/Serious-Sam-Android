@@ -26,6 +26,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Templates/BSP.h>
 #include <Engine/Templates/DynamicArray.cpp>
 #include <Engine/Templates/StaticArray.cpp>
+#include <Engine/Templates/BSP.cpp>
 
 static CEntity *penField;
 static CBrushSector *_pbsc;

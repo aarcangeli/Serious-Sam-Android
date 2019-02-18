@@ -21,6 +21,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/Stream.h>
 #include <Engine/Entities/InternalClasses.h>
 #include <Engine/Templates/StaticArray.cpp>
+#include <Engine/Templates/DynamicContainer.cpp>
 
 extern INDEX cli_bLerpActions;
 /*

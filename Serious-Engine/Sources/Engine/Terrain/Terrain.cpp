@@ -625,7 +625,7 @@ void CTerrain::SetLodDistanceFactor(FLOAT fLodDistance)
 }
 
 // Get shadow map size
-inline PIX CTerrain::GetShadowMapWidth(void)
+PIX CTerrain::GetShadowMapWidth(void)
 {
   if(tr_iShadowMapSizeAspect<0) {
     return (tr_pixHeightMapWidth-1)>>-tr_iShadowMapSizeAspect;
@@ -633,7 +633,7 @@ inline PIX CTerrain::GetShadowMapWidth(void)
     return (tr_pixHeightMapWidth-1)<<tr_iShadowMapSizeAspect;
   }
 }
-inline PIX CTerrain::GetShadowMapHeight(void)
+PIX CTerrain::GetShadowMapHeight(void)
 {
   if(tr_iShadowMapSizeAspect<0) {
     return (tr_pixHeightMapHeight-1)>>-tr_iShadowMapSizeAspect;
@@ -643,12 +643,12 @@ inline PIX CTerrain::GetShadowMapHeight(void)
 }
 
 // Get shading map size
-inline PIX CTerrain::GetShadingMapWidth(void)
+PIX CTerrain::GetShadingMapWidth(void)
 {
   ASSERT(tr_iShadingMapSizeAspect>=0);
   return GetShadowMapWidth()>>tr_iShadingMapSizeAspect;
 }
-inline PIX CTerrain::GetShadingMapHeight(void)
+PIX CTerrain::GetShadingMapHeight(void)
 {
   ASSERT(tr_iShadingMapSizeAspect>=0);
   return GetShadowMapHeight()>>tr_iShadingMapSizeAspect;
@@ -832,7 +832,7 @@ void CTerrain::UpdateShadowMap(FLOATaabbox3D *pbboxUpdate/*=NULL*/, BOOL bAbsolu
 }
 
 // Temp:
-__forceinline void CopyPixel(COLOR *pubSrc,COLOR *pubDst,FLOAT fMaskStrength)
+void CopyPixel(COLOR *pubSrc,COLOR *pubDst,FLOAT fMaskStrength)
 {
   GFXColor *pcolSrc = (GFXColor*)pubSrc;
   GFXColor *pcolDst = (GFXColor*)pubDst;

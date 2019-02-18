@@ -140,16 +140,16 @@ public:
   BOOL ope_Backward;              // true if vertex0 and vertex1 must be swapped
 
   /* Default constructor. */
-  inline CObjectPolygonEdge(void) : ope_Backward(FALSE) {};
+  CObjectPolygonEdge(void) : ope_Backward(FALSE) {};
   /* Constructor from edge pointer. */
-  inline CObjectPolygonEdge(CObjectEdge *poed) : ope_Edge(poed), ope_Backward(FALSE) {};
+  CObjectPolygonEdge(CObjectEdge *poed) : ope_Edge(poed), ope_Backward(FALSE) {};
   /* Constructor from edge pointer and reverse marker. */
-  inline CObjectPolygonEdge(CObjectEdge *poed, BOOL bReverse)
+  CObjectPolygonEdge(CObjectEdge *poed, BOOL bReverse)
     : ope_Edge(poed), ope_Backward(bReverse) {};
   /* Clear the object. */
-  inline void Clear(void) {};
+  void Clear(void) {};
   /* Get start and end vertices. */
-  inline void GetVertices(CObjectVertex *&povxStart, CObjectVertex *&povxEnd);
+  void GetVertices(CObjectVertex *&povxStart, CObjectVertex *&povxEnd);
 };
 
 // a polygon in 3d object

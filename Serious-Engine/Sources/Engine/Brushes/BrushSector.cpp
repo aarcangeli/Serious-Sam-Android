@@ -31,6 +31,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Templates/BSP.h>
 #include <Engine/Templates/BSP_internal.h>
 #include <Engine/Templates/BSP.cpp>
+#include <Engine/Templates/Selection.cpp>
 
 //template CDynamicArray<CBrushVertex>;
 

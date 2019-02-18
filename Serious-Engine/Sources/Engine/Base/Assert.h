@@ -41,6 +41,21 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #define _assert(x, y, z) assert(0)
 #endif
 
+/* From VisualC assert.h: Define _CRTIMP */
+#ifndef _CRTIMP
+#ifdef	_NTSDK
+/* definition compatible with NT SDK */
+  #define _CRTIMP
+#else	/* ndef _NTSDK */
+/* current definition */
+#ifdef	_DLL
+#define _CRTIMP __declspec(dllimport)
+#else	/* ndef _DLL */
+#define _CRTIMP
+#endif	/* _DLL */
+#endif	/* _NTSDK */
+#endif	/* _CRTIMP */
+/* End: Define _CRTIMP */
 
 #ifdef NDEBUG
   #ifndef ASSERT
@@ -53,22 +68,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
   #define IFDEBUG(__ignore) ((void)0)
   #define DEBUGSTRING(__ignore) ("")
 #else
-
-/* From VisualC assert.h: Define _CRTIMP */
-  #ifndef _CRTIMP
-  #ifdef	_NTSDK
-  /* definition compatible with NT SDK */
-  #define _CRTIMP
-  #else	/* ndef _NTSDK */
-  /* current definition */
-  #ifdef	_DLL
-  #define _CRTIMP __declspec(dllimport)
-  #else	/* ndef _DLL */
-  #define _CRTIMP
-  #endif	/* _DLL */
-  #endif	/* _NTSDK */
-  #endif	/* _CRTIMP */
-/* End: Define _CRTIMP */
 
   // this breakpoint doesn't cause exceptions if not in debugger
   #ifdef _MSC_VER /* rcg10042001 */
