@@ -2536,6 +2536,17 @@ functions:
     if (m_penCamera!=NULL && ((CCamera&)*m_penCamera).m_bWideScreen) {
       pdp->MakeWideScreen(&dpCamera);
       pdpCamera = &dpCamera;
+    } else {
+      // force 4/3
+      float maxWidth = 1, maxHeight = 1;
+      const float RATIO = 4.f / 3;
+      if (pdp->dp_Width < pdp->dp_Height * RATIO) {
+        maxHeight *= (float)pdp->dp_Width / (pdp->dp_Height * RATIO);
+      } else if (pdp->dp_Height < pdp->dp_Width / RATIO) {
+        maxWidth *= (float)pdp->dp_Height / (pdp->dp_Width / RATIO);
+      }
+      dpCamera.InitCloned(pdp, (1 - maxWidth) / 2, (1 - maxHeight) / 2, maxWidth, maxHeight);
+      pdpCamera = &dpCamera;
     }
 
     pdp->Unlock();
