@@ -1,5 +1,0 @@
-SE_InitEngine("projName")
-  - InitStreams
-    - UNZIPReadDirectoriesReverse_t
-      - ReadOneArchiveDir_t
-        - ReadZIPDirectory_t
