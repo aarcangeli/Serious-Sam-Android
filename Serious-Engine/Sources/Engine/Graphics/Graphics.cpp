@@ -15,6 +15,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "stdh.h"
 
+#include <vector>
+
 #include <Engine/Base/Statistics_internal.h>
 #include <Engine/Graphics/GfxLibrary.h>
 #include <Engine/Graphics/RenderPoly.h>
@@ -210,7 +212,7 @@ static void MakeOneMipmap( ULONG *pulSrcMipmap, ULONG *pulDstMipmap, PIX pixWidt
                    LC(pulSrcMipmap[1]) +
                    LC(pulSrcMipmap[pixWidth]) +
                    LC(pulSrcMipmap[pixWidth + 1]);
-        dest = (sum / 4).packUnsignedSaturate();
+        dest = (sum / 4).pack();
       } else {
         dest = pulSrcMipmap[0];
       }
@@ -455,100 +457,110 @@ static __int64 mmW5 = 0x0005000500050005;
 static __int64 mmW7 = 0x0007000700070007;
 static __int64 mmShift = 0;
 static __int64 mmMask  = 0;
-static ULONG *pulDitherTable;
 
 // performs dithering of a 32-bit bipmap (can be in-place)
 void DitherBitmap( INDEX iDitherType, ULONG *pulSrc, ULONG *pulDst, PIX pixWidth, PIX pixHeight,
                    PIX pixCanvasWidth, PIX pixCanvasHeight)
 {
-  if (true) {
-    WarningMessage("TODO: DitherBitmap ASM");
-    _pfGfxProfile.StartTimer( CGfxProfile::PTI_DITHERBITMAP);
+  PIX stride = pixCanvasWidth;
+  if (!stride) stride = pixWidth;
+  ASSERT(stride >= pixWidth);
+
+//  // determine row modulo
+//  SLONG slModulo      = (stride-pixWidth) *BYTES_PER_TEXEL;
+  SLONG slModulo = stride - pixWidth;
+//  SLONG slWidthModulo = pixWidth*BYTES_PER_TEXEL +slModulo;
+
+  // if bitmap is smaller than 4x2 pixels
+  if (pixWidth < 4 || pixHeight < 2) { // don't dither it at all, rather copy only (if needed)
     if (pulSrc != pulDst) {
       for (PIX y = 0; y < pixHeight; y++) {
         memcpy(pulDst, pulSrc, pixWidth * BYTES_PER_TEXEL);
-        pulSrc += pixCanvasWidth;
-        pulDst += pixCanvasWidth;
+        pulSrc += stride;
+        pulDst += stride;
       }
     }
-    _pfGfxProfile.StopTimer( CGfxProfile::PTI_DITHERBITMAP);
-    return;
+    goto theEnd;
   }
 
-//  // determine row modulo
-//  if( pixCanvasWidth ==0) pixCanvasWidth  = pixWidth;
-//  if( pixCanvasHeight==0) pixCanvasHeight = pixHeight;
-//  ASSERT( pixCanvasWidth>=pixWidth && pixCanvasHeight>=pixHeight);
-//  SLONG slModulo      = (pixCanvasWidth-pixWidth) *BYTES_PER_TEXEL;
-//  SLONG slWidthModulo = pixWidth*BYTES_PER_TEXEL +slModulo;
-//
-//  // if bitmap is smaller than 4x2 pixels
-//  if( pixWidth<4 || pixHeight<2)
-//  { // don't dither it at all, rather copy only (if needed)
-//    if( pulDst!=pulSrc) memcpy( pulDst, pulSrc, pixCanvasWidth*pixCanvasHeight *BYTES_PER_TEXEL);
-//    goto theEnd;
-//  }
-//
-//  // determine proper dither type
-//  switch( iDitherType)
-//  { // low dithers
-//  case 1:
-//    pulDitherTable = &ulDither2[0][0];
-//    mmShift = 2;
-//    mmMask  = 0x3F3F3F3F3F3F3F3F;
-//    goto ditherOrder;
-//  case 2:
-//    pulDitherTable = &ulDither2[0][0];
-//    mmShift = 1;
-//    mmMask  = 0x7F7F7F7F7F7F7F7F;
-//    goto ditherOrder;
-//  case 3:
-//    mmErrDiffMask = 0x0003000300030003;
-//    goto ditherError;
-//  // medium dithers
-//  case 4:
-//    pulDitherTable = &ulDither2[0][0];
-//    mmShift = 0;
-//    mmMask  = 0xFFFFFFFFFFFFFFFF;
-//    goto ditherOrder;
-//  case 5:
-//    pulDitherTable = &ulDither3[0][0];
-//    mmShift = 1;
-//    mmMask  = 0x7F7F7F7F7F7F7F7F;
-//    goto ditherOrder;
-//  case 6:
-//    pulDitherTable = &ulDither4[0][0];
-//    mmShift = 1;
-//    mmMask  = 0x7F7F7F7F7F7F7F7F;
-//    goto ditherOrder;
-//  case 7:
-//    mmErrDiffMask = 0x0007000700070007;
-//    goto ditherError;
-//  // high dithers
-//  case 8:
-//    pulDitherTable = &ulDither3[0][0];
-//    mmShift = 0;
-//    mmMask  = 0xFFFFFFFFFFFFFFFF;
-//    goto ditherOrder;
-//  case 9:
-//    pulDitherTable = &ulDither4[0][0];
-//    mmShift = 0;
-//    mmMask  = 0xFFFFFFFFFFFFFFFF;
-//    goto ditherOrder;
-//  case 10:
-//    mmErrDiffMask = 0x000F000F000F000F;
-//    goto ditherError;
-//  default:
-//    // improper dither type
-//    ASSERTALWAYS( "Improper dithering type.");
-//    // if bitmap copying is needed
-//    if( pulDst!=pulSrc) memcpy( pulDst, pulSrc, pixCanvasWidth*pixCanvasHeight *BYTES_PER_TEXEL);
-//    goto theEnd;
-//  }
-//
-//// ------------------------------- ordered matrix dithering routine
-//
-//ditherOrder:
+  // determine proper dither type
+  typedef ULONG Dither_t[4][4];
+  static Dither_t *pulDitherTable;
+  switch( iDitherType)
+  { // low dithers
+  case 1:
+    pulDitherTable = &ulDither2;
+    mmShift = 2;
+    mmMask  = 0x3F3F;
+    goto ditherOrder;
+  case 2:
+    pulDitherTable = &ulDither2;
+    mmShift = 1;
+    mmMask  = 0x7F7F;
+    goto ditherOrder;
+  case 3:
+    mmErrDiffMask = 0x0003;
+    goto ditherError;
+  // medium dithers
+  case 4:
+    pulDitherTable = &ulDither2;
+    mmShift = 0;
+    mmMask  = 0xFFFF;
+    goto ditherOrder;
+  case 5:
+    pulDitherTable = &ulDither3;
+    mmShift = 1;
+    mmMask  = 0x7F7F;
+    goto ditherOrder;
+  case 6:
+    pulDitherTable = &ulDither4;
+    mmShift = 1;
+    mmMask  = 0x7F7F;
+    goto ditherOrder;
+  case 7:
+    mmErrDiffMask = 0x0007000700070007;
+    goto ditherError;
+  // high dithers
+  case 8:
+    pulDitherTable = &ulDither3;
+    mmShift = 0;
+    mmMask  = 0xFFFF;
+    goto ditherOrder;
+  case 9:
+    pulDitherTable = &ulDither4;
+    mmShift = 0;
+    mmMask  = 0xFFFF;
+    goto ditherOrder;
+  case 10:
+    mmErrDiffMask = 0x000F000F000F000F;
+    goto ditherError;
+  default:
+    // improper dither type
+    ASSERTALWAYS( "Improper dithering type.");
+    // if bitmap copying is needed
+    if (pulSrc != pulDst) {
+      for (PIX y = 0; y < pixHeight; y++) {
+        memcpy(pulDst, pulSrc, pixWidth * BYTES_PER_TEXEL);
+        pulSrc += stride;
+        pulDst += stride;
+      }
+    }
+    goto theEnd;
+  }
+
+
+
+// ------------------------------- ordered matrix dithering routine
+ditherOrder:
+  for (int y = 0; y < pixHeight; y++) {
+    for (int x = 0; x < pixWidth; x++) {
+      *pulDst = ((LC((*pulDitherTable)[y % 4][x % 4]) >> mmShift & mmMask) + LC(*pulSrc)).packUnsignedSaturate();
+      pulSrc++;
+      pulDst++;
+    }
+    pulSrc += slModulo;
+    pulDst += slModulo;
+  }
 //  __asm {
 //    mov     esi,D [pulSrc]
 //    mov     edi,D [pulDst]
@@ -593,11 +605,24 @@ void DitherBitmap( INDEX iDitherType, ULONG *pulSrc, ULONG *pulDst, PIX pixWidth
 //    jnz     rowLoopO
 //    emms;
 //  }
-//  goto theEnd;
-//
-//// ------------------------------- error diffusion dithering routine
-//
-//ditherError:
+  goto theEnd;
+
+// ------------------------------- error diffusion dithering routine
+
+ditherError:
+  WarningMessage("TODO: ditherError");
+//  slModulo++; // ??
+  for (int y = 0; y < pixHeight; y++) {
+    for (int x = 0; x < pixWidth; x++) {
+      *pulDst = *pulSrc;
+//      *pulDst |= 0xffffff;
+      pulSrc++;
+      pulDst++;
+    }
+    pulSrc += slModulo;
+    pulDst += slModulo;
+  }
+
 //  // since error diffusion algorithm requires in-place dithering, original bitmap must be copied if needed
 //  if( pulDst!=pulSrc) memcpy( pulDst, pulSrc, pixCanvasWidth*pixCanvasHeight *BYTES_PER_TEXEL);
 //  // slModulo+=4;
@@ -804,42 +829,89 @@ static void GenerateConvolutionMatrix( INDEX iFilter)
 void FilterBitmap( INDEX iFilter, ULONG *pulSrc, ULONG *pulDst, PIX pixWidth, PIX pixHeight,
                    PIX pixCanvasWidth, PIX pixCanvasHeight)
 {
-  // skip filtering for now
-  if (true) {
-    WarningMessage("TODO: FilterBitmap ASM");
-    _pfGfxProfile.StartTimer( CGfxProfile::PTI_FILTERBITMAP);
-    if (pulSrc != pulDst) {
-      for (PIX y = 0; y < pixHeight; y++) {
-        memcpy(pulDst, pulSrc, pixWidth * BYTES_PER_TEXEL);
-        pulSrc += pixCanvasWidth;
-        pulDst += pixCanvasWidth;
-      }
-    }
-    _pfGfxProfile.StopTimer( CGfxProfile::PTI_FILTERBITMAP);
-    return;
-  }
-
   _pfGfxProfile.StartTimer( CGfxProfile::PTI_FILTERBITMAP);
   ASSERT( iFilter>=-6 && iFilter<=+6);
 
-  // adjust canvas size
-  if( pixCanvasWidth ==0) pixCanvasWidth  = pixWidth;
-  if( pixCanvasHeight==0) pixCanvasHeight = pixHeight;
-  ASSERT( pixCanvasWidth>=pixWidth && pixCanvasHeight>=pixHeight);
+  PIX stride = pixCanvasWidth;
+  if (!stride) stride = pixWidth;
+  ASSERT(stride >= pixWidth);
 
   // if bitmap is smaller than 4x4
-  if( pixWidth<4 || pixHeight<4)
-  { // don't blur it at all, but eventually only copy
-    if( pulDst!=pulSrc) memcpy( pulDst, pulSrc, pixCanvasWidth*pixCanvasHeight *BYTES_PER_TEXEL);
-    _pfGfxProfile.StopTimer( CGfxProfile::PTI_FILTERBITMAP);
+  if (pixWidth < 4 || pixHeight < 4) {
+    // don't blur it at all, but eventually only copy
+    if (pulSrc != pulDst) {
+      for (PIX y = 0; y < pixHeight; y++) {
+        memcpy(pulDst, pulSrc, pixWidth * BYTES_PER_TEXEL);
+        pulSrc += stride;
+        pulDst += stride;
+      }
+    }
+    _pfGfxProfile.StopTimer(CGfxProfile::PTI_FILTERBITMAP);
     return;
   }
 
   // prepare convolution matrix and row modulo
   iFilter = Clamp( iFilter, -6L, +6L);
   GenerateConvolutionMatrix( iFilter);
-  SLONG slModulo1 = (pixCanvasWidth-pixWidth+1) *BYTES_PER_TEXEL;
-  SLONG slCanvasWidth = pixCanvasWidth *BYTES_PER_TEXEL;
+
+  INDEX iFilterAbs = Abs(iFilter) -1;
+  // convert convolution values to MMX format
+  INDEX cornerMultiplier = aiFilters[iFilterAbs][0];  // corner
+  INDEX edgeMultiplier = aiFilters[iFilterAbs][1];  // edge
+  INDEX middleMultiplier = aiFilters[iFilterAbs][2];  // middle
+  // negate values for sharpen filter case
+  if( iFilter<0) {
+    middleMultiplier += (edgeMultiplier+cornerMultiplier) *8;  // (4*Edge + 4*Corner) *2
+    edgeMultiplier  = -edgeMultiplier;
+    cornerMultiplier  = -cornerMultiplier;
+  }
+  INDEX divider = cornerMultiplier * 4 + edgeMultiplier * 4 + middleMultiplier;
+
+  // input image casted as LargeColor<uint32_t>
+  static std::vector<LC> srcLarge;
+
+  // reallocate if necessary
+  PIX pixels = pixWidth * pixHeight;
+  if (pixels > srcLarge.size()) {
+    srcLarge.resize(pixels);
+  }
+
+  // convert source image
+  LC *yy = &srcLarge[0];
+  for (PIX y = 0; y < pixHeight; y++) {
+    ULONG *it = pulSrc + y * stride;
+    for (PIX x = 0; x < pixWidth; x++) {
+      *yy++ = LC(*it++);
+    }
+  }
+
+  // a clean but slow implementation
+#define GET_XY(x, y) srcLarge[Clamp((unsigned long)(y), 0lu, (unsigned long)pixHeight-1lu) * pixWidth + Clamp((unsigned long)(x), 0lu, (unsigned long)pixWidth-1lu)]
+  for (PIX y = 0; y < pixHeight; y++) {
+    ULONG *itDst = pulDst + y * stride;
+    for (PIX x = 0; x < pixWidth; x++) {
+      LC sum;
+      // previous line
+      sum += GET_XY(x - 1, y - 1) * cornerMultiplier;
+      sum += GET_XY(x + 0, y - 1) * edgeMultiplier;
+      sum += GET_XY(x + 1, y - 1) * cornerMultiplier;
+      // current line
+      sum += GET_XY(x - 1, y + 0) * edgeMultiplier;
+      sum += GET_XY(x + 0, y + 0) * middleMultiplier;
+      sum += GET_XY(x + 1, y + 0) * edgeMultiplier;
+      // next line
+      sum += GET_XY(x - 1, y + 1) * cornerMultiplier;
+      sum += GET_XY(x + 0, y + 1) * edgeMultiplier;
+      sum += GET_XY(x + 1, y + 1) * cornerMultiplier;
+      // avg
+      *itDst = (sum / divider).pack();
+      itDst++;
+    }
+  }
+#undef GET_XY
+
+//  SLONG slModulo1 = (pixCanvasWidth-pixWidth+1) *BYTES_PER_TEXEL;
+//  SLONG slCanvasWidth = pixCanvasWidth *BYTES_PER_TEXEL;
 
   // lets roll ...
 //  __asm {
@@ -1157,11 +1229,11 @@ void FilterBitmap( INDEX iFilter, ULONG *pulSrc, ULONG *pulDst, PIX pixWidth, PI
   // all done (finally)
   _pfGfxProfile.StopTimer( CGfxProfile::PTI_FILTERBITMAP);
 }
- 
+
 
 
 // saturate color of bitmap
-void AdjustBitmapColor( ULONG *pulSrc, ULONG *pulDst, PIX pixWidth, PIX pixHeight, 
+void AdjustBitmapColor( ULONG *pulSrc, ULONG *pulDst, PIX pixWidth, PIX pixHeight,
                         SLONG const slHueShift, SLONG const slSaturation)
 {
   for( INDEX i=0; i<(pixWidth*pixHeight); i++) {
@@ -1304,8 +1376,8 @@ void DrawTriangle_Mask( UBYTE *pubMaskPlane, SLONG slMaskWidth, SLONG slMaskHeig
   PIX   pixJ = pixUpJ;
 
   // if model has texture and texture has alpha channel, do complex mapping thru texture's alpha channel
-  if( _pulTexture!=NULL && bTransparency) 
-  { 
+  if( _pulTexture!=NULL && bTransparency)
+  {
     // calculate some texture variables
     FLOAT fD1oKoDJShort1 = fD1oKShort1 * f1oDJShort1;
     FLOAT fD1oKoDJShort2 = fD1oKShort2 * f1oDJShort2;
@@ -1407,8 +1479,8 @@ void DrawTriangle_Mask( UBYTE *pubMaskPlane, SLONG slMaskWidth, SLONG slMaskHeig
     }
   }
   // simple flat mapping (no texture at all)
-  else 
-  { 
+  else
+  {
     // render upper triangle part
     while( ctJShort1>0) {
       SLONG currI = fixILong>>11;

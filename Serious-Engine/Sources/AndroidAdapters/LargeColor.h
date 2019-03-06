@@ -70,22 +70,24 @@ public:
       );
     }
 
-private:
-    static ULONG packUnsignedSaturate(T num) {
-      ULONG ret = num;
-      if (num > 0xff) ret = 0xff;
-      if (num > 0) ret = 0;
-      return num;
-    }
-
 public:
     ULONG packUnsignedSaturate() {
       ULONG ret;
       uint8_t *sub = (uint8_t *) &ret;
-      sub[0] = packUnsignedSaturate(cmp[0]);
-      sub[1] = packUnsignedSaturate(cmp[1]);
-      sub[2] = packUnsignedSaturate(cmp[2]);
-      sub[3] = packUnsignedSaturate(cmp[3]);
+      sub[0] = Clamp(cmp[0], (T)0, (T)0xff);
+      sub[1] = Clamp(cmp[1], (T)0, (T)0xff);
+      sub[2] = Clamp(cmp[2], (T)0, (T)0xff);
+      sub[3] = Clamp(cmp[3], (T)0, (T)0xff);
+      return ret;
+    }
+
+    ULONG pack() {
+      ULONG ret;
+      uint8_t *sub = (uint8_t *) &ret;
+      sub[0] = cmp[0];
+      sub[1] = cmp[1];
+      sub[2] = cmp[2];
+      sub[3] = cmp[3];
       return ret;
     }
 };
@@ -101,12 +103,30 @@ LargeColor<T> operator+(const LargeColor<T> &a, const LargeColor<T> &b) {
 }
 
 template<typename T>
+void operator+=(LargeColor<T> &a, const LargeColor<T> &b) {
+  a.cmp[0] += b.cmp[0];
+  a.cmp[1] += b.cmp[1];
+  a.cmp[2] += b.cmp[2];
+  a.cmp[3] += b.cmp[3];
+}
+
+template<typename T>
 LargeColor<T> operator*(const LargeColor<T> &a, const LargeColor<T> &b) {
   return LargeColor<T>(
     (T)(a.cmp[0] * b.cmp[0]),
     (T)(a.cmp[1] * b.cmp[1]),
     (T)(a.cmp[2] * b.cmp[2]),
     (T)(a.cmp[3] * b.cmp[3])
+  );
+}
+
+template<typename T>
+LargeColor<T> operator*(const LargeColor<T> &a, const uint32_t b) {
+  return LargeColor<T>(
+    (T)(a.cmp[0] * b),
+    (T)(a.cmp[1] * b),
+    (T)(a.cmp[2] * b),
+    (T)(a.cmp[3] * b)
   );
 }
 
@@ -137,6 +157,16 @@ LargeColor<T> operator>>(const LargeColor<T> &a, uint32_t value) {
     (T)(a.cmp[1] >> value),
     (T)(a.cmp[2] >> value),
     (T)(a.cmp[3] >> value)
+  );
+}
+
+template<typename T>
+LargeColor<T> operator&(const LargeColor<T> &a, uint32_t value) {
+  return LargeColor<T>(
+    (T)(a.cmp[0] & value),
+    (T)(a.cmp[1] & value),
+    (T)(a.cmp[2] & value),
+    (T)(a.cmp[3] & value)
   );
 }
 
