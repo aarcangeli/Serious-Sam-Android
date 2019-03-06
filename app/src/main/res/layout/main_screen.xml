@@ -14,19 +14,30 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <Button
-            android:id="@+id/menuBtn"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="20dp"
-            android:background="@android:drawable/arrow_down_float"
-            android:onClick="hideMenu"
+        <com.github.aarcangeli.serioussamandroid.JoyStick
+            android:id="@+id/left_stick"
+            android:layout_width="0dp"
+            android:layout_height="200dp"
+            android:layout_gravity="bottom"
+            app:buttonColor="#55ff0000"
+            app:isRight="false"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintWidth_percent=".5"
+            app:padColor="#55ffffff" />
+
+        <com.github.aarcangeli.serioussamandroid.JoyStick
+            android:id="@+id/right_stick"
+            android:layout_width="0dp"
+            android:layout_height="200dp"
+            app:buttonColor="#55ff0000"
+            app:isRight="true"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintWidth_percent=".5"
+            app:padColor="#55ffffff" />
 
         <Button
-            android:id="@+id/profilingBtn"
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:layout_marginTop="20dp"
@@ -35,6 +46,49 @@
             android:onClick="doProfiling"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
+        <Button
+            android:id="@+id/startBtn"
+            android:layout_width="60dp"
+            android:layout_height="36dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            android:onClick="hideMenu"
+            android:background="#55ffffff"
+            android:text="START"
+            android:textSize="12sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <Button
+            android:id="@+id/jumpBtn"
+            android:layout_width="52dp"
+            android:layout_height="41dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="140dp"
+            android:background="#55ffffff"
+            android:text="JUMP"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/fireBtn"
+            app:layout_constraintTop_toTopOf="@+id/right_stick"
+            app:layout_constraintVertical_bias="1.0" />
+
+        <Button
+            android:id="@+id/fireBtn"
+            android:layout_width="52dp"
+            android:layout_height="41dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="140dp"
+            android:background="#55ffffff"
+            android:text="FIRE"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/right_stick"
+            app:layout_constraintVertical_bias="1.0" />
 
     </android.support.constraint.ConstraintLayout>
 

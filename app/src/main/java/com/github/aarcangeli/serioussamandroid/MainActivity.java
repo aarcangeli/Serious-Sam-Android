@@ -1,9 +1,11 @@
 package com.github.aarcangeli.serioussamandroid;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.hardware.input.InputManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.NonNull;
@@ -14,6 +16,7 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 
 import java.io.File;
 
@@ -31,19 +34,100 @@ public class MainActivity extends AppCompatActivity {
     private static final int AXIS_LOOK_LR = 7;
     private static final int AXIS_LOOK_BK = 8;
 
-    private static final float VIEW_MULT = 2;
+    private static final float VIEW_MULT = 2.5f;
 
     private SeriousSamSurface glSurfaceView;
     private File homeDir;
 
     private boolean isGameStarted = false;
+    private JoyStick leftStick;
+    private JoyStick rightStick;
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.main_screen);
         glSurfaceView = findViewById(R.id.main_content);
+        leftStick = findViewById(R.id.left_stick);
+        rightStick = findViewById(R.id.right_stick);
+
+        leftStick.setListener(new JoyStick.JoyStickListener() {
+            @Override
+            public void onMove(JoyStick joyStick, double angle, double power, int direction) {
+                setAxisValue(AXIS_MOVE_FB, (float) (Math.sin(angle) * power / 100));
+                setAxisValue(AXIS_MOVE_LR, (float) (Math.cos(angle) * power / 100));
+            }
+
+            @Override
+            public void onTap() {
+            }
+
+            @Override
+            public void onDoubleTap() {
+            }
+        });
+
+        rightStick.setListener(new JoyStick.JoyStickListener() {
+            @Override
+            public void onMove(JoyStick joyStick, double angle, double power, int direction) {
+                setAxisValue(AXIS_LOOK_UD, (float) (Math.sin(angle) * power / 100) * VIEW_MULT);
+                setAxisValue(AXIS_LOOK_LR, (float) (Math.cos(angle) * power / 100) * VIEW_MULT);
+            }
+
+            @Override
+            public void onTap() {
+            }
+
+            @Override
+            public void onDoubleTap() {
+            }
+        });
+
+        Button jumpBtn = findViewById(R.id.jumpBtn);
+        jumpBtn.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if(event.getAction() == MotionEvent.ACTION_DOWN) {
+                    nDispatchKeyEvent(KeyEvent.KEYCODE_BUTTON_A, 1);
+                } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                    nDispatchKeyEvent(KeyEvent.KEYCODE_BUTTON_A, 0);
+                }
+                return false;
+            }
+        });
+
+        Button fireBtn = findViewById(R.id.fireBtn);
+        fireBtn.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if(event.getAction() == MotionEvent.ACTION_DOWN) {
+                    nDispatchKeyEvent(KeyEvent.KEYCODE_BUTTON_R1, 1);
+                } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                    nDispatchKeyEvent(KeyEvent.KEYCODE_BUTTON_R1, 0);
+                }
+                return false;
+            }
+        });
+
+        InputManager systemService = (InputManager) getSystemService(Context.INPUT_SERVICE);
+        systemService.registerInputDeviceListener(new InputManager.InputDeviceListener() {
+            @Override
+            public void onInputDeviceAdded(int deviceId) {
+                updateSoftKeyboardVisible();
+            }
+
+            @Override
+            public void onInputDeviceRemoved(int deviceId) {
+                updateSoftKeyboardVisible();
+            }
+
+            @Override
+            public void onInputDeviceChanged(int deviceId) {
+                updateSoftKeyboardVisible();
+            }
+        }, null);
 
         homeDir = getHomeDir();
         Log.i(TAG, "HomeDir: " + homeDir);
@@ -53,6 +137,16 @@ public class MainActivity extends AppCompatActivity {
         } else {
             startGame();
         }
+
+        updateSoftKeyboardVisible();
+    }
+
+    public void updateSoftKeyboardVisible() {
+        int keyboardVisibility = Utils.isThereControllers() ? View.GONE : View.VISIBLE;
+        leftStick.setVisibility(keyboardVisibility);
+        rightStick.setVisibility(keyboardVisibility);
+        findViewById(R.id.fireBtn).setVisibility(keyboardVisibility);
+        findViewById(R.id.jumpBtn).setVisibility(keyboardVisibility);
     }
 
     @Override
@@ -144,6 +238,7 @@ public class MainActivity extends AppCompatActivity {
 
     // ui listeners
     public void hideMenu(View view) {
+        nDispatchKeyEvent(KeyEvent.KEYCODE_BUTTON_R2, 1);
     }
 
     public void doProfiling(View view) {

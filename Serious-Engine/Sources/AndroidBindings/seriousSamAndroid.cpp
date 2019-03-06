@@ -130,7 +130,7 @@ void setControls(PlayerControls &ctrls) {
       }
     }
 
-    if (ctrls.bMoveUp && g_isRunningIntro) {
+    if ((ctrls.bMoveUp || ctrls.bUse) && g_isRunningIntro) {
       g_runFirstLevel = true;
       g_isRunningIntro = false;
     }
