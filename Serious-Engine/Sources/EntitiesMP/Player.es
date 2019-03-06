@@ -2725,6 +2725,7 @@ functions:
   // postmoving for soft player up-down movement
   void PostMoving(void)
   {
+    _pfPhysicsProfile.StartTimer(CPhysicsProfile::PTI_PLAYER_POSTMOVING);
     CPlayerEntity::PostMoving();
     // never allow a player to be removed from the list of movers
     en_ulFlags &= ~ENF_INRENDERING;
@@ -2771,6 +2772,7 @@ functions:
 
     // clear action indicator
     m_ulFlags&=~PLF_APPLIEDACTION;
+    _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_PLAYER_POSTMOVING);
   }
 
   // set player parameters for unconnected state (between the server loads and player reconnects)

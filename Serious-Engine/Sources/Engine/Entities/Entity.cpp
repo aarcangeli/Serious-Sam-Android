@@ -2162,6 +2162,8 @@ void CEntity::SendEventInRange(const CEntityEvent &ee, const FLOATaabbox3D &boxR
 /* Handle all sent events. */
 void CEntity::HandleSentEvents(void)
 {
+  _pfPhysicsProfile.StartTimer(CPhysicsProfile::PTI_HANDLESENTEVENTS);
+
   CSetFPUPrecision FPUPrecision(FPT_24BIT);
 
   // while there are any unhandled events
@@ -2194,6 +2196,8 @@ void CEntity::HandleSentEvents(void)
 
   // flush all events
   _aseSentEvents.PopAll();
+
+  _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_HANDLESENTEVENTS);
 }
 
 /////////////////////////////////////////////////////////////////////

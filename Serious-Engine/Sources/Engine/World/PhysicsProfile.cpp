@@ -29,8 +29,17 @@ CPhysicsProfile::CPhysicsProfile(void)
   SETTIMERNAME(PTI_APPLYACTIONS,    " applying client actions", "");
   SETTIMERNAME(PTI_HANDLETIMERS,    " handling timers", "");
   SETTIMERNAME(PTI_HANDLEMOVERS,    " handling movers", "");
+  SETTIMERNAME(PTI_MOV_PREPARE,         "  Prepare", "times");
+  SETTIMERNAME(PTI_MOV_PREMOVING,       "  PreMoving", "");
+  SETTIMERNAME(PTI_MOV_DOMOVING,        "  DoMoving", "");
+  SETTIMERNAME(PTI_MOV_POSTMOVING,      "  PostMoving", "");
+  SETTIMERNAME(PTI_MOV_CLEARMOVINGTEMP, "  ClearMovingTemp", "");
+  SETTIMERNAME(PTI_MOV_FINISH,          "  Finish", "");
   SETTIMERNAME(PTI_WORLDBASETICK,   " WorldBase tick", "");
 
+  SETTIMERNAME(PTI_PLAYER_POSTMOVING,       "CPlayer::PostMoving()", "");
+  SETTIMERNAME(PTI_SETCAMERAPOSITION,       "CPlayerView::SetCameraPosition()", "");
+  SETTIMERNAME(PTI_SETCAMERAPOSITION_RAY,   " Ray", "");
   SETTIMERNAME(PTI_PREMOVING,       "PreMoving()", "move");
   SETTIMERNAME(PTI_POSTMOVING,      "PostMoving()", "move");
   SETTIMERNAME(PTI_DOMOVING,        "DoMoving()", "move");
@@ -40,6 +49,7 @@ CPhysicsProfile::CPhysicsProfile(void)
   SETTIMERNAME(PTI_TRYTOGOUPSTAIRS, " TryToGoUpstairs()", "try");
   SETTIMERNAME(PTI_SETPLACEMENTFROMNEXTPOSITION, "SetPlacementFromNextPosition()", "setting");
   SETTIMERNAME(PTI_SETPLACEMENT,    " SetPlacement()", "setting");
+  SETTIMERNAME(PTI_HANDLESENTEVENTS,    "CEntity::HandleSentEvents", "");
 
   SETTIMERNAME(PTI_SETPLACEMENT_COORDSUPDATE,    "  coords updating", "");
   SETTIMERNAME(PTI_SETPLACEMENT_LIGHTUPDATE,     "  light updating", "");

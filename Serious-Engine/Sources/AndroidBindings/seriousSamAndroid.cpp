@@ -278,6 +278,7 @@ void seriousSamDoGame(CDrawPort *pdp) {
     fps = (float) times / (start - lastFpsNow) * 1000 * 1000 * 1000;
     lastFpsNow += UPDATE_TIME;
     times = 0;
+    InfoMessage("fps: %.2f; frame: %.2f ms", fps, deltaFrame / 1000000.f);
   }
   times++;
 
