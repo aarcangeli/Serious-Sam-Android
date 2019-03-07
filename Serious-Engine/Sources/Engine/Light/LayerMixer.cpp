@@ -1143,7 +1143,7 @@ rowNext:
       AddToCluster( (UBYTE*)_pulLayer);
       _pulLayer++; // go to the next pixel
     } // go to the next row
-    _pulLayer += _slModulo;
+    _pulLayer += _slModulo/BYTES_PER_TEXEL;
   }
 
 #endif
@@ -1205,7 +1205,7 @@ skipLight:
         ubMask = 1;
       }
     } // go to the next row
-    _pulLayer += _slModulo;
+    _pulLayer += _slModulo/BYTES_PER_TEXEL;
   }
 
 #endif
