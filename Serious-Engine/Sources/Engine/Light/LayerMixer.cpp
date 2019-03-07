@@ -34,6 +34,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Templates/DynamicArray.cpp>
 #include <cstdint>
 
+#define WITH_BOUND_CHECK 0
+
 // asm shortcuts
 #define O offset
 #define Q qword ptr
@@ -53,6 +55,10 @@ extern UBYTE aubSqrt[  SQRTTABLESIZE];
 extern UWORD auw1oSqrt[SQRTTABLESIZE];
 extern UWORD auw1oSqrt[SQRTTABLESIZE];
 // static FLOAT3D _v00;
+
+#if WITH_BOUND_CHECK
+CBrushShadowMap *g_pbsm;
+#endif
 
 // internal class for layer mixing
 class CLayerMixer
@@ -1291,6 +1297,12 @@ void CLayerMixer::MixOneMipmap(CBrushShadowMap *pbsm, INDEX iMipmap)
   CalculateData( pbsm, iMipmap);
   const BOOL bDynamicOnly = lm_pbpoPolygon->bpo_ulFlags&BPOF_DYNAMICLIGHTSONLY;
 
+#if WITH_BOUND_CHECK
+  g_pbsm = pbsm;
+  lm_pulShadowMap = (ULONG *) AllocMemory(pbsm->sm_slMemoryUsed * 2);
+  memset(lm_pulShadowMap, 0, pbsm->sm_slMemoryUsed * 2);
+#endif
+
   // fill with sector ambient
   _pfWorldEditingProfile.StartTimer(CWorldEditingProfile::PTI_AMBIENTFILL);
 
@@ -1395,6 +1407,15 @@ void CLayerMixer::MixOneMipmap(CBrushShadowMap *pbsm, INDEX iMipmap)
     DitherBitmap( iDither, lm_pulShadowMap, lm_pulShadowMap,
                   lm_pixPolygonSizeU, lm_pixPolygonSizeV, lm_pixCanvasSizeU, lm_pixCanvasSizeV);
   }
+
+#if WITH_BOUND_CHECK
+  for (int i = g_pbsm->sm_slMemoryUsed; i < g_pbsm->sm_slMemoryUsed * 2; i++) {
+    if (((UBYTE *) lm_pulShadowMap)[i]) {
+      FatalError("Invalid write");
+    }
+  }
+  FreeMemory(lm_pulShadowMap);
+#endif
 }
 
 
