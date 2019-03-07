@@ -1423,7 +1423,7 @@ void CLayerMixer::MixOneMipmap(CBrushShadowMap *pbsm, INDEX iMipmap)
 // copy from static shadow map to dynamic layer
 __forceinline void CLayerMixer::CopyShadowLayer(void)
 {
-  WarningMessage("TODO: ASM");
+  memcpy(lm_pulShadowMap, lm_pulStaticShadowMap, lm_pixCanvasSizeU * lm_pixCanvasSizeV * 4);
   return;
 //  __asm {
 //    cld
@@ -1440,8 +1440,13 @@ __forceinline void CLayerMixer::CopyShadowLayer(void)
 // copy from static shadow map to dynamic layer
 __forceinline void CLayerMixer::FillShadowLayer( COLOR col)
 {
-  WarningMessage("TODO: ASM");
-  return;
+  PIX ecx = lm_pixCanvasSizeU * lm_pixCanvasSizeV;
+  ULONG *edi = lm_pulShadowMap;
+  SwapEndianess(col);
+  for (uint32_t i = 0; i < ecx; i++) {
+    *edi++ = col;
+  }
+
 //  __asm {
 //    cld
 //    mov     ebx,D [this]

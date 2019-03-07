@@ -169,6 +169,7 @@ void CShadowMap::Cache( INDEX iWantedMipLevel)
     if( fR>0.5f) colSize = LerpColor( C_dYELLOW, C_dRED,  (fR-0.5f)*2);
     else         colSize = LerpColor( C_dGREEN, C_dYELLOW, fR*2);
     // fill!
+//    colSize = 0xff0000ff;
     for( INDEX iPix=0; iPix<sm_slMemoryUsed/4; iPix++) sm_pulCachedShadowMap[iPix] = ByteSwap(colSize);
   }
   // no colorization - just mix the layers in

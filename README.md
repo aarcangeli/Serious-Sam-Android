@@ -2,7 +2,7 @@
 
 ## Running the game
 1. Locate the game directory for "Serious Sam Classic The Second Encounter" ([steam](https://store.steampowered.com/app/41060/Serious_Sam_Classic_The_Second_Encounter/))
-1. [Download](https://github.com/aarcangeli/Serious-Sam-Android/releases) and install SeriousSamRelease.apk
+1. [Download](https://github.com/aarcangeli/Serious-Sam-Android/releases/latest) and install the latest version of SeriousSamRelease.apk
 1. Create a directory on your sd card called "SeriousSam"
 1. Copy all *.gro files from the game directory to SeriousSam directory.
    At the current time the files are:
