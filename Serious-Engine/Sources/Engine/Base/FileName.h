@@ -71,6 +71,9 @@ public:
 
   // convert '\' in '/'
   void convertSlashes();
+
+  // convert '/' in '\'
+  void convertSlashesIntoWindows();
 };
 
 // macro for defining a literal filename in code (EFNM = exe-filename)

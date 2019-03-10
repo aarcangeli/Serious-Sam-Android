@@ -213,14 +213,20 @@ BOOL CTFileName::RemoveApplicationPath_t(void) // throws char *
     fnmFileName.fnm_pserPreloaded = NULL;
   }
 
+  fnmFileName.convertSlashes();
   return strmStream;
 }
 
 /*
  * Write to stream.
  */
- CTStream &operator<<(CTStream &strmStream, const CTFileName &fnmFileName)
+ CTStream &operator<<(CTStream &strmStream, const CTFileName &fnmFileName_)
 {
+  CTFileName fnmFileName = fnmFileName_;
+
+  // write in windows mode
+  fnmFileName.convertSlashesIntoWindows();
+
   // if dictionary is enabled
   if (strmStream.strm_dmDictionaryMode == CTStream::DM_ENABLED) {
     // try to find the filename in dictionary
@@ -243,6 +249,9 @@ BOOL CTFileName::RemoveApplicationPath_t(void) // throws char *
     // write the string
     strmStream<<(CTString &)fnmFileName;
   }
+
+  // reconvert to linux mode
+  fnmFileName.convertSlashes();
 
   return strmStream;
 }
@@ -271,6 +280,14 @@ void CTFileName::convertSlashes() {
   for (char *pszString = str_String; *pszString; ++pszString) {
     if (*pszString == '\\') {
       *pszString = '/';
+    }
+  }
+}
+
+void CTFileName::convertSlashesIntoWindows() {
+  for (char *pszString = str_String; *pszString; ++pszString) {
+    if (*pszString == '/') {
+      *pszString = '\\';
     }
   }
 }
