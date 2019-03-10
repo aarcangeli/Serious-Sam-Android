@@ -79,6 +79,7 @@ public:
   EGLSurface surface = 0;
   EGLContext context = 0;
   EGLint format;
+  EGLConfig config;
 
   static bool hasCViewPort;
 };

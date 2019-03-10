@@ -53,49 +53,20 @@ void CViewPort::Initialize(ANativeWindow *window) {
       FatalError("eglInitialize() returned error 0x%04X", eglGetError());
     }
 
-    std::vector <EGLConfig> configs;
-
-    // get configuration count
+    // get all configurations
     EGLint numConfigs;
-    if (!eglChooseConfig(display, attribs, nullptr, 0, &numConfigs)) {
+    if (!eglChooseConfig(display, attribs, &config, 1, &numConfigs)) {
       FatalError("eglChooseConfig() returned error 0x%04X", eglGetError());
     }
     if (numConfigs <= 0) {
       FatalError("no configuration found");
     }
 
-    // get all configurations
-    configs.resize(numConfigs);
-    if (!eglChooseConfig(display, attribs, configs.data(), numConfigs, &numConfigs)) {
-      FatalError("eglChooseConfig() returned error 0x%04X", eglGetError());
-    }
-
-    int asd = EGL_OPENGL_ES2_BIT;
-    // iterate and choose
-    for (EGLConfig &config : configs) {
-      int d = findConfigAttrib(display, config, EGL_DEPTH_SIZE, 0);
-      int s = findConfigAttrib(display, config, EGL_STENCIL_SIZE, 0);
-      int r = findConfigAttrib(display, config, EGL_RED_SIZE, 0);
-      int g = findConfigAttrib(display, config, EGL_GREEN_SIZE, 0);
-      int b = findConfigAttrib(display, config, EGL_BLUE_SIZE, 0);
-      int a = findConfigAttrib(display, config, EGL_ALPHA_SIZE, 0);
-      int es = findConfigAttrib(display, config, EGL_RENDERABLE_TYPE, 0);
-      int conf = findConfigAttrib(display, config, EGL_CONFORMANT, 0);
-      int surface = findConfigAttrib(display, config, EGL_SURFACE_TYPE, 0);
-
-      int t = 0;
-    }
-
-    EGLConfig config = configs[0];
     if (!eglGetConfigAttrib(display, config, EGL_NATIVE_VISUAL_ID, &format)) {
       FatalError("eglGetConfigAttrib() returned error 0x%04X", eglGetError());
     }
 
     ANativeWindow_setBuffersGeometry(window, 0, 0, format);
-
-    if (!(surface = eglCreateWindowSurface(display, config, window, 0))) {
-      FatalError("eglCreateWindowSurface() returned error 0x%04X", eglGetError());
-    }
 
     const EGLint context_attrib_list[] = {
       // request a context using Open GL ES 2.0
@@ -107,6 +78,16 @@ void CViewPort::Initialize(ANativeWindow *window) {
     }
 
     eglInitialized = true;
+  }
+
+  if (surface) {
+    if (!eglDestroySurface(display, surface)) {
+      WarningMessage("eglCreateContext() returned error 0x%04X", eglGetError());
+    }
+  }
+
+  if (!(surface = eglCreateWindowSurface(display, config, window, 0))) {
+    FatalError("eglCreateWindowSurface() returned error 0x%04X", eglGetError());
   }
 
   if (!eglMakeCurrent(display, surface, surface, context)) {

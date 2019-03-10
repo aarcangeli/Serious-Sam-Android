@@ -1783,7 +1783,7 @@ void CGfxLibrary::SwapBuffers(CViewPort *pvp)
     }
     // swap buffers
     if (!eglSwapBuffers(pvp->display, pvp->surface)) {
-      WarningMessage("eglSwapBuffers() returned error %d", eglGetError());
+      WarningMessage("eglSwapBuffers() returned error 0x%04X", eglGetError());
     }
 
     // force finishing of all rendering operations (if required)
