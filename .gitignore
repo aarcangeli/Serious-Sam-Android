@@ -8,3 +8,4 @@
 .externalNativeBuild
 extracted
 shots
+/signing.properties

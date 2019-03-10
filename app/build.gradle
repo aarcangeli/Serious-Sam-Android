@@ -1,5 +1,30 @@
 apply plugin: 'com.android.application'
 
+def signing = null
+
+def propFile = file('../signing.properties')
+if (propFile.canRead()) {
+    def Properties props = new Properties()
+
+    def is = new FileInputStream(propFile);
+    props.load(is)
+    is.close()
+
+    android {
+        signingConfigs {
+            app {
+                keyAlias props['KEY_ALIAS']
+                keyPassword props['KEY_PASSWORD']
+                storeFile file(props['STORE_FILE'])
+                storePassword props['STORE_PASSWORD']
+                v2SigningEnabled false
+            }
+        }
+    }
+
+    signing = android.signingConfigs.app
+}
+
 android {
     compileSdkVersion 28
     defaultConfig {
@@ -17,9 +42,21 @@ android {
         }
     }
     buildTypes {
+        debug {
+            if (signing) {
+                signingConfig signing
+            }
+            debuggable true
+            jniDebuggable true
+        }
         release {
+            if (signing) {
+                signingConfig signing
+            }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            jniDebuggable false
+            debuggable false
         }
     }
     externalNativeBuild {
