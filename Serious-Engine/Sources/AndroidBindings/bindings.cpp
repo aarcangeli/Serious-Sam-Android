@@ -24,6 +24,7 @@ JNIEXPORT void JNICALL Java_com_github_aarcangeli_serioussamandroid_SeriousSamSu
 
   // start main thread
   pthread_create(&g_mySeriousThreadId, 0, &seriousMain, nullptr);
+  pthread_setname_np(g_mySeriousThreadId, "SeriousSamMain");
 }
 
 extern "C"

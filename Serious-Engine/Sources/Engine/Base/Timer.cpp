@@ -27,6 +27,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/ListIterator.inl>
 #include <Engine/Base/Priority.inl>
 #include "unistd.h"
+#include "pthread.h"
 
 // Read the Pentium TimeStampCounter
 static inline __int64 ReadTSC(void)
@@ -52,6 +53,8 @@ static thread_local TIME _CurrentTickTimer = 0.0f;
 
 // pointer to global timer object
 CTimer *_pTimer = NULL;
+
+pthread_t g_timerMainThread;
 
 const TIME CTimer::TickQuantum = TIME(1/20.0);    // 20 ticks per second
 
@@ -119,12 +122,17 @@ void CTimer_TimerFunc_internal(void)
 
 //  } CTSTREAM_END;
 }
-void __stdcall CTimer_TimerFunc(UINT uID, UINT uMsg, ULONG dwUser, ULONG dw1, ULONG dw2)
-{
-  // access to the list of handlers must be locked
-  CTSingleLock slHooks(&_pTimer->tm_csHooks, TRUE);
-  // handle all timers
-  CTimer_TimerFunc_internal();
+
+void *CTimer_TimerMain(void *input) {
+  while(true) {
+    // sleep
+    usleep(ULONG(_pTimer->TickQuantum * 1000.0f * 1000.0f)); // microsecond
+
+    // access to the list of handlers must be locked
+    CTSingleLock slHooks(&_pTimer->tm_csHooks, TRUE);
+    // handle all timers
+    CTimer_TimerFunc_internal();
+  }
 }
 
 
@@ -163,31 +171,24 @@ CTimer::CTimer(BOOL bInterrupt /*=TRUE*/)
   tm_fLerpFactor = 1.0f;
   tm_fLerpFactor2 = 1.0f;
 
-//  // start interrupt (eventually)
-//  if( tm_bInterrupt)
-//  {
-//    tm_TimerID = timeSetEvent(
-//      ULONG(TickQuantum*1000.0f),	  // period value [ms]
-//      0,	                          // resolution (0==max. possible)
-//      &CTimer_TimerFunc,	          // callback
-//      0,                            // user
-//      TIME_PERIODIC);               // event type
-//
-//    // check that interrupt was properly started
-//    if( tm_TimerID==NULL) FatalError(TRANS("Cannot initialize multimedia timer!"));
-//
-//    // make sure that timer interrupt is ticking
-//    INDEX iTry=1;
-//    for( ; iTry<=3; iTry++) {
-//      const TIME tmTickBefore = GetRealTimeTick();
-//      Sleep(1000* iTry*3 *TickQuantum);
-//      const TIME tmTickAfter = GetRealTimeTick();
-//      if( tmTickBefore!=tmTickAfter) break;
-//      Sleep(1000*iTry);
-//    }
-//    // report fatal
-//    if( iTry>3) FatalError(TRANS("Problem with initializing multimedia timer - please try again."));
-//  }
+  if (tm_bInterrupt) {
+    pthread_create(&g_timerMainThread, 0, &CTimer_TimerMain, nullptr);
+    pthread_setname_np(g_timerMainThread, "SeriousSamTimer");
+
+    // make sure that timer interrupt is ticking
+    INDEX iTry = 1;
+    for (; iTry <= 3; iTry++) {
+      const TIME tmTickBefore = GetRealTimeTick();
+      usleep(1000 * 1000 * iTry * 3 * TickQuantum);
+      const TIME tmTickAfter = GetRealTimeTick();
+      if (tmTickBefore != tmTickAfter) break;
+      usleep(1000 * 1000 * iTry);
+    }
+    // report fatal
+    if (iTry > 3) {
+      FatalError(TRANS("Problem with initializing multimedia timer - please try again."));
+    }
+  }
 }
 
 /*

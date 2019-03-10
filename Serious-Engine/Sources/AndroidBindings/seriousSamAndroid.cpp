@@ -244,7 +244,6 @@ void seriousSamDoGame(CDrawPort *pdp) {
     // start engine
     startSeriousSamAndroid(pdp);
 
-    lastTick = getTimeNsec();
     initialized = true;
   }
 
@@ -254,19 +253,6 @@ void seriousSamDoGame(CDrawPort *pdp) {
   static int64_t lastFrameDraw = start;
   int64_t deltaFrame = start - lastFrameDraw;
   lastFrameDraw = start;
-  int64_t nanoPerTick = (int64_t)(CTimer::TickQuantum * NS_IN_S);
-  for (int i = 0; i < 4; i++) {
-    if (start > lastTick + nanoPerTick) {
-      CTimer_TimerFunc_internal();
-      lastTick += nanoPerTick;
-      tickCount++;
-    } else {
-      break;
-    }
-  }
-  if (start > lastTick + nanoPerTick) {
-    lastTick = start;
-  }
 
   static int64_t seriousSamDoGameTime = 0;
 

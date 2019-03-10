@@ -21,6 +21,7 @@ extern ANativeWindow *g_currentWindow;
 extern bool g_printProfiling;
 
 void *seriousMain(void *unused);
+void *seriousMain(void *unused);
 void startSeriousPrestart();
 void seriousSamDoGame(CDrawPort *pvp);
 void hideComputerConsole();

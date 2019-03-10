@@ -57,6 +57,7 @@ BOOL SetEvent(HANDLE hEvent) {
 
   pthread_mutex_lock(&handle->mutex);
   handle->state = true;
+  pthread_cond_signal(&handle->cond);
   pthread_mutex_unlock(&handle->mutex);
 
   return true;
