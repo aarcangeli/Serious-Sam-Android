@@ -58,15 +58,15 @@ void CCompMessageID::NewMessage(const CTFileName &fnm)
   // decode type from filename
   CTString strName = fnm;
 
-  if (strName.Matches("*messages\\information*")) {
+  if (strName.Matches("*messages/information*")) {
     cmi_cmtType = CMT_INFORMATION;
-  } else if (strName.Matches("*messages\\weapons*")) {
+  } else if (strName.Matches("*messages/weapons*")) {
     cmi_cmtType = CMT_WEAPONS;
-  } else if (strName.Matches("*messages\\enemies*")) {
+  } else if (strName.Matches("*messages/enemies*")) {
     cmi_cmtType = CMT_ENEMIES;
-  } else if (strName.Matches("*messages\\background*")) {
+  } else if (strName.Matches("*messages/background*")) {
     cmi_cmtType = CMT_BACKGROUND;
-  } else if (strName.Matches("*messages\\statistics*")) {
+  } else if (strName.Matches("*messages/statistics*")) {
     cmi_cmtType = CMT_STATISTICS;
   } else {
     CPrintF("Unknown message type: %s\n", (const CTString&) fnm);

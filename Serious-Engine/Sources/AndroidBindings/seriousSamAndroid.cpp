@@ -94,9 +94,7 @@ void startGame(CTString level, bool isIntro) {
   game->SetSinglePlayerSession(sp);
   game->gm_bFirstLoading = TRUE;
 
-  if (game->NewGame(level, level, sp)) {
-    CPrintF("Started '%s'\n", level);
-  } else {
+  if (!game->NewGame(level, level, sp)) {
     FatalError("Cannot start '%s'\n", level);
   }
 
@@ -226,7 +224,6 @@ void startSeriousSamAndroid(CDrawPort *pdp) {
   startGame("Levels/LevelsMP/Intro.wld", true);
   g_isRunningIntro = true;
 
-  CPrintF(TRANS("\n--- Serious Engine CPP End ---\n"));
   CTStream::DisableStreamHandling();
 }
 
