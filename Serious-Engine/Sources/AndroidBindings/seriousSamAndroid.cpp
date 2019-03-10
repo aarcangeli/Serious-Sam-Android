@@ -183,10 +183,6 @@ void startSeriousSamAndroid(CDrawPort *pdp) {
 
   _pInput->EnableInput();
 
-  // todo: sound library
-//  snd_iFormat = Clamp( snd_iFormat, (INDEX)CSoundLibrary::SF_NONE, (INDEX)CSoundLibrary::SF_44100_16);
-//  _pSound->SetFormat( (enum CSoundLibrary::SoundFormat)snd_iFormat);
-
   CPrintF("Level list:\n"); // TODO: GetLevelInfo
   CDynamicStackArray<CTFileName> afnmDir;
   MakeDirList(afnmDir, CTString("Levels\\"), "*.wld", DLI_RECURSIVE | DLI_SEARCHCD);
@@ -273,8 +269,6 @@ void seriousSamDoGame(CDrawPort *pdp) {
   }
 
   game->GameMainLoop();
-
-  // todo: draw screen
 
   if (pdp != NULL && pdp->Lock()) {
 //    InfoMessage("Frame Start");

@@ -16,7 +16,7 @@ static_assert(sizeof(void *) == 4, "Serious engine require 32 bit address space"
 
 extern pthread_mutex_t g_mySeriousMutex;
 extern pthread_t g_mySeriousThreadId;
-extern pthread_t g_gameRunning;
+extern bool g_gameRunning;
 extern ANativeWindow *g_currentWindow;
 extern bool g_printProfiling;
 

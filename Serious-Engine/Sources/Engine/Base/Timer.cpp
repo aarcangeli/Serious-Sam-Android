@@ -128,6 +128,12 @@ void *CTimer_TimerMain(void *input) {
     // sleep
     usleep(ULONG(_pTimer->TickQuantum * 1000.0f * 1000.0f)); // microsecond
 
+    // TODO: unsynch
+    if (_pTimer->tm_bPaused) {
+      usleep(50000);
+      continue;
+    }
+
     // access to the list of handlers must be locked
     CTSingleLock slHooks(&_pTimer->tm_csHooks, TRUE);
     // handle all timers

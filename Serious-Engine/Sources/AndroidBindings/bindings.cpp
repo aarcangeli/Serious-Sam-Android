@@ -8,7 +8,7 @@ void processInputs();
 
 pthread_mutex_t g_mySeriousMutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_t g_mySeriousThreadId;
-pthread_t g_gameRunning = false;
+bool g_gameRunning = false;
 ANativeWindow *g_currentWindow;
 bool g_somethingChanged = false;
 bool g_printProfiling = false;
@@ -121,6 +121,7 @@ JNIEXPORT void JNICALL Java_com_github_aarcangeli_serioussamandroid_SeriousSamSu
   // wake up thread
   pthread_mutex_lock(&g_mySeriousMutex);
   g_gameRunning = true;
+  _pTimer->tm_bPaused = false;
   pthread_mutex_unlock(&g_mySeriousMutex);
 }
 
@@ -128,5 +129,6 @@ extern "C"
 JNIEXPORT void JNICALL Java_com_github_aarcangeli_serioussamandroid_SeriousSamSurface_nOnStop(JNIEnv* env, jobject obj) {
   pthread_mutex_lock(&g_mySeriousMutex);
   g_gameRunning = false;
+  _pTimer->tm_bPaused = true;
   pthread_mutex_unlock(&g_mySeriousMutex);
 }

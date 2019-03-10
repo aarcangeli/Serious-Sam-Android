@@ -88,6 +88,7 @@ public:
   CTCriticalSection tm_csHooks;   // access to timer hooks
   CListHead         tm_lhHooks;   // a list head for timer hooks
   BOOL tm_bInterrupt;       // set if interrupt is added
+  BOOL tm_bPaused = false;       // true if all timer should be paused
 
 // interface:
 public:
