@@ -24,6 +24,7 @@ extern void AndroidLogPrintI(CTString log);
 extern void AndroidLogPrintW(CTString log);
 extern void AndroidLogPrintE(CTString log);
 extern void AndroidCloseApplication();
+extern void CPrintF(CTString strBuffer);
 
 /* Throw an exception of formatted string. */
 //ENGINE_API extern void ThrowF_t(char *strFormat, ...); // throws char *
@@ -41,6 +42,8 @@ void ThrowF_t(const char *strPattern, Types... t) {
 //ENGINE_API extern void FatalError(const char *strFormat, ...);
 template<typename ... Types>
 void FatalError(const char *strPattern, Types... t) {
+  CTString log = CTString("Fatal Error: ") + stringFormatter::format(strPattern, t...);
+  CPrintF(log);
   AndroidLogPrintE(stringFormatter::format(strPattern, t...));
   AndroidCloseApplication();
 }
