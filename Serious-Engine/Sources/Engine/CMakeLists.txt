@@ -202,6 +202,8 @@ set(
   "${SE_BASE}/Terrain/TerrainTile.cpp"
   "${SE_BASE}/Engine.cpp"
   "${SE_BASE}/StdH.cpp"
+  "${SE_BASE}/Base/Synchronization.cpp"
+  "${SE_BASE}/Base/Synchronization_win32_fallback.cpp"
 
   ${SE_GEN_SOURCES}
 
@@ -210,7 +212,6 @@ set(
   #"${SE_BASE}/Graphics/MultiMonitor.cpp"
   #"${SE_BASE}/Sound/SoundLibrary.cpp"
   #"${SE_BASE}/Base/Input.cpp"
-  #"${SE_BASE}/Base/Synchronization.cpp"
   #"${SE_BASE}/Base/ErrorReporting.cpp"
   #"${SE_BASE}/Network/CommunicationInterface.cpp"
   #"${SE_BASE}/Graphics/ViewPort.cpp"
@@ -218,7 +219,6 @@ set(
   #"${SE_BASE}/GameAgent/GameAgent.cpp"
 
   ${SE_BASE}/_android/ErrorReporting.cpp
-  ${SE_BASE}/_android/Synchronization.cpp
   ${SE_BASE}/_android/Input.cpp
   ${SE_BASE}/Sound/SoundLibrary_android.cpp
   ${SE_BASE}/_android/Registry.cpp

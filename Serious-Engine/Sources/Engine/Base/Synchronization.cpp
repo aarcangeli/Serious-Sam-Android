@@ -16,6 +16,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "StdH.h"
 
 #include <Engine/Base/Synchronization.h>
+#include <Engine/Base/Synchronization_win32_fallback.h>
 
  
 /*
@@ -44,7 +45,7 @@ typedef struct {
    HANDLE hEvent;
 } OPTEX, *POPTEX;
 
-_declspec(thread) INDEX _iLastLockedMutex = 0;
+INDEX _iLastLockedMutex = 0;
 
 BOOL OPTEX_Initialize (POPTEX poptex) {
   
@@ -148,11 +149,11 @@ INDEX OPTEX_TryToEnter (POPTEX poptex)
       ASSERT(poptex->lLockCount>=-1);
 
       // if unlocked in the mean time
-      if (ctLocked<0) {
-        // NOTE: this has not been tested!
-        // ignore sent the signal
-        ResetEvent(poptex->hEvent);
-      }
+//      if (ctLocked<0) {
+//        // NOTE: this has not been tested!
+//        // ignore sent the signal
+//        ResetEvent(poptex->hEvent);
+//      }
 
       // lock failed
       return 0;
@@ -175,7 +176,7 @@ INDEX OPTEX_Leave (POPTEX poptex)
     
     // just decrement the lock count
     InterlockedDecrement(&poptex->lLockCount);
-    ASSERT(poptex->lLockCount>=-1);
+//    ASSERT(poptex->lLockCount>=-1);
     
   // if no more multiple locks from this thread
   } else {

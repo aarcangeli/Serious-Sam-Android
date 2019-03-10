@@ -6,7 +6,7 @@
 
 void processInputs();
 
-pthread_mutex_t g_mySeriousMutex;
+pthread_mutex_t g_mySeriousMutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_t g_mySeriousThreadId;
 pthread_t g_gameRunning = false;
 ANativeWindow *g_currentWindow;
@@ -23,7 +23,6 @@ JNIEXPORT void JNICALL Java_com_github_aarcangeli_serioussamandroid_SeriousSamSu
   env->ReleaseStringUTFChars(homeDir_, homeDir);
 
   // start main thread
-  pthread_mutex_init(&g_mySeriousMutex, 0);
   pthread_create(&g_mySeriousThreadId, 0, &seriousMain, nullptr);
 }
 
