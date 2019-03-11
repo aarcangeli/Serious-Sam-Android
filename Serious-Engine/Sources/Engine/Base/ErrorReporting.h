@@ -19,12 +19,15 @@ with this program; if not, write to the Free Software Foundation, Inc.,
   #pragma once
 #endif
 
+typedef void (*err_callback_t)(CTString error);
+
 // LogCat
 extern void AndroidLogPrintI(CTString log);
 extern void AndroidLogPrintW(CTString log);
 extern void AndroidLogPrintE(CTString log);
 extern void AndroidCloseApplication();
-extern void CPrintF(CTString strBuffer);
+extern void CPrintLog(CTString strBuffer);
+extern err_callback_t g_errorCalllback;
 
 /* Throw an exception of formatted string. */
 //ENGINE_API extern void ThrowF_t(char *strFormat, ...); // throws char *
@@ -42,10 +45,11 @@ void ThrowF_t(const char *strPattern, Types... t) {
 //ENGINE_API extern void FatalError(const char *strFormat, ...);
 template<typename ... Types>
 void FatalError(const char *strPattern, Types... t) {
-  CTString log = CTString("Fatal Error: ") + stringFormatter::format(strPattern, t...);
-  CPrintF(log);
+  CPrintLog(CTString("Fatal Error: ") + stringFormatter::format(strPattern, t...) + "\n");
+  if (g_errorCalllback) g_errorCalllback(stringFormatter::format(strPattern, t...));
   AndroidLogPrintE(stringFormatter::format(strPattern, t...));
-  AndroidCloseApplication();
+  // block application
+  while (1) sleep(100000);
 }
 
 /* Report warning without terminating program (stops program until user responds). */

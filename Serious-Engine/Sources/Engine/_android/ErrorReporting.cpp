@@ -9,18 +9,24 @@
 #define  LOGW(...)  __android_log_print(ANDROID_LOG_WARN,LOG_TAG,__VA_ARGS__)
 #define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
 
+extern void CPrintLog(CTString strBuffer);
+
 INDEX con_bNoWarnings = 0;
+err_callback_t g_errorCalllback = nullptr;
 
 extern void AndroidLogPrintI(CTString log) {
   LOGI("%s", log.str_String);
+  CPrintLog(CTString("INFO: ") + log + "\n");
 }
 
 extern void AndroidLogPrintW(CTString log) {
   LOGW("%s", log.str_String);
+  CPrintLog(CTString("WARN: ") + log + "\n");
 }
 
 extern void AndroidLogPrintE(CTString log) {
   LOGE("%s", log.str_String);
+  CPrintLog(CTString("ERROR: ") + log + "\n");
 }
 
 ENGINE_API extern const CTString GetWindowsError(DWORD dwWindowsErrorCode) {

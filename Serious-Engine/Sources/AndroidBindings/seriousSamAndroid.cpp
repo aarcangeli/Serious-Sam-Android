@@ -14,6 +14,7 @@
 
 typedef CGame *(*GAME_Create_t)(void);
 void CTimer_TimerFunc_internal(void);
+void CPrintLog(CTString strBuffer);
 
 namespace gles_adapter {
   void gles_adp_init();
@@ -174,6 +175,7 @@ void startSeriousPrestart() {
   _pNetwork->md_strGameID = "SeriousSam";
 
   game = GAME_Create();
+  _pTimer->tm_bPaused = !g_gameRunning;
 }
 
 void startSeriousSamAndroid(CDrawPort *pdp) {
@@ -221,6 +223,8 @@ void startSeriousSamAndroid(CDrawPort *pdp) {
   g_isRunningIntro = true;
 
   CTStream::DisableStreamHandling();
+
+  CPrintLog(TRANS("\n--- Serious Engine CPP End ---\n"));
 }
 
 void seriousSamDoGame(CDrawPort *pdp) {
@@ -255,9 +259,8 @@ void seriousSamDoGame(CDrawPort *pdp) {
   static float fps;
   if (start - lastFpsNow > UPDATE_TIME) {
     fps = (float) times / (start - lastFpsNow) * 1000 * 1000 * 1000;
-    lastFpsNow += UPDATE_TIME;
+    lastFpsNow = start;
     times = 0;
-    InfoMessage("fps: %.2f; frame: %.2f ms", fps, deltaFrame / 1000000.f);
   }
   times++;
 

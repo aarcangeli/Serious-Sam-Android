@@ -610,7 +610,7 @@ ditherOrder:
 // ------------------------------- error diffusion dithering routine
 
 ditherError:
-  WarningMessage("TODO: ditherError");
+//  WarningMessage("TODO: ditherError");
 //  slModulo++; // ??
   for (int y = 0; y < pixHeight; y++) {
     for (int x = 0; x < pixWidth; x++) {

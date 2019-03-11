@@ -2,7 +2,9 @@ package com.github.aarcangeli.serioussamandroid;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.hardware.input.InputManager;
@@ -17,6 +19,10 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
 
@@ -147,6 +153,33 @@ public class MainActivity extends AppCompatActivity {
         rightStick.setVisibility(keyboardVisibility);
         findViewById(R.id.fireBtn).setVisibility(keyboardVisibility);
         findViewById(R.id.jumpBtn).setVisibility(keyboardVisibility);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        EventBus.getDefault().unregister(this);
+    }
+
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    public void onFatalError(NativeEvents.FatalErrorEvent event) {
+        AlertDialog.Builder dlgAlert = new AlertDialog.Builder(this);
+        dlgAlert.setMessage(event.message);
+        dlgAlert.setTitle("Fatal Error");
+        dlgAlert.setPositiveButton("Close", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                System.exit(1);
+            }
+        });
+        dlgAlert.setCancelable(false);
+        dlgAlert.create().show();
     }
 
     @Override

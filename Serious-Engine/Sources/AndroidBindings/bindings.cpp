@@ -2,6 +2,7 @@
 #include <Engine/Graphics/ViewPort.h>
 #include <jni.h>
 #include <GLES2/gl2.h>
+#include <Engine/Base/CTString.h>
 #include "key_codes.h"
 
 void processInputs();
@@ -13,9 +14,33 @@ ANativeWindow *g_currentWindow;
 bool g_somethingChanged = false;
 bool g_printProfiling = false;
 PlayerControls g_IncomingControls {};
+JavaVM *g_javaWM;
+jclass g_NativeEvents;
+jmethodID g_reportFatalError;
+
+JNIEnv* getEnv() {
+  static thread_local JNIEnv* myEnv = nullptr;
+  if (!myEnv) {
+    g_javaWM->AttachCurrentThread(&myEnv, nullptr);
+  }
+  return myEnv;
+}
+
+extern "C"
+JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
+  // cache some vm variables
+  g_javaWM = vm;
+  JNIEnv* env = getEnv();
+  g_NativeEvents = env->FindClass("com/github/aarcangeli/serioussamandroid/NativeEvents");
+  ASSERT(g_NativeEvents);
+  g_NativeEvents = (jclass) env->NewGlobalRef(g_NativeEvents);
+  return JNI_VERSION_1_2;
+}
 
 extern "C"
 JNIEXPORT void JNICALL Java_com_github_aarcangeli_serioussamandroid_SeriousSamSurface_nInitialize(JNIEnv* env, jobject obj, jstring homeDir_) {
+  g_errorCalllback = &androidReportError;
+
   // set home dir
   const char *homeDir = env->GetStringUTFChars(homeDir_, 0);
   _fnmApplicationPath = CTString(homeDir) + "/";
@@ -121,7 +146,7 @@ JNIEXPORT void JNICALL Java_com_github_aarcangeli_serioussamandroid_SeriousSamSu
   // wake up thread
   pthread_mutex_lock(&g_mySeriousMutex);
   g_gameRunning = true;
-  _pTimer->tm_bPaused = false;
+  if (_pTimer) _pTimer->tm_bPaused = false;
   pthread_mutex_unlock(&g_mySeriousMutex);
 }
 
@@ -129,6 +154,13 @@ extern "C"
 JNIEXPORT void JNICALL Java_com_github_aarcangeli_serioussamandroid_SeriousSamSurface_nOnStop(JNIEnv* env, jobject obj) {
   pthread_mutex_lock(&g_mySeriousMutex);
   g_gameRunning = false;
-  _pTimer->tm_bPaused = true;
+  if (_pTimer) _pTimer->tm_bPaused = true;
   pthread_mutex_unlock(&g_mySeriousMutex);
+}
+
+void androidReportError(CTString error) {
+  JNIEnv* env = getEnv();
+  jmethodID method = env->GetStaticMethodID(g_NativeEvents, "reportFatalError", "(Ljava/lang/String;)V");
+  ASSERT(method);
+  env->CallStaticVoidMethod(g_NativeEvents, method, env->NewStringUTF(error.str_String));
 }

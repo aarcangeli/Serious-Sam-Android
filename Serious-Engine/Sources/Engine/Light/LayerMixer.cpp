@@ -275,7 +275,7 @@ void CLayerMixer::AddAmbientPoint(void)
   _slLightMax<<=7;
   _slLightStep>>=1;
 
-  WarningMessage("TODO: ASM");
+//  WarningMessage("TODO: ASM");
   return;
 //  __asm {
 //    // prepare interpolants
@@ -443,7 +443,7 @@ skipPixel:
 
 #else
 
-  WarningMessage("TODO: ASM");
+//  WarningMessage("TODO: ASM");
   return;
 //  for( PIX pixV=0; pixV<_iRowCt; pixV++)
 //  {
@@ -496,7 +496,7 @@ void CLayerMixer::AddDiffusionPoint(void)
   _slLightMax<<=7;
   _slLightStep>>=1;
 
-    WarningMessage("TODO: ASM");
+//    WarningMessage("TODO: ASM");
     return;
 //  __asm {
 //    // prepare interpolants

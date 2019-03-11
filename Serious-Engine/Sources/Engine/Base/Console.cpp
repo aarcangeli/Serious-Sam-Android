@@ -14,6 +14,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
 #include "stdh.h"
+#include "CTString.h"
 
 #include <Engine/Base/Console.h>
 #include <Engine/Base/Console_Internal.h>
@@ -282,6 +283,23 @@ extern void CPrintF(CTString strBuffer)
   }
   // print it to the main console
   _pConsole->PutString(strBuffer);
+}
+
+// Print text into log.
+extern void CPrintLog(CTString strBuffer)
+{
+  if (_pConsole==NULL) {
+    return;
+  }
+
+  // synchronize access to console
+  CTSingleLock slConsole(&_pConsole->con_csConsole, TRUE);
+
+  // print it into file
+  if (_pConsole->con_fLog!=NULL) {
+    fprintf(_pConsole->con_fLog, "%s", strBuffer.str_String);
+    fflush(_pConsole->con_fLog);
+  }
 }
 
 // Add a string of text to console
