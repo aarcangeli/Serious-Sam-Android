@@ -297,7 +297,7 @@ void seriousSamDoGame(CDrawPort *pdp) {
     pdp->SetFont(_pfdDisplayFont);
     pdp->SetTextScaling(1);
     pdp->SetTextAspect(1.0f);
-    CTString str = CTString(0, "V1.01 fps: %.2f; frame: %.2f ms", fps, deltaFrame / 1000000.f);
+    CTString str = CTString(0, "V1.02 fps: %.2f; frame: %.2f ms", fps, deltaFrame / 1000000.f);
     pdp->PutText(str, 0, 0, LCDGetColor(C_GREEN | 255, "display mode"));
 
     pdp->Unlock();
