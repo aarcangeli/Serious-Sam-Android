@@ -81,6 +81,9 @@ void CViewPort::Initialize(ANativeWindow *window) {
   }
 
   if (surface) {
+    if (!eglMakeCurrent(display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT)) {
+      WarningMessage("eglMakeCurrent(null) returned error 0x%04X", eglGetError());
+    }
     if (!eglDestroySurface(display, surface)) {
       WarningMessage("eglCreateContext() returned error 0x%04X", eglGetError());
     }
