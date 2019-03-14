@@ -19,6 +19,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
   #pragma once
 #endif
 
+void AssertFailed(const char *string);
+
 #ifdef _MSC_VER  /* rcg10042001 */
 
 #ifdef __cplusplus
@@ -93,9 +95,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
   /* CT assertion macros */
   #ifndef ASSERT
+    #define S1(x) #x
+    #define S2(x) S1(x)
     #define ASSERT(expr) 				            \
       if(!(expr)) {				                  \
         /*SAFEBREAKPOINT;*/                     \
+        AssertFailed("Assertion failed at " __FILE__ ":"  S2(__LINE__) " " #expr "\n");		\
         _assert(#expr,__FILE__,__LINE__);		\
       } else NOTHING
   #endif
@@ -103,12 +108,14 @@ with this program; if not, write to the Free Software Foundation, Inc.,
   #define ASSERTALWAYS(msg)			                \
     if (1) {					                          \
       /*SAFEBREAKPOINT;*/                           \
+      AssertFailed("Assertion failed at " __FILE__ ":"  S2(__LINE__) "\n");		\
       _assert(msg,__FILE__,__LINE__); 	      	\
     } else NOTHING
 
   #define ASSERTMSG(expr, msg) 			            \
     if(!(expr)) {				                        \
       /*SAFEBREAKPOINT;*/                           \
+      AssertFailed("Assertion failed at " __FILE__ ":"  S2(__LINE__) " " msg " (" #expr ")\n");		\
       _assert(msg,__FILE__,__LINE__); 	        \
     } else NOTHING
   #define DEBUGSTRING(str) (str)

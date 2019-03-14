@@ -52,6 +52,8 @@ void FatalError(const char *strPattern, Types... t) {
   while (1) sleep(100000);
 }
 
+void AssertFailed(const char *string);
+
 /* Report warning without terminating program (stops program until user responds). */
 //ENGINE_API extern void WarningMessage(const char *strFormat, ...);
 template<typename ... Types>

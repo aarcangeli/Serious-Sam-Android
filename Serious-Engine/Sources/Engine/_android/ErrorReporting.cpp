@@ -55,3 +55,7 @@ void AndroidCloseApplication() {
   // kill process
   throw 0;
 }
+
+void AssertFailed(const char *string) {
+  CPrintLog(stringFormatter::format("%s\n", string));
+}
