@@ -293,53 +293,86 @@ namespace gles_adapter {
 
   // state managment
   void gles_adp_glEnable(GLenum cap) {
-    if (cap == GL_TEXTURE_2D) {
-      isGL_TEXTURE_2D = true;
-      return;
+    switch (cap) {
+      case GL_TEXTURE_2D:
+        isGL_TEXTURE_2D = true;
+        break;
+      case GL_ALPHA_TEST:
+        isGL_ALPHA_TEST = true;
+        break;
+      case GL_BLEND:
+      case GL_CULL_FACE:
+      case GL_DEPTH_TEST:
+      case GL_DITHER:
+      case GL_POLYGON_OFFSET_FILL:
+      case GL_SAMPLE_ALPHA_TO_COVERAGE:
+      case GL_SAMPLE_COVERAGE:
+      case GL_SCISSOR_TEST:
+      case GL_STENCIL_TEST:
+        glEnable(cap);
+        setError(glGetError());
+        break;
+      default:
+        reportError("glEnable");
     }
-    if (cap == GL_ALPHA_TEST) {
-      isGL_ALPHA_TEST = true;
-      return;
-    }
-    glEnable(cap);
-    setError(glGetError());
   };
 
   void gles_adp_glDisable(GLenum cap) {
-    if (cap == GL_TEXTURE_2D) {
-      isGL_TEXTURE_2D = false;
-      return;
+    switch (cap) {
+      case GL_TEXTURE_2D:
+        isGL_TEXTURE_2D = false;
+        break;
+      case GL_ALPHA_TEST:
+        isGL_ALPHA_TEST = false;
+        break;
+      case GL_BLEND:
+      case GL_CULL_FACE:
+      case GL_DEPTH_TEST:
+      case GL_DITHER:
+      case GL_POLYGON_OFFSET_FILL:
+      case GL_SAMPLE_ALPHA_TO_COVERAGE:
+      case GL_SAMPLE_COVERAGE:
+      case GL_SCISSOR_TEST:
+      case GL_STENCIL_TEST:
+        glDisable(cap);
+        setError(glGetError());
+        break;
+      default:
+        reportError("glDisable");
     }
-    if (cap == GL_ALPHA_TEST) {
-      isGL_ALPHA_TEST = false;
-      return;
-    }
-    glDisable(cap);
-    setError(glGetError());
   };
 
   GLboolean gles_adp_glIsEnabled(GLenum cap) {
-    if (cap == GL_TEXTURE_2D) {
-      return isGL_TEXTURE_2D;
+    switch (cap) {
+      case GL_TEXTURE_2D:
+        return isGL_TEXTURE_2D;
+      case GL_ALPHA_TEST:
+        return isGL_ALPHA_TEST;
+      case GL_BLEND:
+      case GL_CULL_FACE:
+      case GL_DEPTH_TEST:
+      case GL_DITHER:
+      case GL_POLYGON_OFFSET_FILL:
+      case GL_SAMPLE_ALPHA_TO_COVERAGE:
+      case GL_SAMPLE_COVERAGE:
+      case GL_SCISSOR_TEST:
+      case GL_STENCIL_TEST: {
+        const GLboolean &enabled = glIsEnabled(cap);
+        setError(glGetError());
+        return enabled;
+      }
+      case GL_VERTEX_ARRAY:
+        return isGL_VERTEX_ARRAY;
+      case GL_TEXTURE_COORD_ARRAY:
+        return isGL_TEXTURE_COORD_ARRAY;
+      case GL_NORMAL_ARRAY:
+        return isGL_NORMAL_ARRAY;
+      case GL_COLOR_ARRAY:
+        return isGL_COLOR_ARRAY;
+      default:
+        reportError("glIsEnabled");
+        return false;
     }
-    if (cap == GL_VERTEX_ARRAY) {
-      return isGL_VERTEX_ARRAY;
-    }
-    if (cap == GL_TEXTURE_COORD_ARRAY) {
-      return isGL_TEXTURE_COORD_ARRAY;
-    }
-    if (cap == GL_NORMAL_ARRAY) {
-      return isGL_NORMAL_ARRAY;
-    }
-    if (cap == GL_COLOR_ARRAY) {
-      return isGL_COLOR_ARRAY;
-    }
-    if (cap == GL_ALPHA_TEST) {
-      return isGL_ALPHA_TEST;
-    }
-    const GLboolean &enabled = glIsEnabled(cap);
-    setError(glGetError());
-    return enabled;
   };
 
   void gles_adp_glClearColor(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha) {
