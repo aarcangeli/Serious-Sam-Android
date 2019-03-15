@@ -31,8 +31,8 @@ android {
         applicationId "com.github.aarcangeli.serioussamandroid"
         minSdkVersion 19
         targetSdkVersion 28
-        versionCode 102
-        versionName "1.02"
+        versionCode 1021
+        versionName "1.02.1"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             cmake {
