@@ -241,6 +241,16 @@ extern void (*gfxSetConstantColor)(COLOR col);
 extern void (*gfxEnableColorArray)(void);
 extern void (*gfxDisableColorArray)(void);
 
+// BUFFER DATA
+extern void gfxGenerateBuffer(UINT &uiBufObject);
+
+// INDEX BUFFER DATA
+extern void gfxSetElementArrayBuffer(UINT uiBufObject);
+extern void gfxElementArrayBufferData(UWORD *puwData, ULONG ulCount);
+
+// draw uploaded elements
+// NB: call gfxGenerateBuffer(obj) before and gfxGenerateBuffer(0) after
+extern void gfxDrawElementArrayBuffer(ULONG ulOffset, INDEX iCount);
 
 // MISC
 

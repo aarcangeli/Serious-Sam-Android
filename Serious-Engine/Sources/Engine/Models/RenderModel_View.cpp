@@ -264,6 +264,7 @@ static void PrepareSurfaceElements( ModelMipInfo &mmi, MappingSurface &ms)
   INDEX ctTriangles = 0;
   {for( INDEX iipo=0; iipo<ms.ms_aiPolygons.Count(); iipo++) {
     ModelPolygon &mp = mmi.mmpi_Polygons[ ms.ms_aiPolygons[iipo]];
+    ASSERT(mp.mp_PolygonVertices.Count() >= 3);
     ctTriangles += (mp.mp_PolygonVertices.Count()-2);
   }}
   ASSERT( ctTriangles>=ms.ms_aiPolygons.Count());
@@ -334,14 +335,17 @@ static void PrepareSurfaceElements( ModelMipInfo &mmi, MappingSurface &ms)
 
   // create elements
   ms.ms_ctSrfEl = ctTriangles*3;
-  INDEX *paiElements = mmi.mmpi_aiElements.Push(ms.ms_ctSrfEl);
+  UWORD *paiElements = mmi.mmpi_aiElements.Push(ms.ms_ctSrfEl);
   // dump all triangles
   //_RPT0(_CRT_WARN, "Result:\n");
   INDEX iel = 0;
   {for( INDEX itri=0; itri<ctTriangles; itri++){
-    paiElements[iel++] = _atriDone[itri].i0;
-    paiElements[iel++] = _atriDone[itri].i1;
-    paiElements[iel++] = _atriDone[itri].i2;
+    ASSERT((UWORD) _atriDone[itri].i0 == _atriDone[itri].i0);
+    ASSERT((UWORD) _atriDone[itri].i1 == _atriDone[itri].i1);
+    ASSERT((UWORD) _atriDone[itri].i2 == _atriDone[itri].i2);
+    paiElements[iel++] = (UWORD) _atriDone[itri].i0;
+    paiElements[iel++] = (UWORD) _atriDone[itri].i1;
+    paiElements[iel++] = (UWORD) _atriDone[itri].i2;
     //_RPT3(_CRT_WARN, "%d %d %d\n", _atriDone[itri].i0, _atriDone[itri].i1, _atriDone[itri].i2);
   }}
   mmi.mmpi_ctTriangles += ctTriangles;
@@ -569,8 +573,22 @@ static void PrepareModelMipForRendering( CModelData &md, INDEX iMip)
       }
     }
   }
+
+  mmi.mmpi_bNeedUpdate = true;
 }
 
+void SyncModelMipInfo(ModelMipInfo &mmi) {
+  // prepare index array
+  if (mmi.mmpi_ulObject == NONE) {
+    gfxGenerateBuffer(mmi.mmpi_ulObject);
+  }
+  if (mmi.mmpi_bNeedUpdate) {
+    gfxSetElementArrayBuffer(mmi.mmpi_ulObject);
+    gfxElementArrayBufferData(&mmi.mmpi_aiElements[0], mmi.mmpi_ctTriangles * 3);
+    gfxSetElementArrayBuffer(0);
+    mmi.mmpi_bNeedUpdate = false;
+  }
+}
 
 extern void PrepareModelForRendering( CModelData &md)
 {
@@ -777,23 +795,24 @@ static BOOL IsModelInHaze( FLOAT3D &vMin, FLOAT3D &vMax)
 
 
 // render all pending elements
-static void FlushElements( INDEX ctElem, INDEX *pai)
+static void FlushElements( INDEX ctElem, INDEX pai)
 {
   ASSERT(ctElem>0);
   // choose rendering mode
   extern INDEX mdl_bShowStrips;
   if( _bMultiPlayer) mdl_bShowStrips = 0; // don't allow in multiplayer mode!
+  mdl_bShowStrips = 0; // aarcangeli: don't allow in android
   if( !mdl_bShowStrips) {
     _pfModelProfile.StartTimer( CModelProfile::PTI_VIEW_DRAWELEMENTS);
     _pfModelProfile.IncrementTimerAveragingCounter( CModelProfile::PTI_VIEW_DRAWELEMENTS, ctElem/3);
     _pGfx->gl_ctModelTriangles += ctElem/3;
-    gfxDrawElements( ctElem, pai);
+    gfxDrawElementArrayBuffer(pai, ctElem);
     extern INDEX mdl_bShowTriangles;
     if( _bMultiPlayer) mdl_bShowTriangles = 0; // don't allow in multiplayer mode!
     if( mdl_bShowTriangles) {
       gfxSetConstantColor(C_YELLOW|222); // this also disables color array
       gfxPolygonMode(GFX_LINE);
-      gfxDrawElements( ctElem, pai);
+      gfxDrawElementArrayBuffer(pai, ctElem);
       gfxPolygonMode(GFX_FILL);
       gfxEnableColorArray(); // need to re-enable color array
     } // done
@@ -801,7 +820,7 @@ static void FlushElements( INDEX ctElem, INDEX *pai)
   }
   // show strips
   else if( _eAPI==GAT_OGL) {
-    DrawStrips( ctElem, pai);
+//    DrawStrips( ctElem, pai);
     OGL_CHECKERROR;
   }
 }
@@ -877,6 +896,7 @@ static void RenderOneSide( CRenderModel &rm, BOOL bBackSide, ULONG ulLayerFlags)
   INDEX iStartElem=0;
   INDEX ctElements=0;
   ModelMipInfo &mmi = *rm.rm_pmmiMip;
+  gfxSetElementArrayBuffer(mmi.mmpi_ulObject);
   {FOREACHINSTATICARRAY( mmi.mmpi_MappingSurfaces, MappingSurface, itms)
   {
     const MappingSurface &ms = *itms;
@@ -888,7 +908,7 @@ static void RenderOneSide( CRenderModel &rm, BOOL bBackSide, ULONG ulLayerFlags)
      ||  (bBackSide && !(ulFlags&SRF_DOUBLESIDED)) // rendering back side and surface is not double sided,
      || !(_ulColorMask&ms.ms_ulOnColor)  // not on or off.
      ||  (_ulColorMask&ms.ms_ulOffColor)) {
-      if( ctElements>0) FlushElements( ctElements, &mmi.mmpi_aiElements[iStartElem]);
+      if( ctElements>0) FlushElements( ctElements, iStartElem);
       iStartElem+= ctElements+ms.ms_ctSrfEl;
       ctElements = 0;
       continue;
@@ -904,7 +924,7 @@ static void RenderOneSide( CRenderModel &rm, BOOL bBackSide, ULONG ulLayerFlags)
       // if surface uses rendering parameters different than last one
       if( sttLast!=stt  || slBumpLast!=slBump) {
         // set up new API states
-        if( ctElements>0) FlushElements( ctElements, &mmi.mmpi_aiElements[iStartElem]);
+        if( ctElements>0) FlushElements( ctElements, iStartElem);
         SetRenderingParameters(stt, slBump);
         sttLast = stt;
         slBumpLast = slBump;
@@ -915,7 +935,8 @@ static void RenderOneSide( CRenderModel &rm, BOOL bBackSide, ULONG ulLayerFlags)
     ctElements += ms.ms_ctSrfEl;
   }}
   // flush leftovers
-  if( ctElements>0) FlushElements( ctElements, &mmi.mmpi_aiElements[iStartElem]);
+  if( ctElements>0) FlushElements( ctElements, iStartElem);
+  gfxSetElementArrayBuffer(0);
   // all done
   _pfModelProfile.StopTimer( CModelProfile::PTI_VIEW_ONESIDE);
 }
@@ -943,13 +964,14 @@ static void RenderColors( CRenderModel &rm)
   INDEX iStartElem=0;
   INDEX ctElements=0;
   ModelMipInfo &mmi = *rm.rm_pmmiMip;
+  gfxSetElementArrayBuffer(mmi.mmpi_ulObject);
   FOREACHINSTATICARRAY( mmi.mmpi_MappingSurfaces, MappingSurface, itms)
   {
     const MappingSurface &ms = *itms;
     // skip if surface is invisible or empty
     if( (ms.ms_ulRenderingFlags&SRF_INVISIBLE) || ms.ms_ctSrfVx==0
     || !(_ulColorMask&ms.ms_ulOnColor) || (_ulColorMask&ms.ms_ulOffColor)) {
-      if( ctElements>0) FlushElements( ctElements, &mmi.mmpi_aiElements[iStartElem]);
+      if( ctElements>0) FlushElements( ctElements, iStartElem);
       iStartElem+= ctElements+ms.ms_ctSrfEl;
       ctElements = 0;
       continue;
@@ -971,7 +993,8 @@ static void RenderColors( CRenderModel &rm)
     ctElements += ms.ms_ctSrfEl;
   }
   // all done
-  if( ctElements>0) FlushElements( ctElements, &mmi.mmpi_aiElements[iStartElem]);
+  if( ctElements>0) FlushElements( ctElements, iStartElem);
+  gfxSetElementArrayBuffer(0);
 }
 
 
@@ -994,6 +1017,7 @@ static void RenderWireframe(CRenderModel &rm)
 
   COLOR colWire = _mrpModelRenderPrefs.GetInkColor()|CT_OPAQUE;
   ModelMipInfo &mmi = *rm.rm_pmmiMip;
+  gfxSetElementArrayBuffer(mmi.mmpi_ulObject);
 
   // first, render hidden lines (if required)
   if( rm.rm_rtRenderType&RT_HIDDEN_LINES)
@@ -1006,7 +1030,7 @@ static void RenderWireframe(CRenderModel &rm)
       const MappingSurface &ms = *itms;
       // skip if surface is invisible or empty
       if( (ms.ms_ulRenderingFlags&SRF_INVISIBLE) || ms.ms_ctSrfVx==0) {
-        if( ctElements>0) FlushElements( ctElements, &mmi.mmpi_aiElements[iStartElem]);
+        if( ctElements>0) FlushElements( ctElements, iStartElem);
         iStartElem+= ctElements+ms.ms_ctSrfEl;
         ctElements = 0;
         continue;
@@ -1017,7 +1041,7 @@ static void RenderWireframe(CRenderModel &rm)
       ctElements += ms.ms_ctSrfEl;
     }
     // all done
-    if( ctElements>0) FlushElements( ctElements, &mmi.mmpi_aiElements[iStartElem]);
+    if( ctElements>0) FlushElements( ctElements, iStartElem);
     gfxCullFace(GFX_BACK);
   }
   // then, render visible lines (if required)
@@ -1031,7 +1055,7 @@ static void RenderWireframe(CRenderModel &rm)
       const MappingSurface &ms = *itms;
       // done if surface is invisible or empty
       if( (ms.ms_ulRenderingFlags&SRF_INVISIBLE) || ms.ms_ctSrfVx==0) {
-        if( ctElements>0) FlushElements( ctElements, &mmi.mmpi_aiElements[iStartElem]);
+        if( ctElements>0) FlushElements( ctElements, iStartElem);
         iStartElem+= ctElements+ms.ms_ctSrfEl;
         ctElements = 0;
         continue;
@@ -1042,10 +1066,11 @@ static void RenderWireframe(CRenderModel &rm)
       ctElements += ms.ms_ctSrfEl;
     }
     // all done
-    if( ctElements>0) FlushElements( ctElements, &mmi.mmpi_aiElements[iStartElem]);
+    if( ctElements>0) FlushElements( ctElements, iStartElem);
   }
   // all done
   gfxPolygonMode(GFX_FILL);
+  gfxSetElementArrayBuffer(0);
 }
 
 
@@ -1787,6 +1812,8 @@ void CModelObject::RenderModel_View( CRenderModel &rm)
   FLOAT2D     *pvTexCoord;
         ModelMipInfo &mmi = *rm.rm_pmmiMip;
   const ModelMipInfo &mmi0 = rm.rm_pmdModelData->md_MipInfos[0];
+
+  SyncModelMipInfo(mmi);
 
   // calculate projection of viewer in absolute space
   FLOATmatrix3D &mViewer = _aprProjection->pr_ViewerRotationMatrix;
@@ -3276,6 +3303,7 @@ void CModelObject::RenderShadow_View( CRenderModel &rm, const CPlacement3D &plLi
   // for each surface in current mip model
   INDEX iStartElem=0;
   INDEX ctElements=0;
+  gfxSetElementArrayBuffer(mmi.mmpi_ulObject);
   {FOREACHINSTATICARRAY( mmi.mmpi_MappingSurfaces, MappingSurface, itms)
   { 
     // done if surface is invisible or empty
@@ -3287,13 +3315,14 @@ void CModelObject::RenderShadow_View( CRenderModel &rm, const CPlacement3D &plLi
       continue;
     }
     // flush batched elements
-    if( ctElements>0) FlushElements( ctElements, &mmi.mmpi_aiElements[iStartElem]);
+    if( ctElements>0) FlushElements( ctElements, iStartElem);
     _pfModelProfile.IncrementTimerAveragingCounter( CModelProfile::PTI_VIEW_SHAD_RENDER, ctElements/3);
     iStartElem+= ctElements+ms.ms_ctSrfEl;
     ctElements = 0;
   }}
   // flush leftovers
-  if( ctElements>0) FlushElements( ctElements, &mmi.mmpi_aiElements[iStartElem]);
+  if( ctElements>0) FlushElements( ctElements, iStartElem);
+  gfxSetElementArrayBuffer(0);
 
   // done
   gfxUnlockArrays();

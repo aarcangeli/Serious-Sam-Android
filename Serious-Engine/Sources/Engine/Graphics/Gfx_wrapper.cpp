@@ -59,6 +59,7 @@ extern GfxComp  GFX_eDepthFunc = GFX_LESS_EQUAL;
 extern GfxFace  GFX_eCullFace  = GFX_NONE;
 extern BOOL       GFX_abTexture[GFX_MAXTEXUNITS] = { FALSE, FALSE, FALSE, FALSE };
 extern INDEX GFX_iTexModulation[GFX_MAXTEXUNITS] = { 0, 0, 0, 0 };
+extern UINT GFX_uiElementBufObject = 0;
 
 // last ortho/frustum values (frustum has negative sign, because of orgho-frustum switching!)
 extern FLOAT GFX_fLastL = 0;
@@ -882,4 +883,53 @@ extern void GFX_SetFunctionPointers( INDEX iAPI)
     gfxLockArrays           = &none_void;
     gfxSetColorMask         = &none_SetColorMask;
   }
+}
+
+// gles functions
+// TODO: move in a better place
+#include <GLES2/gl2.h>
+ULONG vertexCount[1024];
+
+namespace gles_adapter {
+  void syncBuffers(GLsizei vertices);
+  void syncBuffersPost();
+  void setError(GLenum error);
+}
+
+void gfxGenerateBuffer(UINT &uiBufObject) {
+  ASSERT(_pGfx->gl_eCurrentAPI == (INDEX) GAT_OGL);
+  glGenBuffers(1, &uiBufObject);
+}
+
+void gfxSetElementArrayBuffer(UINT uiBufObject) {
+  ASSERT(_pGfx->gl_eCurrentAPI == (INDEX) GAT_OGL);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, uiBufObject);
+  GFX_uiElementBufObject = uiBufObject;
+  OGL_CHECKERROR;
+}
+
+void gfxElementArrayBufferData(UWORD *puwData, ULONG ulCount) {
+  ASSERT(_pGfx->gl_eCurrentAPI == (INDEX) GAT_OGL);
+  ASSERT(GFX_uiElementBufObject);
+  ASSERT(GFX_uiElementBufObject < (sizeof(vertexCount) / sizeof(ULONG)));
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, ulCount * sizeof(UWORD), puwData, GL_STATIC_DRAW);
+
+  // find max verticies
+  ULONG totalVertices = 0;
+  for (uint32_t i = 0; i < ulCount; i++) {
+    if (puwData[i] >= totalVertices) {
+      totalVertices = puwData[i] + 1;
+    }
+  }
+  vertexCount[GFX_uiElementBufObject] = totalVertices;
+}
+
+void gfxDrawElementArrayBuffer(ULONG ulOffset, INDEX iCount) {
+  ASSERT(_pGfx->gl_eCurrentAPI == (INDEX) GAT_OGL);
+  ASSERT(GFX_uiElementBufObject);
+
+  gles_adapter::syncBuffers(vertexCount[GFX_uiElementBufObject]);
+  glDrawElements(GL_TRIANGLES, iCount, GL_UNSIGNED_SHORT, (const void *) (ulOffset * 2));
+  gles_adapter::syncBuffersPost();
+  gles_adapter::setError(glGetError());
 }
