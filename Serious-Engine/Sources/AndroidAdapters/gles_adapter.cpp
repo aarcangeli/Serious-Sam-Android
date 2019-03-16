@@ -204,16 +204,6 @@ namespace gles_adapter {
       throw "Cannot create program";
     }
 
-    // check if client buffer is enabled on this system
-    float dummy[10];
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glVertexAttribPointer(INDEX_POSITION, 1, GL_FLOAT, false, 0, &dummy);
-    glEnableVertexAttribArray(INDEX_COLOR);
-    glDrawArrays(GL_TRIANGLES, 0, 0);
-    if (glGetError()){
-      USE_BUFFER_DATA = true;
-    }
-
     glUseProgram(program);
 
     projMatIdx = glGetUniformLocation(program, "projMat");
