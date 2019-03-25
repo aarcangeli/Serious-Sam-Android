@@ -52,6 +52,7 @@ void blockingError(const char *func, GLenum error);
 #define GL_CLAMP 0x2900
 #define GL_ALPHA_TEST 0x0BC0
 #define GL_TEXTURE_MAX_ANISOTROPY_EXT 0x84FE
+#define GL_CLIP_PLANE0 0x3000
 
 namespace gles_adapter {
   struct GenericBuffer {
@@ -314,6 +315,10 @@ namespace gles_adapter {
       case GL_ALPHA_TEST:
         isGL_ALPHA_TEST = true;
         break;
+      case GL_CLIP_PLANE0:
+        reportError("glEnable(GL_CLIP_PLANE0);");
+        isGL_CLIP_PLANE0 = true;
+        break;
       case GL_BLEND:
       case GL_CULL_FACE:
       case GL_DEPTH_TEST:
@@ -339,6 +344,9 @@ namespace gles_adapter {
       case GL_ALPHA_TEST:
         isGL_ALPHA_TEST = false;
         break;
+      case GL_CLIP_PLANE0:
+        isGL_CLIP_PLANE0 = false;
+        break;
       case GL_BLEND:
       case GL_CULL_FACE:
       case GL_DEPTH_TEST:
@@ -362,6 +370,8 @@ namespace gles_adapter {
         return isGL_TEXTURE_2D;
       case GL_ALPHA_TEST:
         return isGL_ALPHA_TEST;
+      case GL_CLIP_PLANE0:
+        return isGL_CLIP_PLANE0;
       case GL_BLEND:
       case GL_CULL_FACE:
       case GL_DEPTH_TEST:
