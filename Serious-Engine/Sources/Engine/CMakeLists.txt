@@ -86,6 +86,7 @@ set(
   "${SE_BASE}/Graphics/Gfx_Direct3D_Textures.cpp"
   "${SE_BASE}/Graphics/Gfx_OpenGL.cpp"
   "${SE_BASE}/Graphics/Gfx_OpenGL_Textures.cpp"
+  "${SE_BASE}/Graphics/Gfx_OpenGL_Shaders.cpp"
   "${SE_BASE}/Graphics/Gfx_wrapper.cpp"
   "${SE_BASE}/Graphics/GfxLibrary.cpp"
   "${SE_BASE}/Graphics/GfxProfile.cpp"

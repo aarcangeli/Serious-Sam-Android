@@ -2,6 +2,11 @@
 // glue between opengl 1.2 and opengl es 2.0
 
 namespace gles_adapter {
+  // internal api
+  float *getModelViewMat();
+  float *getProjMat();
+  bool isTexture2d();
+  bool isAlphaTest();
   void gles_adp_init();
 
     /*

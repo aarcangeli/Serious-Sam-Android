@@ -18,6 +18,7 @@ typedef double GLclampd;
 void reportError(const char *func);
 
 void blockingError(const char *func);
+void blockingError(const char *func, GLenum error);
 
 /**
  * TODO:
@@ -128,6 +129,7 @@ namespace gles_adapter {
   bool isGL_ALPHA_TEST = false;
   bool isGL_TEXTURE_2D = false;
   bool isGL_VERTEX_ARRAY = false;
+  bool isGL_CLIP_PLANE0 = false;
   bool isGL_TEXTURE_COORD_ARRAY = false;
   bool isGL_NORMAL_ARRAY = false;
   bool isGL_COLOR_ARRAY = false;
@@ -140,6 +142,22 @@ namespace gles_adapter {
   glm::mat4 modelViewMat = glm::mat4(1);
   glm::mat4 projMat = glm::mat4(1);
   glm::mat4 *currentMatrix = &modelViewMat;
+
+  float *getProjMat() {
+    return glm::value_ptr(gles_adapter::projMat);
+  }
+
+  float *getModelViewMat() {
+    return glm::value_ptr(gles_adapter::modelViewMat);
+  }
+
+  bool isTexture2d() {
+    return isGL_TEXTURE_2D;
+  }
+
+  bool isAlphaTest() {
+    return isGL_ALPHA_TEST;
+  }
 
   GLint projMatIdx, modelViewMatIdx, mainTextureLoc, enableTextureLoc, enableAlphaTestLoc;
   GLenum alphaTestFunc;
@@ -183,7 +201,6 @@ namespace gles_adapter {
   };
 
   void gles_adp_init() {
-    GLint success;
 
     // create program
     program = glCreateProgram();
@@ -195,23 +212,26 @@ namespace gles_adapter {
     glBindAttribLocation(program, INDEX_TEXTURE_COORD, "textureCoord");
     glLinkProgram(program);
 
+    GLint success;
     glGetProgramiv(program, GL_LINK_STATUS, &success);
-    if (!success) {
-      throw "Cannot link program";
+    if (!success || glGetError()) {
+      blockingError("Cannot create main program");
     }
-
-    if (glGetError()) {
-      throw "Cannot create program";
-    }
-
+    setError(glGetError());
     glUseProgram(program);
 
+    // get uniforms
     projMatIdx = glGetUniformLocation(program, "projMat");
     modelViewMatIdx = glGetUniformLocation(program, "modelViewMat");
     mainTextureLoc = glGetUniformLocation(program, "mainTexture");
     if (mainTextureLoc >= 0) glUniform1i(mainTextureLoc, 0);
     enableTextureLoc = glGetUniformLocation(program, "enableTexture");
     enableAlphaTestLoc = glGetUniformLocation(program, "enableAlphaTest");
+
+    GLenum error = glGetError();
+    if (error) {
+      blockingError("Something wrong with OpenGL: ", error);
+    }
   }
 
   void syncBuffers(GLsizei vertices) {
@@ -257,7 +277,12 @@ namespace gles_adapter {
         glVertexAttribPointer(INDEX_COLOR, cp.size, cp.type, GL_TRUE, cp.stride, cp.ptr);
       }
       glEnableVertexAttribArray(INDEX_COLOR);
+    } else {
+      reportError("color array disabled");
     }
+
+    // program
+    glUseProgram(program);
 
     // uniforms
     glUniformMatrix4fv(projMatIdx, 1, GL_FALSE, glm::value_ptr(projMat));
@@ -268,7 +293,6 @@ namespace gles_adapter {
       blockingError("glAlphaFunc with invalid arguments");
     }
     glUniform1f(enableAlphaTestLoc, isGL_ALPHA_TEST ? 1 : 0);
-    glUseProgram(program);
   }
 
   void syncBuffersPost() {

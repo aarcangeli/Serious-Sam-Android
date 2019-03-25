@@ -226,9 +226,13 @@ extern INDEX gfxGetFormatPixRatio(  ULONG ulTextureFormat);
 // VERTEX ARRAYS
 
 // prepare arrays for API
+[[deprecated("Replace with buffers")]]
 extern void (*gfxSetVertexArray)( GFXVertex4 *pvtx, INDEX ctVtx);
+[[deprecated("Replace with buffers")]]
 extern void (*gfxSetNormalArray)( GFXNormal *pnor);
+[[deprecated("Replace with buffers")]]
 extern void (*gfxSetTexCoordArray)( GFXTexCoord *ptex, BOOL b4); // b4 = projective mapping (4 FLOATS)
+[[deprecated("Replace with buffers")]]
 extern void (*gfxSetColorArray)( GFXColor *pcol);
 
 
@@ -241,16 +245,28 @@ extern void (*gfxSetConstantColor)(COLOR col);
 extern void (*gfxEnableColorArray)(void);
 extern void (*gfxDisableColorArray)(void);
 
-// BUFFER DATA
+// BUFFER arrays
 extern void gfxGenerateBuffer(UINT &uiBufObject);
 
 // INDEX BUFFER DATA
 extern void gfxSetElementArrayBuffer(UINT uiBufObject);
 extern void gfxElementArrayBufferData(UWORD *puwData, ULONG ulCount);
 
+// ARRAY BUFFER DATA
+extern void gfxSetArrayBuffer(UINT uiBufObject);
+extern void gfxArrayBufferData(void *pvData, ULONG ulSize);
+
 // draw uploaded elements
-// NB: call gfxGenerateBuffer(obj) before and gfxGenerateBuffer(0) after
-extern void gfxDrawElementArrayBuffer(ULONG ulOffset, INDEX iCount);
+// NB: call gfxSetElementArrayBuffer(obj) before and gfxSetElementArrayBuffer(0) after
+extern void gfxDrawElementArrayBuffer(INDEX iCount, ULONG ulOffset);
+
+// Shader
+typedef void *GfxProgram;
+extern GfxProgram gfxMakeShaderProgram(const char *vertexShader, const char *fragmentShader);
+extern void gfxUseProgram(GfxProgram program);
+extern SLONG gfxGetAttribLocation(GfxProgram _program, const char *name);
+extern SLONG gfxGetUniformLocation(GfxProgram program, const char *name);
+extern void gfxSyncProgram();
 
 // MISC
 

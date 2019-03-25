@@ -613,7 +613,7 @@ void CGfxLibrary::InitContext_OGL(void)
   // check support for compiled vertex arrays
   pglLockArraysEXT   = NULL;
   pglUnlockArraysEXT = NULL;
-  if( HasExtension( go_strExtensions, "GL_EXT_compiled_vertex_array")) {
+  if(false && HasExtension( go_strExtensions, "GL_EXT_compiled_vertex_array")) { // extension disabled for android
     AddExtension_OGL( GLF_EXT_COMPILEDVERTEXARRAY, "GL_EXT_compiled_vertex_array");
     pglLockArraysEXT   = (void (__stdcall*)(GLint,GLsizei))eglGetProcAddress( "glLockArraysEXT");
     pglUnlockArraysEXT = (void (__stdcall*)(void)         )eglGetProcAddress( "glUnlockArraysEXT");

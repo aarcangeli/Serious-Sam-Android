@@ -806,13 +806,13 @@ static void FlushElements( INDEX ctElem, INDEX pai)
     _pfModelProfile.StartTimer( CModelProfile::PTI_VIEW_DRAWELEMENTS);
     _pfModelProfile.IncrementTimerAveragingCounter( CModelProfile::PTI_VIEW_DRAWELEMENTS, ctElem/3);
     _pGfx->gl_ctModelTriangles += ctElem/3;
-    gfxDrawElementArrayBuffer(pai, ctElem);
+    gfxDrawElementArrayBuffer(ctElem, pai);
     extern INDEX mdl_bShowTriangles;
     if( _bMultiPlayer) mdl_bShowTriangles = 0; // don't allow in multiplayer mode!
     if( mdl_bShowTriangles) {
       gfxSetConstantColor(C_YELLOW|222); // this also disables color array
       gfxPolygonMode(GFX_LINE);
-      gfxDrawElementArrayBuffer(pai, ctElem);
+      gfxDrawElementArrayBuffer(ctElem, pai);
       gfxPolygonMode(GFX_FILL);
       gfxEnableColorArray(); // need to re-enable color array
     } // done
