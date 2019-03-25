@@ -63,20 +63,55 @@ void gfxUseProgram(GfxProgram _program) {
   } else {
     glUseProgram(pgm->pgmObject);
   }
+
+  gles_adapter::syncError();
 }
 
 SLONG gfxGetAttribLocation(GfxProgram _program, const char *name) {
   GfxProgramPrivate *pgm = (GfxProgramPrivate *) _program;
   GLint result = glGetAttribLocation(pgm->pgmObject, name);
-  OGL_CHECKERROR;
+  gles_adapter::syncError();
   return result;
 }
 
-SLONG gfxGetUniformLocation(GfxProgram _program, const char *name) {
-  GfxProgramPrivate *pgm = (GfxProgramPrivate *) _program;
-  GLint result = glGetUniformLocation(pgm->pgmObject, name);
-  OGL_CHECKERROR;
-  return result;
+void gfxUniform(const char *uniformName, float f0) {
+  GfxProgramPrivate *pgm = _currentProgram;
+  ASSERT(pgm);
+  GLint uniformLocation = glGetUniformLocation(pgm->pgmObject, uniformName);
+  if (uniformLocation >= 0) {
+    glUniform1f(uniformLocation, f0);
+  }
+  gles_adapter::syncError();
+}
+
+void gfxUniform(const char *uniformName, float f0, float f1) {
+  GfxProgramPrivate *pgm = _currentProgram;
+  ASSERT(pgm);
+  GLint uniformLocation = glGetUniformLocation(pgm->pgmObject, uniformName);
+  if (uniformLocation >= 0) {
+    glUniform2f(uniformLocation, f0, f1);
+  }
+  gles_adapter::syncError();
+}
+
+void gfxUniform(const char *uniformName, float f0, float f1, float f2) {
+  GfxProgramPrivate *pgm = _currentProgram;
+  ASSERT(pgm);
+  GLint uniformLocation = glGetUniformLocation(pgm->pgmObject, uniformName);
+  if (uniformLocation >= 0) {
+    glUniform3f(uniformLocation, f0, f1, f2);
+  }
+  gles_adapter::syncError();
+}
+
+void gfxUniform(const char *uniformName, float f0, float f1, float f2, float f3) {
+  GfxProgramPrivate *pgm = _currentProgram;
+  ASSERT(pgm);
+  GLint uniformLocation = glGetUniformLocation(pgm->pgmObject, uniformName);
+  if (uniformLocation >= 0) {
+    glUniform4f(uniformLocation, f0, f1, f2, f3);
+  }
+  gles_adapter::syncError();
 }
 
 void gfxSyncProgram() {
@@ -88,5 +123,5 @@ void gfxSyncProgram() {
   glUniformMatrix4fv(pgm->modelViewMatIdx, 1, GL_FALSE, gles_adapter::getModelViewMat());
   glUniform1f(pgm->enableTextureLoc, gles_adapter::isTexture2d() ? 1 : 0);
   glUniform1f(pgm->enableAlphaTestLoc, gles_adapter::isAlphaTest() ? 1 : 0);
-  OGL_CHECKERROR;
+  gles_adapter::syncError();
 }

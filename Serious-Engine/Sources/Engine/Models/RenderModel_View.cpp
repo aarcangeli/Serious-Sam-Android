@@ -115,6 +115,58 @@ static FLOAT3D _vLightObj;
 static const FLOAT f2  = 2.0f;
 static const FLOAT f05 = 0.5f;
 
+GfxProgram diffuseProgram = gfxMakeShaderProgram(R"***(
+  precision highp float;
+
+  attribute vec3 position0;
+  attribute vec3 position1;
+  attribute vec3 normal1;
+  attribute vec3 normal2;
+  attribute vec4 color;
+  attribute vec4 textureCoord;
+
+  uniform mat4 projMat;
+  uniform mat4 modelViewMat;
+  uniform vec3 stretch;
+  uniform vec3 offset;
+  uniform float lerpRatio;
+  uniform vec2 texCorr;
+
+  varying vec4 vColor;
+  varying vec2 vTexCoord;
+
+  void main() {
+    vec3 lerpedPosition = position0.xyz + (position1.xyz - position0.xyz) * lerpRatio;
+    gl_Position = projMat * modelViewMat * vec4((lerpedPosition - offset) * stretch, 1.0);
+    vColor = color;
+    vTexCoord = textureCoord.xy * texCorr;
+  }
+
+)***", R"***(
+  precision highp float;
+
+  uniform sampler2D mainTexture;
+  uniform float enableTexture;
+  uniform float enableAlphaTest;
+
+  varying vec4 vColor;
+  varying vec2 vTexCoord;
+
+  void main() {
+    vec4 finalColor = vColor;
+    if (enableTexture > 0.5) finalColor = finalColor * texture2D(mainTexture, vTexCoord);
+    gl_FragColor = finalColor * vColor;
+    gl_FragColor = texture2D(mainTexture, vTexCoord);
+
+    // alpha test
+    if (enableAlphaTest > 0.5 && gl_FragColor.w < 0.5) {
+      discard;
+    }
+  }
+
+)***");
+ULONG _ulFrameOffset0, _ulFrameOffset1;
+FLOAT _fTexCorrU, _fTexCorrV;
 
 // convinient routine for timing of texture setting
 static __forceinline void SetCurrentTexture( CTextureData *ptd, INDEX iFrame)
@@ -205,7 +257,7 @@ static void GetNeighbourTriangleVertices(Triangle *ptri, INDEX &i1, INDEX &i2)
     i1=triA.i1; i2=triA.i2;
     if (i2 == triB.i0 && i1 == triB.i1) return;
     if (i2 == triB.i1 && i1 == triB.i2) return;
-    if (i2 == triB.i2 && i1 == triB.i0) return; 
+    if (i2 == triB.i2 && i1 == triB.i0) return;
     triA.Rotate();
     i1=triA.i1; i2=triA.i2;
     if (i2 == triB.i0 && i1 == triB.i1) return;
@@ -463,8 +515,10 @@ static void PrepareModelMipForRendering( CModelData &md, INDEX iMip)
   // allocate surface vertex arrays
   mmi.mmpi_auwSrfToMip.Clear();
   mmi.mmpi_avmexTexCoord.Clear();
+  mmi.mmpi_apfvPackedBuffer.Clear();
   mmi.mmpi_auwSrfToMip.New(mmi.mmpi_ctSrfVx);
   mmi.mmpi_avmexTexCoord.New(mmi.mmpi_ctSrfVx);
+  mmi.mmpi_apfvPackedBuffer.New(md.md_FramesCt * mmi.mmpi_ctSrfVx);
 
   // alloc bump mapping vectors only if needed
   mmi.mmpi_avBumpU.Clear();
@@ -541,6 +595,45 @@ static void PrepareModelMipForRendering( CModelData &md, INDEX iMip)
       }
       //
 
+      // pack data
+      for (ULONG ulFrameNum = 0; ulFrameNum < md.md_FramesCt; ++ulFrameNum) {
+        PackedFrameVertex &pfvFrame = mmi.mmpi_apfvPackedBuffer[mmi.mmpi_ctSrfVx * ulFrameNum + iSrfVx];
+        if (md.md_Flags & MF_COMPRESSED_16BIT) {
+          ModelFrameVertex16 &mfv16 = md.md_FrameVertices16.sa_Array[md.md_VerticesCt * ulFrameNum + mtv.mtv_iTransformedVertex];
+          // store vertex
+          pfvFrame.pfv_vPosition.x = mfv16.mfv_SWPoint(1);
+          pfvFrame.pfv_vPosition.y = mfv16.mfv_SWPoint(2);
+          pfvFrame.pfv_vPosition.z = mfv16.mfv_SWPoint(3);
+          // determine normal
+          const FLOAT fSinH0 = pfSinTable[mfv16.mfv_ubNormH];
+          const FLOAT fSinP0 = pfSinTable[mfv16.mfv_ubNormP];
+          const FLOAT fCosH0 = pfCosTable[mfv16.mfv_ubNormH];
+          const FLOAT fCosP0 = pfCosTable[mfv16.mfv_ubNormP];
+          pfvFrame.pfv_avNormal.nx = -fSinH0 * fCosP0;
+          pfvFrame.pfv_avNormal.ny = +fSinP0;
+          pfvFrame.pfv_avNormal.nz = -fCosH0 * fCosP0;
+        } else {
+          ModelFrameVertex8 &mfv8 = md.md_FrameVertices8.sa_Array[md.md_VerticesCt * ulFrameNum + mtv.mtv_iTransformedVertex];
+          // store vertex
+          pfvFrame.pfv_vPosition.x = mfv8.mfv_SBPoint(1);
+          pfvFrame.pfv_vPosition.y = mfv8.mfv_SBPoint(2);
+          pfvFrame.pfv_vPosition.z = mfv8.mfv_SBPoint(3);
+          // determine normal
+          const FLOAT3D &vNormal0 = avGouraudNormals[mfv8.mfv_NormIndex];
+          pfvFrame.pfv_avNormal.nx = vNormal0(1);
+          pfvFrame.pfv_avNormal.ny = vNormal0(2);
+          pfvFrame.pfv_avNormal.nz = vNormal0(3);
+        }
+        // store texture coordinates
+        pfvFrame.pfv_avmexTexCoord(1) = (FLOAT) mtv.mtv_UV(1);
+        pfvFrame.pfv_avmexTexCoord(2) = (FLOAT) mtv.mtv_UV(2);
+//        pfvFrame.pfv_avmexTexCoord(1) = iSrfVx;
+//        pfvFrame.pfv_avmexTexCoord(2) = 0;
+        // store bump
+        pfvFrame.pfv_avBumpU = mtv.mtv_vU;
+        pfvFrame.pfv_avBumpV = mtv.mtv_vV;
+      }
+
       iSrfVx++;
     } // set vertex indices
     PrepareSurfaceElements( mmi, ms);
@@ -574,15 +667,23 @@ static void PrepareModelMipForRendering( CModelData &md, INDEX iMip)
     }
   }
 
+  // array buffers must be reuploaded
   mmi.mmpi_bNeedUpdate = true;
 }
 
-void SyncModelMipInfo(ModelMipInfo &mmi) {
-  // prepare index array
+void SyncModelMipInfo(CModelData &md, ModelMipInfo &mmi) {
+  if (mmi.mmpi_ulVertexBufferObject == NONE) {
+    gfxGenerateBuffer(mmi.mmpi_ulVertexBufferObject);
+  }
   if (mmi.mmpi_ulObject == NONE) {
     gfxGenerateBuffer(mmi.mmpi_ulObject);
   }
   if (mmi.mmpi_bNeedUpdate) {
+    // upload unified vertex buffer
+    gfxSetArrayBuffer(mmi.mmpi_ulVertexBufferObject);
+    gfxArrayBufferData(&mmi.mmpi_apfvPackedBuffer[0], md.md_FramesCt * mmi.mmpi_ctSrfVx * sizeof(PackedFrameVertex));
+    gfxSetArrayBuffer(0);
+    // upload unified element buffer
     gfxSetElementArrayBuffer(mmi.mmpi_ulObject);
     gfxElementArrayBufferData(&mmi.mmpi_aiElements[0], mmi.mmpi_ctTriangles * 3);
     gfxSetElementArrayBuffer(0);
@@ -879,6 +980,43 @@ static void RenderOneSide( CRenderModel &rm, BOOL bBackSide, ULONG ulLayerFlags)
   _pfModelProfile.StartTimer( CModelProfile::PTI_VIEW_ONESIDE);
   _pfModelProfile.IncrementTimerAveragingCounter( CModelProfile::PTI_VIEW_ONESIDE);
   _icol = 0;
+  GfxProgram program;
+  ModelMipInfo &mmi = *rm.rm_pmmiMip;
+
+  switch(ulLayerFlags) {
+    case SRF_DIFFUSE:
+      program = diffuseProgram;
+      break;
+    default:
+      _pfModelProfile.StopTimer( CModelProfile::PTI_VIEW_ONESIDE);
+      return;
+  }
+
+  gfxUseProgram(program);
+
+  GLint position0Loc = gfxGetAttribLocation(program, "position0");
+  GLint position1Loc = gfxGetAttribLocation(program, "position1");
+  GLint textureCoordLoc = gfxGetAttribLocation(program, "textureCoord");
+
+  gfxSetArrayBuffer(mmi.mmpi_ulVertexBufferObject);
+  if (position0Loc >= 0) {
+    gfxVertexAttribPointer(position0Loc, 3, sizeof(PackedFrameVertex), _ulFrameOffset0);
+    gfxEnableVertexAttribArray(position0Loc);
+  }
+  if (position1Loc >= 0) {
+    gfxVertexAttribPointer(position1Loc, 3, sizeof(PackedFrameVertex), _ulFrameOffset1);
+    gfxEnableVertexAttribArray(position1Loc);
+  }
+  if (textureCoordLoc >= 0) {
+    gfxVertexAttribPointer(textureCoordLoc, 2, sizeof(PackedFrameVertex), sizeof(GFXVertex3) + sizeof(GFXNormal3));
+    gfxEnableVertexAttribArray(textureCoordLoc);
+  }
+  gfxSetArrayBuffer(0);
+
+  gfxUniform("stretch", rm.rm_vStretch(1), rm.rm_vStretch(2), rm.rm_vStretch(3));
+  gfxUniform("offset", rm.rm_vOffset(1), rm.rm_vOffset(2), rm.rm_vOffset(3));
+  gfxUniform("texCorr", _fTexCorrU, _fTexCorrV);
+  gfxUniform("lerpRatio", rm.rm_fRatio);
 
   // set face culling
   if( bBackSide) {
@@ -895,7 +1033,6 @@ static void RenderOneSide( CRenderModel &rm, BOOL bBackSide, ULONG ulLayerFlags)
   // for each surface in current mip model
   INDEX iStartElem=0;
   INDEX ctElements=0;
-  ModelMipInfo &mmi = *rm.rm_pmmiMip;
   gfxSetElementArrayBuffer(mmi.mmpi_ulObject);
   {FOREACHINSTATICARRAY( mmi.mmpi_MappingSurfaces, MappingSurface, itms)
   {
@@ -937,6 +1074,17 @@ static void RenderOneSide( CRenderModel &rm, BOOL bBackSide, ULONG ulLayerFlags)
   // flush leftovers
   if( ctElements>0) FlushElements( ctElements, iStartElem);
   gfxSetElementArrayBuffer(0);
+
+  if (position0Loc >= 0) {
+    gfxDisableVertexAttribArray(position0Loc);
+  }
+  if (position1Loc >= 0) {
+    gfxDisableVertexAttribArray(position1Loc);
+  }
+  if (textureCoordLoc >= 0) {
+    gfxDisableVertexAttribArray(textureCoordLoc);
+  }
+
   // all done
   _pfModelProfile.StopTimer( CModelProfile::PTI_VIEW_ONESIDE);
 }
@@ -1813,7 +1961,7 @@ void CModelObject::RenderModel_View( CRenderModel &rm)
         ModelMipInfo &mmi = *rm.rm_pmmiMip;
   const ModelMipInfo &mmi0 = rm.rm_pmdModelData->md_MipInfos[0];
 
-  SyncModelMipInfo(mmi);
+  SyncModelMipInfo(*rm.rm_pmdModelData, mmi);
 
   // calculate projection of viewer in absolute space
   FLOATmatrix3D &mViewer = _aprProjection->pr_ViewerRotationMatrix;
@@ -1891,7 +2039,10 @@ void CModelObject::RenderModel_View( CRenderModel &rm)
   pcolMipBase = &_acolMipBase[0];
   pnorMipBase = &_anorMipBase[0];
   const BOOL bNeedNormals = GFX_bTruform || (_ulMipLayerFlags&(SRF_REFLECTIONS|SRF_SPECULAR|SRF_BUMP));
-  UnpackFrame( rm, bNeedNormals);
+  //UnpackFrame( rm, bNeedNormals);
+
+  _ulFrameOffset0 = rm.rm_iFrame0 * mmi.mmpi_ctSrfVx * sizeof(PackedFrameVertex);
+  _ulFrameOffset1 = rm.rm_iFrame1 * mmi.mmpi_ctSrfVx * sizeof(PackedFrameVertex);
 
   // cache some more pointers and vars
   ptexMipBase = &_atexMipBase[0];
@@ -2078,7 +2229,6 @@ srfVtxLoop:
   // cache light in object space (for reflection, specular and/or bump mapping)
   _vLightObj = rm.rm_vLightObj;
   // texture mapping correction factors (mex -> norm float)
-  FLOAT fTexCorrU, fTexCorrV;
   gfxSetTextureWrapping( GFX_REPEAT, GFX_REPEAT);
   // color and fill mode setup
   _bFlatFill = (rm.rm_rtRenderType&RT_WHITE_TEXTURE) || mo_toTexture.GetData()==NULL;
@@ -2111,8 +2261,8 @@ srfVtxLoop:
     // alpha controls bump strength - premultiplied for per surface calculation *(1/128)*(1/16)*(1/128)
     const FLOAT fMdlBump = ((colB&0xFF)-128.0f) * 3.8144E-6; 
     // get bump texture corrections
-    fTexCorrU = 1.0f / ptdBump->GetWidth(); 
-    fTexCorrV = 1.0f / ptdBump->GetHeight();
+    _fTexCorrU = 1.0f / ptdBump->GetWidth();
+    _fTexCorrV = 1.0f / ptdBump->GetHeight();
 
     // for each bump surface in current mip model
     FOREACHINSTATICARRAY( mmi.mmpi_MappingSurfaces, MappingSurface, itms)
@@ -2151,8 +2301,8 @@ srfVtxLoop:
         // get light strenght along texture axes and adjust texture coordinates
         const FLOAT fDU   = fSrfBump* (pvBmpCoordU[iSrfVx] %vOffset);
         const FLOAT fDV   = fSrfBump* (pvBmpCoordV[iSrfVx] %vOffset);
-        const FLOAT fTexU = pvTexCoord[iSrfVx](1) *fTexCorrU;
-        const FLOAT fTexV = pvTexCoord[iSrfVx](2) *fTexCorrV;
+        const FLOAT fTexU = pvTexCoord[iSrfVx](1) *_fTexCorrU;
+        const FLOAT fTexV = pvTexCoord[iSrfVx](2) *_fTexCorrV;
         ptexSrfBump[iSrfVx].s = fTexU + fDU;
         ptexSrfBump[iSrfVx].t = fTexV - fDV;
         ptexSrfBase[iSrfVx].s = fTexU - fDU;
@@ -2210,11 +2360,11 @@ srfVtxLoop:
   // get diffuse texture corrections
   CTextureData *ptdDiff = (CTextureData*)mo_toTexture.GetData();
   if( ptdDiff!=NULL) {
-    fTexCorrU = 1.0f / ptdDiff->GetWidth();
-    fTexCorrV = 1.0f / ptdDiff->GetHeight();
+    _fTexCorrU = 1.0f / ptdDiff->GetWidth();
+    _fTexCorrV = 1.0f / ptdDiff->GetHeight();
   } else {
-    fTexCorrU = 1.0f;
-    fTexCorrV = 1.0f;
+    _fTexCorrU = 1.0f;
+    _fTexCorrV = 1.0f;
   }
 
   // get model diffuse color
@@ -2252,13 +2402,13 @@ srfVtxLoop:
       jz      vtxRest
 vtxLoop:
       fld     D [esi+0]
-      fmul    D [fTexCorrU]
+      fmul    D [_fTexCorrU]
       fld     D [esi+8]
-      fmul    D [fTexCorrU]
+      fmul    D [_fTexCorrU]
       fld     D [esi+4]
-      fmul    D [fTexCorrV]
+      fmul    D [_fTexCorrV]
       fld     D [esi+12]
-      fmul    D [fTexCorrV]
+      fmul    D [_fTexCorrV]
       fxch    st(3)   // u1, v1, u2, v2
       fstp    D [edi+0]
       fstp    D [edi+4]
@@ -2272,9 +2422,9 @@ vtxRest:
       test    D [ctSrfVx],1
       jz      vtxEnd
       fld     D [esi+0]
-      fmul    D [fTexCorrU]
+      fmul    D [_fTexCorrU]
       fld     D [esi+4]
-      fmul    D [fTexCorrV]
+      fmul    D [_fTexCorrV]
       fxch    st(1)
       fstp    D [edi+0]
       fstp    D [edi+4]
@@ -2284,8 +2434,8 @@ vtxEnd:
 #else
     // setup texcoord array
     for( INDEX iSrfVx=0; iSrfVx<ctSrfVx; iSrfVx++) {
-      ptexSrfBase[iSrfVx].s = pvTexCoord[iSrfVx](1) *fTexCorrU;
-      ptexSrfBase[iSrfVx].t = pvTexCoord[iSrfVx](2) *fTexCorrV;
+      ptexSrfBase[iSrfVx].s = pvTexCoord[iSrfVx](1) *_fTexCorrU;
+      ptexSrfBase[iSrfVx].t = pvTexCoord[iSrfVx](2) *_fTexCorrV;
     }
 #endif
 
@@ -2430,13 +2580,13 @@ diffColLoop:
     const COLOR colB = AdjustColor( rm.rm_pmdModelData->md_colBump, _slTexHueShift, _slTexSaturation);
     colMdlBump.abgr  = ByteSwap(colB);
     // get detail texture corrections
-    fTexCorrU = 1.0f / ptdBump->GetWidth(); 
-    fTexCorrV = 1.0f / ptdBump->GetHeight();
+    _fTexCorrU = 1.0f / ptdBump->GetWidth();
+    _fTexCorrV = 1.0f / ptdBump->GetHeight();
     // adjust detail stretch if needed get model's stretch
     if( !(rm.rm_pmdModelData->md_Flags&MF_STRETCH_DETAIL)) {
       const FLOAT  fStretch = mo_Stretch.Length() * 0.57735f; // /Sqrt(3);
-      fTexCorrU *= fStretch; 
-      fTexCorrV *= fStretch;
+      _fTexCorrU *= fStretch;
+      _fTexCorrV *= fStretch;
     }
 
     // for each bump surface in current mip model
@@ -2461,8 +2611,8 @@ diffColLoop:
       for( INDEX iSrfVx=0; iSrfVx<ctSrfVx; iSrfVx++) {
         // set detail texcoord and color
         INDEX iMipVx = mmi.mmpi_auwSrfToMip[iSrfVx];
-        ptexSrfBase[iSrfVx].s = pvTexCoord[iSrfVx](1) * fTexCorrU;
-        ptexSrfBase[iSrfVx].t = pvTexCoord[iSrfVx](2) * fTexCorrV;
+        ptexSrfBase[iSrfVx].s = pvTexCoord[iSrfVx](1) * _fTexCorrU;
+        ptexSrfBase[iSrfVx].t = pvTexCoord[iSrfVx](2) * _fTexCorrV;
         pcolSrfBase[iSrfVx]   = colSrfBump;
       }
     }
@@ -3225,14 +3375,13 @@ void CModelObject::RenderShadow_View( CRenderModel &rm, const CPlacement3D &plLi
   _pfModelProfile.StopTimer( CModelProfile::PTI_VIEW_SHAD_INIT_MIP);
 
   // get diffuse texture corrections
-  FLOAT fTexCorrU, fTexCorrV;
   CTextureData *ptd = (CTextureData*)mo_toTexture.GetData();
   if( ptd!=NULL) {
-    fTexCorrU = 1.0f / ptd->GetWidth();
-    fTexCorrV = 1.0f / ptd->GetHeight();
+    _fTexCorrU = 1.0f / ptd->GetWidth();
+    _fTexCorrV = 1.0f / ptd->GetHeight();
   } else {
-    fTexCorrU = 1.0f;
-    fTexCorrV = 1.0f;
+    _fTexCorrU = 1.0f;
+    _fTexCorrV = 1.0f;
   }
 
   _pfModelProfile.StartTimer( CModelProfile::PTI_VIEW_SHAD_INIT_SURF);
@@ -3260,8 +3409,8 @@ void CModelObject::RenderShadow_View( CRenderModel &rm, const CPlacement3D &plLi
       pcolSrfBase[iSrfVx].a = pubsMipBase[iMipVx];
       // get texture adjusted for perspective correction (aka projected mapping)
       const FLOAT fooq = pooqMipShad[iMipVx];
-      ptx4SrfShad[iSrfVx].s = pvTexCoord[iSrfVx](1) *fTexCorrU *fooq;
-      ptx4SrfShad[iSrfVx].t = pvTexCoord[iSrfVx](2) *fTexCorrV *fooq;
+      ptx4SrfShad[iSrfVx].s = pvTexCoord[iSrfVx](1) *_fTexCorrU *fooq;
+      ptx4SrfShad[iSrfVx].t = pvTexCoord[iSrfVx](2) *_fTexCorrV *fooq;
       ptx4SrfShad[iSrfVx].q = fooq;
     }
   }

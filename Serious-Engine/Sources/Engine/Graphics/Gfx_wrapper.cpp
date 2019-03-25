@@ -889,53 +889,62 @@ extern void GFX_SetFunctionPointers( INDEX iAPI)
 // gles functions
 // TODO: move in a better place
 #include <GLES2/gl2.h>
-
-namespace gles_adapter {
-  void syncBuffers(GLsizei vertices);
-  void syncBuffersPost();
-  void setError(GLenum error);
-}
+#include <AndroidAdapters/gles_adapter.h>
 
 void gfxGenerateBuffer(UINT &uiBufObject) {
   ASSERT(_pGfx->gl_eCurrentAPI == (INDEX) GAT_OGL);
   glGenBuffers(1, &uiBufObject);
+  gles_adapter::syncError();
 }
 
 void gfxSetElementArrayBuffer(UINT uiBufObject) {
   ASSERT(_pGfx->gl_eCurrentAPI == (INDEX) GAT_OGL);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, uiBufObject);
   GFX_uiElementBufObject = uiBufObject;
-  OGL_CHECKERROR;
+  gles_adapter::syncError();
 }
 
 void gfxElementArrayBufferData(UWORD *puwData, ULONG ulCount) {
   ASSERT(_pGfx->gl_eCurrentAPI == (INDEX) GAT_OGL);
   ASSERT(GFX_uiElementBufObject);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, ulCount * sizeof(UWORD), puwData, GL_STATIC_DRAW);
-  OGL_CHECKERROR;
+  gles_adapter::syncError();
 }
 
 void gfxSetArrayBuffer(UINT uiBufObject) {
   ASSERT(_pGfx->gl_eCurrentAPI == (INDEX) GAT_OGL);
   glBindBuffer(GL_ARRAY_BUFFER, uiBufObject);
   GFX_uiArrayBufObject = uiBufObject;
-  OGL_CHECKERROR;
+  gles_adapter::syncError();
 }
 
 void gfxArrayBufferData(void *pvData, ULONG ulSize) {
   ASSERT(_pGfx->gl_eCurrentAPI == (INDEX) GAT_OGL);
   ASSERT(GFX_uiArrayBufObject);
   glBufferData(GL_ARRAY_BUFFER, ulSize, pvData, GL_STATIC_DRAW);
-  OGL_CHECKERROR;
+  gles_adapter::syncError();
+}
+
+void gfxEnableVertexAttribArray(ULONG index) {
+  glEnableVertexAttribArray(index);
+  gles_adapter::syncError();
+}
+
+void gfxDisableVertexAttribArray(ULONG index) {
+  glDisableVertexAttribArray(index);
+  gles_adapter::syncError();
+}
+
+void gfxVertexAttribPointer(ULONG attribPointer, ULONG size, ULONG stride, ULONG offset) {
+  glVertexAttribPointer(attribPointer, size, GL_FLOAT, GL_FALSE, stride, (void *) offset);
+  gles_adapter::syncError();
 }
 
 void gfxDrawElementArrayBuffer(INDEX iCount, ULONG ulOffset) {
-  return; // todo
   ASSERT(_pGfx->gl_eCurrentAPI == (INDEX) GAT_OGL);
   ASSERT(GFX_uiElementBufObject);
 
   gfxSyncProgram();
   glDrawElements(GL_TRIANGLES, iCount, GL_UNSIGNED_SHORT, (const void *) (ulOffset * 2));
-  gles_adapter::setError(glGetError());
-  OGL_CHECKERROR;
+  gles_adapter::syncError();
 }

@@ -7,6 +7,7 @@ namespace gles_adapter {
   float *getProjMat();
   bool isTexture2d();
   bool isAlphaTest();
+  void syncError();
   void gles_adp_init();
 
     /*

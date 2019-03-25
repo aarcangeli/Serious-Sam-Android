@@ -177,6 +177,10 @@ namespace gles_adapter {
     if (error && !lastError) lastError = error;
   };
 
+  void syncError() {
+    setError(glGetError());
+  }
+
   GLuint compileShader(GLenum type, const char *name, const char *source) {
     GLuint shader = glCreateShader(type);
     glShaderSource(shader, 1, &source, nullptr);

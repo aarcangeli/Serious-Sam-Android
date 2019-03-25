@@ -33,6 +33,14 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #define MMI_TRANSLUCENT (1L<<26)  // entire mip model doesn't write to z-buffer
 // ! WARNING: to var that holds these flags is copied from surface flags which has reserved bits 20 and below !
 
+struct PackedFrameVertex {
+    GFXVertex3 pfv_vPosition;
+    GFXNormal3 pfv_avNormal;
+    FLOAT2D pfv_avmexTexCoord;
+    FLOAT3D pfv_avBumpU;
+    FLOAT3D pfv_avBumpV;
+};
+static_assert(sizeof(PackedFrameVertex) == sizeof(FLOAT) * (3 + 3 + 2 + 3 + 3));
 
 class ENGINE_API CModelPatch {
 public:
@@ -69,8 +77,11 @@ struct ENGINE_API ModelMipInfo
   INDEX mmpi_ctTriangles;               // total triangles in this mip
   CStaticStackArray<UWORD> mmpi_aiElements;
 
-  UINT mmpi_ulObject;
+  CStaticArray<PackedFrameVertex> mmpi_apfvPackedBuffer;
   bool mmpi_bNeedUpdate;
+  UINT mmpi_ulObject;
+  UINT mmpi_ulVertexBufferObject;
+  CStaticArray<INDEX> aiMdlToMip;
 
 	void Clear();								 // clears this mip model's arays and their sub-arrays, dealocates memory
 	void Read_t( CTStream *istrFile, BOOL bReadPolygonalPatches, BOOL bReadPolygonsPerSurface,

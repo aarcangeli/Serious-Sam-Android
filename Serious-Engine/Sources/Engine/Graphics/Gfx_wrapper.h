@@ -265,7 +265,13 @@ typedef void *GfxProgram;
 extern GfxProgram gfxMakeShaderProgram(const char *vertexShader, const char *fragmentShader);
 extern void gfxUseProgram(GfxProgram program);
 extern SLONG gfxGetAttribLocation(GfxProgram _program, const char *name);
-extern SLONG gfxGetUniformLocation(GfxProgram program, const char *name);
+extern void gfxUniform(const char *uniformName, float f0);
+extern void gfxUniform(const char *uniformName, float f0, float f1);
+extern void gfxUniform(const char *uniformName, float f0, float f1, float f2);
+extern void gfxUniform(const char *uniformName, float f0, float f1, float f2, float f3);
+extern void gfxVertexAttribPointer(ULONG attribPointer, ULONG size, ULONG stride, ULONG offset);
+extern void gfxEnableVertexAttribArray(ULONG index);
+extern void gfxDisableVertexAttribArray(ULONG index);
 extern void gfxSyncProgram();
 
 // MISC
