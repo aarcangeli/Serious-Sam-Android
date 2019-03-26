@@ -134,7 +134,7 @@ GfxProgram diffuseProgram = gfxMakeShaderProgram(R"***(
   uniform vec3 lightObj;
   uniform vec3 colorAmbient;
   uniform vec3 colorLight;
-  uniform float isFullBright;
+  uniform float isUnlite;
 
   varying vec4 vColor;
   varying vec2 vTexCoord;
@@ -148,7 +148,7 @@ GfxProgram diffuseProgram = gfxMakeShaderProgram(R"***(
     // texture coordinates
     vTexCoord = textureCoord.xy * texCorr;
     // normal
-    if (isFullBright > 0.5) {
+    if (isUnlite > 0.5) {
       vColor = color;
     } else {
       float lightStrength = clamp(dot(lerpedNormal, -normalize(lightObj)), 0.0, 1.0);
@@ -1060,6 +1060,7 @@ static void RenderOneSide( CRenderModel &rm, BOOL bBackSide, ULONG ulLayerFlags)
 
   switch(ulLayerFlags) {
     case SRF_DIFFUSE:
+    case SRF_DETAIL:
       program = diffuseProgram;
       break;
     default:
@@ -1133,12 +1134,22 @@ static void RenderOneSide( CRenderModel &rm, BOOL bBackSide, ULONG ulLayerFlags)
           colSrfDiffAdj.g >>= 1;
           colSrfDiffAdj.b >>= 1;
         }
-        gfxUniform("isFullBright", 1);
+        gfxUniform("isUnlite", 1);
         gfxUniform("color", colSrfDiffAdj);
       } else {
-        gfxUniform("isFullBright", 0);
+        gfxUniform("isUnlite", 0);
         gfxUniform("color", colSrfDiff);
       }
+    } else if( ulLayerFlags&SRF_DETAIL) {
+      gfxUniform("isUnlite", 1);
+
+      // get model detail color
+      GFXColor colMdlBump;
+      colMdlBump.abgr = ByteSwap(AdjustColor( rm.rm_pmdModelData->md_colBump, _slTexHueShift, _slTexSaturation));
+
+      GFXColor colSrfBump;
+      colSrfBump.MultiplyRGB(AdjustColor( ms.ms_colBump, _slTexHueShift, _slTexSaturation), colMdlBump);
+      gfxUniform("color", colSrfBump);
     }
 
     FlushElements(ms.ms_ctSrfEl, iStartElem);
