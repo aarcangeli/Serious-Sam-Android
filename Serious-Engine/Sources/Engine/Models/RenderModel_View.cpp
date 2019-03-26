@@ -982,6 +982,67 @@ static void SetRenderingParameters( SurfaceTranslucencyType stt, BOOL bHasBump)
   _pfModelProfile.StopTimer( CModelProfile::PTI_VIEW_ONESIDE_GLSETUP);
 }
 
+// use program, set attribute locations and standard uniforms
+GLint _position0Loc, _position1Loc, _normal0Loc, _normal1Loc, _textureCoordLoc;
+void SetupAttributes(GfxProgram program, CRenderModel &rm) {
+  ModelMipInfo &mmi = *rm.rm_pmmiMip;
+  gfxUseProgram(program);
+
+  _position0Loc = gfxGetAttribLocation(program, "position0");
+  _position1Loc = gfxGetAttribLocation(program, "position1");
+  _normal0Loc = gfxGetAttribLocation(program, "normal0");
+  _normal1Loc = gfxGetAttribLocation(program, "normal1");
+  _textureCoordLoc = gfxGetAttribLocation(program, "textureCoord");
+
+  gfxSetArrayBuffer(mmi.mmpi_ulVertexBufferObject);
+  if (_position0Loc >= 0) {
+    gfxVertexAttribPointer(_position0Loc, 3, sizeof(PackedFrameVertex), _ulFrameOffset0);
+    gfxEnableVertexAttribArray(_position0Loc);
+  }
+  if (_position1Loc >= 0) {
+    gfxVertexAttribPointer(_position1Loc, 3, sizeof(PackedFrameVertex), _ulFrameOffset1);
+    gfxEnableVertexAttribArray(_position1Loc);
+  }
+  if (_normal0Loc >= 0) {
+    gfxVertexAttribPointer(_normal0Loc, 3, sizeof(PackedFrameVertex), _ulFrameOffset0 + sizeof(GFXVertex3));
+    gfxEnableVertexAttribArray(_normal0Loc);
+  }
+  if (_normal1Loc >= 0) {
+    gfxVertexAttribPointer(_normal1Loc, 3, sizeof(PackedFrameVertex), _ulFrameOffset1 + sizeof(GFXVertex3));
+    gfxEnableVertexAttribArray(_normal1Loc);
+  }
+  if (_textureCoordLoc >= 0) {
+    gfxVertexAttribPointer(_textureCoordLoc, 2, sizeof(PackedFrameVertex), sizeof(GFXVertex3) + sizeof(GFXNormal3));
+    gfxEnableVertexAttribArray(_textureCoordLoc);
+  }
+  gfxSetArrayBuffer(0);
+
+  gfxUniform("stretch", rm.rm_vStretch(1), rm.rm_vStretch(2), rm.rm_vStretch(3));
+  gfxUniform("offset", rm.rm_vOffset(1), rm.rm_vOffset(2), rm.rm_vOffset(3));
+  gfxUniform("texCorr", _fTexCorrU, _fTexCorrV);
+  gfxUniform("lerpRatio", rm.rm_fRatio);
+  gfxUniform("lightObj", rm.rm_vLightObj(1), rm.rm_vLightObj(2), rm.rm_vLightObj(3));
+  gfxUniform("colorAmbient", _slAR/255.0f, _slAG/255.0f, _slAB/255.0f);
+  gfxUniform("colorLight", _slLR/255.0f, _slLG/255.0f, _slLB/255.0f);
+
+}
+void CleanAttributes() {
+  if (_position0Loc >= 0) {
+    gfxDisableVertexAttribArray(_position0Loc);
+  }
+  if (_position1Loc >= 0) {
+    gfxDisableVertexAttribArray(_position1Loc);
+  }
+  if (_normal0Loc >= 0) {
+    gfxDisableVertexAttribArray(_normal0Loc);
+  }
+  if (_normal1Loc >= 0) {
+    gfxDisableVertexAttribArray(_normal1Loc);
+  }
+  if (_textureCoordLoc >= 0) {
+    gfxDisableVertexAttribArray(_textureCoordLoc);
+  }
+}
 
 // render one side of a surface (return TRUE if any type of translucent surface has been rendered)
 static void RenderOneSide( CRenderModel &rm, BOOL bBackSide, ULONG ulLayerFlags)
@@ -1007,44 +1068,7 @@ static void RenderOneSide( CRenderModel &rm, BOOL bBackSide, ULONG ulLayerFlags)
   const COLOR colB = AdjustColor( rm.rm_colBlend,                    _slTexHueShift, _slTexSaturation);
   colMdlDiff.MultiplyRGBA( colD, colB);
 
-  gfxUseProgram(program);
-
-  GLint position0Loc = gfxGetAttribLocation(program, "position0");
-  GLint position1Loc = gfxGetAttribLocation(program, "position1");
-  GLint normal0Loc = gfxGetAttribLocation(program, "normal0");
-  GLint normal1Loc = gfxGetAttribLocation(program, "normal1");
-  GLint textureCoordLoc = gfxGetAttribLocation(program, "textureCoord");
-
-  gfxSetArrayBuffer(mmi.mmpi_ulVertexBufferObject);
-  if (position0Loc >= 0) {
-    gfxVertexAttribPointer(position0Loc, 3, sizeof(PackedFrameVertex), _ulFrameOffset0);
-    gfxEnableVertexAttribArray(position0Loc);
-  }
-  if (position1Loc >= 0) {
-    gfxVertexAttribPointer(position1Loc, 3, sizeof(PackedFrameVertex), _ulFrameOffset1);
-    gfxEnableVertexAttribArray(position1Loc);
-  }
-  if (normal0Loc >= 0) {
-    gfxVertexAttribPointer(normal0Loc, 3, sizeof(PackedFrameVertex), _ulFrameOffset0 + sizeof(GFXVertex3));
-    gfxEnableVertexAttribArray(normal0Loc);
-  }
-  if (normal1Loc >= 0) {
-    gfxVertexAttribPointer(normal1Loc, 3, sizeof(PackedFrameVertex), _ulFrameOffset1 + sizeof(GFXVertex3));
-    gfxEnableVertexAttribArray(normal1Loc);
-  }
-  if (textureCoordLoc >= 0) {
-    gfxVertexAttribPointer(textureCoordLoc, 2, sizeof(PackedFrameVertex), sizeof(GFXVertex3) + sizeof(GFXNormal3));
-    gfxEnableVertexAttribArray(textureCoordLoc);
-  }
-  gfxSetArrayBuffer(0);
-
-  gfxUniform("stretch", rm.rm_vStretch(1), rm.rm_vStretch(2), rm.rm_vStretch(3));
-  gfxUniform("offset", rm.rm_vOffset(1), rm.rm_vOffset(2), rm.rm_vOffset(3));
-  gfxUniform("texCorr", _fTexCorrU, _fTexCorrV);
-  gfxUniform("lerpRatio", rm.rm_fRatio);
-  gfxUniform("lightObj", rm.rm_vLightObj(1), rm.rm_vLightObj(2), rm.rm_vLightObj(3));
-  gfxUniform("colorAmbient", _slAR/255.0f, _slAG/255.0f, _slAB/255.0f);
-  gfxUniform("colorLight", _slLR/255.0f, _slLG/255.0f, _slLB/255.0f);
+  SetupAttributes(program, rm);
 
   // set face culling
   if( bBackSide) {
@@ -1103,21 +1127,7 @@ static void RenderOneSide( CRenderModel &rm, BOOL bBackSide, ULONG ulLayerFlags)
   // flush leftovers
   gfxSetElementArrayBuffer(0);
 
-  if (position0Loc >= 0) {
-    gfxDisableVertexAttribArray(position0Loc);
-  }
-  if (position1Loc >= 0) {
-    gfxDisableVertexAttribArray(position1Loc);
-  }
-  if (normal0Loc >= 0) {
-    gfxDisableVertexAttribArray(normal0Loc);
-  }
-  if (normal1Loc >= 0) {
-    gfxDisableVertexAttribArray(normal1Loc);
-  }
-  if (textureCoordLoc >= 0) {
-    gfxDisableVertexAttribArray(textureCoordLoc);
-  }
+  CleanAttributes();
 
   // all done
   _pfModelProfile.StopTimer( CModelProfile::PTI_VIEW_ONESIDE);
