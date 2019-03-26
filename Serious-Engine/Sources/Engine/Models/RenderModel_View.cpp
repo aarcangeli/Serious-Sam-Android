@@ -124,6 +124,9 @@ GfxProgram diffuseProgram = gfxMakeShaderProgram(R"***(
   attribute vec3 normal1;
   attribute vec4 textureCoord;
 
+  uniform float withReflectionMapping;
+  uniform float withSpecularMapping;
+
   uniform mat4 projMat;
   uniform mat4 modelViewMat;
   uniform vec3 stretch;
@@ -136,8 +139,8 @@ GfxProgram diffuseProgram = gfxMakeShaderProgram(R"***(
   uniform vec3 colorLight;
   uniform vec3 viewer;
   uniform float isUnlite;
-  uniform float withReflectionMapping;
   uniform mat3 objectRotation;
+  uniform mat3 objectToView;
 
   varying vec4 vColor;
   varying vec2 vTexCoord;
@@ -165,6 +168,14 @@ GfxProgram diffuseProgram = gfxMakeShaderProgram(R"***(
       vec3 fRV = viewer - 2.0 * fN * vec3(fNV);
       float f1oFM = 0.5 / sqrt(2.0 + 2.0 * fRV.y);
       vTexCoord.st = fRV.xz * vec2(f1oFM) + 0.5;
+    }
+    // specular
+    if (withSpecularMapping > 0.5) {
+      float fNL = dot(lerpedNormal, lightObj);
+      vec3 fR = lightObj - 2.0 * lerpedNormal * vec3(fNL);
+      vec3 fRV = fR * objectToView;
+      float f1oFM = 0.5 / sqrt(2.0 + 2.0 * fRV.z);
+      vTexCoord.st = fRV.xy * vec2(f1oFM) + 0.5;
     }
   }
 
@@ -1074,6 +1085,7 @@ static void RenderOneSide( CRenderModel &rm, BOOL bBackSide, ULONG ulLayerFlags)
     case SRF_DIFFUSE:
     case SRF_DETAIL:
     case SRF_REFLECTIONS:
+    case SRF_SPECULAR:
       program = diffuseProgram;
       break;
     default:
@@ -1120,6 +1132,7 @@ static void RenderOneSide( CRenderModel &rm, BOOL bBackSide, ULONG ulLayerFlags)
     }
 
     gfxUniform("withReflectionMapping", 0);
+    gfxUniform("withSpecularMapping", 0);
 
     // if should set parameters
     if( ulLayerFlags&SRF_DIFFUSE) {
@@ -1185,6 +1198,22 @@ static void RenderOneSide( CRenderModel &rm, BOOL bBackSide, ULONG ulLayerFlags)
       } else {
         gfxUniform("isUnlite", 0);
       }
+
+    } else if( ulLayerFlags&SRF_SPECULAR) {
+      gfxUniform("withSpecularMapping", 1);
+      gfxUniform("isUnlite", 1);
+      gfxUniform("objectToView", rm.rm_mObjectToView);
+
+      GFXColor colMdlSpec;
+      colMdlSpec.abgr  = ByteSwap(AdjustColor( rm.rm_pmdModelData->md_colSpecular, _slTexHueShift, _slTexSaturation));
+      colMdlSpec.AttenuateRGB( (rm.rm_colBlend&CT_AMASK)>>CT_ASHIFT);
+      colMdlSpec.r = ClampUp( (colMdlSpec.r *_slLR)>>8, 255L);
+      colMdlSpec.g = ClampUp( (colMdlSpec.g *_slLG)>>8, 255L);
+      colMdlSpec.b = ClampUp( (colMdlSpec.b *_slLB)>>8, 255L);
+
+      GFXColor colSrfSpec;
+      colSrfSpec.MultiplyRGB( AdjustColor( ms.ms_colSpecular, _slTexHueShift, _slTexSaturation), colMdlSpec);
+      gfxUniform("color", colSrfSpec);
     }
 
     FlushElements(ms.ms_ctSrfEl, iStartElem);
