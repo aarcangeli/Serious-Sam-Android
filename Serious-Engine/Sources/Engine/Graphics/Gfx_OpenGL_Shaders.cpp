@@ -114,6 +114,10 @@ void gfxUniform(const char *uniformName, float f0, float f1, float f2, float f3)
   gles_adapter::syncError();
 }
 
+void gfxUniform(const char *uniformName, GFXColor &color) {
+  gfxUniform(uniformName, color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, color.a / 255.0f);
+}
+
 void gfxSyncProgram() {
   GfxProgramPrivate *pgm = _currentProgram;
   ASSERT(pgm);

@@ -120,9 +120,8 @@ GfxProgram diffuseProgram = gfxMakeShaderProgram(R"***(
 
   attribute vec3 position0;
   attribute vec3 position1;
+  attribute vec3 normal0;
   attribute vec3 normal1;
-  attribute vec3 normal2;
-  attribute vec4 color;
   attribute vec4 textureCoord;
 
   uniform mat4 projMat;
@@ -131,15 +130,26 @@ GfxProgram diffuseProgram = gfxMakeShaderProgram(R"***(
   uniform vec3 offset;
   uniform float lerpRatio;
   uniform vec2 texCorr;
+  uniform vec4 color;
+  uniform vec3 lightObj;
+  uniform vec3 colorAmbient;
+  uniform vec3 colorLight;
 
   varying vec4 vColor;
   varying vec2 vTexCoord;
 
   void main() {
+    // position
     vec3 lerpedPosition = position0.xyz + (position1.xyz - position0.xyz) * lerpRatio;
     gl_Position = projMat * modelViewMat * vec4((lerpedPosition - offset) * stretch, 1.0);
-    vColor = color;
+    // texture coordinates
     vTexCoord = textureCoord.xy * texCorr;
+    // color
+    vColor = color;
+    // normal
+    vec3 lerpedNormal = normalize(normal0.xyz + (normal1.xyz - normal0.xyz) * lerpRatio);
+    float lightStrength = clamp(dot(lerpedNormal, -normalize(lightObj)), 0.0, 1.0);
+    vColor = vec4(vec3(lightStrength) * colorLight + colorAmbient, 1.0);
   }
 
 )***", R"***(
@@ -155,8 +165,7 @@ GfxProgram diffuseProgram = gfxMakeShaderProgram(R"***(
   void main() {
     vec4 finalColor = vColor;
     if (enableTexture > 0.5) finalColor = finalColor * texture2D(mainTexture, vTexCoord);
-    gl_FragColor = finalColor * vColor;
-    gl_FragColor = texture2D(mainTexture, vTexCoord);
+    gl_FragColor = finalColor;
 
     // alpha test
     if (enableAlphaTest > 0.5 && gl_FragColor.w < 0.5) {
@@ -992,10 +1001,18 @@ static void RenderOneSide( CRenderModel &rm, BOOL bBackSide, ULONG ulLayerFlags)
       return;
   }
 
+  // get model diffuse color
+  GFXColor colMdlDiff;
+  const COLOR colD = AdjustColor( rm.rm_pmdModelData->md_colDiffuse, _slTexHueShift, _slTexSaturation);
+  const COLOR colB = AdjustColor( rm.rm_colBlend,                    _slTexHueShift, _slTexSaturation);
+  colMdlDiff.MultiplyRGBA( colD, colB);
+
   gfxUseProgram(program);
 
   GLint position0Loc = gfxGetAttribLocation(program, "position0");
   GLint position1Loc = gfxGetAttribLocation(program, "position1");
+  GLint normal0Loc = gfxGetAttribLocation(program, "normal0");
+  GLint normal1Loc = gfxGetAttribLocation(program, "normal1");
   GLint textureCoordLoc = gfxGetAttribLocation(program, "textureCoord");
 
   gfxSetArrayBuffer(mmi.mmpi_ulVertexBufferObject);
@@ -1007,6 +1024,14 @@ static void RenderOneSide( CRenderModel &rm, BOOL bBackSide, ULONG ulLayerFlags)
     gfxVertexAttribPointer(position1Loc, 3, sizeof(PackedFrameVertex), _ulFrameOffset1);
     gfxEnableVertexAttribArray(position1Loc);
   }
+  if (normal0Loc >= 0) {
+    gfxVertexAttribPointer(normal0Loc, 3, sizeof(PackedFrameVertex), _ulFrameOffset0 + sizeof(GFXVertex3));
+    gfxEnableVertexAttribArray(normal0Loc);
+  }
+  if (normal1Loc >= 0) {
+    gfxVertexAttribPointer(normal1Loc, 3, sizeof(PackedFrameVertex), _ulFrameOffset1 + sizeof(GFXVertex3));
+    gfxEnableVertexAttribArray(normal1Loc);
+  }
   if (textureCoordLoc >= 0) {
     gfxVertexAttribPointer(textureCoordLoc, 2, sizeof(PackedFrameVertex), sizeof(GFXVertex3) + sizeof(GFXNormal3));
     gfxEnableVertexAttribArray(textureCoordLoc);
@@ -1017,6 +1042,9 @@ static void RenderOneSide( CRenderModel &rm, BOOL bBackSide, ULONG ulLayerFlags)
   gfxUniform("offset", rm.rm_vOffset(1), rm.rm_vOffset(2), rm.rm_vOffset(3));
   gfxUniform("texCorr", _fTexCorrU, _fTexCorrV);
   gfxUniform("lerpRatio", rm.rm_fRatio);
+  gfxUniform("lightObj", rm.rm_vLightObj(1), rm.rm_vLightObj(2), rm.rm_vLightObj(3));
+  gfxUniform("colorAmbient", _slAR/255.0f, _slAG/255.0f, _slAB/255.0f);
+  gfxUniform("colorLight", _slLR/255.0f, _slLG/255.0f, _slLB/255.0f);
 
   // set face culling
   if( bBackSide) {
@@ -1032,7 +1060,6 @@ static void RenderOneSide( CRenderModel &rm, BOOL bBackSide, ULONG ulLayerFlags)
 
   // for each surface in current mip model
   INDEX iStartElem=0;
-  INDEX ctElements=0;
   gfxSetElementArrayBuffer(mmi.mmpi_ulObject);
   {FOREACHINSTATICARRAY( mmi.mmpi_MappingSurfaces, MappingSurface, itms)
   {
@@ -1045,9 +1072,7 @@ static void RenderOneSide( CRenderModel &rm, BOOL bBackSide, ULONG ulLayerFlags)
      ||  (bBackSide && !(ulFlags&SRF_DOUBLESIDED)) // rendering back side and surface is not double sided,
      || !(_ulColorMask&ms.ms_ulOnColor)  // not on or off.
      ||  (_ulColorMask&ms.ms_ulOffColor)) {
-      if( ctElements>0) FlushElements( ctElements, iStartElem);
-      iStartElem+= ctElements+ms.ms_ctSrfEl;
-      ctElements = 0;
+      iStartElem += ms.ms_ctSrfEl;
       continue;
     }
 
@@ -1061,18 +1086,21 @@ static void RenderOneSide( CRenderModel &rm, BOOL bBackSide, ULONG ulLayerFlags)
       // if surface uses rendering parameters different than last one
       if( sttLast!=stt  || slBumpLast!=slBump) {
         // set up new API states
-        if( ctElements>0) FlushElements( ctElements, iStartElem);
         SetRenderingParameters(stt, slBump);
         sttLast = stt;
         slBumpLast = slBump;
-        iStartElem += ctElements;
-        ctElements = 0;
       }
-    } // batch the surface polygons for rendering
-    ctElements += ms.ms_ctSrfEl;
+
+      GFXColor colSrfDiff;
+      const COLOR colD = AdjustColor(ms.ms_colDiffuse, _slTexHueShift, _slTexSaturation);
+      colSrfDiff.MultiplyRGBA(colD, colMdlDiff);
+      gfxUniform("color", colSrfDiff);
+    }
+
+    FlushElements(ms.ms_ctSrfEl, iStartElem);
+    iStartElem+= ms.ms_ctSrfEl;
   }}
   // flush leftovers
-  if( ctElements>0) FlushElements( ctElements, iStartElem);
   gfxSetElementArrayBuffer(0);
 
   if (position0Loc >= 0) {
@@ -1080,6 +1108,12 @@ static void RenderOneSide( CRenderModel &rm, BOOL bBackSide, ULONG ulLayerFlags)
   }
   if (position1Loc >= 0) {
     gfxDisableVertexAttribArray(position1Loc);
+  }
+  if (normal0Loc >= 0) {
+    gfxDisableVertexAttribArray(normal0Loc);
+  }
+  if (normal1Loc >= 0) {
+    gfxDisableVertexAttribArray(normal1Loc);
   }
   if (textureCoordLoc >= 0) {
     gfxDisableVertexAttribArray(textureCoordLoc);
