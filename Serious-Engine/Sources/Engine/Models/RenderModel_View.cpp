@@ -134,6 +134,7 @@ GfxProgram diffuseProgram = gfxMakeShaderProgram(R"***(
   uniform vec3 lightObj;
   uniform vec3 colorAmbient;
   uniform vec3 colorLight;
+  uniform float isFullBright;
 
   varying vec4 vColor;
   varying vec2 vTexCoord;
@@ -142,14 +143,18 @@ GfxProgram diffuseProgram = gfxMakeShaderProgram(R"***(
     // position
     vec3 lerpedPosition = position0.xyz + (position1.xyz - position0.xyz) * lerpRatio;
     gl_Position = projMat * modelViewMat * vec4((lerpedPosition - offset) * stretch, 1.0);
-    // texture coordinates
-    vTexCoord = textureCoord.xy * texCorr;
-    // color
-    vColor = color;
     // normal
     vec3 lerpedNormal = normalize(normal0.xyz + (normal1.xyz - normal0.xyz) * lerpRatio);
-    float lightStrength = clamp(dot(lerpedNormal, -normalize(lightObj)), 0.0, 1.0);
-    vColor = vec4(vec3(lightStrength) * colorLight + colorAmbient, 1.0);
+    // texture coordinates
+    vTexCoord = textureCoord.xy * texCorr;
+    // normal
+    if (isFullBright > 0.5) {
+      vColor = color;
+    } else {
+      float lightStrength = clamp(dot(lerpedNormal, -normalize(lightObj)), 0.0, 1.0);
+      vec4 pcolMipBase = vec4((vec3(lightStrength) * colorLight + colorAmbient), 1.0);
+      vColor = color * pcolMipBase;
+    }
   }
 
 )***", R"***(
@@ -1115,10 +1120,25 @@ static void RenderOneSide( CRenderModel &rm, BOOL bBackSide, ULONG ulLayerFlags)
         slBumpLast = slBump;
       }
 
+      extern INDEX mdl_bAllowOverbright;
+      const BOOL bOverbright = mdl_bAllowOverbright && _pGfx->gl_ctTextureUnits > 1;
+
       GFXColor colSrfDiff;
       const COLOR colD = AdjustColor(ms.ms_colDiffuse, _slTexHueShift, _slTexSaturation);
       colSrfDiff.MultiplyRGBA(colD, colMdlDiff);
-      gfxUniform("color", colSrfDiff);
+      if( ms.ms_sstShadingType==SST_FULLBRIGHT) {
+        GFXColor colSrfDiffAdj = colSrfDiff;
+        if (bOverbright) {
+          colSrfDiffAdj.r >>= 1;
+          colSrfDiffAdj.g >>= 1;
+          colSrfDiffAdj.b >>= 1;
+        }
+        gfxUniform("isFullBright", 1);
+        gfxUniform("color", colSrfDiffAdj);
+      } else {
+        gfxUniform("isFullBright", 0);
+        gfxUniform("color", colSrfDiff);
+      }
     }
 
     FlushElements(ms.ms_ctSrfEl, iStartElem);
@@ -2400,6 +2420,8 @@ srfVtxLoop:
 
   _pfModelProfile.StartTimer( CModelProfile::PTI_VIEW_INIT_DIFF_SURF);
   _pfModelProfile.IncrementTimerAveragingCounter( CModelProfile::PTI_VIEW_INIT_DIFF_SURF, _ctAllSrfVx);
+
+  SetupAttributes(diffuseProgram, rm);
 
   // get diffuse texture corrections
   CTextureData *ptdDiff = (CTextureData*)mo_toTexture.GetData();
