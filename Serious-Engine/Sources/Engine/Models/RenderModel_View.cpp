@@ -134,7 +134,10 @@ GfxProgram diffuseProgram = gfxMakeShaderProgram(R"***(
   uniform vec3 lightObj;
   uniform vec3 colorAmbient;
   uniform vec3 colorLight;
+  uniform vec3 viewer;
   uniform float isUnlite;
+  uniform float withReflectionMapping;
+  uniform mat3 objectRotation;
 
   varying vec4 vColor;
   varying vec2 vTexCoord;
@@ -154,6 +157,14 @@ GfxProgram diffuseProgram = gfxMakeShaderProgram(R"***(
       float lightStrength = clamp(dot(lerpedNormal, -normalize(lightObj)), 0.0, 1.0);
       vec4 pcolMipBase = vec4((vec3(lightStrength) * colorLight + colorAmbient), 1.0);
       vColor = color * pcolMipBase;
+    }
+    // reflection
+    if (withReflectionMapping > 0.5) {
+      vec3 fN = lerpedNormal * objectRotation;
+      float fNV = dot(fN, viewer);
+      vec3 fRV = viewer - 2.0 * fN * vec3(fNV);
+      float f1oFM = 0.5 / sqrt(2.0 + 2.0 * fRV.y);
+      vTexCoord.st = fRV.xz * vec2(f1oFM) + 0.5;
     }
   }
 
@@ -1029,6 +1040,7 @@ void SetupAttributes(GfxProgram program, CRenderModel &rm) {
   gfxUniform("lightObj", rm.rm_vLightObj(1), rm.rm_vLightObj(2), rm.rm_vLightObj(3));
   gfxUniform("colorAmbient", _slAR/255.0f, _slAG/255.0f, _slAB/255.0f);
   gfxUniform("colorLight", _slLR/255.0f, _slLG/255.0f, _slLB/255.0f);
+  gfxUniform("viewer", _vViewer(1), _vViewer(2), _vViewer(3));
 
 }
 void CleanAttributes() {
@@ -1061,6 +1073,7 @@ static void RenderOneSide( CRenderModel &rm, BOOL bBackSide, ULONG ulLayerFlags)
   switch(ulLayerFlags) {
     case SRF_DIFFUSE:
     case SRF_DETAIL:
+    case SRF_REFLECTIONS:
       program = diffuseProgram;
       break;
     default:
@@ -1106,6 +1119,8 @@ static void RenderOneSide( CRenderModel &rm, BOOL bBackSide, ULONG ulLayerFlags)
       continue;
     }
 
+    gfxUniform("withReflectionMapping", 0);
+
     // if should set parameters
     if( ulLayerFlags&SRF_DIFFUSE) {
       // get rendering parameters
@@ -1140,6 +1155,7 @@ static void RenderOneSide( CRenderModel &rm, BOOL bBackSide, ULONG ulLayerFlags)
         gfxUniform("isUnlite", 0);
         gfxUniform("color", colSrfDiff);
       }
+
     } else if( ulLayerFlags&SRF_DETAIL) {
       gfxUniform("isUnlite", 1);
 
@@ -1150,6 +1166,25 @@ static void RenderOneSide( CRenderModel &rm, BOOL bBackSide, ULONG ulLayerFlags)
       GFXColor colSrfBump;
       colSrfBump.MultiplyRGB(AdjustColor( ms.ms_colBump, _slTexHueShift, _slTexSaturation), colMdlBump);
       gfxUniform("color", colSrfBump);
+
+    } else if( ulLayerFlags&SRF_REFLECTIONS) {
+      gfxUniform("withReflectionMapping", 1);
+      gfxUniform("isUnlite", 0);
+      gfxUniform("objectRotation", rm.rm_mObjectRotation);
+
+      GFXColor colMdlRefl;
+      colMdlRefl.abgr = ByteSwap(AdjustColor( rm.rm_pmdModelData->md_colReflections, _slTexHueShift, _slTexSaturation));
+      colMdlRefl.AttenuateA((rm.rm_colBlend & CT_AMASK) >> CT_ASHIFT);
+
+      GFXColor colSrfRefl;
+      colSrfRefl.MultiplyRGBA(AdjustColor( ms.ms_colReflections, _slTexHueShift, _slTexSaturation), colMdlRefl);
+      gfxUniform("color", colSrfRefl);
+
+      if (ms.ms_sstShadingType == SST_FULLBRIGHT) {
+        gfxUniform("isUnlite", 1);
+      } else {
+        gfxUniform("isUnlite", 0);
+      }
     }
 
     FlushElements(ms.ms_ctSrfEl, iStartElem);

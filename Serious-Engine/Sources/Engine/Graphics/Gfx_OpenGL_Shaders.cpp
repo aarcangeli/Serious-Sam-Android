@@ -118,6 +118,17 @@ void gfxUniform(const char *uniformName, GFXColor &color) {
   gfxUniform(uniformName, color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, color.a / 255.0f);
 }
 
+void gfxUniform(const char *uniformName, const FLOATmatrix3D &matrix) {
+
+  GfxProgramPrivate *pgm = _currentProgram;
+  ASSERT(pgm);
+  GLint uniformLocation = glGetUniformLocation(pgm->pgmObject, uniformName);
+  if (uniformLocation >= 0) {
+    glUniformMatrix3fv(uniformLocation, 1, GL_FALSE, (const float *) &matrix);
+  }
+  gles_adapter::syncError();
+}
+
 void gfxSyncProgram() {
   GfxProgramPrivate *pgm = _currentProgram;
   ASSERT(pgm);

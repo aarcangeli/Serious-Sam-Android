@@ -270,6 +270,7 @@ extern void gfxUniform(const char *uniformName, float f0, float f1);
 extern void gfxUniform(const char *uniformName, float f0, float f1, float f2);
 extern void gfxUniform(const char *uniformName, float f0, float f1, float f2, float f3);
 extern void gfxUniform(const char *uniformName, GFXColor &color);
+extern void gfxUniform(const char *uniformName, const FLOATmatrix3D &matrix);
 extern void gfxVertexAttribPointer(ULONG attribPointer, ULONG size, ULONG stride, ULONG offset);
 extern void gfxEnableVertexAttribArray(ULONG index);
 extern void gfxDisableVertexAttribArray(ULONG index);
