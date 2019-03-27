@@ -944,7 +944,6 @@ void gfxDrawElementArrayBuffer(INDEX iCount, ULONG ulOffset) {
   ASSERT(_pGfx->gl_eCurrentAPI == (INDEX) GAT_OGL);
   ASSERT(GFX_uiElementBufObject);
 
-  gfxSyncProgram();
   glDrawElements(GL_TRIANGLES, iCount, GL_UNSIGNED_SHORT, (const void *) (ulOffset * 2));
   gles_adapter::syncError();
 }

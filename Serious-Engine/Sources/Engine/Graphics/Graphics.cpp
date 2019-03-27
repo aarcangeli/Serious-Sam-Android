@@ -465,6 +465,7 @@ void DitherBitmap( INDEX iDitherType, ULONG *pulSrc, ULONG *pulDst, PIX pixWidth
   PIX stride = pixCanvasWidth;
   if (!stride) stride = pixWidth;
   ASSERT(stride >= pixWidth);
+  _pfGfxProfile.StartTimer(CGfxProfile::PTI_DITHERBITMAP);
 
 //  // determine row modulo
 //  SLONG slModulo      = (stride-pixWidth) *BYTES_PER_TEXEL;

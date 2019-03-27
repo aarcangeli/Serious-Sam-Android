@@ -75,7 +75,7 @@ struct ENGINE_API ModelMipInfo
   CStaticArray<FLOAT3D> mmpi_avBumpV;   // bump directions for each surface vertex
   ULONG mmpi_ulLayerFlags;              // all texture layers needed in this mip
   INDEX mmpi_ctTriangles;               // total triangles in this mip
-  CStaticStackArray<UWORD> mmpi_aiElements;
+  CStaticStackArray<INDEX> mmpi_aiElements;
 
   CStaticArray<PackedFrameVertex> mmpi_apfvPackedBuffer;
   bool mmpi_bNeedUpdate;

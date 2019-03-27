@@ -274,7 +274,7 @@ extern void gfxUniform(const char *uniformName, const FLOATmatrix3D &matrix);
 extern void gfxVertexAttribPointer(ULONG attribPointer, ULONG size, ULONG stride, ULONG offset);
 extern void gfxEnableVertexAttribArray(ULONG index);
 extern void gfxDisableVertexAttribArray(ULONG index);
-extern void gfxSyncProgram();
+extern void gfxSyncProgram(struct GfxShadersUniforms &params);
 
 // MISC
 

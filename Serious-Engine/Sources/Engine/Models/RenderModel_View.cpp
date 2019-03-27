@@ -25,6 +25,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Models/Normals.h>
 #include <Engine/Graphics/GfxLibrary.h>
 #include <Engine/Graphics/Fog_internal.h>
+#include <Engine/Graphics/Gfx_Shaders.h>
 #include <Engine/Base/Lists.inl>
 #include <Engine/World/WorldEditingProfile.h>
 
@@ -41,6 +42,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #define B  byte ptr
 
 #define ASMOPT 0
+#define ARRAYBUFFER_OPT 0
 
 extern INDEX mdl_bRenderBump;
 
@@ -203,6 +205,7 @@ GfxProgram diffuseProgram = gfxMakeShaderProgram(R"***(
 )***");
 ULONG _ulFrameOffset0, _ulFrameOffset1;
 FLOAT _fTexCorrU, _fTexCorrV;
+GfxShadersUniforms _programUniforms;
 
 // convinient routine for timing of texture setting
 static __forceinline void SetCurrentTexture( CTextureData *ptd, INDEX iFrame)
@@ -423,17 +426,14 @@ static void PrepareSurfaceElements( ModelMipInfo &mmi, MappingSurface &ms)
 
   // create elements
   ms.ms_ctSrfEl = ctTriangles*3;
-  UWORD *paiElements = mmi.mmpi_aiElements.Push(ms.ms_ctSrfEl);
+  INDEX *paiElements = mmi.mmpi_aiElements.Push(ms.ms_ctSrfEl);
   // dump all triangles
   //_RPT0(_CRT_WARN, "Result:\n");
   INDEX iel = 0;
   {for( INDEX itri=0; itri<ctTriangles; itri++){
-    ASSERT((UWORD) _atriDone[itri].i0 == _atriDone[itri].i0);
-    ASSERT((UWORD) _atriDone[itri].i1 == _atriDone[itri].i1);
-    ASSERT((UWORD) _atriDone[itri].i2 == _atriDone[itri].i2);
-    paiElements[iel++] = (UWORD) _atriDone[itri].i0;
-    paiElements[iel++] = (UWORD) _atriDone[itri].i1;
-    paiElements[iel++] = (UWORD) _atriDone[itri].i2;
+    paiElements[iel++] = _atriDone[itri].i0;
+    paiElements[iel++] = _atriDone[itri].i1;
+    paiElements[iel++] = _atriDone[itri].i2;
     //_RPT3(_CRT_WARN, "%d %d %d\n", _atriDone[itri].i0, _atriDone[itri].i1, _atriDone[itri].i2);
   }}
   mmi.mmpi_ctTriangles += ctTriangles;
@@ -551,10 +551,13 @@ static void PrepareModelMipForRendering( CModelData &md, INDEX iMip)
   // allocate surface vertex arrays
   mmi.mmpi_auwSrfToMip.Clear();
   mmi.mmpi_avmexTexCoord.Clear();
-  mmi.mmpi_apfvPackedBuffer.Clear();
   mmi.mmpi_auwSrfToMip.New(mmi.mmpi_ctSrfVx);
   mmi.mmpi_avmexTexCoord.New(mmi.mmpi_ctSrfVx);
+
+#if ARRAYBUFFER_OPT
+  mmi.mmpi_apfvPackedBuffer.Clear();
   mmi.mmpi_apfvPackedBuffer.New(md.md_FramesCt * mmi.mmpi_ctSrfVx);
+#endif
 
   // alloc bump mapping vectors only if needed
   mmi.mmpi_avBumpU.Clear();
@@ -631,6 +634,7 @@ static void PrepareModelMipForRendering( CModelData &md, INDEX iMip)
       }
       //
 
+#if ARRAYBUFFER_OPT
       // pack data
       for (ULONG ulFrameNum = 0; ulFrameNum < md.md_FramesCt; ++ulFrameNum) {
         PackedFrameVertex &pfvFrame = mmi.mmpi_apfvPackedBuffer[mmi.mmpi_ctSrfVx * ulFrameNum + iSrfVx];
@@ -669,6 +673,7 @@ static void PrepareModelMipForRendering( CModelData &md, INDEX iMip)
         pfvFrame.pfv_avBumpU = mtv.mtv_vU;
         pfvFrame.pfv_avBumpV = mtv.mtv_vV;
       }
+#endif
 
       iSrfVx++;
     } // set vertex indices
@@ -703,10 +708,13 @@ static void PrepareModelMipForRendering( CModelData &md, INDEX iMip)
     }
   }
 
+#if ARRAYBUFFER_OPT
   // array buffers must be reuploaded
   mmi.mmpi_bNeedUpdate = true;
+#endif
 }
 
+#if ARRAYBUFFER_OPT
 void SyncModelMipInfo(CModelData &md, ModelMipInfo &mmi) {
   if (mmi.mmpi_ulVertexBufferObject == NONE) {
     gfxGenerateBuffer(mmi.mmpi_ulVertexBufferObject);
@@ -726,6 +734,7 @@ void SyncModelMipInfo(CModelData &md, ModelMipInfo &mmi) {
     mmi.mmpi_bNeedUpdate = false;
   }
 }
+#endif
 
 extern void PrepareModelForRendering( CModelData &md)
 {
@@ -932,7 +941,7 @@ static BOOL IsModelInHaze( FLOAT3D &vMin, FLOAT3D &vMax)
 
 
 // render all pending elements
-static void FlushElements( INDEX ctElem, INDEX pai)
+static void FlushElements( INDEX ctElem, INDEX *pai)
 {
   ASSERT(ctElem>0);
   // choose rendering mode
@@ -943,13 +952,13 @@ static void FlushElements( INDEX ctElem, INDEX pai)
     _pfModelProfile.StartTimer( CModelProfile::PTI_VIEW_DRAWELEMENTS);
     _pfModelProfile.IncrementTimerAveragingCounter( CModelProfile::PTI_VIEW_DRAWELEMENTS, ctElem/3);
     _pGfx->gl_ctModelTriangles += ctElem/3;
-    gfxDrawElementArrayBuffer(ctElem, pai);
+    gfxDrawElements( ctElem, pai);
     extern INDEX mdl_bShowTriangles;
     if( _bMultiPlayer) mdl_bShowTriangles = 0; // don't allow in multiplayer mode!
     if( mdl_bShowTriangles) {
       gfxSetConstantColor(C_YELLOW|222); // this also disables color array
       gfxPolygonMode(GFX_LINE);
-      gfxDrawElementArrayBuffer(ctElem, pai);
+      gfxDrawElements( ctElem, pai);
       gfxPolygonMode(GFX_FILL);
       gfxEnableColorArray(); // need to re-enable color array
     } // done
@@ -957,7 +966,7 @@ static void FlushElements( INDEX ctElem, INDEX pai)
   }
   // show strips
   else if( _eAPI==GAT_OGL) {
-//    DrawStrips( ctElem, pai);
+    DrawStrips( ctElem, pai);
     OGL_CHECKERROR;
   }
 }
@@ -1009,6 +1018,9 @@ static void SetRenderingParameters( SurfaceTranslucencyType stt, BOOL bHasBump)
   _pfModelProfile.StopTimer( CModelProfile::PTI_VIEW_ONESIDE_GLSETUP);
 }
 
+
+#if ARRAYBUFFER_OPT
+
 // use program, set attribute locations and standard uniforms
 GLint _position0Loc, _position1Loc, _normal0Loc, _normal1Loc, _textureCoordLoc;
 void SetupAttributes(GfxProgram program, CRenderModel &rm) {
@@ -1044,14 +1056,14 @@ void SetupAttributes(GfxProgram program, CRenderModel &rm) {
   }
   gfxSetArrayBuffer(0);
 
-  gfxUniform("stretch", rm.rm_vStretch(1), rm.rm_vStretch(2), rm.rm_vStretch(3));
-  gfxUniform("offset", rm.rm_vOffset(1), rm.rm_vOffset(2), rm.rm_vOffset(3));
-  gfxUniform("texCorr", _fTexCorrU, _fTexCorrV);
-  gfxUniform("lerpRatio", rm.rm_fRatio);
-  gfxUniform("lightObj", rm.rm_vLightObj(1), rm.rm_vLightObj(2), rm.rm_vLightObj(3));
-  gfxUniform("colorAmbient", _slAR/255.0f, _slAG/255.0f, _slAB/255.0f);
-  gfxUniform("colorLight", _slLR/255.0f, _slLG/255.0f, _slLB/255.0f);
-  gfxUniform("viewer", _vViewer(1), _vViewer(2), _vViewer(3));
+  _programUniforms.stretch = rm.rm_vStretch;
+  _programUniforms.offset = rm.rm_vOffset;
+  _programUniforms.texCorr = FLOAT2D(_fTexCorrU, _fTexCorrV);
+  _programUniforms.lerpRatio = rm.rm_fRatio;
+  _programUniforms.lightObj = rm.rm_vLightObj;
+  _programUniforms.colorAmbient = FLOAT3D(_slAR/255.0f, _slAG/255.0f, _slAB/255.0f);
+  _programUniforms.colorLight = FLOAT3D(_slLR/255.0f, _slLG/255.0f, _slLB/255.0f);
+  _programUniforms.viewer = _vViewer;
 
 }
 void CleanAttributes() {
@@ -1131,8 +1143,9 @@ static void RenderOneSide( CRenderModel &rm, BOOL bBackSide, ULONG ulLayerFlags)
       continue;
     }
 
-    gfxUniform("withReflectionMapping", 0);
-    gfxUniform("withSpecularMapping", 0);
+    _programUniforms.withReflectionMapping = false;
+    _programUniforms.withSpecularMapping = false;
+    _programUniforms.isUnlite = false;
 
     // if should set parameters
     if( ulLayerFlags&SRF_DIFFUSE) {
@@ -1162,15 +1175,14 @@ static void RenderOneSide( CRenderModel &rm, BOOL bBackSide, ULONG ulLayerFlags)
           colSrfDiffAdj.g >>= 1;
           colSrfDiffAdj.b >>= 1;
         }
-        gfxUniform("isUnlite", 1);
-        gfxUniform("color", colSrfDiffAdj);
+        _programUniforms.isUnlite = true;
+        _programUniforms.color = colSrfDiffAdj;
       } else {
-        gfxUniform("isUnlite", 0);
-        gfxUniform("color", colSrfDiff);
+        _programUniforms.color = colSrfDiff;
       }
 
     } else if( ulLayerFlags&SRF_DETAIL) {
-      gfxUniform("isUnlite", 1);
+      _programUniforms.isUnlite = true;
 
       // get model detail color
       GFXColor colMdlBump;
@@ -1178,12 +1190,11 @@ static void RenderOneSide( CRenderModel &rm, BOOL bBackSide, ULONG ulLayerFlags)
 
       GFXColor colSrfBump;
       colSrfBump.MultiplyRGB(AdjustColor( ms.ms_colBump, _slTexHueShift, _slTexSaturation), colMdlBump);
-      gfxUniform("color", colSrfBump);
+      _programUniforms.color = colSrfBump;
 
     } else if( ulLayerFlags&SRF_REFLECTIONS) {
-      gfxUniform("withReflectionMapping", 1);
-      gfxUniform("isUnlite", 0);
-      gfxUniform("objectRotation", rm.rm_mObjectRotation);
+      _programUniforms.withReflectionMapping = true;
+      _programUniforms.objectRotation = rm.rm_mObjectRotation;
 
       GFXColor colMdlRefl;
       colMdlRefl.abgr = ByteSwap(AdjustColor( rm.rm_pmdModelData->md_colReflections, _slTexHueShift, _slTexSaturation));
@@ -1191,31 +1202,107 @@ static void RenderOneSide( CRenderModel &rm, BOOL bBackSide, ULONG ulLayerFlags)
 
       GFXColor colSrfRefl;
       colSrfRefl.MultiplyRGBA(AdjustColor( ms.ms_colReflections, _slTexHueShift, _slTexSaturation), colMdlRefl);
-      gfxUniform("color", colSrfRefl);
+      _programUniforms.color = colSrfRefl;
 
       if (ms.ms_sstShadingType == SST_FULLBRIGHT) {
-        gfxUniform("isUnlite", 1);
-      } else {
-        gfxUniform("isUnlite", 0);
+        _programUniforms.isUnlite = true;
       }
 
     } else if( ulLayerFlags&SRF_SPECULAR) {
-      gfxUniform("withSpecularMapping", 1);
-      gfxUniform("isUnlite", 1);
-      gfxUniform("objectToView", rm.rm_mObjectToView);
+      _programUniforms.withSpecularMapping = 1;
+      _programUniforms.isUnlite = true;
+      _programUniforms.objectToView = rm.rm_mObjectToView;
 
       GFXColor colMdlSpec;
       colMdlSpec.abgr  = ByteSwap(AdjustColor( rm.rm_pmdModelData->md_colSpecular, _slTexHueShift, _slTexSaturation));
       colMdlSpec.AttenuateRGB( (rm.rm_colBlend&CT_AMASK)>>CT_ASHIFT);
-      colMdlSpec.r = ClampUp( (colMdlSpec.r *_slLR)>>8, 255L);
-      colMdlSpec.g = ClampUp( (colMdlSpec.g *_slLG)>>8, 255L);
-      colMdlSpec.b = ClampUp( (colMdlSpec.b *_slLB)>>8, 255L);
+      colMdlSpec.r = ClampUp((colMdlSpec.r * _slLR) >> 8, 255L);
+      colMdlSpec.g = ClampUp((colMdlSpec.g * _slLG) >> 8, 255L);
+      colMdlSpec.b = ClampUp((colMdlSpec.b * _slLB) >> 8, 255L);
 
       GFXColor colSrfSpec;
       colSrfSpec.MultiplyRGB( AdjustColor( ms.ms_colSpecular, _slTexHueShift, _slTexSaturation), colMdlSpec);
-      gfxUniform("color", colSrfSpec);
+      _programUniforms.color = colSrfSpec;
     }
 
+    if( ulLayerFlags&SRF_DIFFUSE) {
+      // get rendering parameters
+      SurfaceTranslucencyType stt = ms.ms_sttTranslucencyType;
+
+      SLONG slBump = _bHasBump && (ms.ms_ulRenderingFlags&SRF_BUMP) && mdl_bRenderBump;  // && !_bFlatFill
+
+      // if surface uses rendering parameters different than last one
+      if( sttLast!=stt  || slBumpLast!=slBump) {
+        // set up new API states
+        SetRenderingParameters(stt, slBump);
+        sttLast = stt;
+        slBumpLast = slBump;
+      }
+
+      extern INDEX mdl_bAllowOverbright;
+      const BOOL bOverbright = mdl_bAllowOverbright && _pGfx->gl_ctTextureUnits > 1;
+
+      GFXColor colSrfDiff;
+      const COLOR colD = AdjustColor(ms.ms_colDiffuse, _slTexHueShift, _slTexSaturation);
+      colSrfDiff.MultiplyRGBA(colD, colMdlDiff);
+      if( ms.ms_sstShadingType==SST_FULLBRIGHT) {
+        GFXColor colSrfDiffAdj = colSrfDiff;
+        if (bOverbright) {
+          colSrfDiffAdj.r >>= 1;
+          colSrfDiffAdj.g >>= 1;
+          colSrfDiffAdj.b >>= 1;
+        }
+        _programUniforms.isUnlite = true;
+        _programUniforms.color = colSrfDiffAdj;
+      } else {
+        _programUniforms.color = colSrfDiff;
+      }
+
+    } else if( ulLayerFlags&SRF_DETAIL) {
+      _programUniforms.isUnlite = true;
+
+      // get model detail color
+      GFXColor colMdlBump;
+      colMdlBump.abgr = ByteSwap(AdjustColor( rm.rm_pmdModelData->md_colBump, _slTexHueShift, _slTexSaturation));
+
+      GFXColor colSrfBump;
+      colSrfBump.MultiplyRGB(AdjustColor( ms.ms_colBump, _slTexHueShift, _slTexSaturation), colMdlBump);
+      _programUniforms.color = colSrfBump;
+
+    } else if( ulLayerFlags&SRF_REFLECTIONS) {
+      _programUniforms.withReflectionMapping = true;
+      _programUniforms.objectRotation = rm.rm_mObjectRotation;
+
+      GFXColor colMdlRefl;
+      colMdlRefl.abgr = ByteSwap(AdjustColor( rm.rm_pmdModelData->md_colReflections, _slTexHueShift, _slTexSaturation));
+      colMdlRefl.AttenuateA((rm.rm_colBlend & CT_AMASK) >> CT_ASHIFT);
+
+      GFXColor colSrfRefl;
+      colSrfRefl.MultiplyRGBA(AdjustColor( ms.ms_colReflections, _slTexHueShift, _slTexSaturation), colMdlRefl);
+      _programUniforms.color = colSrfRefl;
+
+      if (ms.ms_sstShadingType == SST_FULLBRIGHT) {
+        _programUniforms.isUnlite = true;
+      }
+
+    } else if( ulLayerFlags&SRF_SPECULAR) {
+      _programUniforms.withSpecularMapping = 1;
+      _programUniforms.isUnlite = true;
+      _programUniforms.objectToView = rm.rm_mObjectToView;
+
+      GFXColor colMdlSpec;
+      colMdlSpec.abgr  = ByteSwap(AdjustColor( rm.rm_pmdModelData->md_colSpecular, _slTexHueShift, _slTexSaturation));
+      colMdlSpec.AttenuateRGB( (rm.rm_colBlend&CT_AMASK)>>CT_ASHIFT);
+      colMdlSpec.r = ClampUp((colMdlSpec.r * _slLR) >> 8, 255L);
+      colMdlSpec.g = ClampUp((colMdlSpec.g * _slLG) >> 8, 255L);
+      colMdlSpec.b = ClampUp((colMdlSpec.b * _slLB) >> 8, 255L);
+
+      GFXColor colSrfSpec;
+      colSrfSpec.MultiplyRGB( AdjustColor( ms.ms_colSpecular, _slTexHueShift, _slTexSaturation), colMdlSpec);
+      _programUniforms.color = colSrfSpec;
+    }
+
+    gfxSyncProgram(_programUniforms);
     FlushElements(ms.ms_ctSrfEl, iStartElem);
     iStartElem+= ms.ms_ctSrfEl;
   }}
@@ -1228,6 +1315,75 @@ static void RenderOneSide( CRenderModel &rm, BOOL bBackSide, ULONG ulLayerFlags)
   _pfModelProfile.StopTimer( CModelProfile::PTI_VIEW_ONESIDE);
 }
 
+#else
+
+// render one side of a surface (return TRUE if any type of translucent surface has been rendered)
+static void RenderOneSide( CRenderModel &rm, BOOL bBackSide, ULONG ulLayerFlags)
+{
+  _pfModelProfile.StartTimer( CModelProfile::PTI_VIEW_ONESIDE);
+  _pfModelProfile.IncrementTimerAveragingCounter( CModelProfile::PTI_VIEW_ONESIDE);
+  _icol = 0;
+
+  // set face culling
+  if( bBackSide) {
+    if( !(_ulMipLayerFlags&SRF_DOUBLESIDED)) {
+      _pfModelProfile.StopTimer( CModelProfile::PTI_VIEW_ONESIDE);
+      return;
+    } else gfxCullFace(GFX_FRONT);
+  } else gfxCullFace(GFX_BACK);
+
+  // start with invalid rendering parameters
+  SurfaceTranslucencyType sttLast = STT_INVALID;
+  SLONG slBumpLast = -1;
+
+  // for each surface in current mip model
+  INDEX iStartElem=0;
+  INDEX ctElements=0;
+  ModelMipInfo &mmi = *rm.rm_pmmiMip;
+  {FOREACHINSTATICARRAY( mmi.mmpi_MappingSurfaces, MappingSurface, itms)
+  {
+    const MappingSurface &ms = *itms;
+    const ULONG ulFlags = ms.ms_ulRenderingFlags;
+    // end rendering if surface is invisible or empty - these are the last surfaces in surface list
+    if( (ulFlags&SRF_INVISIBLE) || ms.ms_ctSrfVx==0) break;
+    // skip surface if ...
+    if( !(ulFlags&ulLayerFlags)  // not in this layer,
+     ||  (bBackSide && !(ulFlags&SRF_DOUBLESIDED)) // rendering back side and surface is not double sided,
+     || !(_ulColorMask&ms.ms_ulOnColor)  // not on or off.
+     ||  (_ulColorMask&ms.ms_ulOffColor)) {
+      if( ctElements>0) FlushElements( ctElements, &mmi.mmpi_aiElements[iStartElem]);
+      iStartElem+= ctElements+ms.ms_ctSrfEl;
+      ctElements = 0;
+      continue;
+    }
+
+    // if should set parameters
+    if( ulLayerFlags&SRF_DIFFUSE) {
+      // get rendering parameters
+      SurfaceTranslucencyType stt = ms.ms_sttTranslucencyType;
+
+      SLONG slBump = _bHasBump && (ms.ms_ulRenderingFlags&SRF_BUMP) && mdl_bRenderBump;  // && !_bFlatFill
+
+      // if surface uses rendering parameters different than last one
+      if( sttLast!=stt  || slBumpLast!=slBump) {
+        // set up new API states
+        if( ctElements>0) FlushElements( ctElements, &mmi.mmpi_aiElements[iStartElem]);
+        SetRenderingParameters(stt, slBump);
+        sttLast = stt;
+        slBumpLast = slBump;
+        iStartElem += ctElements;
+        ctElements = 0;
+      }
+    } // batch the surface polygons for rendering
+    ctElements += ms.ms_ctSrfEl;
+  }}
+  // flush leftovers
+  if( ctElements>0) FlushElements( ctElements, &mmi.mmpi_aiElements[iStartElem]);
+  // all done
+  _pfModelProfile.StopTimer( CModelProfile::PTI_VIEW_ONESIDE);
+}
+
+#endif
 
 
 // render model thru colors
@@ -1251,14 +1407,13 @@ static void RenderColors( CRenderModel &rm)
   INDEX iStartElem=0;
   INDEX ctElements=0;
   ModelMipInfo &mmi = *rm.rm_pmmiMip;
-  gfxSetElementArrayBuffer(mmi.mmpi_ulObject);
   FOREACHINSTATICARRAY( mmi.mmpi_MappingSurfaces, MappingSurface, itms)
   {
     const MappingSurface &ms = *itms;
     // skip if surface is invisible or empty
     if( (ms.ms_ulRenderingFlags&SRF_INVISIBLE) || ms.ms_ctSrfVx==0
     || !(_ulColorMask&ms.ms_ulOnColor) || (_ulColorMask&ms.ms_ulOffColor)) {
-      if( ctElements>0) FlushElements( ctElements, iStartElem);
+      if( ctElements>0) FlushElements( ctElements, &mmi.mmpi_aiElements[iStartElem]);
       iStartElem+= ctElements+ms.ms_ctSrfEl;
       ctElements = 0;
       continue;
@@ -1280,8 +1435,7 @@ static void RenderColors( CRenderModel &rm)
     ctElements += ms.ms_ctSrfEl;
   }
   // all done
-  if( ctElements>0) FlushElements( ctElements, iStartElem);
-  gfxSetElementArrayBuffer(0);
+  if( ctElements>0) FlushElements( ctElements, &mmi.mmpi_aiElements[iStartElem]);
 }
 
 
@@ -1304,7 +1458,6 @@ static void RenderWireframe(CRenderModel &rm)
 
   COLOR colWire = _mrpModelRenderPrefs.GetInkColor()|CT_OPAQUE;
   ModelMipInfo &mmi = *rm.rm_pmmiMip;
-  gfxSetElementArrayBuffer(mmi.mmpi_ulObject);
 
   // first, render hidden lines (if required)
   if( rm.rm_rtRenderType&RT_HIDDEN_LINES)
@@ -1317,7 +1470,7 @@ static void RenderWireframe(CRenderModel &rm)
       const MappingSurface &ms = *itms;
       // skip if surface is invisible or empty
       if( (ms.ms_ulRenderingFlags&SRF_INVISIBLE) || ms.ms_ctSrfVx==0) {
-        if( ctElements>0) FlushElements( ctElements, iStartElem);
+        if( ctElements>0) FlushElements( ctElements, &mmi.mmpi_aiElements[iStartElem]);
         iStartElem+= ctElements+ms.ms_ctSrfEl;
         ctElements = 0;
         continue;
@@ -1328,7 +1481,7 @@ static void RenderWireframe(CRenderModel &rm)
       ctElements += ms.ms_ctSrfEl;
     }
     // all done
-    if( ctElements>0) FlushElements( ctElements, iStartElem);
+    if( ctElements>0) FlushElements( ctElements, &mmi.mmpi_aiElements[iStartElem]);
     gfxCullFace(GFX_BACK);
   }
   // then, render visible lines (if required)
@@ -1342,7 +1495,7 @@ static void RenderWireframe(CRenderModel &rm)
       const MappingSurface &ms = *itms;
       // done if surface is invisible or empty
       if( (ms.ms_ulRenderingFlags&SRF_INVISIBLE) || ms.ms_ctSrfVx==0) {
-        if( ctElements>0) FlushElements( ctElements, iStartElem);
+        if( ctElements>0) FlushElements( ctElements, &mmi.mmpi_aiElements[iStartElem]);
         iStartElem+= ctElements+ms.ms_ctSrfEl;
         ctElements = 0;
         continue;
@@ -1353,11 +1506,10 @@ static void RenderWireframe(CRenderModel &rm)
       ctElements += ms.ms_ctSrfEl;
     }
     // all done
-    if( ctElements>0) FlushElements( ctElements, iStartElem);
+    if( ctElements>0) FlushElements( ctElements, &mmi.mmpi_aiElements[iStartElem]);
   }
   // all done
   gfxPolygonMode(GFX_FILL);
-  gfxSetElementArrayBuffer(0);
 }
 
 
@@ -2100,7 +2252,9 @@ void CModelObject::RenderModel_View( CRenderModel &rm)
         ModelMipInfo &mmi = *rm.rm_pmmiMip;
   const ModelMipInfo &mmi0 = rm.rm_pmdModelData->md_MipInfos[0];
 
+#if ARRAYBUFFER_OPT
   SyncModelMipInfo(*rm.rm_pmdModelData, mmi);
+#endif
 
   // calculate projection of viewer in absolute space
   FLOATmatrix3D &mViewer = _aprProjection->pr_ViewerRotationMatrix;
@@ -2178,10 +2332,13 @@ void CModelObject::RenderModel_View( CRenderModel &rm)
   pcolMipBase = &_acolMipBase[0];
   pnorMipBase = &_anorMipBase[0];
   const BOOL bNeedNormals = GFX_bTruform || (_ulMipLayerFlags&(SRF_REFLECTIONS|SRF_SPECULAR|SRF_BUMP));
-  //UnpackFrame( rm, bNeedNormals);
 
+#if ARRAYBUFFER_OPT
   _ulFrameOffset0 = rm.rm_iFrame0 * mmi.mmpi_ctSrfVx * sizeof(PackedFrameVertex);
   _ulFrameOffset1 = rm.rm_iFrame1 * mmi.mmpi_ctSrfVx * sizeof(PackedFrameVertex);
+#else
+  UnpackFrame( rm, bNeedNormals);
+#endif
 
   // cache some more pointers and vars
   ptexMipBase = &_atexMipBase[0];
@@ -2496,8 +2653,6 @@ srfVtxLoop:
   _pfModelProfile.StartTimer( CModelProfile::PTI_VIEW_INIT_DIFF_SURF);
   _pfModelProfile.IncrementTimerAveragingCounter( CModelProfile::PTI_VIEW_INIT_DIFF_SURF, _ctAllSrfVx);
 
-  SetupAttributes(diffuseProgram, rm);
-
   // get diffuse texture corrections
   CTextureData *ptdDiff = (CTextureData*)mo_toTexture.GetData();
   if( ptdDiff!=NULL) {
@@ -2515,6 +2670,7 @@ srfVtxLoop:
   colMdlDiff.MultiplyRGBA( colD, colB);
 
   // for each surface in current mip model
+#if not(ARRAYBUFFER_OPT)
   {FOREACHINSTATICARRAY( mmi.mmpi_MappingSurfaces, MappingSurface, itms)
   {
     const MappingSurface &ms = *itms;
@@ -2641,6 +2797,7 @@ diffColLoop:
       else AttenuateAlpha( pshdMipFogy, ctSrfVx);
     }
   }}
+#endif
   // done with diffuse surfaces setup
   _pfModelProfile.StopTimer( CModelProfile::PTI_VIEW_INIT_DIFF_SURF);
 
@@ -2731,6 +2888,7 @@ diffColLoop:
     }
 
     // for each bump surface in current mip model
+#if not(ARRAYBUFFER_OPT)
     FOREACHINSTATICARRAY( mmi.mmpi_MappingSurfaces, MappingSurface, itms)
     {
       const MappingSurface &ms = *itms;
@@ -2757,6 +2915,7 @@ diffColLoop:
         pcolSrfBase[iSrfVx]   = colSrfBump;
       }
     }
+#endif
     // detail prep done
     _pfModelProfile.StopTimer( CModelProfile::PTI_VIEW_INIT_BUMP_SURF);
 
@@ -2792,6 +2951,7 @@ diffColLoop:
     // cache rotation
     const FLOATmatrix3D &m = rm.rm_mObjectRotation;
 
+#if not(ARRAYBUFFER_OPT)
 #if ASMOPT == 1
     __asm {
       push    ebx
@@ -2895,6 +3055,7 @@ reflMipLoop:
       ptexMipBase[iMipVx].t = fRVz*f1oFM +0.5f;
     }
 #endif
+#endif
     _pfModelProfile.StopTimer( CModelProfile::PTI_VIEW_INIT_REFL_MIP);
 
     // setup surface vertices
@@ -2908,6 +3069,7 @@ reflMipLoop:
     colMdlRefl.AttenuateA( (rm.rm_colBlend&CT_AMASK)>>CT_ASHIFT);
 
     // for each reflective surface in current mip model
+#if not(ARRAYBUFFER_OPT)
     FOREACHINSTATICARRAY( mmi.mmpi_MappingSurfaces, MappingSurface, itms)
     {
       const MappingSurface &ms = *itms;
@@ -2953,6 +3115,7 @@ reflMipLoop:
         else AttenuateAlpha( pshdMipFogy, ctSrfVx);
       }
     }
+#endif
     // reflection prep done
     _pfModelProfile.StopTimer( CModelProfile::PTI_VIEW_INIT_REFL_SURF);
 
@@ -2987,6 +3150,7 @@ reflMipLoop:
     // cache object view rotation
     const FLOATmatrix3D &m = rm.rm_mObjectToView;
 
+#if not(ARRAYBUFFER_OPT)
 #if ASMOPT == 1
     __asm {
       push    ebx
@@ -3094,6 +3258,7 @@ specMipLoop:
       ptexMipBase[iMipVx].t = fRVy*f1oFM +0.5f;
     }
 #endif
+#endif
     _pfModelProfile.StopTimer( CModelProfile::PTI_VIEW_INIT_SPEC_MIP);
 
     // setup surface vertices
@@ -3110,6 +3275,7 @@ specMipLoop:
     colMdlSpec.b = ClampUp( (colMdlSpec.b *_slLB)>>8, 255L);
 
     // for each specular surface in current mip model
+#if not(ARRAYBUFFER_OPT)
     FOREACHINSTATICARRAY( mmi.mmpi_MappingSurfaces, MappingSurface, itms)
     {
       const MappingSurface &ms = *itms;
@@ -3148,6 +3314,7 @@ specMipLoop:
         else AttenuateAlpha( pshdMipFogy, ctSrfVx);
       }
     }
+#endif
     // specular prep done
     _pfModelProfile.StopTimer( CModelProfile::PTI_VIEW_INIT_SPEC_SURF);
 
@@ -3593,7 +3760,6 @@ void CModelObject::RenderShadow_View( CRenderModel &rm, const CPlacement3D &plLi
   // for each surface in current mip model
   INDEX iStartElem=0;
   INDEX ctElements=0;
-  gfxSetElementArrayBuffer(mmi.mmpi_ulObject);
   {FOREACHINSTATICARRAY( mmi.mmpi_MappingSurfaces, MappingSurface, itms)
   { 
     // done if surface is invisible or empty
@@ -3605,14 +3771,13 @@ void CModelObject::RenderShadow_View( CRenderModel &rm, const CPlacement3D &plLi
       continue;
     }
     // flush batched elements
-    if( ctElements>0) FlushElements( ctElements, iStartElem);
+    if( ctElements>0) FlushElements( ctElements, &mmi.mmpi_aiElements[iStartElem]);
     _pfModelProfile.IncrementTimerAveragingCounter( CModelProfile::PTI_VIEW_SHAD_RENDER, ctElements/3);
     iStartElem+= ctElements+ms.ms_ctSrfEl;
     ctElements = 0;
   }}
   // flush leftovers
-  if( ctElements>0) FlushElements( ctElements, iStartElem);
-  gfxSetElementArrayBuffer(0);
+  if( ctElements>0) FlushElements( ctElements, &mmi.mmpi_aiElements[iStartElem]);
 
   // done
   gfxUnlockArrays();
