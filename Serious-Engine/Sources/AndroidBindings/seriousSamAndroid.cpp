@@ -16,6 +16,8 @@ typedef CGame *(*GAME_Create_t)(void);
 void CTimer_TimerFunc_internal(void);
 void CPrintLog(CTString strBuffer);
 
+void drawBannerFpsVersion(CDrawPort *pdp, int64_t deltaFrame, float fps);
+
 #ifndef SSA_VERSION
 #define SSA_VERSION ""
 #endif
@@ -255,8 +257,6 @@ void seriousSamDoGame(CDrawPort *pdp) {
   int64_t deltaFrame = start - lastFrameDraw;
   lastFrameDraw = start;
 
-  static int64_t seriousSamDoGameTime = 0;
-
   const int64_t UPDATE_TIME = 2000000000; // 2s
   static int64_t lastFpsNow = start;
   static int64_t times = 0;
@@ -296,13 +296,7 @@ void seriousSamDoGame(CDrawPort *pdp) {
     game->ConsoleRender(pdp);
 
     // draw fps and frame time
-    SLONG slDPWidth = pdp->GetWidth();
-    SLONG slDPHeight = pdp->GetHeight();
-    pdp->SetFont(_pfdDisplayFont);
-    pdp->SetTextScaling(1);
-    pdp->SetTextAspect(1.0f);
-    CTString str = CTString(0, SSA_VERSION " fps: %.2f; frame: %.2f ms", fps, deltaFrame / 1000000.f);
-    pdp->PutText(str, 0, 0, LCDGetColor(C_GREEN | 255, "display mode"));
+    drawBannerFpsVersion(pdp, deltaFrame, fps);
 
     pdp->Unlock();
 
@@ -318,6 +312,14 @@ void seriousSamDoGame(CDrawPort *pdp) {
   }
 
   CTStream::DisableStreamHandling();
+}
 
-  seriousSamDoGameTime = getTimeNsec() - start;
+void drawBannerFpsVersion(CDrawPort *pdp, int64_t deltaFrame, float fps) {
+  SLONG slDPWidth = pdp->GetWidth();
+  SLONG slDPHeight = pdp->GetHeight();
+  pdp->SetFont(_pfdDisplayFont);
+  pdp->SetTextScaling(1);
+  pdp->SetTextAspect(1.0f);
+  CTString str = CTString(0, SSA_VERSION " fps: %.2f; frame: %.2f ms", fps, deltaFrame / 1000000.f);
+  pdp->PutText(str, 0, 0, LCDGetColor(C_GREEN | 255, "display mode"));
 }
