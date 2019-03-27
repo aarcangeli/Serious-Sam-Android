@@ -196,22 +196,10 @@ inline BOOL operator!=(const GFXColor &v1, const GFXColor &v2) {
   return v1.abgr != v2.abgr;
 };
 
-inline BOOL gfxEquals(const FLOATmatrix3D &v1, const FLOATmatrix3D &v2) {
-  if (v1.matrix[0][0] != v1.matrix[0][0]) return false;
-  if (v1.matrix[0][1] != v1.matrix[0][1]) return false;
-  if (v1.matrix[0][2] != v1.matrix[0][2]) return false;
-  if (v1.matrix[1][0] != v1.matrix[1][0]) return false;
-  if (v1.matrix[1][1] != v1.matrix[1][1]) return false;
-  if (v1.matrix[1][2] != v1.matrix[1][2]) return false;
-  if (v1.matrix[2][0] != v1.matrix[2][0]) return false;
-  if (v1.matrix[2][1] != v1.matrix[2][1]) return false;
-  if (v1.matrix[2][2] != v1.matrix[2][2]) return false;
-  return true;
-};
-
 void gfxSyncProgram(struct GfxShadersUniforms &params) {
   GfxProgramPrivate *pgm = _currentProgram;
   ASSERT(pgm);
+  glUseProgram(pgm->pgmObject);
 
   // update buffers
   glUniformMatrix4fv(pgm->projMat, 1, GL_FALSE, gles_adapter::getProjMat());
@@ -219,37 +207,22 @@ void gfxSyncProgram(struct GfxShadersUniforms &params) {
   params.enableTexture = gles_adapter::isTexture2d();
   params.enableAlphaTest = gles_adapter::isAlphaTest();
 
-#define SYNC_UNIFORM(P) \
-  if (pgm->P >= 0 && gfxCurrentUniforms.P != params.P) { \
-    gfxSetUniformValue(pgm->P, params.P); \
-    gfxCurrentUniforms.P = params.P; \
-  }
-
-#define SYNC_UNIFORM_MAT(P) \
-  if (pgm->P >= 0 && !gfxEquals(gfxCurrentUniforms.P, params.P)) { \
-    gfxSetUniformValue(pgm->P, params.P); \
-    gfxCurrentUniforms.P = params.P; \
-  }
-
-  SYNC_UNIFORM(enableTexture)
-  SYNC_UNIFORM(enableAlphaTest)
-  SYNC_UNIFORM(withReflectionMapping)
-  SYNC_UNIFORM(withSpecularMapping)
-  SYNC_UNIFORM(stretch)
-  SYNC_UNIFORM(offset)
-  SYNC_UNIFORM(lerpRatio)
-  SYNC_UNIFORM(texCorr)
-  SYNC_UNIFORM(color)
-  SYNC_UNIFORM(lightObj)
-  SYNC_UNIFORM(colorAmbient)
-  SYNC_UNIFORM(colorLight)
-  SYNC_UNIFORM(viewer)
-  SYNC_UNIFORM(isUnlite)
-  SYNC_UNIFORM_MAT(objectRotation)
-  SYNC_UNIFORM_MAT(objectToView)
-
-#undef SYNC_UNIFORM
-#undef SYNC_UNIFORM_MAT
+  gfxSetUniformValue(pgm->enableTexture, params.enableTexture);
+  gfxSetUniformValue(pgm->enableAlphaTest, params.enableAlphaTest);
+  gfxSetUniformValue(pgm->withReflectionMapping, params.withReflectionMapping);
+  gfxSetUniformValue(pgm->withSpecularMapping, params.withSpecularMapping);
+  gfxSetUniformValue(pgm->stretch, params.stretch);
+  gfxSetUniformValue(pgm->offset, params.offset);
+  gfxSetUniformValue(pgm->lerpRatio, params.lerpRatio);
+  gfxSetUniformValue(pgm->texCorr, params.texCorr);
+  gfxSetUniformValue(pgm->color, params.color);
+  gfxSetUniformValue(pgm->lightObj, params.lightObj);
+  gfxSetUniformValue(pgm->colorAmbient, params.colorAmbient);
+  gfxSetUniformValue(pgm->colorLight, params.colorLight);
+  gfxSetUniformValue(pgm->viewer, params.viewer);
+  gfxSetUniformValue(pgm->isUnlite, params.isUnlite);
+  gfxSetUniformValue(pgm->objectRotation, params.objectRotation);
+  gfxSetUniformValue(pgm->objectToView, params.objectToView);
 
   gles_adapter::syncError();
 }

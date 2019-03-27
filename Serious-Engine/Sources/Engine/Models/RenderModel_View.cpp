@@ -719,18 +719,11 @@ void SyncModelMipInfo(CModelData &md, ModelMipInfo &mmi) {
   if (mmi.mmpi_ulVertexBufferObject == NONE) {
     gfxGenerateBuffer(mmi.mmpi_ulVertexBufferObject);
   }
-  if (mmi.mmpi_ulObject == NONE) {
-    gfxGenerateBuffer(mmi.mmpi_ulObject);
-  }
   if (mmi.mmpi_bNeedUpdate) {
     // upload unified vertex buffer
     gfxSetArrayBuffer(mmi.mmpi_ulVertexBufferObject);
     gfxArrayBufferData(&mmi.mmpi_apfvPackedBuffer[0], md.md_FramesCt * mmi.mmpi_ctSrfVx * sizeof(PackedFrameVertex));
     gfxSetArrayBuffer(0);
-    // upload unified element buffer
-    gfxSetElementArrayBuffer(mmi.mmpi_ulObject);
-    gfxElementArrayBufferData(&mmi.mmpi_aiElements[0], mmi.mmpi_ctTriangles * 3);
-    gfxSetElementArrayBuffer(0);
     mmi.mmpi_bNeedUpdate = false;
   }
 }
@@ -952,7 +945,11 @@ static void FlushElements( INDEX ctElem, INDEX *pai)
     _pfModelProfile.StartTimer( CModelProfile::PTI_VIEW_DRAWELEMENTS);
     _pfModelProfile.IncrementTimerAveragingCounter( CModelProfile::PTI_VIEW_DRAWELEMENTS, ctElem/3);
     _pGfx->gl_ctModelTriangles += ctElem/3;
+#if ARRAYBUFFER_OPT
+    gfxDrawElementArrayBuffer(ctElem, pai);
+#else
     gfxDrawElements( ctElem, pai);
+#endif
     extern INDEX mdl_bShowTriangles;
     if( _bMultiPlayer) mdl_bShowTriangles = 0; // don't allow in multiplayer mode!
     if( mdl_bShowTriangles) {
@@ -1127,7 +1124,6 @@ static void RenderOneSide( CRenderModel &rm, BOOL bBackSide, ULONG ulLayerFlags)
 
   // for each surface in current mip model
   INDEX iStartElem=0;
-  gfxSetElementArrayBuffer(mmi.mmpi_ulObject);
   {FOREACHINSTATICARRAY( mmi.mmpi_MappingSurfaces, MappingSurface, itms)
   {
     const MappingSurface &ms = *itms;
@@ -1303,11 +1299,10 @@ static void RenderOneSide( CRenderModel &rm, BOOL bBackSide, ULONG ulLayerFlags)
     }
 
     gfxSyncProgram(_programUniforms);
-    FlushElements(ms.ms_ctSrfEl, iStartElem);
+    FlushElements(ms.ms_ctSrfEl, &mmi.mmpi_aiElements[iStartElem]);
     iStartElem+= ms.ms_ctSrfEl;
   }}
   // flush leftovers
-  gfxSetElementArrayBuffer(0);
 
   CleanAttributes();
 

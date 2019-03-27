@@ -79,7 +79,6 @@ struct ENGINE_API ModelMipInfo
 
   CStaticArray<PackedFrameVertex> mmpi_apfvPackedBuffer;
   bool mmpi_bNeedUpdate;
-  UINT mmpi_ulObject;
   UINT mmpi_ulVertexBufferObject;
   CStaticArray<INDEX> aiMdlToMip;
 

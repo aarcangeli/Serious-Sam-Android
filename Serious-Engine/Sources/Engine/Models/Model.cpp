@@ -850,9 +850,7 @@ void CModelData::LinkDataForSurfaces(BOOL bFirstMip)
 ModelMipInfo::ModelMipInfo(void)
 {
   mmpi_ulFlags = MM_PATCHES_VISIBLE | MM_ATTACHED_MODELS_VISIBLE;
-  mmpi_ulObject = NONE;
   mmpi_bNeedUpdate = false;
-  mmpi_ulObject = NONE;
   mmpi_ulVertexBufferObject = NONE;
 }
 

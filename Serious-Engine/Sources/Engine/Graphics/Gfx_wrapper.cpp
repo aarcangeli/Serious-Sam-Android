@@ -889,6 +889,7 @@ extern void GFX_SetFunctionPointers( INDEX iAPI)
 // gles functions
 // TODO: move in a better place
 #include <GLES2/gl2.h>
+#include <vector>
 #include <AndroidAdapters/gles_adapter.h>
 
 void gfxGenerateBuffer(UINT &uiBufObject) {
@@ -940,10 +941,18 @@ void gfxVertexAttribPointer(ULONG attribPointer, ULONG size, ULONG stride, ULONG
   gles_adapter::syncError();
 }
 
-void gfxDrawElementArrayBuffer(INDEX iCount, ULONG ulOffset) {
+void gfxDrawElementArrayBuffer(INDEX iCount, INDEX *pidx) {
   ASSERT(_pGfx->gl_eCurrentAPI == (INDEX) GAT_OGL);
-  ASSERT(GFX_uiElementBufObject);
+  static std::vector<uint16_t> dummyIndexBuffer;
 
-  glDrawElements(GL_TRIANGLES, iCount, GL_UNSIGNED_SHORT, (const void *) (ulOffset * 2));
+  // convert int array to short array
+  if (iCount > dummyIndexBuffer.size()) {
+    dummyIndexBuffer.resize(iCount);
+  }
+  for (uint32_t i = 0; i < iCount; i++) {
+    dummyIndexBuffer[i] = (uint16_t) pidx[i];
+  }
+
+  glDrawElements(GL_TRIANGLES, iCount, GL_UNSIGNED_SHORT, (void*) dummyIndexBuffer.data());
   gles_adapter::syncError();
 }
