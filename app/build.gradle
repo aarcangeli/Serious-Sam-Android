@@ -56,9 +56,6 @@ android {
             }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            // this flag is required or the app crashes
-            debuggable true
-            jniDebuggable true
         }
     }
     externalNativeBuild {

@@ -177,7 +177,7 @@ static void DoLevelSafetyChecks()
   class CBackgroundViewer *penBcgViewer = (CBackgroundViewer *) pwo->GetBackgroundViewer();
   if( penBcgViewer != NULL) {
     // obtain world settings controller 
-    pwsc = (CWorldSettingsController *) &*penBcgViewer->m_penWorldSettingsController;
+    pwsc = (CWorldSettingsController *) penBcgViewer->m_penWorldSettingsController.ep_pen;
   }
   
   if (pwsc!=NULL) {
@@ -818,7 +818,7 @@ void CWorldBase_OnWorldRender(CWorld *pwo)
   if( penBcgViewer != NULL)
   {
     // obtain world settings controller 
-    pwsc = (CWorldSettingsController *) &*penBcgViewer->m_penWorldSettingsController;
+    pwsc = (CWorldSettingsController *) penBcgViewer->m_penWorldSettingsController.ep_pen;
   }
   
   // ***** Storm effects
@@ -1084,7 +1084,7 @@ functions:
       return affFixedForces[iForce].ff_strName;
     } else {
       if (iForce-ctFixedForces<=ctGravityMarkers){
-        CEntity *pen = &*(&m_penGravity0)[iForce-ctFixedForces];
+        CEntity *pen = (&m_penGravity0)[iForce-ctFixedForces].ep_pen;
         if (pen != NULL) {
           return pen->GetForceName(0);
         } else {
@@ -1104,7 +1104,7 @@ functions:
       fsGravity = affFixedForces[iForce].ff_fsGravity;
     } else {
       if (iForce-ctFixedForces<ctGravityMarkers){
-        CEntity *pen = &*(&m_penGravity0)[iForce-ctFixedForces];
+        CEntity *pen = (&m_penGravity0)[iForce-ctFixedForces].ep_pen;
         if (pen != NULL) {
           pen->GetForce(0, vPoint, fsGravity, fsField);
           return;
@@ -1126,7 +1126,7 @@ functions:
       return NULL;
     } else {
       if (iForce-ctFixedForces<ctGravityMarkers){
-        CEntity *pen = &*(&m_penGravity0)[iForce-ctFixedForces];
+        CEntity *pen = (&m_penGravity0)[iForce-ctFixedForces].ep_pen;
         if (pen != NULL) {
           return pen->GetForceController(0);
         }
@@ -1141,7 +1141,7 @@ functions:
     static const CTString strDummyName("");
     static const CTString strMarkerUnused("Marker not set");
     if (iFog<ctFogMarkers){
-      CFogMarker *pfm = (CFogMarker *)&*(&m_penFog0)[iFog];
+      CFogMarker *pfm = (CFogMarker *)(&m_penFog0)[iFog].ep_pen;
       if (pfm != NULL) {
         return pfm->GetFogName();
       } else {
@@ -1155,7 +1155,7 @@ functions:
   {
     INDEX ctFogMarkers = &m_penFog8-&m_penFog0+1;
     if (iFog<ctFogMarkers){
-      CFogMarker *pfm = (CFogMarker *)&*(&m_penFog0)[iFog];
+      CFogMarker *pfm = (CFogMarker *)(&m_penFog0)[iFog].ep_pen;
       if (pfm != NULL) {
         pfm->GetFog(fpFog);
         return TRUE;
@@ -1171,7 +1171,7 @@ functions:
     static const CTString strDummyName("");
     static const CTString strMarkerUnused("Marker not set");
     if (iHaze<ctHazeMarkers){
-      CHazeMarker *pfm = (CHazeMarker *)&*(&m_penHaze0)[iHaze];
+      CHazeMarker *pfm = (CHazeMarker *)(&m_penHaze0)[iHaze].ep_pen;
       if (pfm != NULL) {
         return pfm->GetHazeName();
       } else {
@@ -1186,7 +1186,7 @@ functions:
   {
     INDEX ctHazeMarkers = &m_penHaze4-&m_penHaze0+1;
     if (iHaze<ctHazeMarkers){
-      CHazeMarker *phm = (CHazeMarker *)&*(&m_penHaze0)[iHaze];
+      CHazeMarker *phm = (CHazeMarker *)(&m_penHaze0)[iHaze].ep_pen;
       if (phm != NULL) {
         phm->GetHaze(hpHaze, vViewDir);
         return TRUE;
@@ -1217,7 +1217,7 @@ functions:
       iMirror-=9;
       INDEX ctMirrorMarkers = &m_penMirror4-&m_penMirror0+1;
       if (iMirror<ctMirrorMarkers){
-        CMirrorMarker *pfm = (CMirrorMarker *)&*(&m_penMirror0)[iMirror];
+        CMirrorMarker *pfm = (CMirrorMarker *)(&m_penMirror0)[iMirror].ep_pen;
         if (pfm != NULL) {
           return pfm->GetMirrorName();
         } else {
@@ -1242,7 +1242,7 @@ functions:
     iMirror-=9;
     INDEX ctMirrorMarkers = &m_penMirror4-&m_penMirror0+1;
     if (iMirror<ctMirrorMarkers){
-      CMirrorMarker *pmm = (CMirrorMarker *)&*(&m_penMirror0)[iMirror];
+      CMirrorMarker *pmm = (CMirrorMarker *)(&m_penMirror0)[iMirror].ep_pen;
       if (pmm != NULL) {
         pmm->GetMirror(mpMirror);
         return TRUE;
@@ -1258,7 +1258,7 @@ functions:
     static const CTString strDummyName("");
     static const CTString strMarkerUnused("Marker not set");
     if (iGradient<ctGradientMarkers){
-      CGradientMarker *pgm = (CGradientMarker *)&*(&m_penGradient0)[iGradient];
+      CGradientMarker *pgm = (CGradientMarker *)(&m_penGradient0)[iGradient].ep_pen;
       if (pgm != NULL) {
         return pgm->GetGradientName();
       } else {
@@ -1273,7 +1273,7 @@ functions:
     INDEX ctGradientMarkers = &m_penGradient19-&m_penGradient0+1;
     for( INDEX iGradient=0; iGradient<ctGradientMarkers; iGradient++)
     {
-      CGradientMarker *pgm = (CGradientMarker *)&*(&m_penGradient0)[iGradient];
+      CGradientMarker *pgm = (CGradientMarker *)(&m_penGradient0)[iGradient].ep_pen;
       if(pgm == penDiscard)
       {
         CEntity::UncacheShadowsForGradient( iGradient+1);
@@ -1286,7 +1286,7 @@ functions:
   {
     INDEX ctGradientMarkers = &m_penGradient19-&m_penGradient0+1;
     if ( (iGradient<ctGradientMarkers) && (iGradient>0) ){
-      CGradientMarker *pgm = (CGradientMarker *)&*(&m_penGradient0)[iGradient-1];
+      CGradientMarker *pgm = (CGradientMarker *)(&m_penGradient0)[iGradient-1].ep_pen;
       if (pgm != NULL) {
         return pgm->GetGradient(0, fpGradient);
       }
