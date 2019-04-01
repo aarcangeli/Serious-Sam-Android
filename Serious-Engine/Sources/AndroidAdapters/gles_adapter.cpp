@@ -63,7 +63,7 @@ namespace gles_adapter {
   };
 
   bool USE_BUFFER_DATA = false;
-  bool enableDraws = true;
+  const bool enableDraws = true;
 
   GLuint INDEX_POSITION = 1;
   GLuint INDEX_NORMAL = 2;
@@ -117,7 +117,7 @@ namespace gles_adapter {
     void main() {
       vec4 finalColor = vColor;
       if (enableTexture > 0.5) finalColor = finalColor * texture2D(mainTexture, vTexCoord);
-      gl_FragColor = finalColor * vColor;
+      gl_FragColor = finalColor;
 
       // alpha test
       if (enableAlphaTest > 0.5 && gl_FragColor.w < 0.5) {
@@ -660,24 +660,32 @@ namespace gles_adapter {
         if (dummyIndexBuffer[i] != bf[i]) {
           blockingError("Panic!: uint16_t overflow");
         }
-        if (bf[i] >= totalVertices) {
-          totalVertices = bf[i] + 1;
+      }
+      if (USE_BUFFER_DATA) {
+        for (uint32_t i = 0; i < count; i++) {
+          if (dummyIndexBuffer[i] >= totalVertices) {
+            totalVertices = bf[i] + 1;
+          }
         }
       }
       indices = (void*) dummyIndexBuffer.data();
       type = GL_UNSIGNED_SHORT;
     } else if (type == GL_UNSIGNED_SHORT) {
       uint16_t *bf = (uint16_t *) indices;
-      for (uint32_t i = 0; i < count; i++) {
-        if (bf[i] >= totalVertices) {
-          totalVertices = bf[i] + 1;
+      if (USE_BUFFER_DATA) {
+        for (uint32_t i = 0; i < count; i++) {
+          if (bf[i] >= totalVertices) {
+            totalVertices = bf[i] + 1;
+          }
         }
       }
     } else if (type == GL_UNSIGNED_BYTE) {
       uint8_t *bf = (uint8_t *) indices;
-      for (uint32_t i = 0; i < count; i++) {
-        if (bf[i] >= totalVertices) {
-          totalVertices = bf[i] + 1;
+      if (USE_BUFFER_DATA) {
+        for (uint32_t i = 0; i < count; i++) {
+          if (bf[i] >= totalVertices) {
+            totalVertices = bf[i] + 1;
+          }
         }
       }
     } else {
@@ -702,7 +710,7 @@ namespace gles_adapter {
       float *it = (float*) pixels;
       for (GLsizei y = 0; y < height; y++) {
         for (GLsizei x = 0; x < height; x++) {
-          *it = 1;
+          *it = 0;
           it++;
         }
       }

@@ -117,6 +117,7 @@ static FLOAT3D _vLightObj;
 static const FLOAT f2  = 2.0f;
 static const FLOAT f05 = 0.5f;
 
+#if ARRAYBUFFER_OPT
 GfxProgram diffuseProgram = gfxMakeShaderProgram(R"***(
   precision highp float;
 
@@ -204,8 +205,10 @@ GfxProgram diffuseProgram = gfxMakeShaderProgram(R"***(
 
 )***");
 ULONG _ulFrameOffset0, _ulFrameOffset1;
-FLOAT _fTexCorrU, _fTexCorrV;
 GfxShadersUniforms _programUniforms;
+#endif
+
+FLOAT _fTexCorrU, _fTexCorrV;
 
 // convinient routine for timing of texture setting
 static __forceinline void SetCurrentTexture( CTextureData *ptd, INDEX iFrame)

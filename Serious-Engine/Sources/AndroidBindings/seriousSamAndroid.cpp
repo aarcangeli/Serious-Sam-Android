@@ -26,7 +26,6 @@ namespace gles_adapter {
   void gles_adp_init();
 
   void syncBuffers();
-  extern bool enableDraws;
 }
 
 CGame *game;
@@ -234,8 +233,6 @@ void startSeriousSamAndroid(CDrawPort *pdp) {
 }
 
 void seriousSamDoGame(CDrawPort *pdp) {
-  gles_adapter::enableDraws = true;
-
   if (!initialized) {
     // initialize gles adapter
     try {
@@ -249,8 +246,6 @@ void seriousSamDoGame(CDrawPort *pdp) {
 
     initialized = true;
   }
-
-  gles_adapter::enableDraws = true;
 
   int64_t start = getTimeNsec();
   static int64_t lastFrameDraw = start;
@@ -284,11 +279,8 @@ void seriousSamDoGame(CDrawPort *pdp) {
     // handle pretouching of textures and shadowmaps
     pdp->Unlock();
 
-//    ULONG ulFlags = (game->gm_csConsoleState != CS_OFF || bMenuActive) ? 0 : GRV_SHOWEXTRAS;
-    ULONG ulFlags = 0;
-//    pdp->Fill(LCDGetColor(C_dGREEN | CT_OPAQUE, "bcg fill"));
-
-    game->GameRedrawView(pdp, GRV_SHOWEXTRAS);
+    ULONG ulFlags = (game->gm_csConsoleState != CS_OFF) ? 0 : GRV_SHOWEXTRAS;
+    game->GameRedrawView(pdp, ulFlags);
 
     // draw computer if needed
     pdp->Lock();

@@ -312,12 +312,12 @@ void CProfileTimer::Report(char *&strBuffer,
     if (ctLocalAveraging==0) {
       ctLocalAveraging = 1;
     }
-    strBuffer += sprintf(strBuffer, "%-45s: %6.2f%% %6.2f%% %6.2f ms (%4.0fc/%s x%d)",
+    strBuffer += sprintf(strBuffer, "%-45s: %6.2f%% %6.2f%% %6.2f ms (%6.2f ms/%s x%d)",
       pt_strName.str_String,
       pt_tvElapsed.GetSeconds()/tvAppElapsed.GetSeconds()*100,
       pt_tvElapsed.GetSeconds()/tvModElapsed.GetSeconds()*100,
       pt_tvElapsed.GetSeconds()/ctAveragingCount*1000,
-      pt_tvElapsed.GetSeconds()/ctLocalAveraging*_pTimer->tm_llCPUSpeedHZ,
+      pt_tvElapsed.GetSeconds()/ctLocalAveraging*1000,
       pt_strAveragingName.str_String,
       pt_ctAveraging/ctAveragingCount
       );
