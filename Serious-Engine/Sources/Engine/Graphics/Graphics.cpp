@@ -24,7 +24,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Graphics/Texture.h>
 #include <Engine/Graphics/GfxProfile.h>
 #include <Engine/Base/ErrorReporting.h>
-#include <AndroidAdapters/LargeColor.h>
+#include <Engine/Base/LargeColor.h>
 
 // asm shortcuts
 #define O offset
