@@ -365,7 +365,7 @@ skipPixel:
         SLONG sl1oL = (slL2Point>>SHIFTX)&(SQRTTABLESIZE-1);  // and is just for degenerate cases
         sl1oL = aubSqrt[sl1oL];
         SLONG slIntensity = _slLightMax;
-        if( sl1oL>_slHotSpot) slIntensity = ((sl1oL-256)*_slLightStep)>>16;
+        if( sl1oL>_slHotSpot) slIntensity = ((255-sl1oL)*_slLightStep)>>8;
         // add the intensity to the pixel
         AddToCluster( (UBYTE*)_pulLayer, slIntensity/255.0f);
       }
@@ -490,7 +490,7 @@ skipPixel:
         SLONG sl1oL = (slL2Point>>SHIFTX)&(SQRTTABLESIZE-1);  // and is just for degenerate cases
         sl1oL = aubSqrt[sl1oL];
         SLONG slIntensity = _slLightMax;
-        if( sl1oL>_slHotSpot) slIntensity = ((sl1oL-256)*_slLightStep)>>16;
+        if( sl1oL>_slHotSpot) slIntensity = ((255-sl1oL)*_slLightStep)>>8;
         // add the intensity to the pixel
         AddToCluster( (UBYTE*)_pulLayer, slIntensity/255.0f);
       }
@@ -617,7 +617,7 @@ skipPixel:
         SLONG sl1oL = (slL2Point>>SHIFTX)&(SQRTTABLESIZE-1);  // and is just for degenerate cases
         sl1oL = auw1oSqrt[sl1oL];
         SLONG slIntensity = _slLightMax;
-        if( sl1oL<slMax1oL) slIntensity = ((sl1oL-256)*_slLightStep)>>16;
+        if( sl1oL<slMax1oL) slIntensity = ((sl1oL-256)*_slLightStep)>>8;
         // add the intensity to the pixel
         AddToCluster( (UBYTE*)_pulLayer, slIntensity/255.0f);
       }
@@ -746,7 +746,7 @@ skipPixel:
         SLONG sl1oL = (slL2Point>>SHIFTX)&(SQRTTABLESIZE-1);  // and is just for degenerate cases
         sl1oL = auw1oSqrt[sl1oL];
         SLONG slIntensity = _slLightMax;
-        if( sl1oL<slMax1oL) slIntensity = ((sl1oL-256)*_slLightStep)>>16;
+        if( sl1oL<slMax1oL) slIntensity = ((sl1oL-256)*_slLightStep)>>8;
         // add the intensity to the pixel
         AddToCluster( (UBYTE*)_pulLayer, slIntensity/255.0f);
       } 
