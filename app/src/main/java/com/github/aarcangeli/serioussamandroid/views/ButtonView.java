@@ -75,7 +75,7 @@ public class ButtonView extends Button {
     @Override
     @SuppressLint("CanvasSize")
     protected void onDraw(Canvas canvas) {
-        if (canvas == null) return;
+        if (canvas == null || canvas.getWidth() <= 0 || canvas.getHeight() <= 0) return;
         if (tempBmp == null || tempBmp.isRecycled() || tempBmp.getWidth() != canvas.getWidth() || tempBmp.getHeight() != canvas.getHeight()) {
             if (tempBmp != null) tempBmp.recycle();
             tempBmp = Bitmap.createBitmap(canvas.getWidth(), canvas.getHeight(), Bitmap.Config.ARGB_8888);
