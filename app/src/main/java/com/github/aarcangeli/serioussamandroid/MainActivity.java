@@ -52,6 +52,9 @@ public class MainActivity extends AppCompatActivity {
     private static final int AXIS_LOOK_LR = 7;
     private static final int AXIS_LOOK_BK = 8;
 
+    private static final int ACTION_QUICK_LOAD = 1;
+    private static final int ACTION_QUICK_SAVE = 2;
+
     public static final float DEAD_ZONE = 0.3f;
     private static final float MULT_VIEW_CONTROLLER = 2.5f;
     private static final float MULT_VIEW_TRACKER = 0.4f;
@@ -73,6 +76,15 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.main_screen);
         glSurfaceView = findViewById(R.id.main_content);
+
+        Button loadBtn = findViewById(R.id.buttonLoad);
+        loadBtn.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                doQuickLoadBrowse(v);
+                return true;
+            }
+        });
 
         Button useBtn = findViewById(R.id.input_use);
         useBtn.setOnTouchListener(new View.OnTouchListener() {
@@ -378,10 +390,16 @@ public class MainActivity extends AppCompatActivity {
         printProfilingData();
     }
 
-    public void doLoad(View view) {
+    public void doQuickLoad(View view) {
+        nSendAction(ACTION_QUICK_LOAD);
     }
 
-    public void doSave(View view) {
+    public void doQuickLoadBrowse(View view) {
+        // todo
+    }
+
+    public void doQuickSave(View view) {
+        nSendAction(ACTION_QUICK_SAVE);
     }
 
     public void openSettings(View view) {
@@ -397,6 +415,7 @@ public class MainActivity extends AppCompatActivity {
     private static native void setAxisValue(int key, float value);
     private static native void shiftAxisValue(int key, float value);
     private static native void printProfilingData();
+    private static native void nSendAction(int action);
     private static native void nDispatchKeyEvent(int key, int isPressed);
     private static native boolean nGetConsoleState();
 }

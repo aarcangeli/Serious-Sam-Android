@@ -1,3 +1,5 @@
-TODO:
-  - Write a port of serious Sam for android
-  - End
+setting page
+- quick load page
+- gam_iQuickSaveSlots
+- show fps
+- autosave

@@ -17,6 +17,10 @@ PlayerControls g_IncomingControls {};
 JavaVM *g_javaWM;
 jclass g_NativeEvents;
 jmethodID g_reportFatalError;
+int g_action = 0;
+
+const int ACTION_QUICK_LOAD = 1;
+const int ACTION_QUICK_SAVE = 2;
 
 JNIEnv* getEnv() {
   static thread_local JNIEnv* myEnv = nullptr;
@@ -100,6 +104,13 @@ Java_com_github_aarcangeli_serioussamandroid_MainActivity_printProfilingData(JNI
   pthread_mutex_unlock(&g_mySeriousMutex);
 }
 
+extern "C"
+JNIEXPORT void JNICALL Java_com_github_aarcangeli_serioussamandroid_MainActivity_nSendAction(JNIEnv* env, jobject obj, jint action) {
+  pthread_mutex_lock(&g_mySeriousMutex);
+  g_action = action;
+  pthread_mutex_unlock(&g_mySeriousMutex);
+}
+
 void *seriousMain(void *unused) {
   CViewPort *pvpViewPort = new CViewPort();
   CDrawPort *pdp = &pvpViewPort->vp_Raster.ra_MainDrawPort;
@@ -123,6 +134,18 @@ void *seriousMain(void *unused) {
 
     // resolve input
     setControls(g_IncomingControls);
+
+    if (g_action) {
+      switch(g_action) {
+        case ACTION_QUICK_LOAD:
+          _pShell->Execute("gam_bQuickLoad=1;");
+          break;
+        case ACTION_QUICK_SAVE:
+          _pShell->Execute("gam_bQuickSave=1;");
+          break;
+      }
+      g_action = 0;
+    }
 
     pthread_mutex_unlock(&g_mySeriousMutex);
 
