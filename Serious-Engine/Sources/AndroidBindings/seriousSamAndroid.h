@@ -14,11 +14,18 @@
 
 static_assert(sizeof(void *) == 4, "Serious engine require 32 bit address space");
 
+enum GameState {
+    GS_LOADING,
+    GS_CONSOLE,
+    GS_NORMAL,
+};
+
 extern pthread_mutex_t g_mySeriousMutex;
 extern pthread_t g_mySeriousThreadId;
 extern bool g_gameRunning;
 extern ANativeWindow *g_currentWindow;
 extern bool g_printProfiling;
+extern GameState g_gameState;
 
 void *seriousMain(void *unused);
 void startSeriousPrestart();

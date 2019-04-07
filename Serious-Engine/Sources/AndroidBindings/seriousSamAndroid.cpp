@@ -35,6 +35,7 @@ uint32_t tickCount = 0;
 bool initialized = false;
 bool g_isRunningIntro = false;
 bool g_runFirstLevel = false;
+GameState g_gameState = GS_LOADING;
 
 BOOL TryToSetDisplayMode(enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI, PIX pixSizeJ,
                          enum DisplayDepth eColorDepth, BOOL bFullScreenMode) {
@@ -146,7 +147,13 @@ void setControls(PlayerControls &ctrls) {
       _pShell->Execute("RecordProfile();");
     }
 
-    memcpy(game->gm_lpLocalPlayers[0].lp_ubPlayerControlsState, &ctrls, sizeof(ctrls));
+    PlayerControls &playerCtrl = *(PlayerControls *) game->gm_lpLocalPlayers[0].lp_ubPlayerControlsState;
+    playerCtrl = ctrls;
+
+    for (int i = 0; i < 10; i++) {
+      playerCtrl.axisValue[i] += ctrls.shiftAxisValue[i];
+      ctrls.shiftAxisValue[i] = 0;
+    }
   }
 }
 
@@ -214,7 +221,7 @@ void startSeriousSamAndroid(CDrawPort *pdp) {
   CControls &ctrl = game->gm_actrlControls[0];
   for (int i = 0; i < 10; i++) {
     ctrl.ctrl_aaAxisActions[i].aa_fSensitivity = 80;
-    ctrl.ctrl_aaAxisActions[i].aa_fDeadZone = 10;
+    ctrl.ctrl_aaAxisActions[i].aa_fDeadZone = 0;
     ctrl.ctrl_aaAxisActions[i].aa_bInvert = false;
     ctrl.ctrl_aaAxisActions[i].aa_bRelativeControler = true;
     ctrl.ctrl_aaAxisActions[i].aa_bSmooth = false;
@@ -288,7 +295,12 @@ void seriousSamDoGame(CDrawPort *pdp) {
     game->ConsoleRender(pdp);
 
     // draw fps and frame time
-    drawBannerFpsVersion(pdp, deltaFrame, fps);
+    if (game->gm_csConsoleState == CS_OFF && game->gm_csComputerState == CS_OFF) {
+      drawBannerFpsVersion(pdp, deltaFrame, fps);
+      g_gameState = GS_NORMAL;
+    } else {
+      g_gameState = GS_CONSOLE;
+    }
 
     pdp->Unlock();
 
@@ -313,5 +325,5 @@ void drawBannerFpsVersion(CDrawPort *pdp, int64_t deltaFrame, float fps) {
   pdp->SetTextScaling(1);
   pdp->SetTextAspect(1.0f);
   CTString str = CTString(0, SSA_VERSION " fps: %.2f; frame: %.2f ms", fps, deltaFrame / 1000000.f);
-  pdp->PutText(str, 0, 0, LCDGetColor(C_GREEN | 255, "display mode"));
+  pdp->PutText(str, 0, 30, LCDGetColor(C_GREEN | 255, "display mode"));
 }

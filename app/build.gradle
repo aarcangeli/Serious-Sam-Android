@@ -34,6 +34,7 @@ android {
         versionCode 1021
         versionName "1.02.1"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        vectorDrawables.useSupportLibrary = true
         externalNativeBuild {
             cmake {
                 cppFlags "-fexceptions"

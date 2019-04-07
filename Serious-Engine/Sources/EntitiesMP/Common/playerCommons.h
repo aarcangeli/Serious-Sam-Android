@@ -56,6 +56,7 @@ struct PlayerControls {
     BOOL bStart;
 
     float axisValue[10];
+    float shiftAxisValue[10];
 };
 
 #endif // PLAYERCONTROLS_H

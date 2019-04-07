@@ -7,6 +7,10 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.hardware.input.InputManager;
 import android.os.Bundle;
 import android.os.Environment;
@@ -20,11 +24,17 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 
+import com.github.aarcangeli.serioussamandroid.views.BgTrackerView;
+import com.github.aarcangeli.serioussamandroid.views.JoystickView;
+
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
+
+import static com.github.aarcangeli.serioussamandroid.NativeEvents.*;
+import static com.github.aarcangeli.serioussamandroid.views.JoystickView.Listener;
 
 public class MainActivity extends AppCompatActivity {
     public static final String TAG = "SeriousSamJava";
@@ -40,58 +50,55 @@ public class MainActivity extends AppCompatActivity {
     private static final int AXIS_LOOK_LR = 7;
     private static final int AXIS_LOOK_BK = 8;
 
-    private static final float VIEW_MULT = 2.5f;
+    public static final float DEAD_ZONE = 0.3f;
+    private static final float MULT_VIEW_CONTROLLER = 2.5f;
+    private static final float MULT_VIEW_TRACKER = 0.4f;
+    private static final float MULT_VIEW_GYROSCOPE = 0.8f;
 
     private SeriousSamSurface glSurfaceView;
     private File homeDir;
 
     private boolean isGameStarted = false;
-    private JoyStick leftStick;
-    private JoyStick rightStick;
+    private SensorManager sensorManager;
+    private SensorEventListener motionListener;
+    private volatile GameState gameState = GameState.LOADING;
+    private boolean isThereController;
 
-    @SuppressLint("ClickableViewAccessibility")
     @Override
+    @SuppressLint("ClickableViewAccessibility")
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.main_screen);
         glSurfaceView = findViewById(R.id.main_content);
-        leftStick = findViewById(R.id.left_stick);
-        rightStick = findViewById(R.id.right_stick);
 
-        leftStick.setListener(new JoyStick.JoyStickListener() {
+        Button useBtn = findViewById(R.id.input_use);
+        useBtn.setOnTouchListener(new View.OnTouchListener() {
             @Override
-            public void onMove(JoyStick joyStick, double angle, double power, int direction) {
-                setAxisValue(AXIS_MOVE_FB, (float) (Math.sin(angle) * power / 100));
-                setAxisValue(AXIS_MOVE_LR, (float) (Math.cos(angle) * power / 100));
-            }
-
-            @Override
-            public void onTap() {
-            }
-
-            @Override
-            public void onDoubleTap() {
+            public boolean onTouch(View v, MotionEvent event) {
+                if(event.getAction() == MotionEvent.ACTION_DOWN) {
+                    nDispatchKeyEvent(KeyEvent.KEYCODE_BUTTON_R2, 1);
+                } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                    nDispatchKeyEvent(KeyEvent.KEYCODE_BUTTON_R2, 0);
+                }
+                return false;
             }
         });
 
-        rightStick.setListener(new JoyStick.JoyStickListener() {
+        Button crunchBtn = findViewById(R.id.input_crunch);
+        crunchBtn.setOnTouchListener(new View.OnTouchListener() {
             @Override
-            public void onMove(JoyStick joyStick, double angle, double power, int direction) {
-                setAxisValue(AXIS_LOOK_UD, (float) (Math.sin(angle) * power / 100) * VIEW_MULT);
-                setAxisValue(AXIS_LOOK_LR, (float) (Math.cos(angle) * power / 100) * VIEW_MULT);
-            }
-
-            @Override
-            public void onTap() {
-            }
-
-            @Override
-            public void onDoubleTap() {
+            public boolean onTouch(View v, MotionEvent event) {
+                if(event.getAction() == MotionEvent.ACTION_DOWN) {
+                    nDispatchKeyEvent(KeyEvent.KEYCODE_BUTTON_B, 1);
+                } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                    nDispatchKeyEvent(KeyEvent.KEYCODE_BUTTON_B, 0);
+                }
+                return false;
             }
         });
 
-        Button jumpBtn = findViewById(R.id.jumpBtn);
+        Button jumpBtn = findViewById(R.id.input_jump);
         jumpBtn.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -104,7 +111,33 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        Button fireBtn = findViewById(R.id.fireBtn);
+        Button prevBtn = findViewById(R.id.buttonPrev);
+        prevBtn.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if(event.getAction() == MotionEvent.ACTION_DOWN) {
+                    nDispatchKeyEvent(KeyEvent.KEYCODE_DPAD_LEFT, 1);
+                } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                    nDispatchKeyEvent(KeyEvent.KEYCODE_DPAD_LEFT, 0);
+                }
+                return false;
+            }
+        });
+
+        Button nextbtn = findViewById(R.id.buttonNext);
+        nextbtn.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if(event.getAction() == MotionEvent.ACTION_DOWN) {
+                    nDispatchKeyEvent(KeyEvent.KEYCODE_DPAD_RIGHT, 1);
+                } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                    nDispatchKeyEvent(KeyEvent.KEYCODE_DPAD_RIGHT, 0);
+                }
+                return false;
+            }
+        });
+
+        Button fireBtn = findViewById(R.id.input_fire);
         fireBtn.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -114,6 +147,28 @@ public class MainActivity extends AppCompatActivity {
                     nDispatchKeyEvent(KeyEvent.KEYCODE_BUTTON_R1, 0);
                 }
                 return false;
+            }
+        });
+
+        JoystickView joystick = findViewById(R.id.input_overlay);
+        joystick.setListener(new Listener() {
+            @Override
+            public void onMove(float deltaX, float deltaY) {
+                if (gameState == GameState.NORMAL) {
+                    setAxisValue(AXIS_MOVE_LR, deltaX);
+                    setAxisValue(AXIS_MOVE_FB, deltaY);
+                }
+            }
+        });
+
+        BgTrackerView bgTracker = findViewById(R.id.bgTrackerView);
+        bgTracker.setListener(new BgTrackerView.Listener() {
+            @Override
+            public void move(float deltaX, float deltaY) {
+                if (gameState == GameState.NORMAL) {
+                    shiftAxisValue(AXIS_LOOK_LR, deltaX * MULT_VIEW_TRACKER);
+                    shiftAxisValue(AXIS_LOOK_UD, deltaY * MULT_VIEW_TRACKER);
+                }
             }
         });
 
@@ -138,6 +193,25 @@ public class MainActivity extends AppCompatActivity {
         homeDir = getHomeDir();
         Log.i(TAG, "HomeDir: " + homeDir);
 
+        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+
+        motionListener = new SensorEventListener() {
+            @Override
+            public void onSensorChanged(SensorEvent event) {
+                if (!isThereController && event.sensor.getType() == Sensor.TYPE_GYROSCOPE && gameState == GameState.NORMAL) {
+                    float axisX = event.values[0];
+                    float axisY = event.values[1];
+                    float axisZ = event.values[2];
+                    shiftAxisValue(AXIS_LOOK_LR, axisX * MULT_VIEW_GYROSCOPE);
+                    shiftAxisValue(AXIS_LOOK_UD, -axisY * MULT_VIEW_GYROSCOPE);
+                }
+            }
+
+            @Override
+            public void onAccuracyChanged(Sensor sensor, int accuracy) {
+            }
+        };
+
         if (!hasStoragePermission(this)) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_STORAGE);
         } else {
@@ -148,27 +222,37 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void updateSoftKeyboardVisible() {
-        int keyboardVisibility = Utils.isThereControllers() ? View.GONE : View.VISIBLE;
-        leftStick.setVisibility(keyboardVisibility);
-        rightStick.setVisibility(keyboardVisibility);
-        findViewById(R.id.fireBtn).setVisibility(keyboardVisibility);
-        findViewById(R.id.jumpBtn).setVisibility(keyboardVisibility);
+        isThereController = Utils.isThereControllers();
+        int keyboardVisibility = gameState != GameState.NORMAL || isThereController ? View.GONE : View.VISIBLE;
+        findViewById(R.id.input_overlay).setVisibility(keyboardVisibility);
+        findViewById(R.id.input_crunch).setVisibility(keyboardVisibility);
+        findViewById(R.id.input_jump).setVisibility(keyboardVisibility);
+        findViewById(R.id.input_fire).setVisibility(keyboardVisibility);
+        findViewById(R.id.input_use).setVisibility(keyboardVisibility);
+        findViewById(R.id.buttonPrev).setVisibility(keyboardVisibility);
+        findViewById(R.id.buttonNext).setVisibility(keyboardVisibility);
+        findViewById(R.id.bgTrackerView).setVisibility(keyboardVisibility);
+        findViewById(R.id.startBtn).setVisibility(gameState == GameState.CONSOLE ? View.VISIBLE : View.GONE);
+        findViewById(R.id.buttonLoad).setVisibility(gameState == GameState.NORMAL ? View.VISIBLE : View.GONE);
+        findViewById(R.id.buttonSave).setVisibility(gameState == GameState.NORMAL ? View.VISIBLE : View.GONE);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
+        sensorManager.registerListener(motionListener, sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE), 10000);
         EventBus.getDefault().register(this);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
+        sensorManager.unregisterListener(motionListener);
         EventBus.getDefault().unregister(this);
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
-    public void onFatalError(NativeEvents.FatalErrorEvent event) {
+    public void onFatalError(FatalErrorEvent event) {
         AlertDialog.Builder dlgAlert = new AlertDialog.Builder(this);
         dlgAlert.setMessage(event.message);
         dlgAlert.setTitle("Fatal Error");
@@ -180,6 +264,12 @@ public class MainActivity extends AppCompatActivity {
         });
         dlgAlert.setCancelable(false);
         dlgAlert.create().show();
+    }
+
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    public void onConsoleVisibilityChange(StateChangeEvent event) {
+        gameState = event.state;
+        updateSoftKeyboardVisible();
     }
 
     @Override
@@ -207,10 +297,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean dispatchGenericMotionEvent(MotionEvent ev) {
         if (ev.getAction() == MotionEvent.ACTION_MOVE) {
-            setAxisValue(AXIS_MOVE_FB, -ev.getAxisValue(MotionEvent.AXIS_Y));
-            setAxisValue(AXIS_MOVE_LR, -ev.getAxisValue(MotionEvent.AXIS_X));
-            setAxisValue(AXIS_LOOK_LR, -ev.getAxisValue(MotionEvent.AXIS_Z) * VIEW_MULT);
-            setAxisValue(AXIS_LOOK_UD, -ev.getAxisValue(MotionEvent.AXIS_RZ) * VIEW_MULT);
+            setAxisValue(AXIS_MOVE_FB, applyDeadZone(-ev.getAxisValue(MotionEvent.AXIS_Y)));
+            setAxisValue(AXIS_MOVE_LR, applyDeadZone(-ev.getAxisValue(MotionEvent.AXIS_X)));
+            setAxisValue(AXIS_LOOK_LR, applyDeadZone(-ev.getAxisValue(MotionEvent.AXIS_Z) * MULT_VIEW_CONTROLLER));
+            setAxisValue(AXIS_LOOK_UD, applyDeadZone(-ev.getAxisValue(MotionEvent.AXIS_RZ) * MULT_VIEW_CONTROLLER));
             nDispatchKeyEvent(KeyEvent.KEYCODE_BUTTON_R2, ev.getAxisValue(MotionEvent.AXIS_RTRIGGER) > .5f ? 1 : 0);
             nDispatchKeyEvent(KeyEvent.KEYCODE_BUTTON_L2, ev.getAxisValue(MotionEvent.AXIS_RTRIGGER) < -.5f ? 1 : 0);
             nDispatchKeyEvent(KeyEvent.KEYCODE_DPAD_LEFT, ev.getAxisValue(MotionEvent.AXIS_HAT_X) < -.5f ? 1 : 0);
@@ -219,6 +309,17 @@ public class MainActivity extends AppCompatActivity {
             nDispatchKeyEvent(KeyEvent.KEYCODE_DPAD_DOWN, ev.getAxisValue(MotionEvent.AXIS_HAT_Y) > .5f ? 1 : 0);
         }
         return true;
+    }
+
+    private float applyDeadZone(float input) {
+        if (input < -DEAD_ZONE) {
+            input = (input + DEAD_ZONE) / (1 - DEAD_ZONE);
+        } else if (input > DEAD_ZONE) {
+            input = (input - DEAD_ZONE) / (1 - DEAD_ZONE);
+        } else {
+            input = 0;
+        }
+        return input;
     }
 
     public static void tryPremain(Context context) {
@@ -243,7 +344,6 @@ public class MainActivity extends AppCompatActivity {
         if (event.getRepeatCount() == 0) {
             if (event.getAction() == KeyEvent.ACTION_DOWN) {
                 nDispatchKeyEvent(keyCode, 1);
-                System.out.println(keyCode);
             }
             if (event.getAction() == KeyEvent.ACTION_UP) {
                 nDispatchKeyEvent(keyCode, 0);
@@ -265,10 +365,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void requestPermission() {
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_STORAGE);
-    }
-
     // ui listeners
     public void hideMenu(View view) {
         nDispatchKeyEvent(KeyEvent.KEYCODE_BUTTON_R2, 1);
@@ -276,6 +372,15 @@ public class MainActivity extends AppCompatActivity {
 
     public void doProfiling(View view) {
         printProfilingData();
+    }
+
+    public void doLoad(View view) {
+    }
+
+    public void doSave(View view) {
+    }
+
+    public void openSettings(View view) {
     }
 
     private void startGame() {
@@ -286,6 +391,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private static native void setAxisValue(int key, float value);
+    private static native void shiftAxisValue(int key, float value);
     private static native void printProfilingData();
     private static native void nDispatchKeyEvent(int key, int isPressed);
+    private static native boolean nGetConsoleState();
 }

@@ -63,6 +63,15 @@ Java_com_github_aarcangeli_serioussamandroid_MainActivity_setAxisValue(JNIEnv *e
 
 extern "C"
 JNIEXPORT void JNICALL
+Java_com_github_aarcangeli_serioussamandroid_MainActivity_shiftAxisValue(JNIEnv *env, jobject obj, jint key, jfloat value) {
+  ASSERT(key >= 0 && key < 10);
+  pthread_mutex_lock(&g_mySeriousMutex);
+  g_IncomingControls.shiftAxisValue[key] += value;
+  pthread_mutex_unlock(&g_mySeriousMutex);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
 Java_com_github_aarcangeli_serioussamandroid_MainActivity_nDispatchKeyEvent(JNIEnv *env, jobject obj, jint key, jint isPressed) {
 #define BTN_CASE(cod, name) case cod: name = isPressed != 0; break;
   pthread_mutex_lock(&g_mySeriousMutex);
@@ -97,6 +106,9 @@ void *seriousMain(void *unused) {
 
   startSeriousPrestart();
 
+  JNIEnv* env = getEnv();
+  GameState lastGameState = GS_LOADING;
+
   while(true) {
     // get parameters with mutex
     pthread_mutex_lock(&g_mySeriousMutex);
@@ -113,6 +125,13 @@ void *seriousMain(void *unused) {
     setControls(g_IncomingControls);
 
     pthread_mutex_unlock(&g_mySeriousMutex);
+
+    if (g_gameState != lastGameState) {
+      lastGameState = g_gameState;
+      jmethodID method = env->GetStaticMethodID(g_NativeEvents, "reportStateChange", "(I)V");
+      ASSERT(method);
+      env->CallStaticVoidMethod(g_NativeEvents, method, (int) g_gameState);
+    }
 
     if (!running || !window) {
       usleep(50000); // wait for 50 ms
