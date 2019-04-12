@@ -117,8 +117,8 @@
             android:layout_marginEnd="12dp"
             android:background="@drawable/ic_save"
             android:onClick="doQuickSave"
-            app:layout_constraintEnd_toStartOf="@+id/buttonSettings"
-            app:layout_constraintTop_toTopOf="@+id/buttonSettings" />
+            app:layout_constraintEnd_toStartOf="@id/buttonSettings"
+            app:layout_constraintTop_toTopOf="@id/buttonSettings" />
 
         <Button
             android:id="@+id/startBtn"

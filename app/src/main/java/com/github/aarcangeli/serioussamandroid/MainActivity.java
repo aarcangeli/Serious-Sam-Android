@@ -5,7 +5,6 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
@@ -35,7 +34,9 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
 
-import static com.github.aarcangeli.serioussamandroid.NativeEvents.*;
+import static com.github.aarcangeli.serioussamandroid.NativeEvents.FatalErrorEvent;
+import static com.github.aarcangeli.serioussamandroid.NativeEvents.GameState;
+import static com.github.aarcangeli.serioussamandroid.NativeEvents.StateChangeEvent;
 import static com.github.aarcangeli.serioussamandroid.views.JoystickView.Listener;
 
 public class MainActivity extends AppCompatActivity {
@@ -291,7 +292,6 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         // hide verything from the screen
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE);
-        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
 
         if (isGameStarted) {
             glSurfaceView.start();
@@ -403,6 +403,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void openSettings(View view) {
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (hasFocus) {
+            getWindow().getDecorView().setSystemUiVisibility(
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+                            View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
+                            View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
+                            View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
+                            View.SYSTEM_UI_FLAG_FULLSCREEN |
+                            View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+        }
     }
 
     private void startGame() {
