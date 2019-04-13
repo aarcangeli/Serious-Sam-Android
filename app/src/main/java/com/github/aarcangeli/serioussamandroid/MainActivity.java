@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
@@ -52,9 +53,6 @@ public class MainActivity extends AppCompatActivity {
     private static final int AXIS_LOOK_UD = 6;
     private static final int AXIS_LOOK_LR = 7;
     private static final int AXIS_LOOK_BK = 8;
-
-    private static final int ACTION_QUICK_LOAD = 1;
-    private static final int ACTION_QUICK_SAVE = 2;
 
     public static final float DEAD_ZONE = 0.3f;
     private static final float MULT_VIEW_CONTROLLER = 2.5f;
@@ -387,11 +385,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void doProfiling(View view) {
-        printProfilingData();
+        executeShell("RecordProfile();");
     }
 
     public void doQuickLoad(View view) {
-        nSendAction(ACTION_QUICK_LOAD);
+        executeShell("gam_bQuickLoad=1;");
     }
 
     public void doQuickLoadBrowse(View view) {
@@ -399,10 +397,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void doQuickSave(View view) {
-        nSendAction(ACTION_QUICK_SAVE);
+        executeShell("gam_bQuickSave=1;");
     }
 
     public void openSettings(View view) {
+        startActivity(new Intent(this, SettingsActivity.class));
     }
 
     @Override
@@ -426,10 +425,13 @@ public class MainActivity extends AppCompatActivity {
         glSurfaceView.start();
     }
 
+    public static void executeShell(String command) {
+        nShellExecute(command);
+    }
+
     private static native void setAxisValue(int key, float value);
     private static native void shiftAxisValue(int key, float value);
-    private static native void printProfilingData();
-    private static native void nSendAction(int action);
+    private static native void nShellExecute(String command);
     private static native void nDispatchKeyEvent(int key, int isPressed);
     private static native boolean nGetConsoleState();
 }

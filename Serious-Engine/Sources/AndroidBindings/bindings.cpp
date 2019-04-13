@@ -12,15 +12,11 @@ pthread_t g_mySeriousThreadId;
 bool g_gameRunning = false;
 ANativeWindow *g_currentWindow;
 bool g_somethingChanged = false;
-bool g_printProfiling = false;
 PlayerControls g_IncomingControls {};
 JavaVM *g_javaWM;
 jclass g_NativeEvents;
 jmethodID g_reportFatalError;
-int g_action = 0;
-
-const int ACTION_QUICK_LOAD = 1;
-const int ACTION_QUICK_SAVE = 2;
+CTString g_command = "";
 
 JNIEnv* getEnv() {
   static thread_local JNIEnv* myEnv = nullptr;
@@ -97,18 +93,14 @@ Java_com_github_aarcangeli_serioussamandroid_MainActivity_nDispatchKeyEvent(JNIE
 }
 
 extern "C"
-JNIEXPORT void JNICALL
-Java_com_github_aarcangeli_serioussamandroid_MainActivity_printProfilingData(JNIEnv *env, jobject obj) {
+JNIEXPORT void JNICALL Java_com_github_aarcangeli_serioussamandroid_MainActivity_nShellExecute(JNIEnv* env, jobject obj, jstring command_) {
+  const char *command = env->GetStringUTFChars(command_, 0);
   pthread_mutex_lock(&g_mySeriousMutex);
-  g_printProfiling = true;
-  pthread_mutex_unlock(&g_mySeriousMutex);
-}
 
-extern "C"
-JNIEXPORT void JNICALL Java_com_github_aarcangeli_serioussamandroid_MainActivity_nSendAction(JNIEnv* env, jobject obj, jint action) {
-  pthread_mutex_lock(&g_mySeriousMutex);
-  g_action = action;
+  g_command += CTString(command) + ";";
+
   pthread_mutex_unlock(&g_mySeriousMutex);
+  env->ReleaseStringUTFChars(command_, command);
 }
 
 void *seriousMain(void *unused) {
@@ -135,16 +127,9 @@ void *seriousMain(void *unused) {
     // resolve input
     setControls(g_IncomingControls);
 
-    if (g_action) {
-      switch(g_action) {
-        case ACTION_QUICK_LOAD:
-          _pShell->Execute("gam_bQuickLoad=1;");
-          break;
-        case ACTION_QUICK_SAVE:
-          _pShell->Execute("gam_bQuickSave=1;");
-          break;
-      }
-      g_action = 0;
+    if (g_command.Length()) {
+      _pShell->Execute(g_command);
+      g_command = "";
     }
 
     pthread_mutex_unlock(&g_mySeriousMutex);

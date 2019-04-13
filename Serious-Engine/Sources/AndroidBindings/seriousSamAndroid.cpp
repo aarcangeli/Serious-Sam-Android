@@ -142,11 +142,6 @@ void setControls(PlayerControls &ctrls) {
 
     bStartLast = ctrls.bStart;
 
-    if (g_printProfiling) {
-      g_printProfiling = false;
-      _pShell->Execute("RecordProfile();");
-    }
-
     PlayerControls &playerCtrl = *(PlayerControls *) game->gm_lpLocalPlayers[0].lp_ubPlayerControlsState;
     playerCtrl = ctrls;
 

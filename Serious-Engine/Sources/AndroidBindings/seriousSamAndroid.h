@@ -24,7 +24,6 @@ extern pthread_mutex_t g_mySeriousMutex;
 extern pthread_t g_mySeriousThreadId;
 extern bool g_gameRunning;
 extern ANativeWindow *g_currentWindow;
-extern bool g_printProfiling;
 extern GameState g_gameState;
 
 void *seriousMain(void *unused);
