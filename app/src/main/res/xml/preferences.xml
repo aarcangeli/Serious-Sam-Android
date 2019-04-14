@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <CheckBoxPreference
+        android:defaultValue="true"
+        android:key="use_gyroscope"
+        android:summary="Tilts the device to move the view."
+        android:title="Use Gyroscope" />
+    <CheckBoxPreference
         android:defaultValue="false"
         android:key="hud_iStats"
         android:summary="Draw gpu stats on screen."

@@ -17,6 +17,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "StdH.h"
 #include <Engine/Build.h>
+#include <AndroidAdapters/binding-callbacks.h>
 
 #include "MenuManager.h"
 #include "MenuStarters.h"
@@ -171,7 +172,7 @@ void StartOptionsMenu(void)
   _pGUIM->gmOptionsMenu.gm_pgmParentMenu = pgmCurrentMenu;
   ChangeToMenu(&_pGUIM->gmOptionsMenu);
 #else
-  // TODO: open menu
+  g_cb.openSettings();
 #endif
 }
 

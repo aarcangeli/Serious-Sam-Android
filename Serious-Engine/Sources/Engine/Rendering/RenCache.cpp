@@ -811,7 +811,7 @@ void CRenderer::AddPolygonToScene( CScreenPolygon *pspo)
 
   // all done
   sppo.spo_ctVtx = ctVtx;
-  sppo.spo_piElements = &bpo.bpo_aiTriangleElements[0];
+  sppo.spo_piElements = &bpo.bpo_aiTriangleElements.sa_Array[0];
   sppo.spo_ctElements =  bpo.bpo_aiTriangleElements.Count();
   _sfStats.IncrementCounter(CStatForm::SCI_SCENE_TRIANGLES, sppo.spo_ctElements/3);
 }

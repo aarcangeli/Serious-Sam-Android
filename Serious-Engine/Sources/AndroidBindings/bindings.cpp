@@ -154,6 +154,13 @@ void syncSeriousThreads() {
   };
 }
 
+void openSettings() {
+  JNIEnv* env = getEnv();
+  jmethodID method = env->GetStaticMethodID(g_NativeEvents, "openSettings", "()V");
+  ASSERT(method);
+  env->CallStaticVoidMethod(g_NativeEvents, method);
+}
+
 CViewPort *getViewPort() {
   syncSeriousThreads();
   return g_pvpViewPort;
@@ -165,6 +172,7 @@ void *seriousMain(void *unused) {
   g_cb.setSeriousState = &setSeriousState;
   g_cb.syncSeriousThreads = &syncSeriousThreads;
   g_cb.getViewPort = &getViewPort;
+  g_cb.openSettings = &openSettings;
 
   // run all
   try {

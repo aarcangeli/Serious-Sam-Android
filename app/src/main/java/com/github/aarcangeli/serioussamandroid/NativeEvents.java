@@ -12,6 +12,10 @@ public class NativeEvents {
         EventBus.getDefault().postSticky(new StateChangeEvent(GameState.values()[state]));
     }
 
+    public static void openSettings() {
+        EventBus.getDefault().post(new OpenSettingsEvent());
+    }
+
     public static class FatalErrorEvent {
         public final String message;
 
@@ -26,6 +30,9 @@ public class NativeEvents {
         public StateChangeEvent(GameState state) {
             this.state = state;
         }
+    }
+
+    public static class OpenSettingsEvent {
     }
 
     enum GameState {

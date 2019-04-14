@@ -239,6 +239,12 @@ void TouchUp(void* pArgs) {
   }
 }
 
+void GoMenuBack() {
+  if (bMenuActive) {
+    MenuOnKeyDown(VK_ESCAPE);
+  }
+}
+
 static void PlayDemo(void* pArgs)
 {
   CTString strDemoFilename = *NEXTARGUMENT(CTString*);
@@ -525,6 +531,7 @@ BOOL Init()
   _pShell->DeclareSymbol("user void TouchMove(INDEX, INDEX);", (void *) &TouchMove);
   _pShell->DeclareSymbol("user void TouchDown(INDEX, INDEX);", (void *) &TouchDown);
   _pShell->DeclareSymbol("user void TouchUp(INDEX, INDEX);", (void *) &TouchUp);
+  _pShell->DeclareSymbol("user void GoMenuBack();", (void *) &GoMenuBack);
 
   InitializeGame();
   _pNetwork->md_strGameID = sam_strGameName;
@@ -813,7 +820,7 @@ void DoGame(void)
     _pGame->ConsoleRender(pdp);
 
     // draw fps and frame time
-    if (_pGame->gm_csConsoleState == CS_OFF && _pGame->gm_csComputerState == CS_OFF) {
+    if (!bMenuActive && _pGame->gm_csConsoleState == CS_OFF && _pGame->gm_csComputerState == CS_OFF) {
       drawBannerFpsVersion(pdp, deltaFrame, fps);
     }
 
@@ -1240,5 +1247,6 @@ void drawBannerFpsVersion(CDrawPort *pdp, int64_t deltaFrame, float fps) {
   pdp->SetTextScaling(1);
   pdp->SetTextAspect(1.0f);
   CTString str = CTString(0, SSA_VERSION " fps: %.2f; frame: %.2f ms", fps, deltaFrame / 1000000.f);
-  pdp->PutText(str, 0, 30, LCDGetColor(C_GREEN | 255, "display mode"));
+  ULONG textWidth = pdp->GetTextWidth(str);
+  pdp->PutText(str, slDPWidth - textWidth, 30, LCDGetColor(C_GREEN | 255, "display mode"));
 }

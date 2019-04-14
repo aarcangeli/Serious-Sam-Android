@@ -17,6 +17,7 @@ struct BindingCallbacks {
     void (*setSeriousState)(GameState state);
     void (*syncSeriousThreads)();
     CViewPort *(*getViewPort)();
+    void (*openSettings)();
 
     GameState gameState;
 };

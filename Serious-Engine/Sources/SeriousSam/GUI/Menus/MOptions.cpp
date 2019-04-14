@@ -52,6 +52,7 @@ void COptionsMenu::Initialize_t(void)
   gm_mgPlayerProfileOptions.mg_strTip = TRANS("change currently active player or adjust controls");
   gm_lhGadgets.AddTail(gm_mgPlayerProfileOptions.mg_lnNode);
   gm_mgPlayerProfileOptions.mg_pActivatedFunction = NULL;
+  gm_mgPlayerProfileOptions.mg_bEnabled = false;
 
   gm_mgNetworkOptions.mg_bfsFontSize = BFS_LARGE;
   gm_mgNetworkOptions.mg_boxOnScreen = BoxBigRow(3);

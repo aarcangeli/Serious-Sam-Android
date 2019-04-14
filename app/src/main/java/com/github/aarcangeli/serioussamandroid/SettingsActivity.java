@@ -19,16 +19,6 @@ public class SettingsActivity extends PreferenceActivity {
         public void onCreate(final Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.preferences);
-            CheckBoxPreference hud_iStats = (CheckBoxPreference) findPreference("hud_iStats");
-            if (hud_iStats != null) {
-                hud_iStats.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-                    @Override
-                    public boolean onPreferenceChange(Preference preference, Object newValue) {
-                        MainActivity.executeShell("hud_iStats=" + ((Boolean) newValue ? 2 : 0) + ";");
-                        return true;
-                    }
-                });
-            }
         }
     }
 }
