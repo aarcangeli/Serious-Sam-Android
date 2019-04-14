@@ -17,12 +17,28 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/KeyNames.h>
 #include <Engine/CurrentVersion.h>
 #include <GameMP/LCDDrawing.h>
+#include <AndroidAdapters/binding-callbacks.h>
 #include "MGEdit.h"
 
 extern CSoundData *_psdPress;
 
 extern BOOL _bEditingString;
+CMGEdit *_editingBox;
 
+void onEditOk(CTString str) {
+  if (_editingBox && _editingBox->mg_bEditing) {
+    _editingBox->mg_strText = str;
+    _editingBox->OnKeyDown(VK_RETURN);
+    _editingBox = nullptr;
+  }
+}
+
+void onEditCancel() {
+  if (_editingBox && _editingBox->mg_bEditing) {
+    _editingBox->OnKeyDown(VK_ESCAPE);
+    _editingBox = nullptr;
+  }
+}
 
 CMGEdit::CMGEdit(void)
 {
@@ -46,10 +62,12 @@ void CMGEdit::OnActivate(void)
   ASSERT(mg_pstrToChange != NULL);
   PlayMenuSound(_psdPress);
   IFeel_PlayEffect("Menu_press");
-  SetText(mg_strText);
+  SetText(*mg_pstrToChange);
   mg_iCursorPos = strlen(mg_strText);
   mg_bEditing = TRUE;
   _bEditingString = TRUE;
+  _editingBox = this;
+  g_cb.editText(mg_strText, &onEditOk, &onEditCancel);
 }
 
 

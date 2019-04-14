@@ -120,8 +120,10 @@ void CMGFileButton::OnActivate(void)
   } else {
     // switch to editing mode
     BOOL bWasEmpty = mg_strText == EMPTYSLOTSTRING;
-    mg_strDes = _pGUIM->gmLoadSaveMenu.gm_strSaveDes;
-    RefreshText();
+    if (bWasEmpty) {
+      mg_strDes = _pGUIM->gmLoadSaveMenu.gm_strSaveDes;
+      RefreshText();
+    }
     _strOrgDescription = _strTmpDescription = mg_strText;
 
     if (bWasEmpty) {

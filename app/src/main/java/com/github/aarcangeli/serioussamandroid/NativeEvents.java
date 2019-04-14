@@ -16,6 +16,10 @@ public class NativeEvents {
         EventBus.getDefault().post(new OpenSettingsEvent());
     }
 
+    public static void editText(String defaultText) {
+        EventBus.getDefault().post(new EditTextEvent(defaultText));
+    }
+
     public static class FatalErrorEvent {
         public final String message;
 
@@ -33,6 +37,14 @@ public class NativeEvents {
     }
 
     public static class OpenSettingsEvent {
+    }
+
+    public static class EditTextEvent {
+        public final String defaultText;
+
+        public EditTextEvent(String defaultText) {
+            this.defaultText = defaultText;
+        }
     }
 
     enum GameState {

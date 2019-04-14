@@ -18,7 +18,11 @@ JavaVM *g_javaWM;
 jclass g_NativeEvents;
 jmethodID g_reportFatalError;
 CTString g_command = "";
+CTString g_newText = "";
+bool g_textCancelled = false;
 CViewPort *g_pvpViewPort = nullptr;
+void (*g_textOnOk)(CTString str) = nullptr;
+void (*g_textOnCancel)() = nullptr;
 
 JNIEnv* getEnv() {
   static thread_local JNIEnv* myEnv = nullptr;
@@ -52,6 +56,24 @@ JNIEXPORT void JNICALL Java_com_github_aarcangeli_serioussamandroid_SeriousSamSu
   // start main thread
   pthread_create(&g_mySeriousThreadId, 0, &seriousMain, nullptr);
   pthread_setname_np(g_mySeriousThreadId, "SeriousSamMain");
+}
+
+extern "C"
+JNIEXPORT void JNICALL Java_com_github_aarcangeli_serioussamandroid_MainActivity_nConfirmEditText(JNIEnv* env, jobject obj, jstring newText_) {
+  pthread_mutex_lock(&g_mySeriousMutex);
+
+  const char *newText = env->GetStringUTFChars(newText_, 0);
+  g_newText = CTString(newText);
+  env->ReleaseStringUTFChars(newText_, newText);
+
+  pthread_mutex_unlock(&g_mySeriousMutex);
+}
+
+extern "C"
+JNIEXPORT void JNICALL Java_com_github_aarcangeli_serioussamandroid_MainActivity_nCancelEditText(JNIEnv* env, jobject obj) {
+  pthread_mutex_lock(&g_mySeriousMutex);
+  g_textCancelled = true;
+  pthread_mutex_unlock(&g_mySeriousMutex);
 }
 
 extern "C"
@@ -134,6 +156,21 @@ void syncSeriousThreads() {
     CTString cmdToExecute = g_command;
     g_command = "";
 
+    if (g_newText.Length()) {
+      if (g_textOnOk) {
+        g_textOnOk(g_newText);
+        g_textOnOk = nullptr;
+      }
+      g_newText = "";
+    }
+    if (g_textCancelled) {
+      if (g_textOnCancel) {
+        g_textOnCancel();
+        g_textOnCancel = nullptr;
+      }
+      g_textCancelled = false;
+    }
+
     pthread_mutex_unlock(&g_mySeriousMutex);
 
     if (cmdToExecute.Length()) {
@@ -161,6 +198,16 @@ void openSettings() {
   env->CallStaticVoidMethod(g_NativeEvents, method);
 }
 
+void editText(const CTString &string, void (*onOk)(CTString str), void (*onCancel)()) {
+  g_textOnOk = onOk;
+  g_textOnCancel = onCancel;
+
+  JNIEnv* env = getEnv();
+  jmethodID method = env->GetStaticMethodID(g_NativeEvents, "editText", "(Ljava/lang/String;)V");
+  ASSERT(method);
+  env->CallStaticVoidMethod(g_NativeEvents, method, env->NewStringUTF(string.str_String));
+}
+
 CViewPort *getViewPort() {
   syncSeriousThreads();
   return g_pvpViewPort;
@@ -173,6 +220,7 @@ void *seriousMain(void *unused) {
   g_cb.syncSeriousThreads = &syncSeriousThreads;
   g_cb.getViewPort = &getViewPort;
   g_cb.openSettings = &openSettings;
+  g_cb.editText = &editText;
 
   // run all
   try {

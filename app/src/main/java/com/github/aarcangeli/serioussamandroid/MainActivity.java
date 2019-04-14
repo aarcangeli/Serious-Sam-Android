@@ -21,12 +21,14 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.text.InputType;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.EditText;
 
 import com.github.aarcangeli.serioussamandroid.views.BgTrackerView;
 import com.github.aarcangeli.serioussamandroid.views.JoystickView;
@@ -316,6 +318,33 @@ public class MainActivity extends AppCompatActivity {
         startActivity(new Intent(this, SettingsActivity.class));
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void editText(final NativeEvents.EditTextEvent event) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        // Set up the input
+        final EditText input = new EditText(this);
+        input.setText(event.defaultText);
+        builder.setView(input);
+
+        // Set up the buttons
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                nConfirmEditText(input.getText().toString());
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+                nCancelEditText();
+            }
+        });
+
+        builder.show();
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -461,4 +490,6 @@ public class MainActivity extends AppCompatActivity {
     private static native void nShellExecute(String command);
     private static native void nDispatchKeyEvent(int key, int isPressed);
     private static native boolean nGetConsoleState();
+    private static native boolean nConfirmEditText(String newText);
+    private static native boolean nCancelEditText();
 }

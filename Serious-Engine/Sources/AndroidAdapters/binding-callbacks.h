@@ -2,6 +2,7 @@
 #define BINDING_CALLBACKS_H
 
 #include <AndroidAdapters/android-adapters.h>
+#include <Engine/Base/CTString.h>
 
 enum GameState {
     GS_LOADING,
@@ -18,6 +19,7 @@ struct BindingCallbacks {
     void (*syncSeriousThreads)();
     CViewPort *(*getViewPort)();
     void (*openSettings)();
+    void (*editText)(const CTString &string, void (*onOk)(CTString str), void (*onCancel)());
 
     GameState gameState;
 };
