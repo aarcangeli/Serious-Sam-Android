@@ -143,7 +143,7 @@ CTFileName CEngineGUI::CreateTexture(CTFileName fnTexFileToRecreate/*=CTString("
       // release obtained texture
       _pTextureStock->Release( ptdTextureToRecreate);
     }
-    catch( char *err_str)
+    catch ( const char *err_str)
     {
       WarningMessage( err_str);
     }

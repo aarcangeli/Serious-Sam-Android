@@ -162,7 +162,7 @@ void SubMain( int argc, char *argv[])
              }
     }
   }
-  catch( char *pError)
+  catch ( const char *pError)
   {
     printf( "Error occured.\n%s\n", pError);
   }

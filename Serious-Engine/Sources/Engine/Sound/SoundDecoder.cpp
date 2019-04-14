@@ -170,7 +170,7 @@ void CSoundDecoder::InitPlugins(void)
     _bOVEnabled = TRUE;
     CPrintF(TRANS("  libvorbis.so loaded, ogg playing enabled\n"));
 
-  } catch (char *strError) {
+  } catch ( const char *strError) {
     CPrintF(TRANS("OGG playing disabled: %s\n"), strError);
   }
 
@@ -290,7 +290,7 @@ CSoundDecoder::CSoundDecoder(const CTFileName &fnm)
     
       sdc_pogg->ogg_wfeFormat = form;
 
-    } catch (char*strError) {
+    } catch ( const char *strError) {
       CPrintF(TRANS("Cannot open encoded audio '%s' for streaming: %s\n"), (const char*)fnm, (const char*)strError);
       if (sdc_pogg->ogg_vfVorbisFile!=NULL) {
         delete sdc_pogg->ogg_vfVorbisFile;
@@ -392,7 +392,7 @@ CSoundDecoder::CSoundDecoder(const CTFileName &fnm)
       if (sdc_pmpeg->mpeg_hDecoder==0) {
         ThrowF_t(TRANS("cannot open mpx decoder"));
       }
-    } catch (char*strError) {
+    } catch ( const char *strError) {
       CPrintF(TRANS("Cannot open mpx '%s' for streaming: %s\n"), (const char*)fnm, (const char*)strError);
       if (iZipHandle!=0) {
         UNZIPClose(iZipHandle);

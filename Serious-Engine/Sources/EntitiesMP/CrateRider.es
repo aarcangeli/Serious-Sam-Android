@@ -164,7 +164,7 @@ functions:
       try {
         pmoHead->mo_toTexture.SetData_t(fnmHead);
       // if anything failed
-      } catch (char *strError) {
+      } catch ( const char *strError) {
         // report error
         CPrintF("%s\n", strError);
       }

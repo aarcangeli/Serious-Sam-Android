@@ -96,7 +96,7 @@ static BOOL LoadFileList(CDynamicStackArray <CTFileName> &afnm, const CTFileName
       }
     }
     return TRUE;
-  } catch (char *strError) {
+  } catch ( const char *strError) {
     CPrintF("%s\n", strError);
     return FALSE;
   }
@@ -239,7 +239,7 @@ void InitStreams(void) {
     // read the zip directories
     UNZIPReadDirectoriesReverse_t();
     // if failed
-  } catch (char *strError) {
+  } catch ( const char *strError) {
     // report warning
     CPrintF(TRANS("There were group file errors:\n%s"), strError);
   }
@@ -831,7 +831,7 @@ void CTStream::DictionaryPreload_t(void) {
       } else if (strExt == ".mdl") {
         fnm.fnm_pserPreloaded = _pModelStock->Obtain_t(fnm);
       }
-    } catch (char *strError) {
+    } catch ( const char *strError) {
       CPrintF(TRANS("Cannot preload %s: %s\n"), (CTString &) fnm, strError);
     }
   }
@@ -1333,7 +1333,7 @@ BOOL FileExists(const CTFileName &fnmFile) {
     // if successful, it means that it exists,
     return TRUE;
     // if failed, it means that it doesn't exist
-  } catch (char *strError) {
+  } catch ( const char *strError) {
     (void) strError;
     return FALSE;
   }

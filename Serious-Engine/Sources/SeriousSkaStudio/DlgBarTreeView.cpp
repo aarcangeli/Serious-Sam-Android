@@ -462,7 +462,7 @@ void CDlgBarTreeView::ChangeShaderOnSelectedSurfaces(CTString fnNewShader)
     try {
       // try to change surface shader
       ChangeSurfaceShader_t(*pmsrf,fnNewShader);
-    } catch(char *strErr) {
+    } catch ( const char *strErr) {
       theApp.ErrorMessage(strErr);
     }
   }

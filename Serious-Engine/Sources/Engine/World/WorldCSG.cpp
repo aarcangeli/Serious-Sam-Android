@@ -144,7 +144,7 @@ void CWorld::AddObjectToBrush(CObject3D &obObject, CEntity &enBrush)
   // return the result to the source brush
   try {
     bmBrushMip.AddFromObject3D_t(obObject);
-  } catch (char *strError) {
+  } catch ( const char *strError) {
     FatalError("Unexpected error during CSG operation: %s", strError);
   }
   // update the bounding boxes of the brush
@@ -362,7 +362,7 @@ void CWorld::SplitOneSector(CBrushSector &bscToSplit, CObject3D &obToSplitBy)
   // return the result to the source brush mip
   try {
     pbmMip->AddFromObject3D_t(obResult);
-  } catch (char *strError) {
+  } catch ( const char *strError) {
     FatalError("Unexpected error during split sectors operation: %s", strError);
   }
 }
@@ -487,7 +487,7 @@ CBrushSector *CWorld::JoinTwoSectors(CBrushSector &bscA, CBrushSector &bscB)
   CBrushSector *pbscResult;
   try {
     pbscResult = pbmMip->AddFromObject3D_t(obResult);
-  } catch (char *strError) {
+  } catch ( const char *strError) {
     FatalError("Unexpected error during join sectors operation: %s", strError);
   }
 
@@ -621,7 +621,7 @@ void CWorld::SplitPolygons(CEntity &enThis, CBrushPolygonSelection &selbpoPolygo
     // return it back to brush mip
     try {
       pbmMip->AddFromObject3D_t(obResult);
-    } catch (char *strError) {
+    } catch ( const char *strError) {
       FatalError("Unexpected error during split polygons operation: %s", strError);
     }
 
@@ -739,7 +739,7 @@ void CWorld::JoinPolygons(CBrushPolygonSelection &selbpoPolygonsToJoin)
     // return it back to brush mip
     try {
       pbmMip->AddFromObject3D_t(obSector);
-    } catch (char *strError) {
+    } catch ( const char *strError) {
       FatalError("Unexpected error during join polygons operation: %s", strError);
     }
 
@@ -847,7 +847,7 @@ void CWorld::JoinAllPossiblePolygons(
     // return it back to brush mip
     try {
       pbmMip->AddFromObject3D_t(obSector);
-    } catch (char *strError) {
+    } catch ( const char *strError) {
       FatalError("Unexpected error during join all polygons operation: %s", strError);
     }
 

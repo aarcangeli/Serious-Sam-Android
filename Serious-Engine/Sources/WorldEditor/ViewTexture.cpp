@@ -96,7 +96,7 @@ void CViewTexture::OnPaint()
     {
       toTexture.SetData_t( m_strTexture);
     }
-    catch( char *strError)
+    catch ( const char *strError)
     {
       (void) strError;
     }
@@ -160,7 +160,7 @@ void CViewTexture::OnRecreateTexture()
   {
     toTexture.SetData_t( m_strTexture);
   }
-  catch( char *strError)
+  catch ( const char *strError)
   {
     (void) strError;
   }

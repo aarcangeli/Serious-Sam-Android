@@ -375,7 +375,7 @@ void ReadOneArchiveDir_t(CTFileName &fnm)
     // read the directory and add all files
     ReadZIPDirectory_t(&fnm);
   // if failed
-  } catch (char *) {
+  } catch ( const char *) {
     // if some files were added
     if (ctOrgFiles<_azeFiles.Count()) {
       // remove them
@@ -456,7 +456,7 @@ void UNZIPReadDirectoriesReverse_t(void)
       // read its directory
       ReadOneArchiveDir_t(_afnmArchives[iArchive]);
     // if failed
-    } catch (char *strError) {
+    } catch ( const char *strError) {
       // remember the error
       strAllErrors += strError;
       strAllErrors += "\n";

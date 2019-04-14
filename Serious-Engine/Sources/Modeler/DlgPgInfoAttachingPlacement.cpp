@@ -351,7 +351,7 @@ BOOL CDlgPgInfoAttachingPlacement::BrowseAttachement( CAttachedModel *pam)
   {
     pam->SetModel_t( fnModel);
   }
-  catch( char *strError)
+  catch ( const char *strError)
   {
     (void) strError;
     return FALSE;

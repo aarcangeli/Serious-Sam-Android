@@ -75,7 +75,7 @@ functions:
       _toTexture.SetData_t(fnm);
       return TRUE;
     }
-    catch (char *strError)
+    catch ( const char *strError)
     {
       CPrintF("%s\n", strError);
       return FALSE;

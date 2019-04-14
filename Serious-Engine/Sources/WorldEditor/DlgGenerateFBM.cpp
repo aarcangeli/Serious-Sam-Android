@@ -163,7 +163,7 @@ BOOL CreateFBMTexture(PIX pixW, PIX pixH, CTFileName fnFBMFile)
     tdFBM.Create_t( &ii, pixW, 16, TRUE);
     tdFBM.Save_t( fnFBMFile);
   }
-  catch( char *strError)
+  catch ( const char *strError)
   {
     (void) strError;
     WarningMessage("Unable to create FBM preview texture!");
@@ -213,7 +213,7 @@ void CDlgGenerateFBM::OnPaint()
         ptd->Reload();
         m_pdp->PutTexture( &to, PIXaabbox2D(PIX2D(0,0),PIX2D(m_pdp->GetWidth(),m_pdp->GetHeight())));
       }
-      catch( char *strError)
+      catch ( const char *strError)
       {
         (void) strError;
         WarningMessage("Unable to create FBM preview texture!");

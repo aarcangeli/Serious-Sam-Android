@@ -471,7 +471,7 @@ void CDlgPgTexture::OnDropFiles(HDROP hDropInfo)
     // apply data change
 	  UpdateData( TRUE);
   }
-  catch( char *err_str)
+  catch ( const char *err_str)
   {
     AfxMessageBox( CString(err_str));
   }

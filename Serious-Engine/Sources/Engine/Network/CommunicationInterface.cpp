@@ -328,7 +328,7 @@ void CCommunicationInterface::PrepareForUse(BOOL bUseNetwork, BOOL bClient)
 			cci_pbMasterOutput.pb_ppbsStats = NULL;
       cm_ciBroadcast.SetLocal(NULL);
       CPrintF(TRANS("  opened socket: \n"));
-    } catch (char *strError) {
+    } catch ( const char *strError) {
       CPrintF(TRANS("  cannot open UDP socket: %s\n"), strError);
     }
   }

@@ -417,7 +417,7 @@ void CWorld::CopyEntities(CWorld &woOther, CDynamicContainer<CEntity> &cenToCopy
       // create an entity of same class as the one to copy
       penNew = CreateEntity_t(plEntity, enToCopy.en_pecClass->GetName());
     // if not successfull
-    } catch (char *strError) {
+    } catch ( const char *strError) {
       (void)strError;
       ASSERT(FALSE);    // this should not happen
       FatalError(TRANS("Cannot CopyEntity():\n%s"), strError);
@@ -547,7 +547,7 @@ CEntity *CWorld::CopyEntityInWorld(CEntity &enOriginal, const CPlacement3D &plOt
     // create an entity of same class as the one to copy
     penNew = CreateEntity_t(plOtherEntity, enOriginal.en_pecClass->GetName());
   // if not successfull
-  } catch (char *strError) {
+  } catch ( const char *strError) {
     (void)strError;
     ASSERT(FALSE);    // this should not happen
     FatalError(TRANS("Cannot CopyEntity():\n%s"), strError);

@@ -101,7 +101,7 @@ functions:
       strm.Close();
       return TRUE;
     }
-    catch (char *strError)
+    catch ( const char *strError)
     {
       CPrintF("%s\n", strError);
       return FALSE;

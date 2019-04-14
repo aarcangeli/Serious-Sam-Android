@@ -105,7 +105,7 @@ void InitializeGame(void)
     }
     _pGameGUI = GAMEGUI_Create();
 
-  } catch (char *strError) {
+  } catch ( const char *strError) {
     FatalError("%s", strError);
   }
   _pGameGUI->Initialize(CTString("Data\\WorldEditor.gms"));
@@ -716,7 +716,7 @@ BOOL CWorldEditorApp::SubInitInstance()
         m_lhPrimitiveHistory.AddTail( ppihbMember->pihb_lnNode);
       }
     }
-    catch( char *strError)
+    catch ( const char *strError)
     {
       WarningMessage( strError);
     }
@@ -743,7 +743,7 @@ BOOL CWorldEditorApp::SubInitInstance()
   	DECLARE_CTFILENAME( fnIconTrayTexture, "Textures\\Editor\\IconsTray.tex");
     m_ptdIconsTray = _pTextureStock->Obtain_t( fnIconTrayTexture);
   }
-  catch( char *err_str)
+  catch ( const char *err_str)
   {
     AfxMessageBox( CString(err_str));
 		return FALSE;
@@ -822,7 +822,7 @@ BOOL CWorldEditorApp::SubInitInstance()
     m_ptdBoundingBoxTexture = _pTextureStock->Obtain_t( fnBoundingBoxTex);
     m_pBoundingBoxModelObject->mo_toTexture.SetData( m_ptdBoundingBoxTexture);
   }
-  catch (char *error)
+  catch ( const char *error)
   {
     FatalError("Cannot load one of entity selection model components: %s", error);
     return FALSE;
@@ -1781,7 +1781,7 @@ BOOL CWorldEditorApp::LoadRenderingPreferences()
     // read ID for end of rendering prefs
     strmFile.ExpectID_t( CChunkID( "RPED"));  // rendering preferences end
   }
-  catch( char *err_str)
+  catch ( const char *err_str)
   {
     char achrMessage[ 256];
     sprintf( achrMessage, "%s\nWorld editor's rendering preferences will be switched "
@@ -1810,7 +1810,7 @@ void CWorldEditorApp::SaveRenderingPreferences(void)
     // write ID for end of rendering prefs
     strmFile.WriteID_t( CChunkID( "RPED"));  // rendering preferences end
   }
-  catch( char *err_str)
+  catch ( const char *err_str)
   {
     AfxMessageBox( CString(err_str));
   }
@@ -1873,7 +1873,7 @@ BOOL CWorldEditorApp::LoadChildConfigurations(void)
     // read end of file ID
     strmFile.ExpectID_t( CChunkID( "CCED"));  // end of child configurations ID
   }
-  catch( char *err_str)
+  catch ( const char *err_str)
   {
     char achrMessage[ 256];
     sprintf( achrMessage, "%s\nSplit window configurations will be switched to defaults.", err_str);
@@ -1904,7 +1904,7 @@ void CWorldEditorApp::SaveChildConfigurations(void)
     // write end of file ID
     strmFile.WriteID_t( CChunkID( "CCED"));  // end of child configurations ID
   }
-  catch( char *err_str)
+  catch ( const char *err_str)
   {
     AfxMessageBox( CString(err_str));
   }
@@ -2139,7 +2139,7 @@ void CWorldEditorApp::SetNewActiveTexture( CTFileName fnFullTexName)
     pdtNewTexture = _pTextureStock->Obtain_t( fnTexName);
   }
   // if failed
-  catch( char *err_str)
+  catch ( const char *err_str)
   {
     pdtNewTexture = _pTextureStock->Obtain_t( CTFILENAME("Textures\\Editor\\Default.tex") );
     (void)err_str;
@@ -2210,7 +2210,7 @@ void CWorldEditorApp::TexturizeSelection(void)
       }
     }
     // if failed
-    catch( char *err_str)
+    catch ( const char *err_str)
     {
       // report error
       AfxMessageBox( CString(err_str));
@@ -2256,7 +2256,7 @@ void CWorldEditorApp::OnConvertWorlds()
     fsFileList.Close();
   }
   // if the list file can't be opened
-  catch(char *strError) {
+  catch ( const char *strError) {
     _pShell->Execute( CTString("con_bNoWarnings=0;"));
     WarningMessage( "Error reading list file: %s", strError);
     return;
@@ -2364,7 +2364,7 @@ void CWorldEditorApp::OnConvertWorlds()
     }
 
     // if file can't be opened
-    catch( char *strError) {
+    catch ( const char *strError) {
       try {
         // on first error
         if( !bConvertError) {
@@ -2379,7 +2379,7 @@ void CWorldEditorApp::OnConvertWorlds()
         fsErrorFile.PutLine_t( "-----------------------------------------------");
       }
       // here should be no errors,
-      catch( char *strError) {
+      catch ( const char *strError) {
         // otherwise ...
         (void) strError;
         WarningMessage( "Fatal error occured while working with error file!");
@@ -2414,7 +2414,7 @@ CEntity *CWorldEditorApp::CreateWorldBaseEntity(CWorld &woWorld, BOOL bZoning,
     penwb = woWorld.CreateEntity_t(plWorld, CTFILENAME("Classes\\WorldBase.ecl"));
   }
   // catch and
-  catch( char *err_str)
+  catch ( const char *err_str)
   {
     // report errors
     AfxMessageBox( CString(err_str));
@@ -2486,7 +2486,7 @@ BOOL CWorldEditorApp::Add3DObject(CWorldEditorDoc *pDoc, CEntity *penwb, CTFileN
     }
   }
   // catch and
-  catch( char *err_str)
+  catch ( const char *err_str)
   {
     // report errors
     AfxMessageBox( CString(err_str));
@@ -2649,7 +2649,7 @@ void CWorldEditorApp::OnFileNew()
   {
 //!!!!    pDoc->m_woWorld.SetBackgroundTexture_t( fnDefaultBcg);
   }
-  catch( char *strError)
+  catch ( const char *strError)
   {
     (void) strError;
   }
@@ -2658,7 +2658,7 @@ void CWorldEditorApp::OnFileNew()
   {
 //!!!!    pDoc->m_woWorld.SetBackgroundTexture_t( CTString("Textures\\Editor\\Default.tex"));
   }
-  catch( char *strError)
+  catch ( const char *strError)
   {
     AfxMessageBox( CString(strError));
   }
@@ -2871,7 +2871,7 @@ void CWorldEditorApp::DisplayHelp(const CTFileName &fnHlk, UINT uCommand, DWORD 
   {
     strHelpPath.Load_t(fnHlk.NoExt()+".hlk");
   }
-  catch(char *strError)
+  catch ( const char *strError)
   {
     (void) strError;
     if (fnHlk.FileExt()==".ecl") {

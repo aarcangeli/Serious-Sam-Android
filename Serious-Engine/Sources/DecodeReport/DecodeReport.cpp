@@ -72,7 +72,7 @@ void FindInMapFile(const CTFileName &fnSymbols, const CTString &strImage, ULONG 
       slDelta = ulOff-ulOfsLine;
     }
 
-  } catch (char *strError) {
+  } catch ( const char *strError) {
     (void)strError;
     return;
   }
@@ -141,7 +141,7 @@ void SubMain( int argc, char *argv[])
       }
     }
   }
-  catch(char *strError)
+  catch ( const char *strError)
   {
     printf("\nError: %s\n", strError);
     exit(EXIT_FAILURE);

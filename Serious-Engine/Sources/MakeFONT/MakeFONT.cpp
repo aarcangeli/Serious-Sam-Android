@@ -74,7 +74,7 @@ void SubMain( int argc, char *argv[])
     fdFontData.Make_t( fnTextureFileName, ulCharWidth, ulCharHeight, fnOrderFile, bUseAlpha);
   }
   // catch and report errors
-  catch(char *strError)
+  catch ( const char *strError)
   {
     printf( "! Cannot create font.\n  %s\n", strError);
     exit(EXIT_FAILURE);
@@ -90,7 +90,7 @@ void SubMain( int argc, char *argv[])
   {
     fdFontData.Save_t( strFontFileName);
   }
-  catch(char *strError)
+  catch ( const char *strError)
   {
     printf("! Cannot save font.\n  %s\n", strError);
     exit(EXIT_FAILURE);

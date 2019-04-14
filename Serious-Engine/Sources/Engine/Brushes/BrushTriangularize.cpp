@@ -600,7 +600,7 @@ void CTriangularizer::DPrintF(char *strFormat, ...)
       _strmDebugOutput.Create_t(_fnmDebugOutput, CTStream::CM_TEXT);
       _bDebugOutputOpen = TRUE;
     // if not successful
-    } catch (char *strError) {
+    } catch ( const char *strError) {
       (void) strError;
       // print nothing
       return;

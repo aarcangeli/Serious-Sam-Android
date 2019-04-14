@@ -327,7 +327,7 @@ void DIFF_Diff_t(CTStream *pstrmOld, CTStream *pstrmNew, CTStream *pstrmDiff)
 
     Cleanup();
 
-  } catch (char *) {
+  } catch ( const char *) {
     Cleanup();
     throw;
   }
@@ -356,7 +356,7 @@ void DIFF_Undiff_t(CTStream *pstrmOld, CTStream *pstrmDiff, CTStream *pstrmNew)
 
     Cleanup();
 
-  } catch (char *) {
+  } catch ( const char *) {
     Cleanup();
     throw;
   }

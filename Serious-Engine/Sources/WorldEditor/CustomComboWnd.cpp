@@ -261,7 +261,7 @@ void CCustomComboWnd::RenderOneLine( INDEX iLine, PIXaabbox2D rectLine, CDrawPor
         PIX2D(rectLine.Min()+cl.cl_boxIcon.Size())-PIX2D(SPACING_H/2,SPACING_V/2));
       pdp->PutTexture( &to, rectIcon, cl.cl_boxIcon);
     }
-    catch(char *strError)
+    catch ( const char *strError)
     {
       (void) strError;
     }

@@ -118,7 +118,7 @@ UINT APIENTRY FileOpenRequesterHook( HWND hdlg, UINT uiMsg, WPARAM wParam,	LPARA
         pTextureData->Reload();
       }
     }
-    catch( char* err_str)
+    catch ( const char * err_str)
     {
       (void)err_str;
       pTextureData = NULL;
@@ -269,7 +269,7 @@ CTFileName CEngineGUI::FileRequester(
           CTFileName *pfnSelectedFile = pafnSelectedFiles->New();
           *pfnSelectedFile = fnSource;
         }
-        catch( char *strError)
+        catch ( const char *strError)
         {
           WarningMessage( strError);
           // restore resources
@@ -293,7 +293,7 @@ CTFileName CEngineGUI::FileRequester(
       {
         fnResult.RemoveApplicationPath_t();
       }
-      catch( char *strError)
+      catch ( const char *strError)
       {
         WarningMessage( strError);
         // restore resources

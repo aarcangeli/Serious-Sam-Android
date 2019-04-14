@@ -793,7 +793,7 @@ BOOL CGfxLibrary::InitDriver_OGL( BOOL b3Dfx/*=FALSE*/)
     // prepare functions
     OGL_SetFunctionPointers_t(gl_hiDriver);
   }
-  catch( char *strError)
+  catch ( const char *strError)
   { // didn't make it :(
     if( gl_hiDriver!=NONE) FreeLibrary(gl_hiDriver);
     gl_hiDriver = NONE;

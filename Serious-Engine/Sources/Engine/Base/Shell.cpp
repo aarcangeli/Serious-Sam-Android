@@ -293,7 +293,7 @@ extern BOOL CheckShellSymbolHelp(const CTString &strSymbol)
 {
   try {
     return GetShellSymbolHelp_t(strSymbol)!="";
-  } catch(char *strError) {
+  } catch ( const char *strError) {
     (void)strError;
     return FALSE;
   }
@@ -311,7 +311,7 @@ extern void PrintShellSymbolHelp(const CTString &strSymbol)
       CPrintF( TRANS("No help found for '%s'.\n"), strSymbol);
     }
   // if failed
-  } catch(char *strError) {
+  } catch ( const char *strError) {
     // just print the error
     CPrintF( TRANS("Cannot print help for '%s': %s\n"), strSymbol, strError);
   }
@@ -413,7 +413,7 @@ CTString MyLoadString(void* pArgs)
     CTString strString;
     strString.Load_t(strFileName);
     return strString;
-  } catch (char *strError) {
+  } catch ( const char *strError) {
     (void)strError;
     return "";
   }
@@ -424,7 +424,7 @@ void MySaveString(void* pArgs)
   CTString strString = *NEXTARGUMENT(CTString*);
   try {
     strString.Save_t(strFileName);
-  } catch (char *strError) {
+  } catch ( const char *strError) {
     (void)strError;
   }
 }
@@ -442,7 +442,7 @@ void LoadCommands(void)
     CTString strCmd;
     try {
       strCmd.Load_t(fnm);
-    } catch (char *strError) {
+    } catch ( const char *strError) {
       CPrintF("%s\n", strError);
       continue;
     }
@@ -904,7 +904,7 @@ void CShell::StorePersistentSymbols(const CTFileName &fnScript)
         ThrowF_t("%s of wrong type", ss.ss_strName);
       }
     }
-  } catch (char *strError) {
+  } catch ( const char *strError) {
     WarningMessage(TRANS("Cannot save persistent symbols:\n%s"), strError);
   }
 }

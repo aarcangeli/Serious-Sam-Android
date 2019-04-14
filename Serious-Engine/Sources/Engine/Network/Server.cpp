@@ -722,7 +722,7 @@ void CServer::ServerLoop(void)
 
 //  try {
 //    _cmiComm.Server_Accept_t();
-//  } catch (char *strError) {
+//  } catch ( const char *strError) {
 //    CPrintF(TRANS("Accepting failed, no more clients can connect: %s\n"), strError);
 //  }
   // handle all incoming messages
@@ -1007,7 +1007,7 @@ void CServer::ConnectRemoteSessionState(INDEX iClient, CNetworkMessage &nm)
     CPrintF(TRANS("Server: Sent initialization info to '%s' (%dk)\n"),
       (const char*)_cmiComm.Server_GetClientName(iClient), slSize/1024);
   // if failed
-  } catch (char *strError) {
+  } catch ( const char *strError) {
     // deactivate it
     sso.Deactivate();
 
@@ -1080,7 +1080,7 @@ void CServer::SendSessionStateData(INDEX iClient)
     }
 
   // if failed
-  } catch (char *strError) {
+  } catch ( const char *strError) {
     // deactivate it
     sso.Deactivate();
 

@@ -235,7 +235,7 @@ void CSessionState::Start_t(INDEX ctLocalPlayers)
     // connect as main session state
     try {
       Start_AtServer_t();
-    } catch(char *) {
+    } catch ( const char *) {
       _cmiComm.Client_Close();
       throw;
     }
@@ -247,7 +247,7 @@ void CSessionState::Start_t(INDEX ctLocalPlayers)
     // connect as remote session state
     try {
       Start_AtClient_t(ctLocalPlayers);
-    } catch(char *) {
+    } catch ( const char *) {
       // if failed due to wrong mod
       if (strncmp(ses_strDisconnected, "MOD:", 4)==0) {
         // remember the mod
@@ -931,7 +931,7 @@ void CSessionState::ProcessGameTick(CNetworkMessage &nmMessage, TIME tmCurrentTi
     CTMemoryStream *pstrm = GetDumpStream();
     pstrm->FPrintF_t("Time tick: %.2f\n", tmCurrentTick);
   }
-  catch (char *strError)
+  catch ( const char *strError)
   {
     CPrintF("Cannot dump sync data: %s\n", strError);
   }
@@ -1152,7 +1152,7 @@ void CSessionState::ProcessGameStream(void)
           return;
         }
       // if not successful
-      } catch(char *strError) {
+      } catch ( const char *strError) {
         // report error
         CPrintF(TRANS("Error while playing demo: %s"), strError);
         _pfNetworkProfile.StopTimer(CNetworkProfile::PTI_SESSIONSTATE_PROCESSGAMESTREAM);
@@ -1175,7 +1175,7 @@ void CSessionState::ProcessGameStream(void)
           _pNetwork->ga_strmDemoRec.WriteID_t("DTCK");
           pnsbBlock->Write_t(_pNetwork->ga_strmDemoRec);
         // if not successful
-        } catch(char *strError) {
+        } catch ( const char *strError) {
           // report error
           CPrintF(TRANS("Error while recording demo: %s"), strError);
           // stop recording
@@ -1366,7 +1366,7 @@ void CSessionState::ProcessGameStreamBlock(CNetworkMessage &nmMessage)
           penNewPlayer->en_pcCharacter = pcCharacter;
           // prepare the entity
           penNewPlayer->Initialize();
-        } catch (char *strError) {
+        } catch ( const char *strError) {
           (void)strError;
           FatalError(TRANS("Cannot load Player class:\n%s"), strError);
         }
@@ -1886,7 +1886,7 @@ void CSessionState::RestoreOldLevel(const CTString &strFileName)
     _pTimer->SetCurrentTick(0.0f);
     ReadWorldAndState_t(&prlOld->rl_strmSessionState);
     _pTimer->SetCurrentTick(ses_tmLastProcessedTick);
-  } catch (char *strError) {
+  } catch ( const char *strError) {
     FatalError(TRANS("Cannot restore old level '%s':\n%s"), prlOld->rl_strFileName, strError);
   }
   // delete it
@@ -1964,7 +1964,7 @@ void CSessionState::DumpSyncToMemory(void)
     CTMemoryStream *pstrm = GetDumpStream();
     DumpSyncToFile_t(*pstrm);
   }
-  catch (char *strError)
+  catch ( const char *strError)
   {
     CPrintF("Cannot dump sync data: %s\n", strError);
   }
@@ -2124,7 +2124,7 @@ void CSessionState::SessionStateLoop(void)
       // inform user
       CPrintF("Sync data dumped to '%s'\n", strFileName);
     }
-    catch (char *strError)
+    catch ( const char *strError)
     {
       CPrintF("Cannot dump sync data: %s\n", strError);
     }

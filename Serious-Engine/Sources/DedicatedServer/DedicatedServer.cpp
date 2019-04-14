@@ -61,7 +61,7 @@ void InitializeGame(void)
     }
     _pGame = GAME_Create();
 
-  } catch (char *strError) {
+  } catch ( const char *strError) {
     FatalError("%s", strError);
   }
   // init game - this will load persistent symbols
@@ -223,7 +223,7 @@ BOOL Init(int argc, char* argv[])
     AddTranslationTable_t(fnmTransTable);
 
     FinishTranslationTable();
-  } catch (char *strError) {
+  } catch ( const char *strError) {
     FatalError("%s %s", CTString(fnmTransTable), strError);
   }
 

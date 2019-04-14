@@ -115,7 +115,7 @@ void CControls::SwitchToDefaults(void)
     ctrlDefaultControls.Load_t( CTString("Data\\Defaults\\InitialControls.ctl"));
     *this = ctrlDefaultControls;
   }
-  catch( char *strError)
+  catch ( const char *strError)
   {
     (void) strError;
   }

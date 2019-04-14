@@ -229,7 +229,7 @@ void CBrushArchive::CacheAllShadowmaps(void)
     // all done
     CallProgressHook_t(1.0f);
   }
-  catch( char*) { NOTHING; }
+  catch ( const char *) { NOTHING; }
 }
 
 

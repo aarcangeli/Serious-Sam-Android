@@ -380,7 +380,7 @@ BOOL CMessageDispatcher::ReceiveFromServerReliable(CTMemoryStream &strmMessage)
   if (bReceived) {
     try {
       UpdateReceivedStreamStats(strmMessage.GetPos_t());
-    } catch (char *) {
+    } catch ( const char *) {
     }
   }
   _pfNetworkProfile.StopTimer(CNetworkProfile::PTI_RECEIVEMESSAGE);

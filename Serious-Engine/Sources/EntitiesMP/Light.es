@@ -435,7 +435,7 @@ procedures:
     // set diffuse light animation if available
     try {
       m_aoLightAnimation.SetData_t(m_fnmLightAnimation);
-    } catch (char *strError) {
+    } catch ( const char *strError) {
       WarningMessage(TRANS("Cannot load '%s': %s"), (CTString&)m_fnmLightAnimation, strError);
       m_fnmLightAnimation = "";
     }
@@ -447,7 +447,7 @@ procedures:
     // set ambient light animation if available
     try {
       m_aoAmbientLightAnimation.SetData_t(m_fnmAmbientLightAnimation);
-    } catch (char *strError) {
+    } catch ( const char *strError) {
       WarningMessage(TRANS("Cannot load '%s': %s"), (CTString&)m_fnmAmbientLightAnimation, strError);
       m_fnmAmbientLightAnimation = "";
     }

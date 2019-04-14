@@ -31,7 +31,7 @@ void ciao() {
 
   try {
     UNZIPReadDirectoriesReverse_t();
-  } catch (char *strError) {
+  } catch ( const char *strError) {
     // report warning
     CPrintF(TRANS("There were group file errors:\n%s"), strError);
     return;
@@ -57,7 +57,7 @@ void ciao() {
 
     reader.Close();
 
-  } catch (char *err) {
+  } catch ( const char *err) {
     WarningMessage("Cannot load '%s': '%s'\n", path.str_String, err);
     end = true;
   }

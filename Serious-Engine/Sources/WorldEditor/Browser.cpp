@@ -491,7 +491,7 @@ CTFileName CBrowser::GetIOFileName(CTString strTitle, BOOL bSave)
   {
     fnTree.RemoveApplicationPath_t();
   }
-  catch( char *str_err)
+  catch ( const char *str_err)
   {
     AfxMessageBox( CString(str_err));
     return CTString("");
@@ -550,7 +550,7 @@ void CBrowser::SaveVirtualTree(CTFileName fnSave, CVirtualTreeNode *pvtn)
     // close the file
     File.Close();
   }
-  catch( char *str_err)
+  catch ( const char *str_err)
   {
     AfxMessageBox( CString(str_err));
     return;
@@ -650,7 +650,7 @@ void CBrowser::OnLoadVirtualTreeInternal(CTFileName fnVirtulTree, CVirtualTreeNo
   {
     LoadVirtualTree_t( fnVirtulTree, pvtnRoot);
   }
-  catch( char *strError)
+  catch ( const char *strError)
   {
     AfxMessageBox( CString(strError));
     FORDELETELIST( CVirtualTreeNode, vtn_lnInDirectory, m_VirtualTree.vtn_lhChildren, litDel)
@@ -843,7 +843,7 @@ void CBrowser::OnDumpVt()
     m_VirtualTree.Dump(&FileDump);
     FileDump.Close();
   }
-  catch( char *str_err)
+  catch ( const char *str_err)
   {
     AfxMessageBox( CString(str_err));
   }

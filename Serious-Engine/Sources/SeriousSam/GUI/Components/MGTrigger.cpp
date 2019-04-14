@@ -114,7 +114,7 @@ void CMGTrigger::Render(CDrawPort *pdp)
       pdp->PutTexture(&to, PIXaabbox2D(
         PIX2D(pixCX - pixSize / 2, pixCY - pixSize / 2),
         PIX2D(pixCX - pixSize / 2 + pixSize, pixCY - pixSize / 2 + pixSize)), C_WHITE | 255);
-    } catch (char *strError) {
+    } catch ( const char *strError) {
       CPrintF("%s\n", strError);
     }
     to.SetData(NULL);

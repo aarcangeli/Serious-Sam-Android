@@ -287,7 +287,7 @@ void ControlsMenuOn()
     _pGame->gm_ctrlControlsExtra.Load_t(_fnmControlsToCustomize);
 #endif
   }
-  catch (char *strError) {
+  catch ( const char *strError) {
     WarningMessage(strError);
   }
 }
@@ -301,7 +301,7 @@ void ControlsMenuOff()
 #endif
     }
   }
-  catch (char *strError) {
+  catch ( const char *strError) {
     FatalError(strError);
   }
   FORDELETELIST(CButtonAction, ba_lnNode, _pGame->gm_ctrlControlsExtra.ctrl_lhButtonActions, itAct) {

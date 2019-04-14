@@ -208,7 +208,7 @@ void LoadSurface(CTFileName fnSurface)
 
     strmFile.Close();
   }
-  catch( char *strError)
+  catch ( const char *strError)
   {
     WarningMessage(strError);
     return;
@@ -287,7 +287,7 @@ void SaveSurface(CTFileName fnSurface)
 
     strmFile.Close();
   }
-  catch( char *strError)
+  catch ( const char *strError)
   {
     WarningMessage(strError);
     return;
@@ -360,7 +360,7 @@ void GenerateNonExistingTerrainEditBrushes(void)
       {
         _pTextureStock->Obtain_t(fnBrush);
       }
-      catch(char *strError)
+      catch ( const char *strError)
       {
         (void) strError;
       }
@@ -564,7 +564,7 @@ void GenerateTerrainBrushTexture( INDEX iBrush, FLOAT fHotSpot, FLOAT fFallOff)
     tdBrush.Save_t( strBrushFile);
     tdBrush.Reload();
   }
-  catch( char *strError)
+  catch ( const char *strError)
   {
     (void) strError;
     WarningMessage("Unable to create terrain brush texture!");
@@ -682,7 +682,7 @@ void RenderBrushShape( INDEX iBrush, PIXaabbox2D rect, CDrawPort *pdp)
       dpBrush.Unlock();
     }
   }
-  catch( char *strError)
+  catch ( const char *strError)
   {
     (void) strError;
   }
@@ -866,7 +866,7 @@ void ApplyLayerCommand(INDEX iSelectedItem)
         ptrTerrain->AddLayer_t( CTFILENAME("Textures\\Editor\\Default.tex"));
         SelectLayer( ptrTerrain->tr_atlLayers.Count()-1);
       }
-      catch(char *strError)
+      catch ( const char *strError)
       {
         WarningMessage("Unable to obtain default texture for new texture layer!\nError: %s", strError);
       }
@@ -879,7 +879,7 @@ void ApplyLayerCommand(INDEX iSelectedItem)
         ptrTerrain->AddLayer_t( CTFILENAME("Textures\\Editor\\Default.tex"), LT_TILE);
         SelectLayer( ptrTerrain->tr_atlLayers.Count()-1);
       }
-      catch(char *strError)
+      catch ( const char *strError)
       {
         WarningMessage("Unable to obtain default texture for new tile layer!\nError: %s", strError);
       }
@@ -946,7 +946,7 @@ void ApplyLayerTextureCommand(INDEX iSelectedItem)
         ptdGradient=_pTextureStock->Obtain_t( fnGradient);
         ptdGradient->Force(TEX_STATIC|TEX_CONSTANT);
       }
-      catch( char *strError)
+      catch ( const char *strError)
       {
         (void) strError;
         WarningMessage("Unable to obtain izohipse gradient texture!");
@@ -996,7 +996,7 @@ void ApplyLayerTextureCommand(INDEX iSelectedItem)
         ptlLayer->tl_fStretchX=1.0f/ptrTerrain->tr_vTerrainSize(1);
         ptlLayer->tl_fStretchY=1.0f/ptrTerrain->tr_vTerrainSize(2);
       }
-      catch( char *strError)
+      catch ( const char *strError)
       {
         (void) strError;
         WarningMessage("Unable to save izohipse texture!");
@@ -1019,7 +1019,7 @@ void ApplyLayerTextureCommand(INDEX iSelectedItem)
         theApp.m_ctTerrainPageCanvas.MarkChanged();
         ptrTerrain->RefreshTerrain();
       }
-      catch(char *strError)
+      catch ( const char *strError)
       {
         (void) strError;
       }
@@ -1093,7 +1093,7 @@ void ApplyLayerMaskCommand(INDEX iSelectedItem)
         pMainFrame->Invalidate(FALSE);
         theApp.GetActiveDocument()->SetModifiedFlag( TRUE);
       }
-      catch(char *strError)
+      catch ( const char *strError)
       {
         AfxMessageBox( CString(strError));
       }
@@ -1111,7 +1111,7 @@ void ApplyLayerMaskCommand(INDEX iSelectedItem)
         ptrTerrain->RefreshTerrain();
         pMainFrame->Invalidate(FALSE);
       }
-      catch(char *strError)
+      catch ( const char *strError)
       {
         AfxMessageBox( CString(strError));
       }
@@ -1309,7 +1309,7 @@ void OnDropIntoLayerTexture(CTIButton *ptib, CPoint pt, CDrawPort *pdp, CTFileNa
       theApp.m_ctTerrainPageCanvas.MarkChanged();
       ptrTerrain->RefreshTerrain();
     }
-    catch(char *strError)
+    catch ( const char *strError)
     {
       (void) strError;
     }
@@ -1321,7 +1321,7 @@ void OnDropIntoLayerTexture(CTIButton *ptib, CPoint pt, CDrawPort *pdp, CTFileNa
       {
         ptlLayer->SetLayerTexture_t(fnOldTexture);
       }
-      catch(char *strError)
+      catch ( const char *strError)
       {
         (void) strError;
       }
@@ -1825,7 +1825,7 @@ void DisplayHeightMapWindow(CPoint pt)
     CWndDisplayTexture *pDisplay=new CWndDisplayTexture;
     pDisplay->Initialize(pt.x, pt.y, ptd);
   }
-  catch( char *strError)
+  catch ( const char *strError)
   {
     (void) strError;
     WarningMessage("Unable to display height map!");
@@ -1917,7 +1917,7 @@ void ApplyImportExport(INDEX iOperation)
       }
     }
   }
-  catch(char *strError)
+  catch ( const char *strError)
   {
     AfxMessageBox( CString(strError));
   }
@@ -2369,7 +2369,7 @@ void CTerrainInterface::InitializeInterface(CDrawPort *pdp)
     DECLARE_CTFILENAME( fnTerrainEditIcons, "Textures\\Editor\\TerrainEditingIcons.tex");
     _toIcons.SetData_t(fnTerrainEditIcons);
   }
-  catch(char *strError)
+  catch ( const char *strError)
   {
     (void)strError;
     return;

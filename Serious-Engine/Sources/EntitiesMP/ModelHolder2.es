@@ -569,7 +569,7 @@ functions:
       GetModelObject()->mo_toReflection.SetData_t(m_fnReflection);
       GetModelObject()->mo_toSpecular.SetData_t(m_fnSpecular);
       GetModelObject()->mo_toBump.SetData_t(m_fnBump);
-    } catch (char *strError) {
+    } catch ( const char *strError) {
       WarningMessage(strError);
     }
 
@@ -614,7 +614,7 @@ functions:
 
     try {
       m_aoLightAnimation.SetData_t(m_fnmLightAnimation);
-    } catch (char *strError) {
+    } catch ( const char *strError) {
       WarningMessage(TRANS("Cannot load '%s': %s"), (CTString&)m_fnmLightAnimation, strError);
       m_fnmLightAnimation = "";
     }

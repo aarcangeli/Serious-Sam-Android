@@ -264,7 +264,7 @@ void CPlayerProfileMenu::SelectPlayer(INDEX iPlayer)
       gm_mgModel.mg_moFloor.SetData_t(CTFILENAME("Models\\Computer\\Floor.mdl"));
       gm_mgModel.mg_moFloor.mo_toTexture.SetData_t(CTFILENAME("Models\\Computer\\Floor.tex"));
     }
-    catch (char *strError) {
+    catch ( const char *strError) {
       (void)strError;
     }
   }

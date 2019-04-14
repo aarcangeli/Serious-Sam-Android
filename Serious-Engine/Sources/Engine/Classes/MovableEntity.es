@@ -1622,7 +1622,7 @@ out:;
             DUMPVECTOR2("Move transl:", en_vMoveTranslation);
             DUMPVECTOR2("Next pos:", en_vNextPosition);      
           }
-          catch( char *strError)
+          catch ( const char *strError)
           {
             strError;
           }
@@ -1698,7 +1698,7 @@ out:;
             strm.FPrintF_t( "En : ID:%08x %s\n", cmMove.cm_penHit->en_ulID, (const char*) GetName() );
             DUMPVECTOR2("Pl col:", cmMove.cm_plClippedPlane);
           }
-          catch( char *strError)
+          catch ( const char *strError)
           {
             strError;
           }
@@ -1986,7 +1986,7 @@ out:;
         DUMPVECTOR2("CurTraAbs:", en.en_vCurrentTranslationAbsolute);
         DUMPVECTOR2("IntendTra:", en.en_vIntendedTranslation);
       }
-      catch( char *strError)
+      catch ( const char *strError)
       {
         strError;
       }

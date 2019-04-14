@@ -94,7 +94,7 @@ void InitGLSettings(void)
   }
 
   // ignore errors
-  catch (char *strError) { 
+  catch ( const char *strError) {
     WarningMessage(TRANS("unable to setup OpenGL settings list: %s"), strError);
   }
 

@@ -263,7 +263,7 @@ void CObject3D::LoadAny3DFormat_t(
     if (!bWasOn) {
       BatchLoading_t(FALSE);
     }
-  } catch (char *) {
+  } catch ( const char *) {
     if (!bWasOn) {
       BatchLoading_t(FALSE);
     }

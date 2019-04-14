@@ -120,10 +120,10 @@ EXP_FLT (({DIGIT}+("."({DIGIT}*)?)?)("E"|"e")("+"|"-")?{DIGIT}+)
     strCurentFileName = (CTString)strFileName;
     // try to remove app path from source file name
     try { strCurentFileName.RemoveApplicationPath_t(); }
-    catch(char *){}
+    catch ( const char *){}
     _yy_iLine = 1;
   }
-  catch(char *strError)
+  catch ( const char *strError)
   {
     BEGIN(INITIAL);
     ThrowF_t(strError);

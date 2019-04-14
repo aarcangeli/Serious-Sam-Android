@@ -87,7 +87,7 @@ void ReadPos(CCameraPos &cp)
       &cp.cp_aRot(1), &cp.cp_aRot(2), &cp.cp_aRot(3),
       &cp.cp_aFOV);
 
-  } catch (char *strError) {
+  } catch ( const char *strError) {
     CPrintF("Camera: %s\n", strError);
   }
 }
@@ -103,7 +103,7 @@ void WritePos(CCameraPos &cp)
       cp.cp_aFOV);
     _strScript.PutLine_t(strLine);
 
-  } catch (char *strError) {
+  } catch ( const char *strError) {
     CPrintF("Camera: %s\n", strError);
   }
 }
@@ -121,7 +121,7 @@ void CAM_Start(const CTFileName &fnmDemo)
   if( cam_bRecord) {
     try {
       _strScript.Create_t(fnmScript);
-    } catch(char *strError) {
+    } catch ( const char *strError) {
       CPrintF("Camera: %s\n", strError);
       return;
     };
@@ -133,7 +133,7 @@ void CAM_Start(const CTFileName &fnmDemo)
   } else {
     try {
       _strScript.Open_t(fnmScript);
-    } catch(char *strError) {
+    } catch ( const char *strError) {
       (void)strError;
       return;
     };

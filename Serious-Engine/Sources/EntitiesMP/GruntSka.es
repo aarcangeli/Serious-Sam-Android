@@ -132,7 +132,7 @@ functions:
       m_miTest.AddAnimSet_t((CTString)"ModelsSKA\\Test\\Arm\\Arm.ba");
       m_miTest.AddTexture_t((CTString)"ModelsSKA\\Test\\Arm\\Objects\\Arm.tex","Arm",NULL);
       m_miTest.AddColisionBox("Default",FLOAT3D(-0.5f,0.0f,-0.5f),FLOAT3D(0.5f,2.0f,0.5f));
-    } catch (char *strErr) {
+    } catch ( const char *strErr) {
       FatalError(strErr);
     }
   }
@@ -169,7 +169,7 @@ functions:
 
       // Set colision info
       SetSkaColisionInfo();
-    } catch(char *strErr) {
+    } catch ( const char *strErr) {
       FatalError(strErr);
     }
   };
@@ -180,7 +180,7 @@ functions:
     CModelInstance *pmiFlamer = NULL;
     try{
       pmiFlamer = ParseSmcFile_t("ModelsSKA\\Weapons\\Flamer\\Flamer.smc");
-    } catch(char *strErr) {
+    } catch ( const char *strErr) {
       FatalError(strErr);
     }
     // Set flamer parent bone

@@ -71,7 +71,7 @@ static void LoadingHook_t(CProgressHookInfo *pphi)
     // load it
     try {
       _strCustomText.Load_t(CTFILENAME("Data\\LoadingText.txt"));
-    } catch (char *strError) {
+    } catch ( const char *strError) {
       _strCustomText = strError;
     }
   }

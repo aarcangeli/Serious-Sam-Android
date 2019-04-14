@@ -103,7 +103,7 @@ static void MakeWorldStatistics(void)
       strm.PutLine_t(strLine);
     }}
     CPrintF("Dumped to '%s'\n", CTString(fnm));
-  } catch (char *strError) {
+  } catch ( const char *strError) {
     CPrintF("Error: %s\n", strError);
   }
 
@@ -874,7 +874,7 @@ void CWorldBase_OnInitClass(void)
     // we will use first animation in .ani file for lightning
     _aoLightningColor.PlayAnim(0, AOF_NORESTART);
   }
-  catch(char *strError)
+  catch ( const char *strError)
   {
     FatalError(TRANS("Cannot load shadow texture: \n%s"), strError);
   }

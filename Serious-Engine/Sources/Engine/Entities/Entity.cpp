@@ -2364,7 +2364,7 @@ void CEntity::SetModel(const CTFileName &fnmModel)
     // load the new model data
     en_pmoModelObject->SetData_t(fnmModel);
   // if failed
-  } catch(char *strError) {
+  } catch ( const char *strError) {
     (void)strError;
     DECLARE_CTFILENAME(fnmDefault, "Models\\Editor\\Axis.mdl");
     // try to
@@ -2372,7 +2372,7 @@ void CEntity::SetModel(const CTFileName &fnmModel)
       // load the default model data
       en_pmoModelObject->SetData_t(fnmDefault);
     // if failed
-    } catch(char *strErrorDefault) {
+    } catch ( const char *strErrorDefault) {
       FatalError(TRANS("Cannot load default model '%s':\n%s"),
         (CTString&)fnmDefault, strErrorDefault);
     }
@@ -2414,7 +2414,7 @@ void CEntity::SetSkaModel_t(const CTString &fnmModel)
   try {
     // load the new model data
     en_pmiModelInstance = ParseSmcFile_t(fnmModel);
-  } catch (char *strErrorDefault) {
+  } catch ( const char *strErrorDefault) {
     throw(strErrorDefault);
   }
   SetSkaColisionInfo();
@@ -2426,7 +2426,7 @@ BOOL CEntity::SetSkaModel(const CTString &fnmModel)
   try {
     SetSkaModel_t(fnmModel);
   // if failed
-  } catch(char *strError) {
+  } catch ( const char *strError) {
     (void)strError;
     WarningMessage("%s\n\rLoading default model.\n", strError);
     DECLARE_CTFILENAME(fnmDefault, "Models\\Editor\\Ska\\Axis.smc");    
@@ -2435,7 +2435,7 @@ BOOL CEntity::SetSkaModel(const CTString &fnmModel)
       // load the default model data
       en_pmiModelInstance = ParseSmcFile_t(fnmDefault);
     // if failed
-    } catch(char *strErrorDefault) {
+    } catch ( const char *strErrorDefault) {
       FatalError(TRANS("Cannot load default model '%s':\n%s"),
         (CTString&)fnmDefault, strErrorDefault);
     }
@@ -2484,7 +2484,7 @@ void CEntity::SetModelMainTexture(const CTFileName &fnmTexture)
     en_pmoModelObject->mo_toTexture.SetData_t(fnmTexture);
 
   // if failed
-  } catch(char *strError) {
+  } catch ( const char *strError) {
     (void)strError;
     DECLARE_CTFILENAME(fnmDefault, "Textures\\Editor\\Default.tex");
     // try to
@@ -2492,7 +2492,7 @@ void CEntity::SetModelMainTexture(const CTFileName &fnmTexture)
       // load the default model data
       en_pmoModelObject->mo_toTexture.SetData_t(fnmDefault);
     // if failed
-    } catch(char *strErrorDefault) {
+    } catch ( const char *strErrorDefault) {
       FatalError(TRANS("Cannot load default texture '%s':\n%s"),
         (CTString&)fnmDefault, strErrorDefault);
     }
@@ -2559,7 +2559,7 @@ void CEntity::AddAttachment(INDEX iAttachment, CTFileName fnModel, CTFileName fn
   {
     pamo->amo_moModelObject.SetData_t( fnModel);
   }
-  catch(char *strError)
+  catch ( const char *strError)
   {
     (void) strError;
     pmo->RemoveAttachmentModel( iAttachment);
@@ -2570,7 +2570,7 @@ void CEntity::AddAttachment(INDEX iAttachment, CTFileName fnModel, CTFileName fn
   {
     pamo->amo_moModelObject.mo_toTexture.SetData_t( fnTexture);
   }
-  catch(char *strError)
+  catch ( const char *strError)
   {
     (void) strError;
   }
@@ -2686,7 +2686,7 @@ void CAutoPrecacheSound::Precache(const CTFileName &fnm)
     if (fnm!="") {
       apc_psd = _pSoundStock->Obtain_t(fnm);
     }
-  } catch (char *strError) {
+  } catch ( const char *strError) {
     CPrintF("%s\n", strError);
   }
 }
@@ -2711,7 +2711,7 @@ void CAutoPrecacheModel::Precache(const CTFileName &fnm)
     if (fnm!="") {
       apc_pmd = _pModelStock->Obtain_t(fnm);
     }
-  } catch (char *strError) {
+  } catch ( const char *strError) {
     CPrintF("%s\n", strError);
   }
 }
@@ -2736,7 +2736,7 @@ void CAutoPrecacheTexture::Precache(const CTFileName &fnm)
     if (fnm!="") {
       apc_ptd = _pTextureStock->Obtain_t(fnm);
     }
-  } catch (char *strError) {
+  } catch ( const char *strError) {
     CPrintF("%s\n", strError);
   }
 }
@@ -2951,7 +2951,7 @@ void CEntity::PlaySound(CSoundObject &so, const CTFileName &fnmSound, SLONG slPl
     //so.Stop();
     so.Play_t(fnmSound, slPlayType);
   // if failed
-  } catch(char *strError) {
+  } catch ( const char *strError) {
     (void)strError;
     DECLARE_CTFILENAME(fnmDefault, "Sounds\\Default.wav");
     // try to
@@ -2959,7 +2959,7 @@ void CEntity::PlaySound(CSoundObject &so, const CTFileName &fnmSound, SLONG slPl
       // load the default sound data
       so.Play_t(fnmDefault, slPlayType);
     // if failed
-    } catch(char *strErrorDefault) {
+    } catch ( const char *strErrorDefault) {
       FatalError(TRANS("Cannot load default sound '%s':\n%s"),
         (CTString&)fnmDefault, strErrorDefault);
     }

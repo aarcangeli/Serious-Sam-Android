@@ -117,7 +117,7 @@ void CDlgCreateAnimatedTexture::RefreshTexture(void)
     // init animations combo
     InitAnimationsCombo();
   }
-  catch(char *err_str)
+  catch ( const char *err_str)
   {
     AfxMessageBox( CString(err_str));
   }
@@ -302,7 +302,7 @@ BOOL CDlgCreateAnimatedTexture::OnInitDialog()
       delete pchrFile;
     }
     // catch errors
-    catch( char *strError)
+    catch ( const char *strError)
     {
       // and do nothing
       (void) strError;
@@ -325,7 +325,7 @@ BOOL CDlgCreateAnimatedTexture::OnInitDialog()
       m_pixSourceWidth = iiImageInfo.ii_Width;
       m_pixSourceHeight = iiImageInfo.ii_Height;
     }
-    catch(char *err_str)
+    catch ( const char *err_str)
     {
       AfxMessageBox( CString(err_str));
     }
@@ -372,7 +372,7 @@ BOOL CDlgCreateAnimatedTexture::OnInitDialog()
     _pTextureStock->Release( pTD);
   }
   // if texture can't be obtained
-  catch( char *err_str)
+  catch ( const char *err_str)
   {
     // never mind
     (void) err_str;

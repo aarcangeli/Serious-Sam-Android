@@ -267,7 +267,7 @@ void CDependencyList::ImportASCII( CTFileName fnAsciiFile)
     // open file list for reading
     file.Open_t( fnAsciiFile);
   }
-  catch( char *pError)
+  catch ( const char *pError)
   {
     FatalError( "Error opening file %s. Error: %s.", (CTString&)fnAsciiFile, pError);
   }
@@ -303,7 +303,7 @@ void CDependencyList::ImportASCII( CTFileName fnAsciiFile)
       }
     }
     // error, EOF catched
-    catch( char *pFinished)
+    catch ( const char *pFinished)
     {
       if (!file.AtEOF()) {
         CPrintF("%s\n", pFinished);
@@ -351,7 +351,7 @@ void CDependencyList::ExportASCII_t( CTFileName fnAsciiFile)
     // create exporting text file
     strmFile.Create_t( fnAsciiFile);
   }
-  catch( char *pError)
+  catch ( const char *pError)
   {
     FatalError( "Error creating file %s. Error: %s.", (CTString&)fnAsciiFile, pError);
   }

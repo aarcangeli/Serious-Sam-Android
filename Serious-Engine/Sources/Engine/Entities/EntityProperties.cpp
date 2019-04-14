@@ -616,7 +616,7 @@ void CEntityComponent::ObtainWithCheck(void)
 {
   try {
     Obtain_t();
-  } catch(char *strError) {
+  } catch ( const char *strError) {
     FatalError("%s", strError);
   }
 }

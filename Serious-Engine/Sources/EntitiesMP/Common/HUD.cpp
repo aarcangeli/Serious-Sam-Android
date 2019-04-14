@@ -1479,7 +1479,7 @@ extern void InitHUD(void)
     ((CTextureData*)_toSniperLed.GetData())->Force(TEX_CONSTANT);
 
   }
-  catch( char *strError) {
+  catch ( const char *strError) {
     FatalError( strError);
   }
 

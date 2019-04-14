@@ -187,7 +187,7 @@ void CDlgWorldSettings::DoDataExchange(CDataExchange* pDX)
         pDoc->m_o3dBackdropObject.LoadAny3DFormat_t( pDoc->m_woWorld.wo_strBackdropObject, mStretch);
       }
       // catch and
-      catch( char *strError)
+      catch ( const char *strError)
       {
         // report errors
         AfxMessageBox( CString(strError));

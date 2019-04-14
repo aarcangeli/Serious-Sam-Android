@@ -445,7 +445,7 @@ BOOL CBlockBuffer::ReadBlockToStream(CTStream &strm)
   try {
     SLONG slSize = ReadBytesToStream(strm, bh.bh_slSize);
     ASSERT(slSize == bh.bh_slSize);
-  } catch (char *strError) {
+  } catch ( const char *strError) {
     ASSERT(FALSE);
     CPrintF(TRANS("Buffer error reading to stream: %s\n"), strError);
     return FALSE;

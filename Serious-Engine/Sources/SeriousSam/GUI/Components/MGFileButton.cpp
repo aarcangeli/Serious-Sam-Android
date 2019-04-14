@@ -43,7 +43,7 @@ void CMGFileButton::SaveDescription(void)
   CTFileName fnFileNameDescription = mg_fnm.NoExt() + ".des";
   try {
     mg_strDes.Save_t(fnFileNameDescription);
-  } catch (char *strError) {
+  } catch ( const char *strError) {
     CPrintF("%s\n", strError);
   }
 }

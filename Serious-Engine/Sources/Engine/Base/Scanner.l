@@ -94,7 +94,7 @@ PARAMCONTENT	([^\ \n\";]|(\\\ ))
     strIncludeFile.Load_t(CTString(strFileName));
     ShellPushBuffer(strFileName, strIncludeFile, FALSE);
 
-  } catch(char *strError) {
+  } catch ( const char *strError) {
     _pShell->ErrorF("Cannot load script file '%s': %s", yytext, strError);
   }
   BEGIN(INITIAL);

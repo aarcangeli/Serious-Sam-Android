@@ -117,7 +117,7 @@ BOOL LSLoadControls(const CTFileName &fnm)
 #endif
     ControlsMenuOff();
   }
-  catch (char *strError) {
+  catch ( const char *strError) {
     CPrintF("%s", strError);
   }
 

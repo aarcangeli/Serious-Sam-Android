@@ -507,7 +507,7 @@ BOOL ObtainMapData(void)
     ((CTextureData*)_toMapBcgRDFE .GetData())->Force(TEX_CONSTANT);
     ((CTextureData*)_toMapBcgRUFE .GetData())->Force(TEX_CONSTANT);
   }
-  catch (char *strError) {
+  catch ( const char *strError) {
     CPrintF("%s\n", strError);
     return FALSE;
   }

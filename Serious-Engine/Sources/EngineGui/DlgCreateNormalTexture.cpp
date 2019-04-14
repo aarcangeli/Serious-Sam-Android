@@ -77,7 +77,7 @@ CDlgCreateNormalTexture::CDlgCreateNormalTexture( CTFileName fnInputFile, CWnd* 
                 (CTString&)m_fnSourceFileName, m_pixSourceWidth, m_pixSourceHeight);
     }
   }
-  catch(char *err_str)
+  catch ( const char *err_str)
   {
     AfxMessageBox( CString(err_str));
     return;
@@ -99,7 +99,7 @@ CDlgCreateNormalTexture::CDlgCreateNormalTexture( CTFileName fnInputFile, CWnd* 
     _pTextureStock->Release( pTD);
   }
   // if texture can't be obtained
-  catch( char *err_str)
+  catch ( const char *err_str)
   { // never mind
     (void) err_str;
   }
@@ -137,7 +137,7 @@ void CDlgCreateNormalTexture::RefreshCreatedTexture(void)
     m_ptdCreated = _pTextureStock->Obtain_t( CTString( "Temp\\Temp.tex"));
     m_ptdCreated->Reload();
   }
-  catch(char *err_str)
+  catch ( const char *err_str)
   {
     AfxMessageBox( CString(err_str));
     return;
@@ -286,7 +286,7 @@ void CDlgCreateNormalTexture::OnCreateTexture()
     CreateTexture_t( m_fnSourceFileName, m_fnCreatedFileName, mexWidth, iMipMaps,
                      m_wndViewCreatedTexture.m_bForce32);
   }
-  catch( char *err_str) {
+  catch ( const char *err_str) {
     AfxMessageBox( CString(err_str));
     return;                     
   }

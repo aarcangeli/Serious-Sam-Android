@@ -243,7 +243,7 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
 //  _fnmApplicationExe = CTString(strExePath);
 //  try {
 //    _fnmApplicationExe.RemoveApplicationPath_t();
-//  } catch (char *strError) {
+//  } catch ( const char *strError) {
 //    (void) strError;
 //    ASSERT(FALSE);
 //  }
@@ -438,7 +438,7 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
     // load expected checksum from the file on disk
     ulCRCExpected = 0;
     LoadIntVar(CTString(SELFCRCFILE), ulCRCExpected);
-  } catch (char *strError) {
+  } catch ( const char *strError) {
     CPrintF("%s\n", strError);
   }
   // if not same
@@ -461,7 +461,7 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
       ASSERT(pec != NULL);
       _pEntityClassStock->Release(pec);  // this must not be a dependency!
     // if couldn't find player class
-    } catch (char *strError) {
+    } catch ( const char *strError) {
       FatalError(TRANS("Cannot initialize classes:\n%s"), strError);
     }
   } else {
@@ -578,7 +578,7 @@ ENGINE_API void SE_LoadDefaultFonts(void)
     _pfdDisplayFont->Load_t( CTFILENAME( "Fonts\\Display3-narrow.fnt"));
     _pfdConsoleFont->Load_t( CTFILENAME( "Fonts\\Console1.fnt"));
   }
-  catch (char *strError) {
+  catch ( const char *strError) {
     FatalError( TRANS("Error loading font: %s."), strError);
   }
   // change fonts' default spacing a bit

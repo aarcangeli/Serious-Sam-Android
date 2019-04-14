@@ -71,7 +71,7 @@ void CDlgPgRenderingStatistics::DoDataExchange(CDataExchange* pDX)
       delete pchrFile;
     }
     // catch errors
-    catch( char *strError)
+    catch ( const char *strError)
     {
       // and do nothing
       (void) strError;

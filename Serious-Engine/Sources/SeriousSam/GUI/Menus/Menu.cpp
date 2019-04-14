@@ -132,11 +132,11 @@ void SetThumbnail(CTFileName fn)
   _bThumbnailOn = TRUE;
   try {
     _toThumbnail.SetData_t(fn.NoExt()+"Tbn.tex");
-  } catch(char *strError) {
+  } catch ( const char *strError) {
     (void)strError;
     try {
       _toThumbnail.SetData_t(fn.NoExt()+".tbn");
-    } catch(char *strError) {
+    } catch ( const char *strError) {
       (void)strError;
       _toThumbnail.SetData(NULL);
     }
@@ -261,7 +261,7 @@ void InitializeMenus(void)
     _toLogoMenuA.SetData_t(  CTFILENAME( "Textures\\Logo\\sam_menulogo256a.tex"));
     _toLogoMenuB.SetData_t(  CTFILENAME( "Textures\\Logo\\sam_menulogo256b.tex"));
   }
-  catch( char *strError) {
+  catch ( const char *strError) {
     FatalError( strError);
   }
   // force logo textures to be of maximal size
@@ -433,7 +433,7 @@ void InitializeMenus(void)
   _pGUIM->gmSplitStartMenu.gm_pgmParentMenu = &_pGUIM->gmSplitScreenMenu;
   InitActionsForSplitStartMenu();
   }
-  catch( char *strError)
+  catch ( const char *strError)
   {
     FatalError( strError);
   }

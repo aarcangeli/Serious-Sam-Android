@@ -6590,7 +6590,7 @@ procedures:
     // set light animation if available
     try {
       m_aoLightAnimation.SetData_t(CTFILENAME("Animations\\BasicEffects.ani"));
-    } catch (char *strError) {
+    } catch ( const char *strError) {
       WarningMessage(TRANS("Cannot load Animations\\BasicEffects.ani: %s"), strError);
     }
     PlayLightAnim(LIGHT_ANIM_NONE, 0);

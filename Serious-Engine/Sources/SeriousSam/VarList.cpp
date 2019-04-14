@@ -164,7 +164,7 @@ void LoadVarSettings(const CTFileName &fnmCfg)
     _strFile = fnmCfg;
     ParseCFG_t(strm);
 
-  } catch (char* strError) {
+  } catch ( const char * strError) {
     CPrintF("%s (%d) : %s\n", (const char*)_strFile, _ctLines, strError);
   }
 

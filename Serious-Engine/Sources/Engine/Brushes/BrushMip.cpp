@@ -179,7 +179,7 @@ void CBrushMip::Copy(CBrushMip &bmOther, FLOAT fStretch, BOOL bMirrorX)
     AddFromObject3D_t(obOther);
 
   // if failed
-  } catch(char *strError) {
+  } catch ( const char *strError) {
     // ignore the error
     (void) strError;
     ASSERT(FALSE);    // this should not happen
@@ -270,7 +270,7 @@ void CBrushMip::Reoptimize(void)
     AddFromObject3D_t(ob);  // this will optimize the object3d first
 
   // if failed
-  } catch(char *strError) {
+  } catch ( const char *strError) {
     // ignore the error
     (void) strError;
     ASSERT(FALSE);    // this should not happen

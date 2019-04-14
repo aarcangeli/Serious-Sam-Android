@@ -131,7 +131,7 @@ functions:
           pamoHead->amo_moModelObject.mo_toTexture.SetData_t(fnm);
         }
         // if anything failed
-        catch (char *strError)
+        catch ( const char *strError)
         {
           // report error
           CPrintF("%s\n", strError);

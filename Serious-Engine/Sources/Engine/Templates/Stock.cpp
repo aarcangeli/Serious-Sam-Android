@@ -64,7 +64,7 @@ TYPE *CStock_TYPE::Obtain_t(const CTFileName &fnmFileName)
   // load it
   try {
     ptNew->Load_t(fnmFileName);
-  } catch(char *) {
+  } catch ( const char *) {
     st_ctObjects.Remove(ptNew);
     st_ntObjects.Remove(ptNew);
     delete ptNew;

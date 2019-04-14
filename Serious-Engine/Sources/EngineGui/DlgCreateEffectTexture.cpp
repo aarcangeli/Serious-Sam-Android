@@ -111,7 +111,7 @@ CDlgCreateEffectTexture::CDlgCreateEffectTexture(CTFileName fnInputFile/*=""*/, 
       bCreateNew = FALSE;
     }
     // if texture can't be obtained
-    catch( char *err_str)
+    catch ( const char *err_str)
     {
       // never mind
       (void) err_str;
@@ -133,7 +133,7 @@ CDlgCreateEffectTexture::CDlgCreateEffectTexture(CTFileName fnInputFile/*=""*/, 
       pBaseTexture = _pTextureStock->Obtain_t( CTFILENAME("Textures\\Editor\\Default.tex"));
     }
     // if texture can't be obtained
-    catch( char *err_str)
+    catch ( const char *err_str)
     {
       // stop executing program
       FatalError( "%s", err_str);
@@ -189,7 +189,7 @@ void CDlgCreateEffectTexture::SetNewBaseTexture( CTFileName fnNewBase)
       UpdateData( FALSE);
       SelectPixSizeCombo();
     }
-    catch(char *err_str)
+    catch ( const char *err_str)
     {
       AfxMessageBox( CString(err_str));
       return;
@@ -484,7 +484,7 @@ void CDlgCreateEffectTexture::OnCreateAs()
     {
       m_tdCreated.Save_t( fnNewTexName);
     }
-    catch(char *err_str)
+    catch ( const char *err_str)
     {
       AfxMessageBox( CString(err_str));
       return;
@@ -511,7 +511,7 @@ void CDlgCreateEffectTexture::OnCreate()
       m_fnCreatedTextureName = CTString( CStringA(m_strCreatedTextureName));
       m_tdCreated.Save_t( m_fnCreatedTextureName);
     }
-    catch(char *err_str)
+    catch ( const char *err_str)
     {
       AfxMessageBox( CString(err_str));
       return;

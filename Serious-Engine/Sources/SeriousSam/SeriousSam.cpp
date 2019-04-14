@@ -424,7 +424,7 @@ void LoadAndForceTexture(CTextureObject &to, CTextureObject *&pto, const CTFileN
     ptd = ptd->td_ptdBaseTexture;
     if( ptd!=NULL) ptd->Force( TEX_CONSTANT);
     pto = &to;
-  } catch( char *pchrError) {
+  } catch ( const char *pchrError) {
     (void*)pchrError;
     pto = NULL;
   }
@@ -449,7 +449,7 @@ void InitializeGame(void)
 
     _pGame = GAME_Create();
 
-  } catch (char *strError) {
+  } catch ( const char *strError) {
     FatalError("%s", strError);
   }
   // init game - this will load persistent symbols
@@ -472,7 +472,7 @@ BOOL Init()
   try {
     AddTranslationTablesDir_t(CTString("Data\\Translations\\"), CTString("*.txt"));
     FinishTranslationTable();
-  } catch (char *strError) {
+  } catch ( const char *strError) {
     FatalError("%s", strError);
   }
 
@@ -635,7 +635,7 @@ BOOL Init()
         extern void StartSinglePlayerGame(void);
         StartSinglePlayerGame();
       }
-    } catch (char *strError) {
+    } catch ( const char *strError) {
       CPrintF(TRANS("Cannot start '%s': '%s'\n"), cmd_strWorld, strError);
     }
   // if no relevant starting at command line
@@ -897,7 +897,7 @@ void QuitScreenLoop(void)
   try {
     _toStarField.SetData_t(CTFILENAME("Textures\\Background\\Night01\\Stars01.tex"));
     soMusic.Play_t(CTFILENAME("Music\\Credits.mp3"), SOF_NONGAME|SOF_MUSIC|SOF_LOOP);
-  } catch (char *strError) {
+  } catch ( const char *strError) {
     CPrintF("%s\n", strError);
   }
   _bExitQuitScreen = false;

@@ -271,7 +271,7 @@ void CModelPatch::Read_t(CTStream *strFile)
   {
     mp_toTexture.SetData_t( fnPatchTexture);
   }
-  catch( char *strError)
+  catch ( const char *strError)
   {
     (void) strError;
   }
@@ -1465,7 +1465,7 @@ void CModelData::Read_t( CTStream *pFile) // throw char *
         {
           md_mpPatches[ iPatch].mp_toTexture.SetData_t( fnPatchName);
         }
-        catch(char *strError)
+        catch ( const char *strError)
         {
           (void) strError;
         }
@@ -1482,7 +1482,7 @@ void CModelData::Read_t( CTStream *pFile) // throw char *
       {
         md_mpPatches[ iPatch].Read_t(pFile);
       }
-      catch(char *strError)
+      catch ( const char *strError)
       {
         (void) strError;
       }
@@ -2821,7 +2821,7 @@ void CModelObject::AutoSetTextures(void)
       }
     }
   }
-  catch( char *strError){ (void) strError;}
+  catch ( const char *strError){ (void) strError;}
 
   try
   {
@@ -2830,7 +2830,7 @@ void CModelObject::AutoSetTextures(void)
     if( fnSpecular != "") mo_toSpecular.SetData_t( fnSpecular);
     if( fnBump != "") mo_toBump.SetData_t( fnBump);
   }
-  catch( char *strError){ (void) strError;}
+  catch ( const char *strError){ (void) strError;}
 }
 
 void CModelObject::AutoSetAttachments(void)
@@ -2893,7 +2893,7 @@ void CModelObject::AutoSetAttachments(void)
       }
     }
   }
-  catch( char *strError)
+  catch ( const char *strError)
   {
     (void) strError;
     RemoveAllAttachmentModels();

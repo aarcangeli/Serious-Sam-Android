@@ -69,7 +69,7 @@ CTString IFeel_GetProjectFileName()
   {
     strIFeelTable.Load_t(fnIFeelTable);
   }
-  catch(char *strErr)
+  catch ( const char *strErr)
   {
     CPrintF("%s\n",strErr);
     return "";

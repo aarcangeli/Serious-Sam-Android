@@ -113,7 +113,7 @@ BOOL GetReplacingFile(CTFileName fnSourceFile, CTFileName &fnReplacingFile,
     fsBase.Close();
   }
   // if file containing base can't be opened
-  catch(char *strError)
+  catch ( const char *strError)
   {
     (void) strError;
   }
@@ -139,7 +139,7 @@ BOOL GetReplacingFile(CTFileName fnSourceFile, CTFileName &fnReplacingFile,
     strBase += strNewRemap;
     strBase.Save_t( fnBaseName);
   }
-  catch( char *strError)
+  catch ( const char *strError)
   {
     WarningMessage( strError);
     return FALSE;
@@ -158,7 +158,7 @@ void SetTextureWithPossibleReplacing_t(CTextureObject &to, CTFileName &fnmTextur
       to.SetData_t(fnmTexture);
       break;
     }
-    catch( char *strError)
+    catch ( const char *strError)
     {
       (void) strError;
       // if texture was not found, ask for replacing texture
@@ -194,7 +194,7 @@ void ReadTextureObject_t(CTStream &strm, CTextureObject &to)
       // set the texture data
       to.SetData_t(fnTexture);
       break;
-    } catch( char *strError) {
+    } catch ( const char *strError) {
       (void) strError;
       // if texture was not found, ask for replacing texture
       CTFileName fnReplacingTexture;
@@ -243,7 +243,7 @@ void ReadModelObject_t(CTStream &strm, CModelObject &mo)
       // set the model data
       mo.SetData_t(fnModel);
       break;
-    } catch( char *strError) {
+    } catch ( const char *strError) {
       (void) strError;
       // if model was not found, ask for replacing model
       CTFileName fnReplacingModel;
@@ -878,7 +878,7 @@ void ReadAnimObject_t(CTStream &strm, CAnimObject &ao)
       // set the anim data
       ao.SetData_t(fnAnim);
       break;
-    } catch( char *strError) {
+    } catch ( const char *strError) {
       (void) strError;
       // if anim was not found, ask for replacing anim
       CTFileName fnReplacingAnim;

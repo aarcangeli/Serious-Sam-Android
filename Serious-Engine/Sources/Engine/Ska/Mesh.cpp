@@ -797,7 +797,7 @@ void CMesh::Read_t(CTStream *istrFile)
           msrf.msrf_pShader = _pShaderStock->Obtain_t(strShaderName);
           pshMeshShader = msrf.msrf_pShader;
           pshpShaderParams = &msrf.msrf_ShadingParams;
-        } catch(char *strErr) {
+        } catch ( const char *strErr) {
           CPrintF("%s\n",strErr);
           msrf.msrf_pShader = NULL;
           pshMeshShader = &shDummyShader;

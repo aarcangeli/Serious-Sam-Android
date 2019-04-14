@@ -63,7 +63,7 @@ CDlgLightAnimationEditor::CDlgLightAnimationEditor(CWnd* pParent /*=NULL*/)
   CTFileName fnDefaultAnimation = CTString( DEFAULT_ANIMATION_FILE);
   try {
     adDefault.Save_t( fnDefaultAnimation);
-  } catch( char *pError) {
+  } catch ( const char *pError) {
     FatalError( "Unable to save default animation: \"%s\", %s", (CTString&)fnDefaultAnimation, pError);
   }
 
@@ -74,7 +74,7 @@ CDlgLightAnimationEditor::CDlgLightAnimationEditor(CWnd* pParent /*=NULL*/)
     m_padAnimData = _pAnimStock->Obtain_t( fnLastEditted);
     m_fnSaveName = fnLastEditted;
   }
-  catch( char *pError)
+  catch ( const char *pError)
   {
     (void) pError;
     // try to load default animation
@@ -82,7 +82,7 @@ CDlgLightAnimationEditor::CDlgLightAnimationEditor(CWnd* pParent /*=NULL*/)
     {
       m_padAnimData = _pAnimStock->Obtain_t( fnDefaultAnimation);
     }
-    catch( char *pError2)
+    catch ( const char *pError2)
     {
       FatalError( "Unable to save and obtain default animation: \"%s\", %s", (CTString&)fnDefaultAnimation, pError2);
     }
@@ -495,7 +495,7 @@ void CDlgLightAnimationEditor::OnLoadAnimation()
     m_padAnimData = _pAnimStock->Obtain_t( fnAnimation);
     m_fnSaveName = fnAnimation;
   }
-  catch( char *strError)
+  catch ( const char *strError)
   {
     WarningMessage( strError);
     try
@@ -503,7 +503,7 @@ void CDlgLightAnimationEditor::OnLoadAnimation()
       CTFileName fnDefaultAnimation = CTString( DEFAULT_ANIMATION_FILE);
       m_padAnimData = _pAnimStock->Obtain_t( fnDefaultAnimation);
     }
-    catch( char *strError2)
+    catch ( const char *strError2)
     {
       FatalError( strError2);
     }
@@ -536,7 +536,7 @@ void CDlgLightAnimationEditor::OnSaveAnimation()
       pad->Reload();
       _pAnimStock->Release(pad);
     }
-    catch( char *strError)
+    catch ( const char *strError)
     {
       WarningMessage( strError);
     }
@@ -564,7 +564,7 @@ void CDlgLightAnimationEditor::OnSaveAsAnimation()
     pad->Reload();
     _pAnimStock->Release(pad);
   }
-  catch( char *strError)
+  catch ( const char *strError)
   {
     WarningMessage( strError);
   }

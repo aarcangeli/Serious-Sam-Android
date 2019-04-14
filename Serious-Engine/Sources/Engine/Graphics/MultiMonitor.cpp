@@ -162,7 +162,7 @@ void MonitorsOff(void)
       try {
         Mon_DisableEnable9x_t(/*bDisable = */ TRUE);
         CPrintF(TRANS(" disabled\n"));
-      } catch(char *strError) {
+      } catch ( const char *strError) {
         CPrintF(TRANS(" error: %s\n"), strError);
       }
       gfx_bMultiMonDisabled = TRUE;
@@ -183,7 +183,7 @@ void MonitorsOn(void)
     try {
       Mon_DisableEnable9x_t(/*bDisable = */ FALSE);
       CPrintF(TRANS(" enabled\n"));
-    } catch(char *strError) {
+    } catch ( const char *strError) {
       CPrintF(TRANS(" error: %s\n"), strError);
     }
   }

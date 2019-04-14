@@ -248,7 +248,7 @@ CEntityPointer SpawnReminder(CEntity *penOwner, FLOAT fWaitTime, INDEX iValue) {
   try {
     penReminder = penOwner->GetWorld()->CreateEntity_t
       (penOwner->GetPlacement(), CTFILENAME("Classes\\Reminder.ecl"));
-  } catch (char *strError) {
+  } catch ( const char *strError) {
     FatalError(TRANS("Cannot create reminder entity class: %s"), strError);
   }
   EReminderInit eri;
@@ -355,7 +355,7 @@ void SpawnHitTypeEffect(CEntity *pen, enum BulletHitType bhtType, BOOL bSound, F
         CEntityPointer penHit = pen->GetWorld()->CreateEntity_t(plHit , CTFILENAME("Classes\\BasicEffect.ecl"));
         penHit->Initialize(ese);
       }
-      catch (char *strError)
+      catch ( const char *strError)
       {
         FatalError(TRANS("Cannot create basic effect class: %s"), strError);
       }
@@ -396,7 +396,7 @@ void SpawnHitTypeEffect(CEntity *pen, enum BulletHitType bhtType, BOOL bSound, F
             CEntityPointer penHit = pen->GetWorld()->CreateEntity_t(plHit , CTFILENAME("Classes\\BasicEffect.ecl"));
             penHit->Initialize(ese);
           }
-          catch (char *strError)
+          catch ( const char *strError)
           {
             FatalError(TRANS("Cannot create basic effect class: %s"), strError);
           }
@@ -438,7 +438,7 @@ CEntityPointer SpawnFlame(CEntity *penOwner, CEntity *penAttach, const FLOAT3D &
   try {
     CPlacement3D plFlame(vPos, ANGLE3D(0, 0, 0));
     penFlame = penAttach->GetWorld()->CreateEntity_t(plFlame, CTFILENAME("Classes\\Flame.ecl"));
-  } catch (char *strError) {
+  } catch ( const char *strError) {
     FatalError(TRANS("Cannot create flame entity class: %s"), strError);
   }
   penFlame->Initialize(ef);
@@ -915,7 +915,7 @@ BOOL SetPlayerAppearance_internal(CModelObject *pmo, const CTFileName &fnmAMC, C
     return TRUE;
 
   // if anything failed
-  } catch (char *strError) {
+  } catch ( const char *strError) {
     // report error
     CPrintF(TRANS("Cannot load player model:\n%s (%d) : %s\n"), 
       (const char*)_strFile, _ctLines, strError);

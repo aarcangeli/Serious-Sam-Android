@@ -721,7 +721,7 @@ void RenderMessagePicture(CDrawPort *pdp)
     _toPicture.SetData_t(cm.cm_fnmPicture);
     ((CTextureData*)_toPicture.GetData())->Force(TEX_CONSTANT);
   // if failed
-  } catch(char *strError) {
+  } catch ( const char *strError) {
     // report error
     CPrintF("Cannot load '%s':\n%s\n", (CTString&)cm.cm_fnmPicture, strError);
     // do nothing

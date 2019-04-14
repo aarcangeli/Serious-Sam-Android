@@ -77,7 +77,7 @@ static void LoadOneFile(const CTFileName &fnm)
     strm.Close();
 
     _bCreditsOn = TRUE;
-  } catch (char *strError) {
+  } catch ( const char *strError) {
     CPrintF("%s\n", strError);
   }
 }

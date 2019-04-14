@@ -214,7 +214,7 @@ BOOL CLoadSaveMenu::ParseFile(const CTFileName &fnm, CTString &strName)
   CTFileName fnSaveGameDescription = fnm.NoExt() + ".des";
   try {
     strName.Load_t(fnSaveGameDescription);
-  } catch (char *strError) {
+  } catch ( const char *strError) {
     (void)strError;
     strName = fnm.FileName();
 

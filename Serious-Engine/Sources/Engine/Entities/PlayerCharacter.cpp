@@ -60,7 +60,7 @@ static void GetGUID(UBYTE aub[16]) {
 //    // free the ole32 library
 //    FreeLibrary(hOle32Lib);
 //
-//  } catch(char *strError) {
+//  } catch ( const char *strError) {
 //    FatalError(TRANS("Cannot make GUID for a player:\n%s"), strError);
 //  }
 }

@@ -104,7 +104,7 @@ void CDlgPlayerSettings::OnPlayerAppearance()
       _pGame->LoadPlayersAndControls();
     }
   }
-  catch (char *strError)
+  catch ( const char *strError)
   {
     AfxMessageBox( strError);
   }
@@ -166,7 +166,7 @@ void CDlgPlayerSettings::OnEditControls()
       _pGame->LoadPlayersAndControls();
     }
   }
-  catch (char *strError)
+  catch ( const char *strError)
   {
     AfxMessageBox( strError);
     return;

@@ -195,7 +195,7 @@ void CEntityClass::ObtainComponents_t(void)
       // obtain the component
       ec_pdecDLLClass->dec_aecComponents[iComponent].Obtain_t();
     // if failed
-    } catch (char *) {
+    } catch ( const char *) {
       // if in paranoia mode
       if( gam_iPrecachePolicy==PRECACHE_PARANOIA) {
         // fail

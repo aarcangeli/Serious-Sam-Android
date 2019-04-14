@@ -183,7 +183,7 @@ procedures:
       try
       {
         m_moHeightMapHolder.mo_toTexture.SetData_t(m_fnHeightMap);
-      } catch (char *strError) {
+      } catch ( const char *strError) {
         WarningMessage(strError);
       }
     }
@@ -193,7 +193,7 @@ procedures:
       try
       {
         m_moParticleTextureHolder.mo_toTexture.SetData_t(m_fnTexture);
-      } catch (char *strError) {
+      } catch ( const char *strError) {
         WarningMessage(strError);
       }
     }

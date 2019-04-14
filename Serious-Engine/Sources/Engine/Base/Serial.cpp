@@ -92,7 +92,7 @@ void CSerial::Reload(void)
     Read_t(&istrFile);
 
   // if there is some error while reloading
-  //} catch (char *strError) {
+  //} catch ( const char *strError) {
     // quit the application with error explanation
     //FatalError(TRANS("Cannot reload file '%s':\n%s"), (CTString&)fnmOldName, strError);
   //}

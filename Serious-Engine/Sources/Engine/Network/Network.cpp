@@ -634,7 +634,7 @@ static void StockDump(void)
     strm.PutLine_t("Classes:");
     _pEntityClassStock->DumpMemoryUsage_t(strm);
     CPrintF("Dumped to '%s'\n", CTString(fnm));
-  } catch (char *strError) {
+  } catch ( const char *strError) {
     CPrintF("Error: %s\n", strError);
   }
 }
@@ -1026,7 +1026,7 @@ void CNetworkLibrary::StartPeerToPeer_t(const CTString &strSessionName,
     ga_World.Load_t(fnmWorld);
     // delete all entities that don't fit given spawn flags
     ga_World.FilterEntitiesBySpawnFlags(ga_sesSessionState.ses_ulSpawnFlags);
-  } catch(char *) {
+  } catch ( const char *) {
     ga_fnmWorld = CTString("");
     _cmiComm.Server_Close();
     _cmiComm.Client_Close();
@@ -1040,7 +1040,7 @@ void CNetworkLibrary::StartPeerToPeer_t(const CTString &strSessionName,
   // initialize server
   try {
     ga_srvServer.Start_t();
-  } catch (char *) {
+  } catch ( const char *) {
     ga_World.DeletePredictors();
     ga_World.Clear();
     throw;
@@ -1057,7 +1057,7 @@ void CNetworkLibrary::StartPeerToPeer_t(const CTString &strSessionName,
   // initialize session state
   try {
     ga_sesSessionState.Start_t(-1);
-  } catch (char *strError) {
+  } catch ( const char *strError) {
     (void)strError;
     RemoveTimerHandler();
     ga_srvServer.Stop();
@@ -1164,7 +1164,7 @@ void CNetworkLibrary::Load_t(const CTFileName &fnmGame) // throw char *
     ga_sesSessionState.ses_apltPlayers.Clear();
     ga_sesSessionState.ses_apltPlayers.New(NET_MAXGAMEPLAYERS);
     strmFile.ExpectID_t("GEND");   // game end
-  } catch(char *) {
+  } catch ( const char *) {
     RemoveTimerHandler();
     ga_srvServer.Stop();
     ga_IsServer = FALSE;
@@ -1203,7 +1203,7 @@ void CNetworkLibrary::DebugSave(void)
   try {
     Save_t(CTString("Save\\Debug.sav"));
   // if not successful
-  } catch (char *strError){
+  } catch ( const char *strError){
     FatalError("Cannot save debug game:\n%s", strError);
   }
 }
@@ -1264,7 +1264,7 @@ void CNetworkLibrary::JoinSession_t(const CNetworkSession &nsSesssion, INDEX ctL
   // initialize session state
   try {
     ga_sesSessionState.Start_t(ctLocalPlayers);
-  } catch(char *) {
+  } catch ( const char *) {
     RemoveTimerHandler();
     throw;
   }
@@ -1653,7 +1653,7 @@ void CNetworkLibrary::ChangeLevel_internal(void)
       // delete all entities that don't fit given spawn flags
       ga_World.FilterEntitiesBySpawnFlags(ga_sesSessionState.ses_ulSpawnFlags);
     // if failed
-    } catch(char *strError) {
+    } catch ( const char *strError) {
       // report error
       CPrintF(TRANS("Cannot change level:\n%s"), strError);
       // try to
@@ -1664,7 +1664,7 @@ void CNetworkLibrary::ChangeLevel_internal(void)
         // delete all entities that don't fit given spawn flags
         ga_World.FilterEntitiesBySpawnFlags(ga_sesSessionState.ses_ulSpawnFlags);
       // if that fails
-      } catch (char *strError2) {
+      } catch ( const char *strError2) {
         // fatal error
         FatalError(
           TRANS("Cannot change level because:\n%s\n"
@@ -1840,7 +1840,7 @@ void CNetworkLibrary::MainLoop(void)
         strName.PrintF("Temp\\Recorded%02d.dem", (INDEX)dem_iRecordedNumber);
         StartDemoRec_t(strName);
         dem_iRecordedNumber+=1;
-      } catch(char *strError) {
+      } catch ( const char *strError) {
         CPrintF(TRANS("Demo recording error: %s\n"), strError);
       }
     }
@@ -2373,7 +2373,7 @@ extern void NET_MakeDefaultState_t(
       _pNetwork->ga_World.Load_t(fnmWorld);
       // delete all entities that don't fit given spawn flags
       _pNetwork->ga_World.FilterEntitiesBySpawnFlags(_pNetwork->ga_sesSessionState.ses_ulSpawnFlags);
-    } catch(char *) {
+    } catch ( const char *) {
       throw;
     }
     // remember the world filename
@@ -2394,7 +2394,7 @@ extern void NET_MakeDefaultState_t(
     _pNetwork->ga_sesSessionState.Write_t(&strmState);
 
   // if any error
-  } catch (char *) {
+  } catch ( const char *) {
     // restore original network pointer
     CNetworkLibrary *pnlTemp = _pNetwork;
     _pNetwork = pnlOld;
@@ -2495,7 +2495,7 @@ void CNetworkLibrary::FinishCRCGather(void)
     strmCRC.SetPos_t(0);
     ga_ulCRC = CRCT_MakeCRCForFiles_t(strmCRC);
 
-  } catch (char *strError) {
+  } catch ( const char *strError) {
     CPrintF(TRANS("Warning, cannot get CRCs: %s\n"), strError);
   }
 }

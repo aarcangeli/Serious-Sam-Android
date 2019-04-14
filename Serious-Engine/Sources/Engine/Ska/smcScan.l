@@ -122,7 +122,7 @@ EXP_FLT (({DIGIT}+("."({DIGIT}*)?)?)("E"|"e")("+"|"-")?{DIGIT}+)
     strIncludeFile.Load_t(CTString(strFileName));
     SMCPushBuffer(strFileName, strIncludeFile, FALSE);
 
-  } catch(char *strError) {
+  } catch ( const char *strError) {
     (void)strError;
     ThrowF_t("File '%s'\n Could not open '%s' (line %d)",SMCGetBufferName(), strFileName, SMCGetBufferLineNumber());
   }

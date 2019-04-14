@@ -319,7 +319,7 @@ procedures:
           pamoHead->amo_moModelObject.mo_toTexture.SetData_t(m_fnmHeadTex);
         }
       // if anything failed
-      } catch (char *strError) {
+      } catch ( const char *strError) {
         // report error
         CPrintF("%s\n", strError);
         AddAttachment(0, MODEL_HEAD, TEXTURE_MENTAL);

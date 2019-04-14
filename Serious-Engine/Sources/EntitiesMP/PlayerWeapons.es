@@ -1305,7 +1305,7 @@ functions:
       try {
         // load new crosshair texture
         _toCrosshair.SetData_t( fnCrosshair);
-      } catch( char *strError) { 
+      } catch ( const char *strError) {
         // didn't make it! - reset crosshair
         CPrintF( strError);
         iCrossHair = 0;

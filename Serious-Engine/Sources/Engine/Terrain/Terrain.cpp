@@ -73,7 +73,7 @@ CTerrain::CTerrain()
   // TEMP
   try {
     tr_ptdDetailMap = _pTextureStock->Obtain_t((CTString)"Textures\\Detail\\Crumples04.tex");
-  } catch(char *) {
+  } catch ( const char *) {
   }
 
   // Set size of shadow and shading maps

@@ -299,7 +299,7 @@ void InitParticles(void)
     ((CTextureData*)_toSummonerStaffGradient          .GetData())->Force(TEX_STATIC|TEX_CONSTANT);
     ((CTextureData*)_toFireworks01Gradient            .GetData())->Force(TEX_STATIC|TEX_CONSTANT);
   }
-  catch(char *strError)
+  catch ( const char *strError)
   {
     FatalError(TRANS("Unable to obtain texture: %s"), strError);
   }

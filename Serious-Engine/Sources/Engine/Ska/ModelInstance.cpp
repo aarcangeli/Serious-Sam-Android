@@ -76,7 +76,7 @@ void ParseSmcFile_t(CModelInstance &mi, const CTString &fnSmcFile)
   CTFileName fnFileName = fnSmcFile;
   try {
     fnFileName.RemoveApplicationPath_t();
-  } catch (char *) {
+  } catch ( const char *) {
   }
 
   CTString strIncludeFile;

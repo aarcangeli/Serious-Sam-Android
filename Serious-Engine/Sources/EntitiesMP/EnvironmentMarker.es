@@ -72,7 +72,7 @@ functions:
       // load the new model data
       m_moAnimData.SetData_t(m_fnMdl);
     // if failed
-    } catch(char *strError) {
+    } catch ( const char *strError) {
       strError;
       DECLARE_CTFILENAME(fnmDefault, "Models\\Editor\\Axis.mdl");
       // try to
@@ -80,7 +80,7 @@ functions:
         // load the default model data
         m_moAnimData.SetData_t(fnmDefault);
       // if failed
-      } catch(char *strErrorDefault) {
+      } catch ( const char *strErrorDefault) {
         FatalError(TRANS("Cannot load default model '%s':\n%s"),
           (CTString&)fnmDefault, strErrorDefault);
       }

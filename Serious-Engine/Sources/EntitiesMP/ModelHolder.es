@@ -169,7 +169,7 @@ functions:
 
     try {
       m_aoLightAnimation.SetData_t(m_fnmLightAnimation);
-    } catch (char *strError) {
+    } catch ( const char *strError) {
       WarningMessage(TRANS("Cannot load '%s': %s"), (CTString&)m_fnmLightAnimation, strError);
       m_fnmLightAnimation = "";
     }
