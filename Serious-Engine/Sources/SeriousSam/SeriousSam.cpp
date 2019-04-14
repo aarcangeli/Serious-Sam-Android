@@ -1241,6 +1241,7 @@ void seriousSubMain() {
 }
 
 void drawBannerFpsVersion(CDrawPort *pdp, int64_t deltaFrame, float fps) {
+  static int textWidthMax = 0;
   SLONG slDPWidth = pdp->GetWidth();
   SLONG slDPHeight = pdp->GetHeight();
   pdp->SetFont(_pfdDisplayFont);
@@ -1248,5 +1249,8 @@ void drawBannerFpsVersion(CDrawPort *pdp, int64_t deltaFrame, float fps) {
   pdp->SetTextAspect(1.0f);
   CTString str = CTString(0, SSA_VERSION " fps: %.2f; frame: %.2f ms", fps, deltaFrame / 1000000.f);
   ULONG textWidth = pdp->GetTextWidth(str);
-  pdp->PutText(str, slDPWidth - textWidth, 30, LCDGetColor(C_GREEN | 255, "display mode"));
+  if (textWidth > textWidthMax) {
+    textWidthMax = textWidth;
+  }
+  pdp->PutText(str, slDPWidth - textWidthMax, 30, LCDGetColor(C_GREEN | 255, "display mode"));
 }
