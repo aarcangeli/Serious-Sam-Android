@@ -126,5 +126,9 @@ void CMainMenu::StartMenu(void)
   gm_mgNetwork.mg_bEnabled = IsMenuEnabled("Network");
   gm_mgSplitScreen.mg_bEnabled = IsMenuEnabled("Split Screen");
   gm_mgHighScore.mg_bEnabled = IsMenuEnabled("High Score");
+
+  gm_mgSplitScreen.mg_bEnabled = false;
+  gm_mgNetwork.mg_bEnabled = false;
+
   CGameMenu::StartMenu();
 }

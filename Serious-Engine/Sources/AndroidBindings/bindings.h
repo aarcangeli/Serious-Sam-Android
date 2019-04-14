@@ -1,7 +1,6 @@
 #ifndef SERIOUSSAMANDROID_H
 #define SERIOUSSAMANDROID_H
 
-#include <Engine/StdH.h>
 #include <android/native_window.h>
 #include <android/native_window_jni.h>
 #include <android/log.h>
@@ -11,24 +10,15 @@
 #include <Engine/Engine.h>
 #include <EntitiesMP/Common/playerCommons.h>
 #include <stdint.h>
-
-static_assert(sizeof(void *) == 4, "Serious engine require 32 bit address space");
-
-enum GameState {
-    GS_LOADING,
-    GS_CONSOLE,
-    GS_NORMAL,
-};
+#include <AndroidAdapters/binding-callbacks.h>
 
 extern pthread_mutex_t g_mySeriousMutex;
 extern pthread_t g_mySeriousThreadId;
 extern bool g_gameRunning;
 extern ANativeWindow *g_currentWindow;
-extern GameState g_gameState;
 
 void *seriousMain(void *unused);
-void startSeriousPrestart();
-void seriousSamDoGame(CDrawPort *pvp);
+void seriousSubMain();
 void hideComputerConsole();
 void toggleComputer();
 

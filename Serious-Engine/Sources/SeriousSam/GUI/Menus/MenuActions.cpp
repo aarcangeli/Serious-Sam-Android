@@ -891,11 +891,11 @@ static void ApplyAudioOptions(void)
 
     switch (gmCurrent.gm_mgFrequencyTrigger.mg_iSelected)
     {
-      case 0: {_pSound->SetFormat(CSoundLibrary::SF_NONE); break; }
-      case 1: {_pSound->SetFormat(CSoundLibrary::SF_11025_16); break; }
-      case 2: {_pSound->SetFormat(CSoundLibrary::SF_22050_16); break; }
-      case 3: {_pSound->SetFormat(CSoundLibrary::SF_44100_16); break; }
-      default: _pSound->SetFormat(CSoundLibrary::SF_NONE);
+//      case 0: {_pSound->SetFormat(CSoundLibrary::SF_NONE); break; }
+//      case 1: {_pSound->SetFormat(CSoundLibrary::SF_11025_16); break; }
+//      case 2: {_pSound->SetFormat(CSoundLibrary::SF_22050_16); break; }
+//      case 3: {_pSound->SetFormat(CSoundLibrary::SF_44100_16); break; }
+//      default: _pSound->SetFormat(CSoundLibrary::SF_NONE);
     }
   }
 

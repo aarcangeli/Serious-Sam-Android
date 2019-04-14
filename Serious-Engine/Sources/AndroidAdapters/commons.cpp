@@ -2,6 +2,9 @@
 #include <Engine/Base/ErrorReporting.h>
 #include <time.h>
 #include <android/log.h>
+#include <AndroidAdapters/binding-callbacks.h>
+
+BindingCallbacks g_cb {};
 
 int64_t getTimeNsec() {
     struct timespec now;

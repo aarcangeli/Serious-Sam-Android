@@ -18,6 +18,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/ProgressHook.h>
 #include <Engine/Network/Network.h>
 #include <Engine/Network/CommunicationInterface.h>
+#include <AndroidAdapters/binding-callbacks.h>
 
 static void (*_pLoadingHook_t)(CProgressHookInfo *pgli) = NULL;  // hook for loading/connecting
 static CProgressHookInfo _phiLoadingInfo; // info passed to the hook
@@ -39,6 +40,9 @@ void SetProgressDescription(const CTString &strDescription)
 
 void CallProgressHook_t(FLOAT fCompleted)
 {
+  g_cb.setSeriousState(GS_LOADING);
+  g_cb.syncSeriousThreads();
+
   if (_pLoadingHook_t!=NULL) {
     _phiLoadingInfo.phi_fCompleted = fCompleted;
     _pLoadingHook_t(&_phiLoadingInfo);

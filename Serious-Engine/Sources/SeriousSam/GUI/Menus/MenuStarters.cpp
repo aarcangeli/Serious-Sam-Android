@@ -167,8 +167,12 @@ void StartCustomizeAxisMenu(void)
 
 void StartOptionsMenu(void)
 {
+#if 0
   _pGUIM->gmOptionsMenu.gm_pgmParentMenu = pgmCurrentMenu;
   ChangeToMenu(&_pGUIM->gmOptionsMenu);
+#else
+  // TODO: open menu
+#endif
 }
 
 void StartCurrentLoadMenu()

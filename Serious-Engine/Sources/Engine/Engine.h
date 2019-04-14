@@ -16,6 +16,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 // set this to 1 to enable checks whether somethig is deleted while iterating some array/container
 #define CHECKARRAYLOCKING 0
 
+#ifndef ENGINE_H
+#define ENGINE_H
+
 #ifdef _WIN32
   #ifndef PLATFORM_WIN32
     #define PLATFORM_WIN32 1
@@ -186,3 +189,5 @@ ENGINE_API extern FLOAT tmp_af[10];
 ENGINE_API extern INDEX tmp_ai[10];
 ENGINE_API extern INDEX tmp_i;
 ENGINE_API extern INDEX tmp_fAdd;
+
+#endif // ENGINE_H

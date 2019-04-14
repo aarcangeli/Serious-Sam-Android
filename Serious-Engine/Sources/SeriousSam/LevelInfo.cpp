@@ -15,7 +15,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "StdH.h"
 #include "LevelInfo.h"
-#include <io.h>
 
 CListHead _lhAutoDemos;
 CListHead _lhAllLevels;
@@ -241,7 +240,7 @@ void LoadDemosList(void)
 
   // list the levels directory with subdirs
   CDynamicStackArray<CTFileName> afnmDir;
-  MakeDirList(afnmDir, CTString("Demos\\"), "Demos\\Auto-*.dem", DLI_RECURSIVE);
+  MakeDirList(afnmDir, CTString("Demos\\"), "Demos/Auto-*.dem", DLI_RECURSIVE);
 
   // for each file in the directory
   for (INDEX i=0; i<afnmDir.Count(); i++) {
@@ -249,7 +248,7 @@ void LoadDemosList(void)
     // create new info for that file
     CLevelInfo *pli = new CLevelInfo;
     pli->li_fnLevel = fnm;
-    CPrintF("  %s\n", (const char *)pli->li_fnLevel);
+    CPrintF("  demo: %s\n", (const char *)pli->li_fnLevel);
     // add it to list
     _lhAutoDemos.AddTail(pli->li_lnNode);
   }
@@ -262,7 +261,7 @@ void LoadDemosList(void)
   if (sam_strIntroLevel!="") {
     CLevelInfo *pli = new CLevelInfo;
     pli->li_fnLevel = sam_strIntroLevel;
-    CPrintF("  %s\n", (const char *)pli->li_fnLevel);
+    CPrintF("  intro: %s\n", (const char *)pli->li_fnLevel);
     _lhAutoDemos.AddHead(pli->li_lnNode);
   }
 }

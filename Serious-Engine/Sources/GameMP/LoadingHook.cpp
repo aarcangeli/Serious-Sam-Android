@@ -60,10 +60,10 @@ static void LoadingHook_t(CProgressHookInfo *pphi)
   if (pphi->phi_fCompleted>0) {
     ulCheckFlags |= 0x0001;
   }
-//  if (_bUserBreakEnabled && (GetAsyncKeyState(VK_ESCAPE)&ulCheckFlags)) {
-//    // break loading
-//    throw TRANS("User break!");
-//  }
+  if (_bUserBreakEnabled && _pGame->isTouchingScreen) {
+    // break loading
+    throw TRANS("User break!");
+  }
 
 #if USECUSTOMTEXT
   // if no custom loading text
@@ -185,7 +185,7 @@ static void LoadingHook_t(CProgressHookInfo *pphi)
   dpHook.PutText(strDesc, pixCharSizeI/2, pixSizeJ-pixBarSizeJ+pixCharSizeJ/2, colText);
   dpHook.PutTextR(strPerc, pixSizeI-pixCharSizeI/2, pixSizeJ-pixBarSizeJ+pixCharSizeJ/2, colText);
   if (_bUserBreakEnabled && !_pGame->gm_bFirstLoading) {
-    dpHook.PutTextC( TRANS( "PRESS ESC TO ABORT"), pixSizeI/2, pixSizeJ-pixBarSizeJ-2-pixCharSizeJ, colEsc);
+    dpHook.PutTextC( TRANS( "TOUCH THE SCREEN TO ABORT"), pixSizeI/2, pixSizeJ-pixBarSizeJ-2-pixCharSizeJ, colEsc);
   }
 
 /*  

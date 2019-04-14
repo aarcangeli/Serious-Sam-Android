@@ -15,9 +15,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "StdH.h"
 #include <Engine/Build.h>
-#include <sys/timeb.h>
 #include <time.h>
-#include <io.h>
 #include "MainWindow.h"
 #include <Engine/CurrentVersion.h>
 #include <Engine/Templates/Stock_CSoundData.h>
@@ -518,10 +516,11 @@ void MenuOnChar(MSG msg)
   pgmCurrentMenu->OnChar(msg);
 }
 
+PIX pixLastI = 0;
+PIX pixLastJ = 0;
+
 void MenuOnMouseMove(PIX pixI, PIX pixJ)
 {
-  static PIX pixLastI = 0;
-  static PIX pixLastJ = 0;
   if (pixLastI==pixI && pixLastJ==pixJ) {
     return;
   }
@@ -534,8 +533,13 @@ void MenuUpdateMouseFocus(void)
 {
   // get real cursor position
   POINT pt;
+#if 0
   GetCursorPos(&pt);
   ScreenToClient(_hwndMain, &pt);
+#else
+  pt.x = pixLastI;
+  pt.y = pixLastJ;
+#endif
   extern INDEX sam_bWideScreen;
   extern CDrawPort *pdp;
   if( sam_bWideScreen) {
@@ -550,7 +554,9 @@ void MenuUpdateMouseFocus(void)
   // if mouse not used last
   if (!_bMouseUsedLast||_bDefiningKey||_bEditingString) {
     // do nothing
+#if 0
     return;
+#endif
   }
 
   CMenuGadget *pmgActive = NULL;

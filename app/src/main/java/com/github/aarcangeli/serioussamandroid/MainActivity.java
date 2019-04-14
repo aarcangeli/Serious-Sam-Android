@@ -80,7 +80,16 @@ public class MainActivity extends AppCompatActivity {
         loadBtn.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                doQuickLoadBrowse(v);
+                executeShell("sam_bMenuLoad=1;");
+                return true;
+            }
+        });
+
+        Button saveBtn = findViewById(R.id.buttonSave);
+        saveBtn.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                executeShell("sam_bMenuSave=1;");
                 return true;
             }
         });
@@ -236,7 +245,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void updateSoftKeyboardVisible() {
         isThereController = Utils.isThereControllers();
-        int keyboardVisibility = gameState != GameState.NORMAL || isThereController ? View.GONE : View.VISIBLE;
+        int keyboardVisibility = gameState == GameState.NORMAL && !isThereController ? View.VISIBLE : View.GONE;
         findViewById(R.id.input_overlay).setVisibility(keyboardVisibility);
         findViewById(R.id.input_crunch).setVisibility(keyboardVisibility);
         findViewById(R.id.input_jump).setVisibility(keyboardVisibility);
@@ -245,7 +254,7 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.buttonPrev).setVisibility(keyboardVisibility);
         findViewById(R.id.buttonNext).setVisibility(keyboardVisibility);
         findViewById(R.id.bgTrackerView).setVisibility(keyboardVisibility);
-        findViewById(R.id.startBtn).setVisibility(gameState == GameState.CONSOLE ? View.VISIBLE : View.GONE);
+        findViewById(R.id.settingsBtn).setVisibility(gameState == GameState.NORMAL ? View.VISIBLE : View.GONE);
         findViewById(R.id.buttonLoad).setVisibility(gameState == GameState.NORMAL ? View.VISIBLE : View.GONE);
         findViewById(R.id.buttonSave).setVisibility(gameState == GameState.NORMAL ? View.VISIBLE : View.GONE);
     }
@@ -380,8 +389,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // ui listeners
-    public void hideMenu(View view) {
-        nDispatchKeyEvent(KeyEvent.KEYCODE_BUTTON_R2, 1);
+    public void showMenu(View view) {
+        executeShell("sam_bMenu=1;");
     }
 
     public void doProfiling(View view) {
@@ -390,10 +399,6 @@ public class MainActivity extends AppCompatActivity {
 
     public void doQuickLoad(View view) {
         executeShell("gam_bQuickLoad=1;");
-    }
-
-    public void doQuickLoadBrowse(View view) {
-        // todo
     }
 
     public void doQuickSave(View view) {

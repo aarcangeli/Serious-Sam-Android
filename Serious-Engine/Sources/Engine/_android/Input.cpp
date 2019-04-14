@@ -135,7 +135,9 @@ void CInput::GetInput(BOOL bPreScan) {}
 // Clear all input states (keys become not pressed, axes are reset to zero)
 void CInput::ClearInput(void) {}
 
-const CTString &CInput::GetAxisTransName(INDEX iAxisNo) const {}
+const CTString &CInput::GetAxisTransName(INDEX iAxisNo) const {
+  return "GetAxisTransName";
+}
 
 
 /*

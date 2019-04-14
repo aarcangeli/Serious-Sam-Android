@@ -30,7 +30,11 @@ public class NativeEvents {
 
     enum GameState {
         LOADING,
+        INTRO,
+        MENU,
+        DEMO,
         CONSOLE,
         NORMAL,
+        QUIT_SCREEN,
     }
 }

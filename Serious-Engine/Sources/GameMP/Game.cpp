@@ -190,7 +190,7 @@ static void DumpDemoProfile(void)
     // done!
     CPrintF( TRANS("Demo profile data dumped to '%s'.\n"), strFileName);
   } 
-  catch (char *strError) {
+  catch ( const char *strError) {
     // something went wrong :(
     CPrintF( TRANS("Cannot dump demo profile data: %s\n"), strError);
   }
@@ -223,7 +223,7 @@ static void PlayScriptSound(INDEX iChannel, const CTString &strSound, FLOAT fVol
   _apsoScriptChannels[iChannel]->SetPitch(fPitch);
   try {
     _apsoScriptChannels[iChannel]->Play_t(strSound, SOF_NONGAME|(bLooping?SOF_LOOP:0));
-  } catch (char *strError) {
+  } catch ( const char *strError) {
     CPrintF("%s\n", strError);
   }
 }
@@ -326,6 +326,8 @@ CButtonAction::CButtonAction(void)
   ba_bFirstKeyDown = FALSE;
   ba_bSecondKeyDown = FALSE;
 }
+
+CButtonAction::~CButtonAction(void) {}
 
 // Assignment operator.
 CButtonAction &CButtonAction ::operator=(CButtonAction &baOriginal)
@@ -1031,7 +1033,7 @@ void CGame::InitInternal( void)
   // load common controls
   try {
     _ctrlCommonControls.Load_t(fnmCommonControls);
-  } catch (char * /*strError*/) {
+  } catch ( const char * /*strError*/) {
     //FatalError(TRANS("Cannot load common controls: %s\n"), strError);
   }
 
@@ -1043,14 +1045,14 @@ void CGame::InitInternal( void)
   try {
     strConsole.LoadKeepCRLF_t(fnmConsoleHistory);
     gam_strConsoleInputBuffer = strConsole;
-  } catch (char *strError) {
+  } catch ( const char *strError) {
     (void)strError; // must ignore if there is no history file
   }
 
   // load game shell settings
   try {
     Load_t();
-  } catch (char *strError) {
+  } catch ( const char *strError) {
     CPrintF(TRANS("Cannot load game settings:\n%s\n  Using defaults\n"), strError);
   }
 
@@ -1087,7 +1089,7 @@ void CGame::EndInternal(void)
   strConsole.TrimLeft(8192);
   try {
     strConsole.SaveKeepCRLF_t(fnmConsoleHistory);
-  } catch (char *strError) {
+  } catch ( const char *strError) {
     WarningMessage(TRANS("Cannot save console history:\n%s"), strError);
   }
   SavePlayersAndControls();
@@ -1095,7 +1097,7 @@ void CGame::EndInternal(void)
   // save game shell settings
   try {
     Save_t();
-  } catch (char *strError) {
+  } catch ( const char *strError) {
     WarningMessage("Cannot load game settings:\n%s\nUsing defaults!", strError);
   }
 }
@@ -1140,7 +1142,7 @@ BOOL CGame::NewGame(const CTString &strSessionName, const CTFileName &fnWorld,
       _pNetwork->StartPeerToPeer_t( strSessionName, fnWorld, 
         sp.sp_ulSpawnFlags, sp.sp_ctMaxPlayers, bWaitAllPlayers, &sp);
     }
-  } catch (char *strError) {
+  } catch (const char *strError) {
     gm_bFirstLoading = FALSE;
     // stop network provider
     _pNetwork->StopProvider();
@@ -1187,7 +1189,7 @@ BOOL CGame::JoinGame(const CNetworkSession &session)
       ctLocalPlayers = (gm_StartSplitScreenCfg-SSC_PLAY1)+1;
     }
     _pNetwork->JoinSession_t(session, ctLocalPlayers);
-  } catch (char *strError) {
+  } catch ( const char *strError) {
     // stop network provider
     _pNetwork->StopProvider();
     // and display error
@@ -1224,7 +1226,7 @@ BOOL CGame::LoadGame(const CTFileName &fnGame)
   try {
     _pNetwork->Load_t( fnGame);
     CPrintF(TRANS("Loaded game: %s\n"), fnGame);
-  } catch (char *strError) {
+  } catch ( const char *strError) {
     // stop network provider
     _pNetwork->StopProvider();
     // and display error
@@ -1274,7 +1276,7 @@ BOOL CGame::StartDemoPlay(const CTFileName &fnDemo)
   try {
     _pNetwork->StartDemoPlay_t( fnDemo);
     CPrintF(TRANS("Started playing demo: %s\n"), fnDemo);
-  } catch (char *strError) {
+  } catch (const char *strError) {
     // stop network provider
     _pNetwork->StopProvider();
     // and display error
@@ -1321,7 +1323,7 @@ BOOL CGame::StartDemoRec(const CTFileName &fnDemo)
     // save a thumbnail
     SaveThumbnail(fnDemo.NoExt()+"Tbn.tex");
     return TRUE;
-  } catch (char *strError) {
+  } catch (const char *strError) {
     // and display error
     CPrintF(TRANS("Cannot start recording: %s\n"), strError);
     return FALSE;
@@ -1356,7 +1358,7 @@ BOOL CGame::SaveGame(const CTFileName &fnGame)
     CPrintF(TRANS("Saved game: %s\n"), fnGame);
     SaveThumbnail(fnGame.NoExt()+"Tbn.tex");
     return TRUE;
-  } catch (char *strError) {
+  } catch (const char *strError) {
     // and display error
     CPrintF(TRANS("Cannot save game: %s\n"), strError);
     return FALSE;
@@ -1429,7 +1431,7 @@ BOOL CGame::StartProviderFromName(void)
     _pNetwork->StartProvider_t( gm_npNetworkProvider);
   }
   // catch throwed error
-  catch (char *strError)
+  catch (const char *strError)
   {
     // if unable, report error
     CPrintF( TRANS("Can't start provider:\n%s\n"), strError);
@@ -1512,7 +1514,7 @@ void CGame::UnpackHighScoreTable(SLONG slSize)
         &gm_ahseHighScores[i].hse_ctScore);
       gm_ahseHighScores[i].hse_strPlayer = strName;
     }}
-  } catch (char *strError) {
+  } catch (const char *strError) {
     (void)strError;
   }
 
@@ -1595,11 +1597,11 @@ void LoadControls(CControls &ctrl, INDEX i)
     CTFileName fnm;
     fnm.PrintF("Controls\\Controls%d.ctl", i);
     ctrl.Load_t(fnm);
-  } catch (char *strError) {
+  } catch ( const char *strError) {
     (void) strError; 
     try {
       ctrl.Load_t(CTFILENAME("Controls\\00-Default.ctl"));
-    } catch (char *strError) {
+    } catch ( const char *strError) {
       (void) strError; 
       ctrl.SwitchToDefaults();
     }
@@ -1612,7 +1614,7 @@ void LoadPlayer(CPlayerCharacter &pc, INDEX i)
     CTFileName fnm;
     fnm.PrintF("Players\\Player%d.plr", i);
     pc.Load_t(fnm);
-  } catch (char *strError) {
+  } catch ( const char *strError) {
     (void) strError;
     CTString strName;
     if (i==0) {
@@ -1670,7 +1672,7 @@ void CGame::SavePlayersAndControls( void)
     gm_actrlControls[7].Save_t( CTString( "Controls\\Controls7.ctl"));
   }
   // catch throwed error
-  catch (char *strError)
+  catch ( const char *strError)
   {
     (void) strError;
   }
@@ -1731,7 +1733,7 @@ BOOL CGame::AddPlayers(void)
         lp.lp_bActive = TRUE;
       }
     }
-  } catch (char *strError) {
+  } catch ( const char *strError) {
     CPrintF(TRANS("Cannot add player:\n%s\n"), strError);
     return FALSE;
   }
@@ -2112,7 +2114,7 @@ void CGame::GameRedrawView( CDrawPort *pdpDrawPort, ULONG ulFlags)
         strmThumb.Create_t(fnm);
         tdThumb.Write_t( &strmThumb);
         strmThumb.Close();
-      } catch( char *strError) {
+      } catch ( const char *strError) {
         // report an error to console, if failed
         CPrintF( "%s\n", strError);
       }
@@ -2410,7 +2412,7 @@ void CGame::GameRedrawView( CDrawPort *pdpDrawPort, ULONG ulFlags)
       if( dem_iAnimFrame<0) CPrintF( TRANS("screen shot: %s\n"), (CTString&)fnmScreenShot);
     }
     // if failed
-    catch (char *strError) {
+    catch ( const char *strError) {
       // report error
       CPrintF( TRANS("Cannot save screenshot:\n%s\n"), strError);
     }
@@ -2721,7 +2723,7 @@ void CGame::GameMainLoop(void)
       CTFileStream strmProfile;
       strmProfile.Create_t(CTString("Game.profile"));
       strmProfile.Write_t(_strProfile, strlen(_strProfile));
-    } catch (char *strError) {
+    } catch ( const char *strError) {
       CPutString(strError);
     }
   }
@@ -2785,7 +2787,7 @@ void CGame::LCDInit(void)
     ((CTextureData*)_toLeftU    .GetData())->Force(TEX_CONSTANT);
     ((CTextureData*)_toLeftD    .GetData())->Force(TEX_CONSTANT);
 
-  } catch (char *strError) {
+  } catch ( const char *strError) {
     FatalError("%s\n", strError);
   }
   ::LCDInit();

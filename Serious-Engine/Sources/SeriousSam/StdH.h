@@ -13,6 +13,10 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
+#include <stdio.h>
+#include <Engine/Base/Types.h>
+#include <Engine/Base/Assert.h>
+#include <AndroidAdapters/android-adapters.h>
 #include <Engine/Engine.h>
 #include <Engine/Templates/Stock_CTextureData.h>
 #include <Engine/Templates/Stock_CModelData.h>
@@ -35,3 +39,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "SeriousSam.h"
 #include "GUI/Menus/Menu.h"
+
+typedef unsigned short SHORT;
+static SHORT GetKeyState(int nVirtKey) {
+  return 0;
+}

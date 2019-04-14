@@ -23,7 +23,7 @@ extern void LCDInit(void);
 extern void LCDEnd(void);
 extern void LCDPrepare(FLOAT fFade);
 extern void LCDSetDrawport(CDrawPort *pdp);
-extern void LCDDrawBox(PIX pixUL, PIX pixDR, PIXaabbox2D &box, COLOR col);
+extern void LCDDrawBox(PIX pixUL, PIX pixDR, const PIXaabbox2D &box, COLOR col);
 extern void LCDScreenBox(COLOR col);
 extern void LCDScreenBoxOpenLeft(COLOR col);
 extern void LCDScreenBoxOpenRight(COLOR col);

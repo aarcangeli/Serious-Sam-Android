@@ -1327,7 +1327,7 @@ void CNetworkLibrary::StartDemoPlay_t(const CTFileName &fnDemo)  // throw char *
       ga_ulDemoMinorVersion = 2;
     }
     ga_sesSessionState.Read_t(&ga_strmDemoPlay);
-  } catch(char *) {
+  } catch(const char *) {
     RemoveTimerHandler();
     ga_strmDemoPlay.Close();
     ga_bDemoPlay = FALSE;

@@ -1,4 +1,5 @@
-#include <AndroidBindings/seriousSamAndroid.h>
+#include <Engine/StdH.h>
+#include <AndroidBindings/bindings.h>
 #include <Engine/Graphics/ViewPort.h>
 #include <jni.h>
 #include <GLES2/gl2.h>
@@ -17,6 +18,7 @@ JavaVM *g_javaWM;
 jclass g_NativeEvents;
 jmethodID g_reportFatalError;
 CTString g_command = "";
+CViewPort *g_pvpViewPort = nullptr;
 
 JNIEnv* getEnv() {
   static thread_local JNIEnv* myEnv = nullptr;
@@ -103,16 +105,18 @@ JNIEXPORT void JNICALL Java_com_github_aarcangeli_serioussamandroid_MainActivity
   env->ReleaseStringUTFChars(command_, command);
 }
 
-void *seriousMain(void *unused) {
-  CViewPort *pvpViewPort = new CViewPort();
-  CDrawPort *pdp = &pvpViewPort->vp_Raster.ra_MainDrawPort;
+void setSeriousState(GameState state) {
+  if (g_cb.gameState != state) {
+    g_cb.gameState = state;
+    JNIEnv* env = getEnv();
+    jmethodID method = env->GetStaticMethodID(g_NativeEvents, "reportStateChange", "(I)V");
+    ASSERT(method);
+    env->CallStaticVoidMethod(g_NativeEvents, method, (int) g_cb.gameState);
+  }
+}
 
-  startSeriousPrestart();
-
-  JNIEnv* env = getEnv();
-  GameState lastGameState = GS_LOADING;
-
-  while(true) {
+void syncSeriousThreads() {
+  while (true) {
     // get parameters with mutex
     pthread_mutex_lock(&g_mySeriousMutex);
 
@@ -127,18 +131,14 @@ void *seriousMain(void *unused) {
     // resolve input
     setControls(g_IncomingControls);
 
-    if (g_command.Length()) {
-      _pShell->Execute(g_command);
-      g_command = "";
-    }
+    CTString cmdToExecute = g_command;
+    g_command = "";
 
     pthread_mutex_unlock(&g_mySeriousMutex);
 
-    if (g_gameState != lastGameState) {
-      lastGameState = g_gameState;
-      jmethodID method = env->GetStaticMethodID(g_NativeEvents, "reportStateChange", "(I)V");
-      ASSERT(method);
-      env->CallStaticVoidMethod(g_NativeEvents, method, (int) g_gameState);
+    if (cmdToExecute.Length()) {
+      _pShell->Execute(cmdToExecute);
+      cmdToExecute = "";
     }
 
     if (!running || !window) {
@@ -147,11 +147,34 @@ void *seriousMain(void *unused) {
     }
 
     if (somethingChanged) {
-      pvpViewPort->Initialize(window);
+      g_pvpViewPort->Initialize(window);
     }
 
-    seriousSamDoGame(pdp);
+    return;
+  };
+}
+
+CViewPort *getViewPort() {
+  syncSeriousThreads();
+  return g_pvpViewPort;
+}
+
+void *seriousMain(void *unused) {
+  g_pvpViewPort = new CViewPort();
+
+  g_cb.setSeriousState = &setSeriousState;
+  g_cb.syncSeriousThreads = &syncSeriousThreads;
+  g_cb.getViewPort = &getViewPort;
+
+  // run all
+  try {
+    seriousSubMain();
+  } catch (const char *msg) {
+    FatalError("%s", msg);
   }
+
+  // close app
+  exit(0);
 }
 
 extern "C"

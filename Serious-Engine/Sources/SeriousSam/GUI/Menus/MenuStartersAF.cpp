@@ -112,7 +112,9 @@ BOOL LSLoadControls(const CTFileName &fnm)
 {
   try {
     ControlsMenuOn();
+#if 0
     _pGame->gm_ctrlControlsExtra.Load_t(fnm);
+#endif
     ControlsMenuOff();
   }
   catch (char *strError) {

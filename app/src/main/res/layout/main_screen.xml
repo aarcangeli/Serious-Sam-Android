@@ -86,51 +86,40 @@
             app:layout_constraintEnd_toEndOf="parent" />
 
         <Button
-            android:id="@+id/buttonSettings"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:id="@+id/buttonLoad"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="8dp"
             android:layout_marginTop="25dp"
-            android:layout_marginEnd="12dp"
-            android:background="@drawable/ic_settings"
-            android:onClick="openSettings"
-            app:layout_constraintEnd_toEndOf="parent"
+            android:background="@drawable/ic_load"
+            android:longClickable="true"
+            android:onClick="doQuickLoad"
+            app:layout_constraintStart_toEndOf="@id/settingsBtn"
             app:layout_constraintTop_toTopOf="parent" />
 
         <Button
-            android:id="@+id/buttonLoad"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_marginEnd="12dp"
-            android:background="@drawable/ic_load"
-            android:onClick="doQuickLoad"
-            android:longClickable="true"
-            app:layout_constraintEnd_toStartOf="@+id/buttonSave"
-            app:layout_constraintTop_toTopOf="@+id/buttonSave" />
-
-        <Button
             android:id="@+id/buttonSave"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_marginEnd="12dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="25dp"
             android:background="@drawable/ic_save"
+            android:longClickable="true"
             android:onClick="doQuickSave"
-            app:layout_constraintEnd_toStartOf="@id/buttonSettings"
-            app:layout_constraintTop_toTopOf="@id/buttonSettings" />
+            app:layout_constraintStart_toEndOf="@id/buttonLoad"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <Button
-            android:id="@+id/startBtn"
-            android:layout_width="60dp"
-            android:layout_height="32dp"
-            android:layout_marginEnd="12dp"
-            android:layout_marginBottom="464dp"
-            android:background="#55ffffff"
-            android:onClick="hideMenu"
-            android:text="exit"
+            android:id="@+id/settingsBtn"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="25dp"
+            android:background="@drawable/ic_settings"
+            android:onClick="showMenu"
             android:textSize="12sp"
-            app:layout_constraintBottom_toBottomOf="@+id/buttonLoad"
-            app:layout_constraintEnd_toStartOf="@+id/buttonLoad"
-            app:layout_constraintTop_toTopOf="@+id/buttonLoad"
-            app:layout_constraintVertical_bias="0.0" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
     </android.support.constraint.ConstraintLayout>
 

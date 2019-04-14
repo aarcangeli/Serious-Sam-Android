@@ -73,6 +73,7 @@ class CButtonAction {
 public:
   // default constructor
   CButtonAction();
+  virtual ~CButtonAction();
   CListNode ba_lnNode;
   INDEX ba_iFirstKey;
   BOOL ba_bFirstKeyDown;
@@ -308,6 +309,8 @@ public:
   // menu interface functions
   virtual void MenuPreRenderMenu(const char *strMenuName);
   virtual void MenuPostRenderMenu(const char *strMenuName);
+
+  bool isTouchingScreen = false;
 };
 
 #endif

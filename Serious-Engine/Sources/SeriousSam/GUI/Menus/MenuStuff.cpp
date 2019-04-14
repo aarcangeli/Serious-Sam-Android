@@ -283,7 +283,9 @@ void ControlsMenuOn()
 {
   _pGame->SavePlayersAndControls();
   try {
+#if 0
     _pGame->gm_ctrlControlsExtra.Load_t(_fnmControlsToCustomize);
+#endif
   }
   catch (char *strError) {
     WarningMessage(strError);
@@ -294,7 +296,9 @@ void ControlsMenuOff()
 {
   try {
     if (_pGame->gm_ctrlControlsExtra.ctrl_lhButtonActions.Count()>0) {
+#if 0
       _pGame->gm_ctrlControlsExtra.Save_t(_fnmControlsToCustomize);
+#endif
     }
   }
   catch (char *strError) {
