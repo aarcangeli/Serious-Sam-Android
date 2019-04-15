@@ -600,14 +600,14 @@ procedures:
   PlayCamera()
   {
     // eventually add to movers list
-    CCameraMarker &cm = (CCameraMarker&)*m_penTarget;
+    CCameraMarker *cm = (CCameraMarker*) m_penTarget.ep_pen;
     // if auto rotating
     if( m_bAutoRotation)
     {
       jump PlayAutoRotatingCamera();
     }
     // if there is at least one marker
-    else if( &cm!=NULL)
+    else if( cm!=NULL)
     {
       // treat camera as movable
       jump PlayMovingCamera();
