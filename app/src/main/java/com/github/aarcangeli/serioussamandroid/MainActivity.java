@@ -416,15 +416,39 @@ public class MainActivity extends AppCompatActivity {
             return false;
         }
         if (event.getRepeatCount() == 0) {
-            if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                if (gameState == GameState.MENU) {
-                    executeShell("GoMenuBack()");
-                } else {
+            if (gameState == GameState.MENU) {
+                if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                    switch (keyCode) {
+                        case KeyEvent.KEYCODE_DPAD_DOWN:
+                            executeShell("MenuEvent(0)");
+                            break;
+                        case KeyEvent.KEYCODE_DPAD_RIGHT:
+                            executeShell("MenuEvent(1)");
+                            break;
+                        case KeyEvent.KEYCODE_DPAD_UP:
+                            executeShell("MenuEvent(2)");
+                            break;
+                        case KeyEvent.KEYCODE_DPAD_LEFT:
+                            executeShell("MenuEvent(3)");
+                            break;
+                        case KeyEvent.KEYCODE_ENTER:
+                        case KeyEvent.KEYCODE_BUTTON_A:
+                            executeShell("MenuEvent(4)");
+                            break;
+                        case KeyEvent.KEYCODE_BUTTON_B:
+                        case KeyEvent.KEYCODE_ESCAPE:
+                        case KeyEvent.KEYCODE_BACK:
+                            executeShell("GoMenuBack()");
+                            break;
+                    }
+                }
+            } else {
+                if (event.getAction() == KeyEvent.ACTION_DOWN) {
                     nDispatchKeyEvent(keyCode, 1);
                 }
-            }
-            if (event.getAction() == KeyEvent.ACTION_UP) {
-                nDispatchKeyEvent(keyCode, 0);
+                if (event.getAction() == KeyEvent.ACTION_UP) {
+                    nDispatchKeyEvent(keyCode, 0);
+                }
             }
         }
         return true;
