@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- pressing the back button will show the exit confirmation screen
+### Fixed
+- fixed crash while pushing a button in "Valley of the Jaguar"
 
 ## [1.03.0] - 2019-04-14
 ### Added

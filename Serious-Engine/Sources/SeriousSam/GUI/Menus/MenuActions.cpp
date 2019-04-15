@@ -110,7 +110,7 @@ static void ExitGame(void)
   _bQuitScreen = TRUE;
 }
 
-static void ExitConfirm(void)
+void ExitConfirm(void)
 {
   CConfirmMenu &gmCurrent = _pGUIM->gmConfirmMenu;
 

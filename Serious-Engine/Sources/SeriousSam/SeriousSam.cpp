@@ -22,6 +22,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <GameMP/Game.h>
 #define DECL_DLL
 #include <EntitiesMP/Global.h>
+#include <SeriousSam/GUI/Menus/MenuManager.h>
 #include "resource.h"
 #include "SplashScreen.h"
 #include "MainWindow.h"
@@ -239,9 +240,14 @@ void TouchUp(void* pArgs) {
   }
 }
 
+void ExitConfirm(void);
 void GoMenuBack() {
   if (bMenuActive) {
-    MenuOnKeyDown(VK_ESCAPE);
+    if (&_pGUIM->gmMainMenu == pgmCurrentMenu) {
+      ExitConfirm();
+    } else {
+      MenuOnKeyDown(VK_ESCAPE);
+    }
   }
 }
 
