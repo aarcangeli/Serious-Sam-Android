@@ -4932,7 +4932,7 @@ functions:
       // get min distance from any player
       FLOAT fMinD = UpperLimit(0.0f);
       for (INDEX iPlayer=0; iPlayer<GetMaxPlayers(); iPlayer++) {
-        CPlayer *ppl = (CPlayer *)&*GetPlayerEntity(iPlayer);
+        CPlayer *ppl = (CPlayer *) GetPlayerEntity(iPlayer);
         if (ppl==NULL) { 
           continue;
         }
@@ -5124,7 +5124,7 @@ functions:
         bAdjustHealth = FALSE;
       // if there is coop respawn marker
       } else if (m_penMainMusicHolder!=NULL && !(m_ulFlags&PLF_CHANGINGLEVEL)) {
-        CMusicHolder *pmh = (CMusicHolder *)&*m_penMainMusicHolder;
+        CMusicHolder *pmh = (CMusicHolder *) m_penMainMusicHolder.ep_pen;
         if (pmh->m_penRespawnMarker!=NULL) {
           // get it
           pen = pmh->m_penRespawnMarker;

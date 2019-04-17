@@ -311,7 +311,7 @@ functions:
   class CModelDestruction *GetDestruction(void)
   {
     ASSERT(m_penDestruction==NULL || IsOfClass(m_penDestruction, "ModelDestruction"));
-    return (CModelDestruction*)&*m_penDestruction;
+    return (CModelDestruction*) m_penDestruction.ep_pen;
   }
   BOOL IsTargetable(void) const
   {

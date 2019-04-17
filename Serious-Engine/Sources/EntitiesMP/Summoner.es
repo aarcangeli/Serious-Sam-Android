@@ -626,13 +626,13 @@ functions:
     while (iCount>0)
     {
       i++;
-      while (&*pen[i]==NULL) {
+      while (pen[i].ep_pen==NULL) {
         i++;
       } 
       iCount--;        
     }
-    ASSERT (&(CEnemyBase &)*pen[i]!=NULL);
-    return &(CEnemyBase &)*pen[i];
+    ASSERT (pen[i].ep_pen!=NULL);
+    return (CEnemyBase *) pen[i].ep_pen;
   }
 
   void DisappearEffect(void)
@@ -1336,17 +1336,17 @@ procedures:
     m_iGroup01Count = 0;
     pen = &m_penGroup01Template01;
     for (i=0; i<SUMMONER_TEMP_PER_GROUP; i++) {
-      if (&*pen[i]!=NULL) { m_iGroup01Count++; }
+      if (pen[i].ep_pen!=NULL) { m_iGroup01Count++; }
     }
     m_iGroup02Count = 0;
     pen = &m_penGroup02Template01;
     for (i=0; i<SUMMONER_TEMP_PER_GROUP; i++) {
-      if (&*pen[i]!=NULL) { m_iGroup02Count++; }
+      if (pen[i].ep_pen!=NULL) { m_iGroup02Count++; }
     }
     m_iGroup03Count = 0;
     pen = &m_penGroup03Template01;
     for (i=0; i<SUMMONER_TEMP_PER_GROUP; i++) {
-      if (&*pen[i]!=NULL) { m_iGroup03Count++; }
+      if (pen[i].ep_pen!=NULL) { m_iGroup03Count++; }
     }
 
     if (!DoSafetyChecks()) {
