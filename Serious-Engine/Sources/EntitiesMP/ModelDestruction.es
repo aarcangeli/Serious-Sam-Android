@@ -181,7 +181,7 @@ functions:
   {
     ASSERT(iModel<=GetModelsCount());
     iModel = Clamp(iModel, INDEX(0), GetModelsCount());
-    return (CModelHolder2 *)&*(&m_penModel0)[iModel];
+    return (CModelHolder2 *) (&m_penModel0)[iModel].ep_pen;
   }
   // spawn debris for given model
   void SpawnDebris(CModelHolder2 *penmhDestroyed)

@@ -60,7 +60,7 @@ functions:
   {
     for( INDEX iDigit=0; iDigit<10; iDigit++)
     {
-      CModelHolder2 *pmh = (CModelHolder2 *)&*(&m_pen0)[iDigit];
+      CModelHolder2 *pmh = (CModelHolder2 *) (&m_pen0)[iDigit].ep_pen;
       if( pmh!=NULL && pmh->GetModelObject()!=NULL &&
           pmh->GetModelObject()->mo_toTexture.GetData()!=NULL)
       {

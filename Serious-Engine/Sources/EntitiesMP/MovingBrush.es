@@ -277,7 +277,7 @@ functions:
       iMirror-=9;
       INDEX ctMirrorMarkers = &m_penMirror4-&m_penMirror0;
       if (iMirror<ctMirrorMarkers){
-        CMirrorMarker *pfm = (CMirrorMarker *)&*(&m_penMirror0)[iMirror];
+        CMirrorMarker *pfm = (CMirrorMarker *) (&m_penMirror0)[iMirror].ep_pen;
         if (pfm != NULL) {
           return pfm->GetMirrorName();
         } else {
@@ -302,7 +302,7 @@ functions:
     iMirror-=9;
     INDEX ctMirrorMarkers = &m_penMirror4-&m_penMirror0;
     if (iMirror<ctMirrorMarkers){
-      CMirrorMarker *pmm = (CMirrorMarker *)&*(&m_penMirror0)[iMirror];
+      CMirrorMarker *pmm = (CMirrorMarker *) (&m_penMirror0)[iMirror].ep_pen;
       if (pmm != NULL) {
         pmm->GetMirror(mpMirror);
         return TRUE;

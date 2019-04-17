@@ -3536,11 +3536,11 @@ procedures:
         if (bHit) {
           ProjectileTouch(epass.penOther);
           // player flame passes through enemies
-          if (m_prtType==PRT_FLAME && IsDerivedFromClass((CEntity *)&*(epass.penOther), "Enemy Base")) {
+          if (m_prtType==PRT_FLAME && IsDerivedFromClass((CEntity *) (epass.penOther.ep_pen), "Enemy Base")) {
             resume;
           }
           // wind blast passes through movable entities
-          if (m_prtType==PRT_AIRELEMENTAL_WIND && IsDerivedFromClass((CEntity *)&*(epass.penOther), "MovableEntity")) {
+          if (m_prtType==PRT_AIRELEMENTAL_WIND && IsDerivedFromClass((CEntity *) (epass.penOther.ep_pen), "MovableEntity")) {
             resume;
           }
           
