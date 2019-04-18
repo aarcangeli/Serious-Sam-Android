@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.03.2] - 2019-04-18
+### Added
+- Enabled mod loader
+### Fixed
+- Fixed verious crashes (#4 #5 #6)
+
 ## [1.03.1] - 2019-04-15
 ### Changed
 - Pressing the back button will show the exit confirmation screen
@@ -43,7 +49,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## 1.00 - 2019-02-18
 - Initial Release
 
-[Unreleased]: https://github.com/aarcangeli/Serious-Sam-Android/compare/v1.03.1...HEAD
+[Unreleased]: https://github.com/aarcangeli/Serious-Sam-Android/compare/v1.03.2...HEAD
+[1.03.2]: https://github.com/aarcangeli/Serious-Sam-Android/compare/v1.03.1...v1.03.2
 [1.03.1]: https://github.com/aarcangeli/Serious-Sam-Android/compare/v1.03.0...v1.03.1
 [1.03.0]: https://github.com/aarcangeli/Serious-Sam-Android/compare/v1.02.1...v1.03.0
 [1.02.1]: https://github.com/aarcangeli/Serious-Sam-Android/compare/v1.02...v1.02.1
