@@ -102,7 +102,7 @@ extern INDEX sam_iStartCredits = FALSE;
 extern CTFileName _fnmModToLoad = CTString("");
 extern CTString _strModServerJoin = CTString("");
 extern CTString _strURLToVisit = CTString("");
-
+extern CTFileName _modToLoadTxt = CTString("ModToLoad.txt");
 
 // state variables fo addon execution
 // 0 - nothing
@@ -1190,6 +1190,19 @@ void setControls(PlayerControls &ctrls) {
 
 void seriousSubMain() {
   CTStream::EnableStreamHandling();
+
+  if (FileExists(_modToLoadTxt)) {
+    CTFileStream stream;
+    stream.Open_t(_modToLoadTxt);
+    CTString strMod;
+    stream.GetLine_t(strMod);
+    stream.Close();
+    RemoveFile(_modToLoadTxt);
+    if (strMod.Length() && strMod != "SeriousSam") {
+      _fnmMod = "Mods\\" + strMod + "\\";
+    }
+  }
+
   Init();
 
   // override key settings
@@ -1209,7 +1222,7 @@ void seriousSubMain() {
   _pGame->gm_csConsoleState  = CS_OFF;
   _pGame->gm_csComputerState = CS_OFF;
 
-  while(_bRunning) {
+  while(_bRunning && !_fnmModToLoad.Length()) {
     g_cb.syncSeriousThreads();
 
     // when all messages are removed, window has surely changed
@@ -1263,9 +1276,20 @@ void seriousSubMain() {
     // do the main game loop and render screen
     DoGame();
   }
+  _bRunning = false;
 
   _pInput->DisableInput();
   _pGame->StopGame();
+
+  if (_fnmModToLoad.Length()) {
+    CTFileStream stream;
+    stream.Create_t(_modToLoadTxt);
+    stream.PutString_t(_fnmModToLoad.FileName());
+    stream.Close();
+    _bQuitScreen = false;
+    g_cb.restart();
+    Sleep(60 * 1000); // wait restart
+  }
 
   if (_bQuitScreen) QuitScreenLoop();
 

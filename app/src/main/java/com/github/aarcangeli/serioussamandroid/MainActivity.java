@@ -2,7 +2,10 @@ package com.github.aarcangeli.serioussamandroid;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.AlarmManager;
 import android.app.AlertDialog;
+import android.app.PendingIntent;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -16,12 +19,12 @@ import android.hardware.SensorManager;
 import android.hardware.input.InputManager;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.text.InputType;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -39,8 +42,11 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
 
+import static com.github.aarcangeli.serioussamandroid.NativeEvents.EditTextEvent;
 import static com.github.aarcangeli.serioussamandroid.NativeEvents.FatalErrorEvent;
 import static com.github.aarcangeli.serioussamandroid.NativeEvents.GameState;
+import static com.github.aarcangeli.serioussamandroid.NativeEvents.OpenSettingsEvent;
+import static com.github.aarcangeli.serioussamandroid.NativeEvents.RestartEvent;
 import static com.github.aarcangeli.serioussamandroid.NativeEvents.StateChangeEvent;
 import static com.github.aarcangeli.serioussamandroid.views.JoystickView.Listener;
 
@@ -314,12 +320,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void openSettings(NativeEvents.OpenSettingsEvent event) {
+    public void openSettings(OpenSettingsEvent event) {
         startActivity(new Intent(this, SettingsActivity.class));
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void editText(final NativeEvents.EditTextEvent event) {
+    public void editText(final EditTextEvent event) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
         // Set up the input
@@ -362,6 +368,32 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         glSurfaceView.stop();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void restartEvent(RestartEvent event) {
+        final MainActivity context = MainActivity.this;
+        runOnUiThread(new Runnable() {
+            public void run() {
+                ProgressDialog dialog = new ProgressDialog(context);
+                dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                dialog.setTitle("SeriousSam");
+                dialog.setMessage("Restarting");
+                dialog.setCancelable(false);
+                dialog.setMax(0);
+                dialog.show();
+            }
+        });
+        new Handler().postDelayed(new Runnable() {
+            public void run() {
+                // restart
+                Intent mStartActivity = new Intent(context, MainActivity.class);
+                PendingIntent mPendingIntent = PendingIntent.getActivity(context, 123456, mStartActivity, PendingIntent.FLAG_CANCEL_CURRENT);
+                AlarmManager mgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+                mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 100, mPendingIntent);
+                System.exit(0);
+            }
+        }, 1000);
     }
 
     private static boolean hasStoragePermission(Context context) {

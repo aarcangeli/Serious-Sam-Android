@@ -208,6 +208,13 @@ void editText(const CTString &string, void (*onOk)(CTString str), void (*onCance
   env->CallStaticVoidMethod(g_NativeEvents, method, env->NewStringUTF(string.str_String));
 }
 
+void requestRestard() {
+  JNIEnv* env = getEnv();
+  jmethodID method = env->GetStaticMethodID(g_NativeEvents, "requestRestard", "()V");
+  ASSERT(method);
+  env->CallStaticVoidMethod(g_NativeEvents, method);
+}
+
 CViewPort *getViewPort() {
   syncSeriousThreads();
   return g_pvpViewPort;
@@ -221,6 +228,7 @@ void *seriousMain(void *unused) {
   g_cb.getViewPort = &getViewPort;
   g_cb.openSettings = &openSettings;
   g_cb.editText = &editText;
+  g_cb.restart = &requestRestard;
 
   // run all
   try {

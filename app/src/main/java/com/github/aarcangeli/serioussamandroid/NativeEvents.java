@@ -16,6 +16,10 @@ public class NativeEvents {
         EventBus.getDefault().post(new OpenSettingsEvent());
     }
 
+    public static void requestRestard() {
+        EventBus.getDefault().post(new RestartEvent());
+    }
+
     public static void editText(String defaultText) {
         EventBus.getDefault().post(new EditTextEvent(defaultText));
     }
@@ -37,6 +41,9 @@ public class NativeEvents {
     }
 
     public static class OpenSettingsEvent {
+    }
+
+    public static class RestartEvent {
     }
 
     public static class EditTextEvent {

@@ -185,19 +185,8 @@ void InitStreams(void) {
 
   // if there is a mod active
   if (_fnmMod != "") {
-//    // for each group file in mod directory
-//    struct _finddata_t c_file;
-//    long hFile;
-//    hFile = _findfirst(_fnmApplicationPath+_fnmMod+"*.gro", &c_file);
-//    BOOL bOK = (hFile!=-1);
-//    while(bOK) {
-//      if (CTString(c_file.name).Matches("*.gro")) {
-//        // add it to active set
-//        UNZIPAddArchive(_fnmApplicationPath+_fnmMod+c_file.name);
-//      }
-//      bOK = _findnext(hFile, &c_file)==0;
-//    }
-//    _findclose( hFile );
+    // for each group file in mod directory
+    findGroInsideDirectory(_fnmApplicationPath + _fnmMod);
   }
 
   // if there is a CD path

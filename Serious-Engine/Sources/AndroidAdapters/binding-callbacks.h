@@ -20,6 +20,7 @@ struct BindingCallbacks {
     CViewPort *(*getViewPort)();
     void (*openSettings)();
     void (*editText)(const CTString &string, void (*onOk)(CTString str), void (*onCancel)());
+    void (*restart)();
 
     GameState gameState;
 };
