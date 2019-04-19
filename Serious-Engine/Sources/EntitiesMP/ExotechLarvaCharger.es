@@ -122,7 +122,7 @@ functions:
     CEntityPointer *penFirst = &m_penBattery01;
     
     for (INDEX i=0; i<6; i++) {
-      CExotechLarvaBattery *penBattery = (CExotechLarvaBattery *)&(*penFirst[i]);
+      CExotechLarvaBattery *penBattery = (CExotechLarvaBattery *) (penFirst[i].ep_pen);
       // if model pointer is valid
       if (penBattery) {
         if (penBattery->m_bActive) { 
@@ -156,7 +156,7 @@ functions:
       CEntityPointer *penFirst = &m_penBattery01;
       
       for (INDEX i=0; i<6; i++) {
-        CExotechLarvaBattery *penBattery = (CExotechLarvaBattery *)&(*penFirst[i]);
+        CExotechLarvaBattery *penBattery = (CExotechLarvaBattery *) (penFirst[i].ep_pen);
         // if model pointer is valid
         if (penBattery) {
           if (penBattery->m_bActive) { 

@@ -162,7 +162,7 @@ functions:
       FLOAT3D vTarget=FLOAT3D(0,0,0);
       if( m_penTarget!=NULL)
       {
-        CCameraMarker *pcm = &(CCameraMarker&)*m_penTarget;
+        CCameraMarker *pcm = (CCameraMarker*) m_penTarget.ep_pen;
         if( pcm->m_penViewTarget!=NULL)
         {
           vTarget=pcm->m_penViewTarget->GetLerpedPlacement().pl_PositionVector+m_vRelTargetOffset;
@@ -240,7 +240,7 @@ functions:
       FLOAT3D vTarget=FLOAT3D(0,0,0);
       if( m_penTarget!=NULL)
       {
-        CCameraMarker *pcm = &(CCameraMarker&)*m_penTarget;
+        CCameraMarker *pcm = (CCameraMarker*) m_penTarget.ep_pen;
         if( pcm->m_penViewTarget!=NULL)
         {
           vTarget=pcm->m_penViewTarget->GetPlacement().pl_PositionVector+m_vRelTargetOffset;
@@ -284,7 +284,7 @@ functions:
         pcmNm1 = pcmNp0;
         pcmNp0 = pcmNp1;
         pcmNp1 = pcmNp2;
-        pcmNp2 = (CCameraMarker*)&*pcmNp2->m_penTarget;
+        pcmNp2 = (CCameraMarker*) pcmNp2->m_penTarget.ep_pen;
 
         // disable lerping
         bLerping = FALSE;
@@ -525,12 +525,12 @@ procedures:
     // check all markers for correct type and numbers
     INDEX ctMarkers=1;
     INDEX ctNonSkipped=0;
-    CCameraMarker *pcm0 = (CCameraMarker*)&*m_penTarget;
-    CCameraMarker *pcm  = (CCameraMarker*)&*pcm0->m_penTarget;
+    CCameraMarker *pcm0 = (CCameraMarker*) m_penTarget.ep_pen;
+    CCameraMarker *pcm  = (CCameraMarker*) pcm0->m_penTarget.ep_pen;
     // loop thru markers
     while( pcm!=NULL && pcm->m_penTarget!=pcm0)
     {
-      pcm = (CCameraMarker*)&*pcm->m_penTarget;
+      pcm = (CCameraMarker*) pcm->m_penTarget.ep_pen;
       if (pcm==NULL) {
         WarningMessage( "Movable camera - broken link!");
         return;
@@ -571,7 +571,7 @@ procedures:
     m_bStopMoving = FALSE;
     m_penLast = pcm; // keep last marker
     ASSERT( pcm->m_penTarget == m_penTarget);
-    pcm  = (CCameraMarker*)&*m_penTarget;
+    pcm  = (CCameraMarker*) m_penTarget.ep_pen;
     m_colFade0 = m_colFade1 = pcm->m_colFade;
 
     // register camera as movable entity

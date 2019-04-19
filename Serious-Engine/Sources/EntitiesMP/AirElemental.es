@@ -273,8 +273,8 @@ functions:
       // triggers
       if (fHealth<=fOldHealth && fHealth>fNewHealth)
       {
-        if (&*penTrigger[i]) {
-          SendToTarget(&*penTrigger[i], EET_TRIGGER, FixupCausedToPlayer(this, m_penEnemy));
+        if (penTrigger[i].ep_pen) {
+          SendToTarget(penTrigger[i].ep_pen, EET_TRIGGER, FixupCausedToPlayer(this, m_penEnemy));
         }
       }
     }

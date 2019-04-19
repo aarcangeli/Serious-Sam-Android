@@ -800,10 +800,10 @@ procedures:
 
     INDEX ctMarkers=0;
     // new moving target
-    CMovingBrushMarker *pmbm = (CMovingBrushMarker *) &*m_penTarget;
+    CMovingBrushMarker *pmbm = (CMovingBrushMarker *) m_penTarget.ep_pen;
     while( pmbm!=NULL && IsOfClass(pmbm->m_penTarget, "Moving Brush Marker") && !pmbm->m_bStopMoving && ctMarkers<50)
     {      
-      pmbm = (CMovingBrushMarker *) &*pmbm->m_penTarget;
+      pmbm = (CMovingBrushMarker *) pmbm->m_penTarget.ep_pen;
       ctMarkers++;
     }
 

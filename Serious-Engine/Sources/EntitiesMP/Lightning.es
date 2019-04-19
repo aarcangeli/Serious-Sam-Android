@@ -80,7 +80,7 @@ functions:
     // if light entity
     if (IsOfClass(m_penLight, "Light"))
     {
-      CLight *penLight = (CLight*)&*m_penLight;
+      CLight *penLight = (CLight*) m_penLight.ep_pen;
 
       if (slPropertyOffset==offsetof(CLightning, m_iLightAnim))
       {

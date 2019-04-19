@@ -293,7 +293,7 @@ functions:
     CBackgroundViewer *penBcgViewer = (CBackgroundViewer *) GetWorld()->GetBackgroundViewer();
     if( penBcgViewer != NULL) {
       // obtain world settings controller 
-      pwsc = (CWorldSettingsController *) &*penBcgViewer->m_penWorldSettingsController;
+      pwsc = (CWorldSettingsController *) penBcgViewer->m_penWorldSettingsController.ep_pen;
     }
     return pwsc;
   }

@@ -160,8 +160,8 @@ procedures:
     }
 
       if (m_penOwner->GetPhysicsFlags()&EPF_MOVABLE) {
-      m_vGDir = ((CMovableEntity *)&*m_penOwner)->en_vGravityDir;
-      m_fGA = ((CMovableEntity *)&*m_penOwner)->en_fGravityA;
+      m_vGDir = ((CMovableEntity *) m_penOwner.ep_pen)->en_vGravityDir;
+      m_fGA = ((CMovableEntity *) m_penOwner.ep_pen)->en_fGravityA;
     } else {
       FLOATmatrix3D &m = m_penOwner->en_mRotation;
       m_vGDir = FLOAT3D(-m(1,2), -m(2,2), -m(3,2));

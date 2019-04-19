@@ -53,7 +53,7 @@ functions:
   class CEnemyBase *GetOwner(void)
   {
     ASSERT(m_penOwner!=NULL);
-    return (CEnemyBase*)&*m_penOwner;
+    return (CEnemyBase*) m_penOwner.ep_pen;
   }
 
   // find one player number by random

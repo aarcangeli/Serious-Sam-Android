@@ -689,7 +689,10 @@ inline const CEntityPointer &CEntityPointer::operator=(const CEntityPointer &pen
 }
 inline CEntity* CEntityPointer::operator->(void) const { return ep_pen; }
 inline CEntityPointer::operator CEntity*(void) const { return ep_pen; }
-inline CEntity& CEntityPointer::operator*(void) const { return *ep_pen; }
+inline CEntity& CEntityPointer::operator*(void) const {
+  ASSERT(ep_pen);
+  return *ep_pen;
+}
 
 /////////////////////////////////////////////////////////////////////
 // Reference counting functions

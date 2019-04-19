@@ -236,16 +236,16 @@ functions:
     m_epssState = PSSS_MOVING;
     // check all markers for correct type and numbers
     INDEX ctMarkers=1;
-    CPyramidSpaceShipMarker *pcm0 = (CPyramidSpaceShipMarker*)&*m_penTarget;
+    CPyramidSpaceShipMarker *pcm0 = (CPyramidSpaceShipMarker*) m_penTarget.ep_pen;
     if( pcm0 == NULL)
     {
       return;
     }
-    CPyramidSpaceShipMarker *pcm  = (CPyramidSpaceShipMarker*)&*pcm0->m_penTarget;
+    CPyramidSpaceShipMarker *pcm  = (CPyramidSpaceShipMarker*) pcm0->m_penTarget.ep_pen;
     // loop thru markers
     while( pcm!=NULL && pcm->m_penTarget!=pcm0)
     {
-      pcm = (CPyramidSpaceShipMarker*)&*pcm->m_penTarget;
+      pcm = (CPyramidSpaceShipMarker*) pcm->m_penTarget.ep_pen;
       if (pcm==NULL) {
         WarningMessage( "Space ship path - broken link!");
         return;
@@ -768,7 +768,7 @@ procedures:
     }
 
     HideBeamMachine();
-    InitializePathMoving( (CPyramidSpaceShipMarker*)&*m_penFlyAwayTarget);
+    InitializePathMoving( (CPyramidSpaceShipMarker*) m_penFlyAwayTarget.ep_pen);
     return EReturn();
   }
 
@@ -950,7 +950,7 @@ procedures:
         {
           SwitchToModel();
         }
-        InitializePathMoving((CPyramidSpaceShipMarker*)&*m_penTarget);
+        InitializePathMoving((CPyramidSpaceShipMarker*) m_penTarget.ep_pen);
         resume;
       }
       on( ETrigger):
@@ -978,7 +978,7 @@ procedures:
         if(m_epssState != PSSS_IDLE)
         {
           m_penTarget = eForcePathMarker.penForcedPathMarker;
-          InitializePathMoving((CPyramidSpaceShipMarker*)&*m_penTarget);
+          InitializePathMoving((CPyramidSpaceShipMarker*) m_penTarget.ep_pen);
         }
         resume;
       }

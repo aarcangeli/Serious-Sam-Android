@@ -464,11 +464,11 @@ void Particles_ViewerLocal(CEntity *penView)
   if (penBcgViewer != NULL)
   {
     // obtain world settings controller 
-    pwsc = (CWorldSettingsController *)&*penBcgViewer->m_penWorldSettingsController;
+    pwsc = (CWorldSettingsController *) penBcgViewer->m_penWorldSettingsController.ep_pen;
     if (pwsc != NULL)
     {
       // obtain environment particles holder 
-      eph = (CEnvironmentParticlesHolder *)&*pwsc->m_penEnvPartHolder;
+      eph = (CEnvironmentParticlesHolder *) pwsc->m_penEnvPartHolder.ep_pen;
     }
   }
 
@@ -546,7 +546,7 @@ void Particles_ViewerLocal(CEntity *penView)
     }
     
     // next environment particles holder
-    eph = (CEnvironmentParticlesHolder *)&*eph->m_penNextHolder;
+    eph = (CEnvironmentParticlesHolder *) eph->m_penNextHolder.ep_pen;
     if (!(IsOfClass(eph, "EnvironmentParticlesHolder"))) break;
   }
 
