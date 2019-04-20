@@ -28,6 +28,7 @@ extern void AndroidLogPrintE(CTString log);
 extern void AndroidCloseApplication();
 extern void CPrintLog(CTString strBuffer);
 extern err_callback_t g_errorCalllback;
+extern void Breakpoint(void);
 
 /* Throw an exception of formatted string. */
 //ENGINE_API extern void ThrowF_t(char *strFormat, ...); // throws char *

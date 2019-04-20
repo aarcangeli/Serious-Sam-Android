@@ -5225,7 +5225,7 @@ functions:
       }
 
       // start with first message linked to the marker
-      CMessageHolder *penMessage = (CMessageHolder *)&*CpmStart.m_penMessage;
+      CMessageHolder *penMessage = (CMessageHolder *) CpmStart.m_penMessage.ep_pen;
       // while there are some messages to add
       while (penMessage!=NULL && IsOfClass(penMessage, "MessageHolder")) {
         const CTFileName &fnmMessage = penMessage->m_fnmMessage;
@@ -5235,7 +5235,7 @@ functions:
           ReceiveComputerMessage(fnmMessage, 0);
         }
         // go to next message holder in list
-        penMessage = (CMessageHolder *)&*penMessage->m_penNext;
+        penMessage = (CMessageHolder *) penMessage->m_penNext.ep_pen;
       }
 
       // set weapons
