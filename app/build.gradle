@@ -31,8 +31,8 @@ android {
         applicationId "com.github.aarcangeli.serioussamandroid"
         minSdkVersion 19
         targetSdkVersion 28
-        versionCode 1032
-        versionName "1.03.2"
+        versionCode 1033
+        versionName "1.03.3"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
         externalNativeBuild {
