@@ -76,8 +76,9 @@ public class MainActivity extends AppCompatActivity {
     private SensorManager sensorManager;
     private SensorEventListener motionListener;
     private volatile GameState gameState = GameState.LOADING;
-    private boolean isThereController;
     private boolean useGyroscope;
+    private String showTouchController;
+    private boolean enableTouchController;
 
     @Override
     @SuppressLint("ClickableViewAccessibility")
@@ -231,7 +232,7 @@ public class MainActivity extends AppCompatActivity {
         motionListener = new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent event) {
-                if (!isThereController && event.sensor.getType() == Sensor.TYPE_GYROSCOPE && gameState == GameState.NORMAL && useGyroscope) {
+                if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE && gameState == GameState.NORMAL && useGyroscope && enableTouchController) {
                     float axisX = event.values[0];
                     float axisY = event.values[1];
                     float axisZ = event.values[2];
@@ -255,8 +256,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void updateSoftKeyboardVisible() {
-        isThereController = Utils.isThereControllers();
-        int keyboardVisibility = gameState == GameState.NORMAL && !isThereController ? View.VISIBLE : View.GONE;
+        enableTouchController = false;
+        if (gameState == GameState.NORMAL) {
+            if ("Yes".equalsIgnoreCase(showTouchController)) {
+                enableTouchController = true;
+            } else if ("No".equalsIgnoreCase(showTouchController)) {
+                enableTouchController = false;
+            } else {
+                enableTouchController = !Utils.isThereControllers();
+            }
+        }
+        int keyboardVisibility = enableTouchController ? View.VISIBLE : View.GONE;
         findViewById(R.id.input_overlay).setVisibility(keyboardVisibility);
         findViewById(R.id.input_crunch).setVisibility(keyboardVisibility);
         findViewById(R.id.input_jump).setVisibility(keyboardVisibility);
@@ -534,7 +544,9 @@ public class MainActivity extends AppCompatActivity {
     public void syncOptions() {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         useGyroscope = preferences.getBoolean("use_gyroscope", true);
+        showTouchController = preferences.getString("showTouchController", "Auto");
         executeShell("hud_iStats=" + (preferences.getBoolean("hud_iStats", false) ? 2 : 0) + ";");
+        updateSoftKeyboardVisible();
     }
 
     public static void executeShell(String command) {

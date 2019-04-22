@@ -1,3 +1,16 @@
 <resources>
     <string name="app_name">Serious Sam Android</string>
+
+    <string-array name="AutoYesNo">
+        <item>Auto</item>
+        <item>Yes</item>
+        <item>No</item>
+    </string-array>
+
+    <string-array name="ShowTouchControllerEntries">
+        <item>Auto (when there is no controller)</item>
+        <item>Always</item>
+        <item>Never</item>
+    </string-array>
+
 </resources>
