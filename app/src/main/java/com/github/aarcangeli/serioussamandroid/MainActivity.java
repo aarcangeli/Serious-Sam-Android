@@ -78,6 +78,7 @@ public class MainActivity extends AppCompatActivity {
     private volatile GameState gameState = GameState.LOADING;
     private boolean useGyroscope;
     private String showTouchController;
+    private float gyroSensibility;
     private boolean enableTouchController;
 
     @Override
@@ -236,8 +237,8 @@ public class MainActivity extends AppCompatActivity {
                     float axisX = event.values[0];
                     float axisY = event.values[1];
                     float axisZ = event.values[2];
-                    shiftAxisValue(AXIS_LOOK_LR, axisX * MULT_VIEW_GYROSCOPE);
-                    shiftAxisValue(AXIS_LOOK_UD, -axisY * MULT_VIEW_GYROSCOPE);
+                    shiftAxisValue(AXIS_LOOK_LR, axisX * MULT_VIEW_GYROSCOPE * gyroSensibility);
+                    shiftAxisValue(AXIS_LOOK_UD, -axisY * MULT_VIEW_GYROSCOPE * gyroSensibility);
                 }
             }
 
@@ -545,6 +546,7 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         useGyroscope = preferences.getBoolean("use_gyroscope", true);
         showTouchController = preferences.getString("showTouchController", "Auto");
+        gyroSensibility = preferences.getInt("gyro_sensibility", 100) / 100.f;
         executeShell("hud_iStats=" + (preferences.getBoolean("hud_iStats", false) ? 2 : 0) + ";");
         updateSoftKeyboardVisible();
     }
