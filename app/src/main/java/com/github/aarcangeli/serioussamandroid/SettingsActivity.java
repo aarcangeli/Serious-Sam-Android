@@ -19,6 +19,20 @@ public class SettingsActivity extends PreferenceActivity {
         public void onCreate(final Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.preferences);
+
+            final CheckBoxPreference useGyroscope = (CheckBoxPreference) findPreference("use_gyroscope");
+            final Preference gyroSensibility = findPreference("gyro_sensibility");
+
+            if (useGyroscope != null && gyroSensibility != null) {
+                gyroSensibility.setEnabled(useGyroscope.isChecked());
+                useGyroscope.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+                    @Override
+                    public boolean onPreferenceChange(Preference preference, Object newValue) {
+                        gyroSensibility.setEnabled((Boolean) newValue);
+                        return true;
+                    }
+                });
+            }
         }
     }
 }
