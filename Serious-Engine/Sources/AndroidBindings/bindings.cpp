@@ -104,6 +104,7 @@ Java_com_github_aarcangeli_serioussamandroid_MainActivity_nDispatchKeyEvent(JNIE
     BTN_CASE(KEYCODE_BUTTON_R1, g_IncomingControls.bFire)
     BTN_CASE(KEYCODE_BUTTON_R2, g_IncomingControls.bUse)
     BTN_CASE(KEYCODE_BUTTON_L1, g_IncomingControls.bWeaponFlip)
+    BTN_CASE(KEYCODE_BUTTON_Y, g_IncomingControls.bFireBomb)
     BTN_CASE(KEYCODE_BUTTON_X, g_IncomingControls.bReload)
     BTN_CASE(KEYCODE_BUTTON_A, g_IncomingControls.bMoveUp)
     BTN_CASE(KEYCODE_BUTTON_B, g_IncomingControls.bMoveDown)
@@ -127,13 +128,24 @@ JNIEXPORT void JNICALL Java_com_github_aarcangeli_serioussamandroid_MainActivity
   env->ReleaseStringUTFChars(command_, command);
 }
 
+void refreshJavaState() {
+  JNIEnv* env = getEnv();
+  jmethodID method = env->GetStaticMethodID(g_NativeEvents, "reportStateChange", "(II)V");
+  ASSERT(method);
+  env->CallStaticVoidMethod(g_NativeEvents, method, (int) g_cb.gameState, g_cb.seriousBombCount);
+}
+
 void setSeriousState(GameState state) {
   if (g_cb.gameState != state) {
     g_cb.gameState = state;
-    JNIEnv* env = getEnv();
-    jmethodID method = env->GetStaticMethodID(g_NativeEvents, "reportStateChange", "(I)V");
-    ASSERT(method);
-    env->CallStaticVoidMethod(g_NativeEvents, method, (int) g_cb.gameState);
+    refreshJavaState();
+  }
+}
+
+void setSeriousBombCount(int bombs) {
+  if (g_cb.seriousBombCount != bombs) {
+    g_cb.seriousBombCount = bombs;
+    refreshJavaState();
   }
 }
 
@@ -229,6 +241,7 @@ void *seriousMain(void *unused) {
   g_cb.openSettings = &openSettings;
   g_cb.editText = &editText;
   g_cb.restart = &requestRestard;
+  g_cb.setSeriousBombCount = &setSeriousBombCount;
 
   // run all
   try {

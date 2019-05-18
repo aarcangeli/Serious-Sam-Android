@@ -8,8 +8,8 @@ public class NativeEvents {
         EventBus.getDefault().postSticky(new FatalErrorEvent(message));
     }
 
-    public static void reportStateChange(int state) {
-        EventBus.getDefault().postSticky(new StateChangeEvent(GameState.values()[state]));
+    public static void reportStateChange(int state, int bombs) {
+        EventBus.getDefault().postSticky(new StateChangeEvent(GameState.values()[state], bombs));
     }
 
     public static void openSettings() {
@@ -34,9 +34,11 @@ public class NativeEvents {
 
     public static class StateChangeEvent {
         public final GameState state;
+        public final int bombs;
 
-        public StateChangeEvent(GameState state) {
+        public StateChangeEvent(GameState state, int bombs) {
             this.state = state;
+            this.bombs = bombs;
         }
     }
 

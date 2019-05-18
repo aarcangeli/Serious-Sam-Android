@@ -57,6 +57,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "EntitiesMP/CreditsHolder.h"
 #include "EntitiesMP/HudPicHolder.h"
 
+#include "AndroidAdapters/binding-callbacks.h"
+
 extern void JumpFromBouncer(CEntity *penToBounce, CEntity *penBouncer);
 // from game
 #define GRV_SHOWEXTRAS  (1L<<0)   // add extra stuff like console, weapon, pause
@@ -1521,6 +1523,8 @@ functions:
     m_ulFlags |= PLF_SYNCWEAPON;
     // setup light source
     SetupLightSource();
+
+    g_cb.setSeriousBombCount(m_iSeriousBombCount);
   };
 
   /* Get static light source information. */
@@ -3389,6 +3393,7 @@ functions:
         return TRUE;
       case PUIT_BOMB    :
         m_iSeriousBombCount++;
+        g_cb.setSeriousBombCount(m_iSeriousBombCount);
         ItemPicked(TRANS("^cFF0000Serious Bomb!"), 0);
         //ItemPicked(TRANS("^cFF0000S^cFFFF00e^cFF0000r^cFFFF00i^cFF0000o^cFFFF00u^cFF0000s ^cFF0000B^cFFFF00o^cFF0000m^cFFFF00b!"), 0);
         // send computer message
@@ -4505,6 +4510,7 @@ functions:
       if (m_iSeriousBombCount>0 && m_tmSeriousBombFired+4.0f<_pTimer->CurrentTick()) {
         m_iLastSeriousBombCount = m_iSeriousBombCount;
         m_iSeriousBombCount--;
+        g_cb.setSeriousBombCount(m_iSeriousBombCount);
         m_tmSeriousBombFired = _pTimer->CurrentTick();
         
         ESeriousBomb esb;

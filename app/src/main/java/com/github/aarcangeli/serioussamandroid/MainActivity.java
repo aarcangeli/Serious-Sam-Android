@@ -82,6 +82,7 @@ public class MainActivity extends AppCompatActivity {
     private SensorManager sensorManager;
     private SensorEventListener motionListener;
     private volatile GameState gameState = GameState.LOADING;
+    private volatile int bombs;
     private boolean useGyroscope;
     private String showTouchController;
     private float gyroSensibility;
@@ -138,6 +139,7 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.buttonPrev).setOnTouchListener(new MyBtnListener(KeyEvent.KEYCODE_DPAD_LEFT));
         findViewById(R.id.buttonNext).setOnTouchListener(new MyBtnListener(KeyEvent.KEYCODE_DPAD_RIGHT));
         findViewById(R.id.input_fire).setOnTouchListener(new MyBtnListener(KeyEvent.KEYCODE_BUTTON_R1));
+        findViewById(R.id.input_SeriousBomb).setOnTouchListener(new MyBtnListener(KeyEvent.KEYCODE_BUTTON_Y));
         findViewById(R.id.bgTrackerView).setOnTouchListener(new MyBtnListener());
 
         JoystickView joystick = findViewById(R.id.input_overlay);
@@ -240,6 +242,7 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.buttonLoad).setVisibility(gameState == GameState.NORMAL ? View.VISIBLE : View.GONE);
         findViewById(R.id.buttonConsole).setVisibility(gameState == GameState.NORMAL ? View.VISIBLE : View.GONE);
         findViewById(R.id.buttonSave).setVisibility(gameState == GameState.NORMAL ? View.VISIBLE : View.GONE);
+        findViewById(R.id.input_SeriousBomb).setVisibility(enableTouchController && bombs > 0 ? View.VISIBLE : View.GONE);
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
@@ -297,6 +300,7 @@ public class MainActivity extends AppCompatActivity {
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     public void onConsoleVisibilityChange(StateChangeEvent event) {
         gameState = event.state;
+        bombs = event.bombs;
         updateSoftKeyboardVisible();
     }
 

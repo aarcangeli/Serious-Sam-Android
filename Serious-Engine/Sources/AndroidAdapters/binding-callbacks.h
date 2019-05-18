@@ -22,8 +22,10 @@ struct BindingCallbacks {
     void (*openSettings)();
     void (*editText)(const CTString &string, void (*onOk)(CTString str), void (*onCancel)());
     void (*restart)();
+    void (*setSeriousBombCount)(int bombs);
 
     GameState gameState;
+    int seriousBombCount = 0;
 };
 
 extern BindingCallbacks g_cb;
