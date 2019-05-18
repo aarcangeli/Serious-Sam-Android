@@ -14,15 +14,14 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
 #include "StdH.h"
-#include <AndroidBindings/bindings.h>
-#include <AndroidAdapters/gles_adapter.h>
+#include <io.h>
 #include <fcntl.h>
-#include <dlfcn.h>
+#include <sys/stat.h>
+#include <process.h>
 #include <Engine/CurrentVersion.h>
 #include <GameMP/Game.h>
 #define DECL_DLL
 #include <EntitiesMP/Global.h>
-#include <SeriousSam/GUI/Menus/MenuManager.h>
 #include "resource.h"
 #include "SplashScreen.h"
 #include "MainWindow.h"
@@ -32,18 +31,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "CmdLine.h"
 #include "Credits.h"
 
-#ifndef SSA_VERSION
-#define SSA_VERSION ""
-#endif
-
-typedef CGame *(*GAME_Create_t)(void);
-void drawBannerFpsVersion(CDrawPort *pdp, int64_t deltaFrame, float fps);
 
 extern CGame *_pGame = NULL;
 
 // application state variables
 extern BOOL _bRunning = TRUE;
-extern BOOL _bExitQuitScreen = TRUE;
 extern BOOL _bQuitScreen = TRUE;
 extern BOOL bMenuActive = FALSE;
 extern BOOL bMenuRendering = FALSE;
@@ -90,7 +82,6 @@ extern INDEX sam_bAutoPlayDemos = TRUE;
 static INDEX _bInAutoPlayLoop = TRUE;
 
 // menu calling
-extern INDEX sam_bMenu         = FALSE;
 extern INDEX sam_bMenuSave     = FALSE;
 extern INDEX sam_bMenuLoad     = FALSE;
 extern INDEX sam_bMenuControls = FALSE;
@@ -102,7 +93,7 @@ extern INDEX sam_iStartCredits = FALSE;
 extern CTFileName _fnmModToLoad = CTString("");
 extern CTString _strModServerJoin = CTString("");
 extern CTString _strURLToVisit = CTString("");
-extern CTFileName _modToLoadTxt = CTString("ModToLoad.txt");
+
 
 // state variables fo addon execution
 // 0 - nothing
@@ -119,14 +110,14 @@ extern CTextureObject *_ptoLogoCT  = NULL;
 extern CTextureObject *_ptoLogoODI = NULL;
 extern CTextureObject *_ptoLogoEAX = NULL;
 
-extern CTString sam_strVersion = SSA_VERSION;
-extern CTString sam_strModName = TRANS("-   A N D R O I D   P O R T   ( U N O F F I C I A L )   -");
+extern CTString sam_strVersion = "1.10";
+extern CTString sam_strModName = TRANS("-   O P E N   S O U R C E   -");
 
-extern CTFileName sam_strFirstLevel = CTString("Levels\\LevelsMP\\1_0_InTheLastEpisode.wld");
-extern CTFileName sam_strIntroLevel = CTString("Levels\\LevelsMP\\Intro.wld");
+extern CTString sam_strFirstLevel = "Levels\\LevelsMP\\1_0_InTheLastEpisode.wld";
+extern CTString sam_strIntroLevel = "Levels\\LevelsMP\\Intro.wld";
 extern CTString sam_strGameName = "serioussamse";
 
-extern CTString sam_strTechTestLevel = "Levels\\LevelsMP\\Technology\\TechTest.wld";
+extern CTString sam_strTechTestLevel = "Levels\\LevelsMP\\TechTest.wld";
 extern CTString sam_strTrainingLevel = "Levels\\KarnakDemo.wld";
 
 ENGINE_API extern INDEX snd_iFormat;
@@ -137,168 +128,8 @@ CDrawPort *pdp;
 CDrawPort *pdpNormal;
 CDrawPort *pdpWideScreen;
 CViewPort *pvpViewPort;
+HINSTANCE _hInstance;
 
-void StartNextDemo(void);
-BOOL _bWindowChanging = FALSE;
-void CloseMainWindow() {
-  // nope
-}
-void OpenMainWindowFullScreen(PIX pixSizeI, PIX pixSizeJ) {
-  // nope
-}
-void OpenMainWindowNormal(PIX pixSizeI, PIX pixSizeJ) {
-  // nope
-}
-void MainWindow_End() {
-  // nope
-}
-
-bool ignoreTouchInputs = false;
-
-void TouchDown(void* pArgs) {
-  INDEX x = NEXTARGUMENT(INDEX);
-  INDEX y = NEXTARGUMENT(INDEX);
-
-  _pGame->isTouchingScreen = true;
-
-  if (g_cb.gameState == GS_LOADING) {
-    ignoreTouchInputs = true;
-    return;
-  }
-  ignoreTouchInputs = false;
-
-  if (bMenuActive) {
-    MenuOnMouseMove(x, y);
-    return;
-  }
-
-  if (_pGame->gm_csComputerState != CS_OFF && _pGame->gm_csComputerState != CS_ONINBACKGROUND) {
-    _pGame->ComputerMouseMove(x, y);
-    MSG msg;
-    msg.message = WM_LBUTTONDOWN;
-    _pGame->ComputerKeyDown(msg);
-    return;
-  }
-}
-
-void TouchMove(void* pArgs) {
-  INDEX x = NEXTARGUMENT(INDEX);
-  INDEX y = NEXTARGUMENT(INDEX);
-
-  if (ignoreTouchInputs) {
-    return;
-  }
-
-  if (bMenuActive) {
-    MenuOnMouseMove(x, y);
-    return;
-  }
-
-  if (_pGame->gm_csComputerState != CS_OFF && _pGame->gm_csComputerState != CS_ONINBACKGROUND) {
-    _pGame->ComputerMouseMove(x, y);
-    return;
-  }
-}
-
-void TouchUp(void* pArgs) {
-  INDEX x = NEXTARGUMENT(INDEX);
-  INDEX y = NEXTARGUMENT(INDEX);
-
-  _pGame->isTouchingScreen = false;
-
-  if (ignoreTouchInputs) {
-    return;
-  }
-
-  if (_gmRunningGameMode == GM_DEMO || _gmRunningGameMode == GM_INTRO) {
-    if (!bMenuActive && !bMenuRendering && _pGame->gm_csConsoleState == CS_OFF) {
-      _pGame->StopGame();
-      _gmRunningGameMode = GM_NONE;
-      StartMenus();
-      return;
-    }
-  }
-
-  if (!_bRunning) {
-    // stop menu
-    _bExitQuitScreen = true;
-    return;
-  }
-
-  if (bMenuActive) {
-    MenuOnMouseMove(x, y);
-    MenuOnKeyDown(VK_LBUTTON);
-    return;
-  }
-
-  if (_pGame->gm_csComputerState != CS_OFF && _pGame->gm_csComputerState != CS_ONINBACKGROUND) {
-    _pGame->ComputerMouseMove(x, y);
-    MSG msg;
-    msg.message = WM_LBUTTONUP;
-    _pGame->ComputerKeyDown(msg);
-    return;
-  }
-}
-
-void ExitConfirm(void);
-void GoMenuBack() {
-  if (bMenuActive) {
-    if (&_pGUIM->gmMainMenu == pgmCurrentMenu) {
-      ExitConfirm();
-    } else {
-      MenuOnKeyDown(VK_ESCAPE);
-    }
-  }
-}
-
-void ToggleConsole() {
-  if (_pGame->gm_csConsoleState == CS_OFF || _pGame->gm_csConsoleState == CS_TURNINGOFF) {
-    _pGame->gm_csConsoleState = CS_TURNINGON;
-    if (bMenuActive) {
-      StopMenus(FALSE);
-    }
-  } else if (_pGame->gm_csConsoleState == CS_ON || _pGame->gm_csConsoleState == CS_TURNINGON) {
-    _pGame->gm_csConsoleState = CS_TURNINGOFF;
-  }
-}
-
-void HideConsole() {
-  if (_pGame->gm_csConsoleState == CS_ON || _pGame->gm_csConsoleState == CS_TURNINGON) {
-    _pGame->gm_csConsoleState = CS_TURNINGOFF;
-  }
-}
-
-void HideComputer() {
-  if (_pGame->gm_csComputerState == CS_ON || _pGame->gm_csComputerState == CS_TURNINGON) {
-    _pGame->gm_csComputerState = CS_TURNINGOFF;
-  }
-}
-
-void MenuEvent(void* pArgs) {
-  INDEX vk = NEXTARGUMENT(INDEX);
-  MenuOnKeyDown(vk);
-
-  if (_pGame->gm_csConsoleState != CS_OFF && _pGame->gm_csConsoleState != CS_ONINBACKGROUND) {
-    MSG msg;
-    msg.message = WM_KEYDOWN;
-    msg.wParam = vk;
-    _pGame->ConsoleKeyDown(msg);
-    return;
-  }
-}
-
-void MenuChar(void* pArgs) {
-  INDEX keyCode = NEXTARGUMENT(INDEX);
-  MSG msg;
-  msg.message = WM_CHAR;
-  msg.wParam = keyCode;
-
-  if (bMenuActive && !_pInput->IsInputEnabled()) {
-    MenuOnChar(msg);
-  }
-
-  _pGame->ConsoleChar(msg);
-}
 
 static void PlayDemo(void* pArgs)
 {
@@ -320,13 +151,51 @@ extern void ApplyVideoMode(void)
                 (enum DisplayDepth)sam_iDisplayDepth, sam_bFullScreenActive);
 }
 
+static void BenchMark(void)
+{
+  _pGfx->Benchmark(pvpViewPort, pdp);
+}
+
+
 static void QuitGame(void)
 {
   _bRunning = FALSE;
   _bQuitScreen = FALSE;
 }
 
+// check if another app is already running
+static HANDLE _hLock = NULL;
+static CTFileName _fnmLock;
+static void DirectoryLockOn(void)
+{
+  // create lock filename
+  _fnmLock = _fnmApplicationPath+"SeriousSam.loc";
+  // try to open lock file
+  _hLock = CreateFileA(
+    _fnmLock,
+    GENERIC_WRITE,
+    0/*no sharing*/,
+    NULL, // pointer to security attributes
+    CREATE_ALWAYS,
+    FILE_ATTRIBUTE_NORMAL|FILE_FLAG_DELETE_ON_CLOSE,  // file attributes
+    NULL);
+  // if failed
+  if (_hLock==NULL || GetLastError()!=0) {
+    // report warning
+    CPrintF(TRANS("WARNING: SeriousSam didn't shut down properly last time!\n"));
+  }
+}
+static void DirectoryLockOff(void)
+{
+  // if lock is open
+  if (_hLock!=NULL) {
+    // close it
+    CloseHandle(_hLock);
+  }
+}
+
 void End(void);
+
 
 // automaticaly manage input enable/disable toggling
 static BOOL _bInputEnabled = FALSE;
@@ -335,7 +204,6 @@ void UpdateInputEnabledState(void)
   // do nothing if window is invalid
   if( _hwndMain==NULL) return;
 
-#if 0
   // input should be enabled if application is active
   // and no menu is active and no console is active
   BOOL bShouldBeEnabled = (!IsIconic(_hwndMain) && !bMenuActive && _pGame->gm_csConsoleState==CS_OFF
@@ -355,14 +223,13 @@ void UpdateInputEnabledState(void)
     _bInputEnabled = TRUE;
   }
   _bReconsiderInput = FALSE;
-#endif
 }
 
 
 // automaticaly manage pause toggling
 void UpdatePauseState(void)
 {
-  BOOL bShouldPause = (_gmRunningGameMode==GM_SINGLE_PLAYER) && (bMenuActive || 
+  BOOL bShouldPause = (_gmRunningGameMode==GM_SINGLE_PLAYER) && (bMenuActive ||
                        _pGame->gm_csConsoleState ==CS_ON || _pGame->gm_csConsoleState ==CS_TURNINGON || _pGame->gm_csConsoleState ==CS_TURNINGOFF ||
                        _pGame->gm_csComputerState==CS_ON || _pGame->gm_csComputerState==CS_TURNINGON || _pGame->gm_csComputerState==CS_TURNINGOFF);
   _pNetwork->SetLocalPause(bShouldPause);
@@ -381,12 +248,13 @@ void LimitFrameRate(void)
   sam_iMaxFPSActive   = ClampDn( (INDEX)sam_iMaxFPSActive,   1L);
   sam_iMaxFPSInactive = ClampDn( (INDEX)sam_iMaxFPSInactive, 1L);
   INDEX iMaxFPS = sam_iMaxFPSActive;
+  if( IsIconic(_hwndMain)) iMaxFPS = sam_iMaxFPSInactive;
   if(_pGame->gm_CurrentSplitScreenCfg==CGame::SSC_DEDICATED) {
     iMaxFPS = ClampDn(iMaxFPS, 60L); // never go very slow if dedicated server
   }
   TIME tmWantedDelta = 1.0f / iMaxFPS;
   if( tmCurrentDelta<tmWantedDelta) Sleep( (tmWantedDelta-tmCurrentDelta)*1000.0f);
-  
+
   // remember new time
   tvLast = _pTimer->GetHighPrecisionTimer();
 }
@@ -475,6 +343,15 @@ void TrimString(char *str)
   }
 }
 
+// run web browser and view an url
+void RunBrowser(const char *strUrl)
+{
+  int iResult = (int)ShellExecuteA( _hwndMain, "OPEN", strUrl, NULL, NULL, SW_SHOWMAXIMIZED);
+  if (iResult<32) {
+    // should report error?
+    NOTHING;
+  }
+}
 
 void LoadAndForceTexture(CTextureObject &to, CTextureObject *&pto, const CTFileName &fnm)
 {
@@ -485,7 +362,7 @@ void LoadAndForceTexture(CTextureObject &to, CTextureObject *&pto, const CTFileN
     ptd = ptd->td_ptdBaseTexture;
     if( ptd!=NULL) ptd->Force( TEX_CONSTANT);
     pto = &to;
-  } catch ( const char *pchrError) {
+  } catch( char *pchrError) {
     (void*)pchrError;
     pto = NULL;
   }
@@ -494,46 +371,63 @@ void LoadAndForceTexture(CTextureObject &to, CTextureObject *&pto, const CTFileN
 void InitializeGame(void)
 {
   try {
+    #ifndef NDEBUG
+      #define GAMEDLL (_fnmApplicationExe.FileDir()+"Game"+_strModExt+"D.dll")
+    #else
+      #define GAMEDLL (_fnmApplicationExe.FileDir()+"Game"+_strModExt+".dll")
+    #endif
+    CTFileName fnmExpanded;
+    ExpandFilePath(EFP_READ, CTString(GAMEDLL), fnmExpanded);
 
-    void *libGameMP = dlopen("libGameMP.so", RTLD_NOW);
-    if (!libGameMP) {
-      FatalError("  Cannot load GameMP");
+    CPrintF(TRANS("Loading game library '%s'...\n"), (const char *)fnmExpanded);
+    HMODULE hGame = LoadLibraryA(fnmExpanded);
+    if (hGame==NULL) {
+      ThrowF_t("%s", GetWindowsError(GetLastError()));
     }
-    CPrintF("  libGameMP.so loaded\n");
-
-    GAME_Create_t GAME_Create = (GAME_Create_t) dlsym(libGameMP, "GAME_Create");
-    if (!GAME_Create) {
-      FatalError("  Cannot find GAME_Create");
+    CGame* (*GAME_Create)(void) = (CGame* (*)(void))GetProcAddress(hGame, "GAME_Create");
+    if (GAME_Create==NULL) {
+      ThrowF_t("%s", GetWindowsError(GetLastError()));
     }
-    CPrintF("  GAME_Create found\n");
-    CPrintF("\n");
-
     _pGame = GAME_Create();
 
-  } catch ( const char *strError) {
+  } catch (char *strError) {
     FatalError("%s", strError);
   }
   // init game - this will load persistent symbols
   _pGame->Initialize(CTString("Data\\SeriousSam.gms"));
 }
 
-BOOL Init()
+BOOL Init( HINSTANCE hInstance, int nCmdShow, CTString strCmdLine)
 {
+  _hInstance = hInstance;
+  ShowSplashScreen(hInstance);
 
-  // this is not used in android
-  _pixDesktopWidth = 0;
+  // remember desktop width
+  _pixDesktopWidth = ::GetSystemMetrics(SM_CXSCREEN);
+
+  // prepare main window
+  MainWindow_Init();
+  OpenMainWindowInvisible();
+
+  // parse command line before initializing engine
+  ParseCommandLine(strCmdLine);
 
   // initialize engine
   SE_InitEngine(sam_strGameName);
 
   SE_LoadDefaultFonts();
+  // now print the output of command line parsing
+  CPrintF("%s", cmd_strOutput);
+
+  // lock the directory
+  DirectoryLockOn();
 
   // load all translation tables
   InitTranslation();
   try {
     AddTranslationTablesDir_t(CTString("Data\\Translations\\"), CTString("*.txt"));
     FinishTranslationTable();
-  } catch ( const char *strError) {
+  } catch (char *strError) {
     FatalError("%s", strError);
   }
 
@@ -541,57 +435,47 @@ BOOL Init()
   _pShell->Execute( "con_bNoWarnings=1;");
 
   // declare shell symbols
-  _pShell->DeclareSymbol("user void PlayDemo(CTString);", (void *) &PlayDemo);
-  _pShell->DeclareSymbol("persistent INDEX sam_bFullScreen;", (void *)   &sam_bFullScreenActive);
-  _pShell->DeclareSymbol("persistent INDEX sam_iScreenSizeI;", (void *)  &sam_iScreenSizeI);
-  _pShell->DeclareSymbol("persistent INDEX sam_iScreenSizeJ;", (void *)  &sam_iScreenSizeJ);
-  _pShell->DeclareSymbol("persistent INDEX sam_iDisplayDepth;", (void *) &sam_iDisplayDepth);
-  _pShell->DeclareSymbol("persistent INDEX sam_iDisplayAdapter;", (void *) &sam_iDisplayAdapter);
-  _pShell->DeclareSymbol("persistent INDEX sam_iGfxAPI;", (void *)         &sam_iGfxAPI);
-  _pShell->DeclareSymbol("persistent INDEX sam_bFirstStarted;", (void *) &sam_bFirstStarted);
-  _pShell->DeclareSymbol("persistent INDEX sam_bAutoAdjustAudio;", (void *) &sam_bAutoAdjustAudio);
-  _pShell->DeclareSymbol("persistent user INDEX sam_bWideScreen;", (void *) &sam_bWideScreen);
-  _pShell->DeclareSymbol("persistent user FLOAT sam_fPlayerOffset;", (void *)  &sam_fPlayerOffset);
-  _pShell->DeclareSymbol("persistent user INDEX sam_bAutoPlayDemos;", (void *) &sam_bAutoPlayDemos);
-  _pShell->DeclareSymbol("persistent user INDEX sam_iMaxFPSActive;", (void *)    &sam_iMaxFPSActive);
-  _pShell->DeclareSymbol("persistent user INDEX sam_iMaxFPSInactive;", (void *)  &sam_iMaxFPSInactive);
-  _pShell->DeclareSymbol("persistent user INDEX sam_bPauseOnMinimize;", (void *) &sam_bPauseOnMinimize);
-  _pShell->DeclareSymbol("persistent user FLOAT sam_tmDisplayModeReport;", (void *)   &sam_tmDisplayModeReport);
-  _pShell->DeclareSymbol("persistent user CTString sam_strNetworkSettings;", (void *) &sam_strNetworkSettings);
-  _pShell->DeclareSymbol("persistent user CTString sam_strIntroLevel;", (void *)      &sam_strIntroLevel);
-  _pShell->DeclareSymbol("persistent user CTString sam_strGameName;", (void *)      &sam_strGameName);
-  _pShell->DeclareSymbol("user CTString sam_strVersion;", (void *)    &sam_strVersion);
-  _pShell->DeclareSymbol("user CTString sam_strFirstLevel;", (void *) &sam_strFirstLevel);
-  _pShell->DeclareSymbol("user CTString sam_strModName;", (void *) &sam_strModName);
-  _pShell->DeclareSymbol("persistent INDEX sam_bShowAllLevels;", (void *) &sam_bShowAllLevels);
-  _pShell->DeclareSymbol("persistent INDEX sam_bMentalActivated;", (void *) &sam_bMentalActivated);
+  _pShell->DeclareSymbol("user void PlayDemo(CTString);", &PlayDemo);
+  _pShell->DeclareSymbol("persistent INDEX sam_bFullScreen;",   &sam_bFullScreenActive);
+  _pShell->DeclareSymbol("persistent INDEX sam_iScreenSizeI;",  &sam_iScreenSizeI);
+  _pShell->DeclareSymbol("persistent INDEX sam_iScreenSizeJ;",  &sam_iScreenSizeJ);
+  _pShell->DeclareSymbol("persistent INDEX sam_iDisplayDepth;", &sam_iDisplayDepth);
+  _pShell->DeclareSymbol("persistent INDEX sam_iDisplayAdapter;", &sam_iDisplayAdapter);
+  _pShell->DeclareSymbol("persistent INDEX sam_iGfxAPI;",         &sam_iGfxAPI);
+  _pShell->DeclareSymbol("persistent INDEX sam_bFirstStarted;", &sam_bFirstStarted);
+  _pShell->DeclareSymbol("persistent INDEX sam_bAutoAdjustAudio;", &sam_bAutoAdjustAudio);
+  _pShell->DeclareSymbol("persistent user INDEX sam_bWideScreen;", &sam_bWideScreen);
+  _pShell->DeclareSymbol("persistent user FLOAT sam_fPlayerOffset;",  &sam_fPlayerOffset);
+  _pShell->DeclareSymbol("persistent user INDEX sam_bAutoPlayDemos;", &sam_bAutoPlayDemos);
+  _pShell->DeclareSymbol("persistent user INDEX sam_iMaxFPSActive;",    &sam_iMaxFPSActive);
+  _pShell->DeclareSymbol("persistent user INDEX sam_iMaxFPSInactive;",  &sam_iMaxFPSInactive);
+  _pShell->DeclareSymbol("persistent user INDEX sam_bPauseOnMinimize;", &sam_bPauseOnMinimize);
+  _pShell->DeclareSymbol("persistent user FLOAT sam_tmDisplayModeReport;",   &sam_tmDisplayModeReport);
+  _pShell->DeclareSymbol("persistent user CTString sam_strNetworkSettings;", &sam_strNetworkSettings);
+  _pShell->DeclareSymbol("persistent user CTString sam_strIntroLevel;",      &sam_strIntroLevel);
+  _pShell->DeclareSymbol("persistent user CTString sam_strGameName;",      &sam_strGameName);
+  _pShell->DeclareSymbol("user CTString sam_strVersion;",    &sam_strVersion);
+  _pShell->DeclareSymbol("user CTString sam_strFirstLevel;", &sam_strFirstLevel);
+  _pShell->DeclareSymbol("user CTString sam_strModName;", &sam_strModName);
+  _pShell->DeclareSymbol("persistent INDEX sam_bShowAllLevels;", &sam_bShowAllLevels);
+  _pShell->DeclareSymbol("persistent INDEX sam_bMentalActivated;", &sam_bMentalActivated);
 
-  _pShell->DeclareSymbol("user CTString sam_strTechTestLevel;", (void *) &sam_strTechTestLevel);
-  _pShell->DeclareSymbol("user CTString sam_strTrainingLevel;", (void *) &sam_strTrainingLevel);
+  _pShell->DeclareSymbol("user CTString sam_strTechTestLevel;", &sam_strTechTestLevel);
+  _pShell->DeclareSymbol("user CTString sam_strTrainingLevel;", &sam_strTrainingLevel);
 
-  _pShell->DeclareSymbol("user void Quit(void);", (void *) &QuitGame);
+  _pShell->DeclareSymbol("user void Quit(void);", &QuitGame);
 
-  _pShell->DeclareSymbol("persistent user INDEX sam_iVideoSetup;", (void *)     &sam_iVideoSetup);
-  _pShell->DeclareSymbol("user void ApplyRenderingPreferences(void);", (void *) &ApplyRenderingPreferences);
-  _pShell->DeclareSymbol("user void ApplyVideoMode(void);", (void *)            &ApplyVideoMode);
+  _pShell->DeclareSymbol("persistent user INDEX sam_iVideoSetup;",     &sam_iVideoSetup);
+  _pShell->DeclareSymbol("user void ApplyRenderingPreferences(void);", &ApplyRenderingPreferences);
+  _pShell->DeclareSymbol("user void ApplyVideoMode(void);",            &ApplyVideoMode);
+  _pShell->DeclareSymbol("user void Benchmark(void);", &BenchMark);
 
-  _pShell->DeclareSymbol("user INDEX sam_bMenu;", (void *)         &sam_bMenu);
-  _pShell->DeclareSymbol("user INDEX sam_bMenuSave;", (void *)     &sam_bMenuSave);
-  _pShell->DeclareSymbol("user INDEX sam_bMenuLoad;", (void *)     &sam_bMenuLoad);
-  _pShell->DeclareSymbol("user INDEX sam_bMenuControls;", (void *) &sam_bMenuControls);
-  _pShell->DeclareSymbol("user INDEX sam_bMenuHiScore;", (void *)  &sam_bMenuHiScore);
+  _pShell->DeclareSymbol("user INDEX sam_bMenuSave;",     &sam_bMenuSave);
+  _pShell->DeclareSymbol("user INDEX sam_bMenuLoad;",     &sam_bMenuLoad);
+  _pShell->DeclareSymbol("user INDEX sam_bMenuControls;", &sam_bMenuControls);
+  _pShell->DeclareSymbol("user INDEX sam_bMenuHiScore;",  &sam_bMenuHiScore);
   _pShell->DeclareSymbol("user INDEX sam_bToggleConsole;",&sam_bToggleConsole);
-  _pShell->DeclareSymbol("INDEX sam_iStartCredits;", (void *) &sam_iStartCredits);
-
-  _pShell->DeclareSymbol("user void TouchMove(INDEX, INDEX);", (void *) &TouchMove);
-  _pShell->DeclareSymbol("user void TouchDown(INDEX, INDEX);", (void *) &TouchDown);
-  _pShell->DeclareSymbol("user void TouchUp(INDEX, INDEX);", (void *) &TouchUp);
-  _pShell->DeclareSymbol("user void MenuEvent(INDEX);", (void *) &MenuEvent);
-  _pShell->DeclareSymbol("user void MenuChar(INDEX);", (void *) &MenuChar);
-  _pShell->DeclareSymbol("user void GoMenuBack();", (void *) &GoMenuBack);
-  _pShell->DeclareSymbol("user void ToggleConsole();", (void *) &ToggleConsole);
-  _pShell->DeclareSymbol("user void HideConsole();", (void *) &HideConsole);
-  _pShell->DeclareSymbol("user void HideComputer();", (void *) &HideComputer);
+  _pShell->DeclareSymbol("INDEX sam_iStartCredits;", &sam_iStartCredits);
 
   InitializeGame();
   _pNetwork->md_strGameID = sam_strGameName;
@@ -606,24 +490,20 @@ BOOL Init()
   }
 
   // initialize sound library
-#if 0
   snd_iFormat = Clamp( snd_iFormat, (INDEX)CSoundLibrary::SF_NONE, (INDEX)CSoundLibrary::SF_44100_16);
   _pSound->SetFormat( (enum CSoundLibrary::SoundFormat)snd_iFormat);
-#endif
 
   if (sam_bAutoAdjustAudio) {
     _pShell->Execute("include \"Scripts\\Addons\\SFX-AutoAdjust.ini\"");
   }
 
   // execute script given on command line
-#if 0
   if (cmd_strScript!="") {
     CPrintF("Command line script: '%s'\n", cmd_strScript);
     CTString strCmd;
     strCmd.PrintF("include \"%s\"", cmd_strScript);
     _pShell->Execute(strCmd);
   }
-#endif
 
   // load logo textures
   LoadAndForceTexture(_toLogoCT,   _ptoLogoCT,   CTFILENAME("Textures\\Logo\\LogoCT.tex"));
@@ -635,8 +515,8 @@ BOOL Init()
   LoadStringVar(CTString("Data\\Var\\ModName.var"), sam_strModName);
   CPrintF(TRANS("Serious Sam version: %s\n"), sam_strVersion);
   CPrintF(TRANS("Active mod: %s\n"), sam_strModName);
-  InitializeMenus();      
-  
+  InitializeMenus();
+
   // if there is a mod
   if (_fnmMod!="") {
     // execute the mod startup script
@@ -654,19 +534,18 @@ BOOL Init()
   StartNewMode( (GfxAPIType)sam_iGfxAPI, sam_iDisplayAdapter, sam_iScreenSizeI, sam_iScreenSizeJ,
                 (enum DisplayDepth)sam_iDisplayDepth, sam_bFullScreenActive);
 
-  gles_adapter::gles_adp_init();
-
   // set default mode reporting
   if( sam_bFirstStarted) {
     _iDisplayModeChangeFlag = 0;
     sam_bFirstStarted = FALSE;
   }
 
+  HideSplashScreen();
+
   if (cmd_strPassword!="") {
     _pShell->SetString("net_strConnectPassword", cmd_strPassword);
   }
 
-#if 0
   // if connecting to server from command line
   if (cmd_strServer!="") {
     CTString strPort = "";
@@ -702,17 +581,13 @@ BOOL Init()
         extern void StartSinglePlayerGame(void);
         StartSinglePlayerGame();
       }
-    } catch ( const char *strError) {
+    } catch (char *strError) {
       CPrintF(TRANS("Cannot start '%s': '%s'\n"), cmd_strWorld, strError);
     }
   // if no relevant starting at command line
   } else {
     StartNextDemo();
   }
-# else
-  StartNextDemo();
-#endif
-
   return TRUE;
 }
 
@@ -737,6 +612,7 @@ void End(void)
   _pGame->End();
   LCDEnd();
   // unlock the directory
+  DirectoryLockOff();
   SE_EndEngine();
 }
 
@@ -793,7 +669,7 @@ void DoGame(void)
   if( !_pGame->gm_bGameOn) _gmRunningGameMode = GM_NONE;
 
   if( _gmRunningGameMode==GM_DEMO  && _pNetwork->IsDemoPlayFinished()
-      ||_gmRunningGameMode==GM_INTRO && _pNetwork->IsGameFinished()) {
+    ||_gmRunningGameMode==GM_INTRO && _pNetwork->IsGameFinished()) {
     _pGame->StopGame();
     _gmRunningGameMode = GM_NONE;
 
@@ -805,28 +681,10 @@ void DoGame(void)
     }
   }
 
-  // update fps
-  int64_t start = getTimeNsec();
-  static int64_t lastFrameDraw = start;
-  int64_t deltaFrame = start - lastFrameDraw;
-  lastFrameDraw = start;
-
-  const int64_t UPDATE_TIME = 2000000000; // 2s
-  static int64_t lastFpsNow = start;
-  static int64_t times = 0;
-  static float fps;
-  if (start - lastFpsNow > UPDATE_TIME) {
-    fps = (float) times / (start - lastFpsNow) * 1000 * 1000 * 1000;
-    lastFpsNow = start;
-    times = 0;
-  }
-  times++;
-
-
   // do the main game loop
   if( _gmRunningGameMode != GM_NONE) {
     _pGame->GameMainLoop();
-    // if game is not started
+  // if game is not started
   } else {
     // just handle broadcast messages
     _pNetwork->GameInactive();
@@ -845,15 +703,11 @@ void DoGame(void)
     sam_iStartCredits = 0;
   }
 
-  if (sam_bToggleConsole) {
-    sam_bToggleConsole = false;
-    ToggleConsole();
-  }
-
-  if (pdp!=NULL && pdp->Lock()) {
-    pdp->Fill(C_BLACK | CT_OPAQUE);
-
-    if (_gmRunningGameMode != GM_NONE && !bMenuActive) {
+  // redraw the view
+  if( !IsIconic(_hwndMain) && pdp!=NULL && pdp->Lock())
+  {
+    if( _gmRunningGameMode!=GM_NONE && !bMenuActive ) {
+      // handle pretouching of textures and shadowmaps
       pdp->Unlock();
       _pGame->GameRedrawView( pdp, (_pGame->gm_csConsoleState!=CS_OFF || bMenuActive)?0:GRV_SHOWEXTRAS);
       pdp->Lock();
@@ -884,25 +738,6 @@ void DoGame(void)
     // render console
     _pGame->ConsoleRender(pdp);
 
-    // draw fps and frame time
-    if (!bMenuActive && _pGame->gm_csConsoleState == CS_OFF && _pGame->gm_csComputerState == CS_OFF) {
-      drawBannerFpsVersion(pdp, deltaFrame, fps);
-    }
-
-    if (_gmRunningGameMode == GM_INTRO) {
-      g_cb.setSeriousState(GS_INTRO);
-    } else if (_gmRunningGameMode == GM_DEMO) {
-      g_cb.setSeriousState(GS_DEMO);
-    } else if (_pGame->gm_csConsoleState != CS_OFF) {
-      g_cb.setSeriousState(GS_CONSOLE);
-    } else if (_pGame->gm_csComputerState != CS_OFF) {
-      g_cb.setSeriousState(GS_COMPUTER);
-    } else if (bMenuActive) {
-      g_cb.setSeriousState(GS_MENU);
-    } else {
-      g_cb.setSeriousState(GS_NORMAL);
-    }
-
     // done with all
     pdp->Unlock();
 
@@ -915,13 +750,19 @@ void DoGame(void)
       pdpNormal->Fill( 0, pixJOfs, pixWidth, pixHeight, C_BLACK|CT_OPAQUE);
       pdpNormal->Unlock();
     }
-
     // show
     pvpViewPort->SwapBuffers();
-
   }
-
 }
+
+
+void TeleportPlayer(int iPosition)
+{
+  CTString strCommand;
+  strCommand.PrintF( "cht_iGoToMarker = %d;", iPosition);
+  _pShell->Execute(strCommand);
+}
+
 
 CTextureObject _toStarField;
 static FLOAT _fLastVolume = 1.0f;
@@ -954,7 +795,7 @@ FLOAT RenderQuitScreen(CDrawPort *pdp, CViewPort *pvp)
 
   dpWide.Fill(C_BLACK|CT_OPAQUE);
   RenderStarfield(&dpWide, _fLastVolume);
-  
+
   FLOAT fVolume = Credits_Render(&dpWide);
   _fLastVolume = fVolume;
 
@@ -965,18 +806,17 @@ FLOAT RenderQuitScreen(CDrawPort *pdp, CViewPort *pvp)
 }
 void QuitScreenLoop(void)
 {
-  g_cb.setSeriousState(GS_QUIT_SCREEN);
+
   Credits_On(3);
   CSoundObject soMusic;
   try {
     _toStarField.SetData_t(CTFILENAME("Textures\\Background\\Night01\\Stars01.tex"));
     soMusic.Play_t(CTFILENAME("Music\\Credits.mp3"), SOF_NONGAME|SOF_MUSIC|SOF_LOOP);
-  } catch ( const char *strError) {
+  } catch (char *strError) {
     CPrintF("%s\n", strError);
   }
-  _bExitQuitScreen = false;
   // while it is still running
-  while (!_bExitQuitScreen) {
+  FOREVER {
     FLOAT fVolume = RenderQuitScreen(pdp, pvpViewPort);
     if (fVolume<=0) {
       return;
@@ -984,11 +824,463 @@ void QuitScreenLoop(void)
     // assure we can listen to non-3d sounds
     soMusic.SetVolume(fVolume, fVolume);
     _pSound->UpdateSounds();
-
-    g_cb.syncSeriousThreads();
+    // while there are any messages in the message queue
+    MSG msg;
+    while(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+      // if it is not a keyboard or mouse message
+      if(msg.message==WM_LBUTTONDOWN||
+         msg.message==WM_RBUTTONDOWN||
+         msg.message==WM_KEYDOWN) {
+        return;
+      }
+    }
     //Sleep(5);
   }
 }
+
+
+int SubMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+{
+  (void)hPrevInstance;
+
+  if( !Init( hInstance, nCmdShow, lpCmdLine )) return FALSE;
+
+  // initialy, application is running and active, console and menu are off
+  _bRunning    = TRUE;
+  _bQuitScreen = TRUE;
+  _pGame->gm_csConsoleState  = CS_OFF;
+  _pGame->gm_csComputerState = CS_OFF;
+//  bMenuActive    = FALSE;
+//  bMenuRendering = FALSE;
+  // while it is still running
+  while( _bRunning && _fnmModToLoad=="")
+  {
+    // while there are any messages in the message queue
+    MSG msg;
+    while( PeekMessage( &msg, NULL, 0, 0, PM_REMOVE)) {
+      // if it is not a mouse message
+      if( !(msg.message>=WM_MOUSEFIRST && msg.message<=WM_MOUSELAST) ) {
+        // if not system key messages
+        if( !(msg.message==WM_KEYDOWN && msg.wParam==VK_F10
+            ||msg.message==WM_SYSKEYDOWN)) {
+          // dispatch it
+          TranslateMessage(&msg);
+          DispatchMessage(&msg);
+        }
+      }
+
+      // system commands (also send by the application itself)
+      if( msg.message==WM_SYSCOMMAND)
+      {
+        switch( msg.wParam & ~0x0F) {
+        // if should minimize
+        case SC_MINIMIZE:
+          if( _bWindowChanging) break;
+          _bWindowChanging  = TRUE;
+          _bReconsiderInput = TRUE;
+          // if allowed, not already paused and only in single player game mode
+          if( sam_bPauseOnMinimize && !_pNetwork->IsPaused() && _gmRunningGameMode==GM_SINGLE_PLAYER) {
+            // pause game
+            _pNetwork->TogglePause();
+          }
+          // if in full screen
+          if( sam_bFullScreenActive) {
+            // reset display mode and minimize window
+            _pGfx->ResetDisplayMode();
+            ShowWindow(_hwndMain, SW_MINIMIZE);
+          // if not in full screen
+          } else {
+            // just minimize the window
+            ShowWindow(_hwndMain, SW_MINIMIZE);
+          }
+          break;
+        // if should restore
+        case SC_RESTORE:
+          if( _bWindowChanging) break;
+          _bWindowChanging  = TRUE;
+          _bReconsiderInput = TRUE;
+          // if in full screen
+          if( sam_bFullScreenActive) {
+            ShowWindow(_hwndMain, SW_SHOWNORMAL);
+            // set the display mode once again
+            StartNewMode( (GfxAPIType)sam_iGfxAPI, sam_iDisplayAdapter, sam_iScreenSizeI, sam_iScreenSizeJ,
+                          (enum DisplayDepth)sam_iDisplayDepth, sam_bFullScreenActive);
+          // if not in full screen
+          } else {
+            // restore window
+            ShowWindow(_hwndMain, SW_SHOWNORMAL);
+          }
+          break;
+        // if should maximize
+        case SC_MAXIMIZE:
+          if( _bWindowChanging) break;
+          _bWindowChanging  = TRUE;
+          _bReconsiderInput = TRUE;
+          // go to full screen
+          StartNewMode( (GfxAPIType)sam_iGfxAPI, sam_iDisplayAdapter, sam_iScreenSizeI, sam_iScreenSizeJ,
+                        (enum DisplayDepth)sam_iDisplayDepth, TRUE);
+          ShowWindow( _hwndMain, SW_SHOWNORMAL);
+          break;
+        }
+      }
+
+      // toggle full-screen on alt-enter
+      if( msg.message==WM_SYSKEYDOWN && msg.wParam==VK_RETURN && !IsIconic(_hwndMain)) {
+        StartNewMode( (GfxAPIType)sam_iGfxAPI, sam_iDisplayAdapter, sam_iScreenSizeI, sam_iScreenSizeJ,
+                      (enum DisplayDepth)sam_iDisplayDepth, !sam_bFullScreenActive);
+      }
+
+      // if application should stop
+      if( msg.message==WM_QUIT || msg.message==WM_CLOSE) {
+        // stop running
+        _bRunning = FALSE;
+        _bQuitScreen = FALSE;
+      }
+
+      // if application is deactivated or minimized
+      if( (msg.message==WM_ACTIVATE && (LOWORD(msg.wParam)==WA_INACTIVE || HIWORD(msg.wParam)))
+       ||  msg.message==WM_CANCELMODE
+       ||  msg.message==WM_KILLFOCUS
+       || (msg.message==WM_ACTIVATEAPP && !msg.wParam)) {
+        // if application is running and in full screen mode
+        if( !_bWindowChanging && _bRunning) {
+          // minimize if in full screen
+          if( sam_bFullScreenActive) PostMessage(NULL, WM_SYSCOMMAND, SC_MINIMIZE, 0);
+          // just disable input if not in full screen
+          else _pInput->DisableInput();
+        }
+      }
+      // if application is activated or minimized
+      else if( (msg.message==WM_ACTIVATE && (LOWORD(msg.wParam)==WA_ACTIVE || LOWORD(msg.wParam)==WA_CLICKACTIVE))
+            ||  msg.message==WM_SETFOCUS
+            || (msg.message==WM_ACTIVATEAPP && msg.wParam)) {
+        // enable input back again if needed
+        _bReconsiderInput = TRUE;
+      }
+
+      if (msg.message==WM_KEYDOWN && msg.wParam==VK_ESCAPE &&
+        (_gmRunningGameMode==GM_DEMO || _gmRunningGameMode==GM_INTRO)) {
+        _pGame->StopGame();
+        _gmRunningGameMode=GM_NONE;
+      }
+
+      if (_pGame->gm_csConsoleState==CS_TALK && msg.message==WM_KEYDOWN && msg.wParam==VK_ESCAPE) {
+        _pGame->gm_csConsoleState = CS_OFF;
+        msg.message=WM_NULL;
+      }
+
+      BOOL bMenuForced = (_gmRunningGameMode==GM_NONE &&
+        (_pGame->gm_csConsoleState==CS_OFF || _pGame->gm_csConsoleState==CS_TURNINGOFF));
+      BOOL bMenuToggle = (msg.message==WM_KEYDOWN && msg.wParam==VK_ESCAPE
+        && (_pGame->gm_csComputerState==CS_OFF || _pGame->gm_csComputerState==CS_ONINBACKGROUND));
+      if( !bMenuActive) {
+        if( bMenuForced || bMenuToggle) {
+          // if console is active
+          if( _pGame->gm_csConsoleState==CS_ON || _pGame->gm_csConsoleState==CS_TURNINGON) {
+            // deactivate it
+            _pGame->gm_csConsoleState = CS_TURNINGOFF;
+            _iAddonExecState = 0;
+          }
+          // delete key down message so menu would not exit because of it
+          msg.message=WM_NULL;
+          // start menu
+          StartMenus();
+        }
+      } else {
+        if (bMenuForced && bMenuToggle && pgmCurrentMenu->gm_pgmParentMenu == NULL) {
+          // delete key down message so menu would not exit because of it
+          msg.message=WM_NULL;
+        }
+      }
+
+      // if neither menu nor console is running
+      if (!bMenuActive && (_pGame->gm_csConsoleState==CS_OFF || _pGame->gm_csConsoleState==CS_TURNINGOFF)) {
+        // if current menu is not root
+        if (!IsMenusInRoot()) {
+          // start current menu
+          StartMenus();
+        }
+      }
+
+      if (sam_bMenuSave) {
+        sam_bMenuSave = FALSE;
+        StartMenus("save");
+      }
+      if (sam_bMenuLoad) {
+        sam_bMenuLoad = FALSE;
+        StartMenus("load");
+      }
+      if (sam_bMenuControls) {
+        sam_bMenuControls = FALSE;
+        StartMenus("controls");
+      }
+      if (sam_bMenuHiScore) {
+        sam_bMenuHiScore = FALSE;
+        StartMenus("hiscore");
+      }
+
+      // interpret console key presses
+      if (_iAddonExecState==0) {
+        if (msg.message==WM_KEYDOWN) {
+          _pGame->ConsoleKeyDown(msg);
+          if (_pGame->gm_csConsoleState!=CS_ON) {
+            _pGame->ComputerKeyDown(msg);
+          }
+        } else if (msg.message==WM_KEYUP) {
+          // special handler for talk (not to invoke return key bind)
+          if( msg.wParam==VK_RETURN && _pGame->gm_csConsoleState==CS_TALK) _pGame->gm_csConsoleState = CS_OFF;
+        } else if (msg.message==WM_CHAR) {
+          _pGame->ConsoleChar(msg);
+        }
+        if (msg.message==WM_LBUTTONDOWN
+          ||msg.message==WM_RBUTTONDOWN
+          ||msg.message==WM_LBUTTONDBLCLK
+          ||msg.message==WM_RBUTTONDBLCLK
+          ||msg.message==WM_LBUTTONUP
+          ||msg.message==WM_RBUTTONUP) {
+          if (_pGame->gm_csConsoleState!=CS_ON) {
+            _pGame->ComputerKeyDown(msg);
+          }
+        }
+      }
+      // if menu is active and no input on
+      if( bMenuActive && !_pInput->IsInputEnabled()) {
+        // pass keyboard/mouse messages to menu
+        if(msg.message==WM_KEYDOWN) {
+          MenuOnKeyDown( msg.wParam);
+        } else if (msg.message==WM_LBUTTONDOWN || msg.message==WM_LBUTTONDBLCLK) {
+          MenuOnKeyDown(VK_LBUTTON);
+        } else if (msg.message==WM_RBUTTONDOWN || msg.message==WM_RBUTTONDBLCLK) {
+          MenuOnKeyDown(VK_RBUTTON);
+        } else if (msg.message==WM_MOUSEMOVE) {
+          MenuOnMouseMove(LOWORD(msg.lParam), HIWORD(msg.lParam));
+#ifndef WM_MOUSEWHEEL
+ #define WM_MOUSEWHEEL 0x020A
+#endif
+        } else if (msg.message==WM_MOUSEWHEEL) {
+          SWORD swDir = SWORD(UWORD(HIWORD(msg.wParam)));
+          if (swDir>0) {
+            MenuOnKeyDown(11);
+          } else if (swDir<0) {
+            MenuOnKeyDown(10);
+          }
+        } else if (msg.message==WM_CHAR) {
+          MenuOnChar(msg);
+        }
+      }
+
+      // if toggling console
+      BOOL bConsoleKey = sam_bToggleConsole || msg.message==WM_KEYDOWN &&
+        (MapVirtualKey(msg.wParam, 0)==41 // scan code for '~'
+        || msg.wParam==VK_F1 || (msg.wParam==VK_ESCAPE && _iAddonExecState==3));
+      if(bConsoleKey && !_bDefiningKey)
+      {
+        sam_bToggleConsole = FALSE;
+        if( _iAddonExecState==3) _iAddonExecState = 0;
+        // if it is up, or pulling up
+        if( _pGame->gm_csConsoleState==CS_OFF || _pGame->gm_csConsoleState==CS_TURNINGOFF) {
+          // start it moving down and disable menu
+          _pGame->gm_csConsoleState = CS_TURNINGON;
+          // stop all IFeel effects
+          IFeel_StopEffect(NULL);
+          if( bMenuActive) {
+            StopMenus(FALSE);
+          }
+        // if it is down, or dropping down
+        } else if( _pGame->gm_csConsoleState==CS_ON || _pGame->gm_csConsoleState==CS_TURNINGON) {
+          // start it moving up
+          _pGame->gm_csConsoleState = CS_TURNINGOFF;
+        }
+      }
+
+      if (_pShell->GetINDEX("con_bTalk") && _pGame->gm_csConsoleState==CS_OFF) {
+        _pShell->SetINDEX("con_bTalk", FALSE);
+        _pGame->gm_csConsoleState = CS_TALK;
+      }
+
+      // if pause pressed
+      if (msg.message==WM_KEYDOWN && msg.wParam==VK_PAUSE) {
+        // toggle pause
+        _pNetwork->TogglePause();
+      }
+
+      // if command sent from external application
+      if (msg.message==WM_COMMAND) {
+        // if teleport player
+        if (msg.wParam==1001) {
+          // teleport player
+          TeleportPlayer(msg.lParam);
+          // restore
+          PostMessage(NULL, WM_SYSCOMMAND, SC_RESTORE, 0);
+        }
+      }
+
+      // if demo is playing
+      if (_gmRunningGameMode==GM_DEMO ||
+          _gmRunningGameMode==GM_INTRO ) {
+        // check if escape is pressed
+        BOOL bEscape = (msg.message==WM_KEYDOWN && msg.wParam==VK_ESCAPE);
+        // check if console-invoke key is pressed
+        BOOL bTilde = (msg.message==WM_KEYDOWN &&
+          (msg.wParam==VK_F1 || MapVirtualKey(msg.wParam, 0)==41));// scan code for '~'
+
+        // check if any key is pressed
+        BOOL bAnyKey = (
+          (msg.message==WM_KEYDOWN && (msg.wParam==VK_SPACE || msg.wParam==VK_RETURN))||
+          msg.message==WM_LBUTTONDOWN||msg.message==WM_RBUTTONDOWN);
+
+        // if escape is pressed
+        if (bEscape) {
+          // stop demo
+          _pGame->StopGame();
+          _bInAutoPlayLoop = FALSE;
+          _gmRunningGameMode = GM_NONE;
+        // if any other key is pressed except console invoking
+        } else if (bAnyKey && !bTilde) {
+          // if not in menu or in console
+          if (!bMenuActive && !bMenuRendering && _pGame->gm_csConsoleState==CS_OFF) {
+            // skip to next demo
+            _pGame->StopGame();
+            _gmRunningGameMode = GM_NONE;
+            StartNextDemo();
+          }
+        }
+      }
+
+    } // loop while there are messages
+
+    // when all messages are removed, window has surely changed
+    _bWindowChanging = FALSE;
+
+    // get real cursor position
+    if( _pGame->gm_csComputerState!=CS_OFF && _pGame->gm_csComputerState!=CS_ONINBACKGROUND) {
+      POINT pt;
+      ::GetCursorPos(&pt);
+      ::ScreenToClient(_hwndMain, &pt);
+      _pGame->ComputerMouseMove(pt.x, pt.y);
+    }
+
+    // if addon is to be executed
+    if (_iAddonExecState==1) {
+      // print header and start console
+      CPrintF(TRANS("---- Executing addon: '%s'\n"), (const char*)_fnmAddonToExec);
+      sam_bToggleConsole = TRUE;
+      _iAddonExecState = 2;
+    // if addon is ready for execution
+    } else if (_iAddonExecState==2 && _pGame->gm_csConsoleState == CS_ON) {
+      // execute it
+      CTString strCmd;
+      strCmd.PrintF("include \"%s\"", (const char*)_fnmAddonToExec);
+      _pShell->Execute(strCmd);
+      CPrintF(TRANS("Addon done, press Escape to close console\n"));
+      _iAddonExecState = 3;
+    }
+
+    // automaticaly manage input enable/disable toggling
+    UpdateInputEnabledState();
+    // automaticaly manage pause toggling
+    UpdatePauseState();
+    // notify game whether menu is active
+    _pGame->gm_bMenuOn = bMenuActive;
+
+    // do the main game loop and render screen
+    DoGame();
+
+    // limit current frame rate if neeeded
+    LimitFrameRate();
+
+  } // end of main application loop
+
+  _pInput->DisableInput();
+  _pGame->StopGame();
+
+  if (_fnmModToLoad!="") {
+
+    char strCmd [64] = {0};
+	char strParam [128] = {0};
+	STARTUPINFOA cif;
+	ZeroMemory(&cif,sizeof(STARTUPINFOA));
+	PROCESS_INFORMATION pi;
+
+	strcpy_s(strCmd,"SeriousSam.exe");
+	strcpy_s(strParam," +game ");
+	strcat_s(strParam,_fnmModToLoad.FileName());
+	if (_strModServerJoin!="") {
+	  strcat_s(strParam," +connect ");
+	  strcat_s(strParam,_strModServerJoin);
+	  strcat_s(strParam," +quickjoin");
+    }
+
+	if (CreateProcessA(strCmd,strParam,NULL,NULL,FALSE,CREATE_DEFAULT_ERROR_MODE,NULL,NULL,&cif,&pi) == FALSE)
+	{
+	  MessageBox(0, L"error launching the Mod!\n", L"Serious Sam", MB_OK|MB_ICONERROR);
+	}
+  }
+  // invoke quit screen if needed
+  if( _bQuitScreen && _fnmModToLoad=="") QuitScreenLoop();
+
+  End();
+  return TRUE;
+}
+
+/*
+void CheckModReload(void)
+{
+  if (_fnmModToLoad!="") {
+    CTString strCommand = _fnmApplicationExe.FileDir()+"SeriousSam.exe";
+    //+mod "+_fnmModToLoad.FileName()+"\"";
+    CTString strMod = _fnmModToLoad.FileName();
+    const char *argv[7];
+    argv[0] = strCommand;
+    argv[1] = "+game";
+    argv[2] = strMod;
+    argv[3] = NULL;
+    if (_strModServerJoin!="") {
+      argv[3] = "+connect";
+      argv[4] = _strModServerJoin;
+      argv[5] = "+quickjoin";
+      argv[6] = NULL;
+    }
+
+    _execv(strCommand, argv);
+  }
+}*/
+
+void CheckTeaser(void)
+{
+  CTFileName fnmTeaser = _fnmApplicationExe.FileDir()+CTString("AfterSam.exe");
+  if (fopen(fnmTeaser, "r")!=NULL) {
+    Sleep(500);
+    _execl(fnmTeaser, "\""+fnmTeaser+"\"", NULL);
+  }
+}
+
+void CheckBrowser(void)
+{
+  if (_strURLToVisit!="") {
+    RunBrowser(_strURLToVisit);
+  }
+}
+
+
+
+int PASCAL WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
+      LPSTR lpCmdLine, int nCmdShow)
+{
+  int iResult;
+  CTSTREAM_BEGIN {
+    iResult = SubMain(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
+  } CTSTREAM_END;
+
+  //CheckModReload();
+
+  CheckTeaser();
+
+  CheckBrowser();
+
+  return iResult;
+}
+
 
 // try to start a new display mode
 BOOL TryToSetDisplayMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI, PIX pixSizeJ,
@@ -1002,16 +1294,14 @@ BOOL TryToSetDisplayMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI,
 
   // mark to start ignoring window size/position messages until settled down
   _bWindowChanging = TRUE;
-  
+
   // destroy canvas if existing
   _pGame->DisableLoadingHook();
-#if 0
   if( pvpViewPort!=NULL) {
     _pGfx->DestroyWindowCanvas( pvpViewPort);
     pvpViewPort = NULL;
     pdpNormal = NULL;
   }
-#endif
 
   // close the application window
   CloseMainWindow();
@@ -1038,14 +1328,9 @@ BOOL TryToSetDisplayMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI,
   // if new mode was set
   if( bSuccess) {
     // create canvas
-#if 0
     ASSERT( pvpViewPort==NULL);
     ASSERT( pdpNormal==NULL);
     _pGfx->CreateWindowCanvas( _hwndMain, &pvpViewPort, &pdpNormal);
-#else
-    pvpViewPort = g_cb.getViewPort();
-    pdpNormal = &pvpViewPort->vp_Raster.ra_MainDrawPort;
-#endif
 
     // erase context of both buffers (for the sake of wide-screen)
     pdp = pdpNormal;
@@ -1078,18 +1363,16 @@ BOOL TryToSetDisplayMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI,
     _pGame->EnableLoadingHook(pdp);
 
     // if the mode is not working, or is not accelerated
-    if( !bSuccess)
+    if( !bSuccess || !_pGfx->IsCurrentModeAccelerated())
     { // report error
       CPrintF( TRANS("This mode does not support hardware acceleration.\n"));
       // destroy canvas if existing
-#if 0
       if( pvpViewPort!=NULL) {
         _pGame->DisableLoadingHook();
         _pGfx->DestroyWindowCanvas( pvpViewPort);
         pvpViewPort = NULL;
         pdpNormal = NULL;
       }
-#endif
       // close the application window
       CloseMainWindow();
       // report failure
@@ -1116,7 +1399,7 @@ BOOL TryToSetDisplayMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI,
 }
 
 
-// list of possible display modes for recovery 
+// list of possible display modes for recovery
 const INDEX aDefaultModes[][3] =
 { // color, API, adapter
   { DD_DEFAULT, GAT_OGL, 0},
@@ -1142,8 +1425,6 @@ void StartNewMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI, PIX pi
   // if failed
   if( !bSuccess)
   {
-
-#if 0
     // report failure and reset to default resolution
     _iDisplayModeChangeFlag = 2;  // failure
     CPrintF( TRANS("Requested display mode could not be set!\n"));
@@ -1159,8 +1440,6 @@ void StartNewMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI, PIX pi
       bSuccess = TryToSetDisplayMode( eGfxAPI, iAdapter, pixSizeI, pixSizeJ, eColorDepth, bFullScreenMode);
       if( bSuccess) break;
     }
-#endif
-
     // if all failed
     if( !bSuccess) {
       FatalError(TRANS(
@@ -1181,167 +1460,4 @@ void StartNewMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI, PIX pi
 
   // remember time of mode setting
   _tmDisplayModeChanged = _pTimer->GetRealTimeTick();
-}
-
-// set controls from java (mutex locked)
-void setControls(PlayerControls &ctrls) {
-  static BOOL bStartLast = false;
-
-  if (_pGame) {
-
-    if (ctrls.bUse) {
-      if (_pGame->gm_csComputerState == CS_ON || _pGame->gm_csComputerState == CS_TURNINGON) {
-        _pGame->gm_csComputerState = CS_TURNINGOFF;
-        ctrls.bUse = false;
-      }
-    }
-
-    if (ctrls.bUse) {
-      if (_pGame->gm_csConsoleState == CS_ON || _pGame->gm_csComputerState == CS_TURNINGON ||
-          _pGame->gm_csComputerState == CS_TALK) {
-        _pGame->gm_csConsoleState = CS_TURNINGOFF;
-        ctrls.bUse = false;
-      }
-    }
-
-    if (ctrls.bStart && ctrls.bStart != bStartLast) {
-      if (_pGame->gm_csConsoleState == CS_OFF || _pGame->gm_csConsoleState == CS_TURNINGOFF) {
-        _pGame->gm_csConsoleState = CS_TURNINGON;
-      } else {
-        _pGame->gm_csConsoleState = CS_TURNINGOFF;
-      }
-    }
-
-    bStartLast = ctrls.bStart;
-
-    PlayerControls &playerCtrl = *(PlayerControls *) _pGame->gm_lpLocalPlayers[0].lp_ubPlayerControlsState;
-    playerCtrl = ctrls;
-
-    for (int i = 0; i < 10; i++) {
-      playerCtrl.axisValue[i] += ctrls.shiftAxisValue[i];
-      ctrls.shiftAxisValue[i] = 0;
-    }
-  }
-}
-
-void seriousSubMain() {
-  CTStream::EnableStreamHandling();
-
-  if (FileExists(_modToLoadTxt)) {
-    CTFileStream stream;
-    stream.Open_t(_modToLoadTxt);
-    CTString strMod;
-    stream.GetLine_t(strMod);
-    stream.Close();
-    RemoveFile(_modToLoadTxt);
-    if (strMod.Length() && strMod != "SeriousSam") {
-      _fnmMod = "Mods\\" + strMod + "\\";
-    }
-  }
-
-  Init();
-
-  // override key settings
-  CControls &ctrl = _pGame->gm_actrlControls[0];
-  for (int i = 0; i < 8; i++) {
-    ctrl.ctrl_aaAxisActions[i].aa_fSensitivity = 80;
-    ctrl.ctrl_aaAxisActions[i].aa_fDeadZone = 0;
-    ctrl.ctrl_aaAxisActions[i].aa_bInvert = false;
-    ctrl.ctrl_aaAxisActions[i].aa_bRelativeControler = true;
-    ctrl.ctrl_aaAxisActions[i].aa_bSmooth = false;
-  }
-
-  _pInput->EnableInput();
-
-  _bRunning    = TRUE;
-  _bQuitScreen = TRUE;
-  _pGame->gm_csConsoleState  = CS_OFF;
-  _pGame->gm_csComputerState = CS_OFF;
-
-  while(_bRunning && !_fnmModToLoad.Length()) {
-    g_cb.syncSeriousThreads();
-
-    // when all messages are removed, window has surely changed
-    _bWindowChanging = FALSE;
-
-    // automaticaly manage input enable/disable toggling
-    UpdateInputEnabledState();
-    // automaticaly manage pause toggling
-    UpdatePauseState();
-    // notify game whether menu is active
-    _pGame->gm_bMenuOn = bMenuActive;
-
-    BOOL bMenuForced = (_gmRunningGameMode==GM_NONE &&
-                        (_pGame->gm_csConsoleState==CS_OFF || _pGame->gm_csConsoleState==CS_TURNINGOFF));
-
-    if( !bMenuActive) {
-      if( bMenuForced ) {
-        // if console is active
-        if( _pGame->gm_csConsoleState==CS_ON || _pGame->gm_csConsoleState==CS_TURNINGON) {
-          // deactivate it
-          _pGame->gm_csConsoleState = CS_TURNINGOFF;
-          _iAddonExecState = 0;
-        }
-        // start menu
-        StartMenus();
-      }
-    }
-
-    if (sam_bMenu) {
-      sam_bMenu = FALSE;
-      StartMenus();
-    }
-    if (sam_bMenuSave) {
-      sam_bMenuSave = FALSE;
-      StartMenus("save");
-    }
-    if (sam_bMenuLoad) {
-      sam_bMenuLoad = FALSE;
-      StartMenus("load");
-    }
-    if (sam_bMenuControls) {
-      sam_bMenuControls = FALSE;
-      StartMenus("controls");
-    }
-    if (sam_bMenuHiScore) {
-      sam_bMenuHiScore = FALSE;
-      StartMenus("hiscore");
-    }
-
-
-    // do the main game loop and render screen
-    DoGame();
-  }
-  _bRunning = false;
-
-  _pInput->DisableInput();
-  _pGame->StopGame();
-
-  if (_fnmModToLoad.Length()) {
-    CTFileStream stream;
-    stream.Create_t(_modToLoadTxt);
-    stream.PutString_t(_fnmModToLoad.FileName());
-    stream.Close();
-    _bQuitScreen = false;
-    g_cb.restart();
-    Sleep(60 * 1000); // wait restart
-  }
-
-  if (_bQuitScreen) QuitScreenLoop();
-
-}
-
-void drawBannerFpsVersion(CDrawPort *pdp, int64_t deltaFrame, float fps) {
-  static int textWidthMax = 0;
-  SLONG slDPWidth = pdp->GetWidth();
-  SLONG slDPHeight = pdp->GetHeight();
-  pdp->SetFont(_pfdDisplayFont);
-  pdp->SetTextScaling(1);
-  pdp->SetTextAspect(1.0f);
-  CTString str = CTString(0, SSA_VERSION " fps: %.2f; frame: %.2f ms", fps, deltaFrame / 1000000.f);
-  ULONG textWidth = pdp->GetTextWidth(str);
-  if (textWidth > textWidthMax) {
-    textWidthMax = textWidth;
-  }
-  pdp->PutText(str, slDPWidth - textWidthMax, 30, LCDGetColor(C_GREEN | 255, "display mode"));
 }

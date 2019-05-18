@@ -3,6 +3,7 @@ package com.github.aarcangeli.serioussamandroid;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
@@ -11,6 +12,7 @@ import android.view.SurfaceView;
 public class SeriousSamSurface extends SurfaceView implements GestureDetector.OnGestureListener, GestureDetector.OnDoubleTapListener {
     private final GestureDetector gestureDetector;
     private float scale = 0.5f;
+    private MainActivity activity;
 
     public SeriousSamSurface(Context context) {
         this(context, null);
@@ -42,6 +44,9 @@ public class SeriousSamSurface extends SurfaceView implements GestureDetector.On
                 nSetSurface(null);
             }
         });
+
+        setFocusable(true);
+        setFocusableInTouchMode(true);
     }
 
     void start() {
@@ -128,6 +133,14 @@ public class SeriousSamSurface extends SurfaceView implements GestureDetector.On
         return false;
     }
 
+    @Override
+    public boolean onKeyPreIme(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK && this.activity != null) {
+            this.activity.keyboardHidden();
+        }
+        return super.onKeyPreIme(keyCode, event);
+    }
+
     private static void loadNativeLibrary() {
         synchronized (SeriousSamSurface.class) {
             if (!isLoaded) {
@@ -145,6 +158,10 @@ public class SeriousSamSurface extends SurfaceView implements GestureDetector.On
                 isInitialized = true;
             }
         }
+    }
+
+    public void setActivity(MainActivity activity) {
+        this.activity = activity;
     }
 
     // native bindings

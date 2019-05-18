@@ -86,22 +86,30 @@
             app:layout_constraintEnd_toEndOf="parent" />
 
         <Button
-            android:id="@+id/buttonLoad"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginStart="8dp"
+            android:id="@+id/buttonConsole"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
             android:layout_marginTop="25dp"
-            android:background="@drawable/ic_load"
-            android:longClickable="true"
-            android:onClick="doQuickLoad"
+            android:background="@drawable/ic_chat"
+            android:onClick="doConsole"
             app:layout_constraintStart_toEndOf="@id/settingsBtn"
             app:layout_constraintTop_toTopOf="parent" />
 
         <Button
+            android:id="@+id/buttonLoad"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginTop="25dp"
+            android:background="@drawable/ic_load"
+            android:longClickable="true"
+            android:onClick="doQuickLoad"
+            app:layout_constraintStart_toEndOf="@id/buttonConsole"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <Button
             android:id="@+id/buttonSave"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginStart="8dp"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
             android:layout_marginTop="25dp"
             android:background="@drawable/ic_save"
             android:longClickable="true"
@@ -111,8 +119,8 @@
 
         <Button
             android:id="@+id/settingsBtn"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="25dp"
             android:background="@drawable/ic_settings"

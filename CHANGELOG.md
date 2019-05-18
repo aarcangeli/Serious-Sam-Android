@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 - Ability to aim while pressing the shoot button (or other buttons)
 - Gyroscope sensibility setting
+- Enabled console
 - Touch controller visibility setting
 - Touch drag sensibility setting
 

@@ -60,6 +60,7 @@ public class NativeEvents {
         MENU,
         DEMO,
         CONSOLE,
+        COMPUTER,
         NORMAL,
         QUIT_SCREEN,
     }

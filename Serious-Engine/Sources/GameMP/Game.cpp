@@ -31,7 +31,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "Camera.h"
 #include "LCDDrawing.h"
 
-extern FLOAT con_fHeightFactor = 0.5f;
+extern FLOAT con_fHeightFactor = 0.3f;
 extern FLOAT con_tmLastLines   = 5.0f;
 extern INDEX con_bTalk = 0;
 CTimerValue _tvMenuQuickSave(0.0);

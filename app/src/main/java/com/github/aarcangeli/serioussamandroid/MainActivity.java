@@ -30,6 +30,7 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 
@@ -84,14 +85,17 @@ public class MainActivity extends AppCompatActivity {
     private boolean enableTouchController;
 
     private InputProcessor processor = new InputProcessor();
+    private InputMethodManager inputMethodManager;
 
     @Override
     @SuppressLint("ClickableViewAccessibility")
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 
         setContentView(R.layout.main_screen);
         glSurfaceView = findViewById(R.id.main_content);
+        glSurfaceView.setActivity(this);
 
         Button loadBtn = findViewById(R.id.buttonLoad);
         loadBtn.setOnLongClickListener(new View.OnLongClickListener() {
@@ -177,6 +181,20 @@ public class MainActivity extends AppCompatActivity {
         }
 
         updateSoftKeyboardVisible();
+
+//        getWindow().getDecorView().getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+//            @Override
+//            public boolean onPreDraw() {
+//                return true;
+//            }
+//        });
+
+//        getWindow().getDecorView().getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+//            @Override
+//            public void onGlobalLayout() {
+//
+//            }
+//        });
     }
 
     public void updateSoftKeyboardVisible() {
@@ -201,9 +219,11 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.bgTrackerView).setVisibility(keyboardVisibility);
         findViewById(R.id.settingsBtn).setVisibility((gameState == GameState.NORMAL || gameState == GameState.DEMO) ? View.VISIBLE : View.GONE);
         findViewById(R.id.buttonLoad).setVisibility(gameState == GameState.NORMAL ? View.VISIBLE : View.GONE);
+        findViewById(R.id.buttonConsole).setVisibility(gameState == GameState.NORMAL ? View.VISIBLE : View.GONE);
         findViewById(R.id.buttonSave).setVisibility(gameState == GameState.NORMAL ? View.VISIBLE : View.GONE);
 
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
 
         if (gameState == GameState.MENU) {
             getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN);
@@ -215,6 +235,12 @@ public class MainActivity extends AppCompatActivity {
                             View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
                             View.SYSTEM_UI_FLAG_FULLSCREEN |
                             View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+        }
+
+        if (gameState == GameState.CONSOLE) {
+            if (glSurfaceView.requestFocus()) {
+                inputMethodManager.showSoftInput(glSurfaceView, 0);
+            }
         }
     }
 
@@ -302,6 +328,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         glSurfaceView.stop();
+        executeShell("HideConsole();");
+        executeShell("HideComputer();");
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -384,7 +412,7 @@ public class MainActivity extends AppCompatActivity {
         if (event.getAction() == KeyEvent.ACTION_DOWN && event.isPrintingKey()) {
             executeShell("MenuChar(" + event.getUnicodeChar() + ")");
         }
-        if (gameState == GameState.MENU) {
+        if (gameState == GameState.MENU || gameState == GameState.CONSOLE) {
             if (event.getAction() == KeyEvent.ACTION_DOWN) {
                 switch (keyCode) {
                     case KeyEvent.KEYCODE_DPAD_DOWN:
@@ -459,6 +487,10 @@ public class MainActivity extends AppCompatActivity {
                         break;
                 }
             }
+        } else if (gameState == GameState.COMPUTER) {
+            if (event.getRepeatCount() == 0 && event.getAction() == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_BACK) {
+                executeShell("HideComputer();");
+            }
         } else if (gameState != GameState.INTRO) {
             if (event.getRepeatCount() == 0) {
                 if (event.getAction() == KeyEvent.ACTION_DOWN) {
@@ -495,6 +527,14 @@ public class MainActivity extends AppCompatActivity {
 
     public void doProfiling(View view) {
         executeShell("RecordProfile();");
+    }
+
+    public void doConsole(View view) {
+        executeShell("ToggleConsole();");
+    }
+
+    public void keyboardHidden() {
+        executeShell("HideConsole();");
     }
 
     public void doQuickLoad(View view) {

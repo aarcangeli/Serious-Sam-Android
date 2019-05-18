@@ -10,6 +10,7 @@ enum GameState {
     GS_MENU,
     GS_DEMO,
     GS_CONSOLE,
+    GS_COMPUTER,
     GS_NORMAL,
     GS_QUIT_SCREEN,
 };
