@@ -15,6 +15,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "StdAfx.h"
 #include "LCDDrawing.h"
+#include "AndroidAdapters/binding-callbacks.h"
 
 extern CGame *_pGame;
 
@@ -526,8 +527,7 @@ void CGame::ConsoleKeyDown( MSG msg)
     // do nothing
     return;
   }
-//  BOOL bShift = GetKeyState(VK_SHIFT) & 0x8000;
-  BOOL bShift = false;
+  BOOL bShift = g_cb.isShiftPressed;
   switch( msg.wParam) {
   case VK_RETURN:  Key_Return();      break;
   case VK_UP:      Key_ArrowUp();     break;

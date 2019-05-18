@@ -17,7 +17,7 @@ set(
 
 add_library(GameMP SHARED ${SOURCES})
 
-target_link_libraries(GameMP android-adapters EntitiesMP)
+target_link_libraries(GameMP EntitiesMP)
 
 target_compile_definitions(GameMP PUBLIC ENGINE_API=)
 target_compile_definitions(GameMP PUBLIC PLATFORM_UNIX)

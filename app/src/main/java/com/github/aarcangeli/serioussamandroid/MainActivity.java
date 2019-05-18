@@ -97,12 +97,10 @@ public class MainActivity extends AppCompatActivity {
     private KeyboardHeightProvider.KeyboardListener listener = new KeyboardHeightProvider.KeyboardListener() {
         @Override
         public void onHeightChanged(int height) {
-            if (gameState == GameState.CONSOLE || gameState == GameState.MENU || gameState == GameState.COMPUTER) {
-                Display display = getWindowManager().getDefaultDisplay();
-                Point size = new Point();
-                display.getSize(size);
-                executeShell(String.format(Locale.ENGLISH, "con_fHeightFactor = %.6f", (size.y - height) / (float) size.y));
-            }
+            Display display = getWindowManager().getDefaultDisplay();
+            Point size = new Point();
+            display.getSize(size);
+            executeShell(String.format(Locale.ENGLISH, "con_fHeightFactor = %.6f", (size.y - height) / (float) size.y));
         }
     };
 
@@ -436,10 +434,8 @@ public class MainActivity extends AppCompatActivity {
         if (keyCode == KeyEvent.KEYCODE_VOLUME_UP || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
             return false;
         }
-        if (event.getAction() == KeyEvent.ACTION_DOWN && event.isPrintingKey()) {
-            executeShell("MenuChar(" + event.getUnicodeChar() + ")");
-        }
         if (gameState == GameState.MENU || gameState == GameState.CONSOLE) {
+            executeShell("input_iIsShiftPressed = " + (event.isShiftPressed() ? 1 : 0));
             if (event.getAction() == KeyEvent.ACTION_DOWN) {
                 switch (keyCode) {
                     case KeyEvent.KEYCODE_DPAD_DOWN:
@@ -515,6 +511,12 @@ public class MainActivity extends AppCompatActivity {
                     case KeyEvent.KEYCODE_TAB:
                         executeShell("MenuEvent(" + VK_TAB + ")");
                         break;
+                    case KeyEvent.KEYCODE_PAGE_UP:
+                        executeShell("MenuEvent(" + VK_PRIOR + ")");
+                        break;
+                    case KeyEvent.KEYCODE_PAGE_DOWN:
+                        executeShell("MenuEvent(" + VK_NEXT + ")");
+                        break;
                 }
                 if (event.getRepeatCount() == 0 && gameState == GameState.CONSOLE && keyCode == KeyEvent.KEYCODE_BUTTON_START) {
                     executeShell("HideConsole();");
@@ -537,6 +539,10 @@ public class MainActivity extends AppCompatActivity {
                     nDispatchKeyEvent(keyCode, 0);
                 }
             }
+        }
+        int unicodeChar = event.getUnicodeChar();
+        if (event.getAction() == KeyEvent.ACTION_DOWN && unicodeChar > 0) {
+            executeShell("MenuChar(" + unicodeChar + ")");
         }
         return true;
     }

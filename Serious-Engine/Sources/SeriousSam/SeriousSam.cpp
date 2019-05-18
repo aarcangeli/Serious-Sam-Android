@@ -592,6 +592,7 @@ BOOL Init()
   _pShell->DeclareSymbol("user void ToggleConsole();", (void *) &ToggleConsole);
   _pShell->DeclareSymbol("user void HideConsole();", (void *) &HideConsole);
   _pShell->DeclareSymbol("user void HideComputer();", (void *) &HideComputer);
+  _pShell->DeclareSymbol("INDEX input_iIsShiftPressed;", (void *) &g_cb.isShiftPressed);
 
   InitializeGame();
   _pNetwork->md_strGameID = sam_strGameName;

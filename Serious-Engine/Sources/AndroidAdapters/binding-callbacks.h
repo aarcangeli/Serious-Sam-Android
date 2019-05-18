@@ -26,6 +26,7 @@ struct BindingCallbacks {
 
     GameState gameState;
     int seriousBombCount = 0;
+    int isShiftPressed = false;
 };
 
 extern BindingCallbacks g_cb;
