@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Point;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -26,6 +27,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Display;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -36,12 +38,14 @@ import android.widget.EditText;
 
 import com.github.aarcangeli.serioussamandroid.input.InputProcessor;
 import com.github.aarcangeli.serioussamandroid.views.JoystickView;
+import com.hold1.keyboardheightprovider.KeyboardHeightProvider;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
+import java.util.Locale;
 
 import static com.github.aarcangeli.serioussamandroid.NativeEvents.EditTextEvent;
 import static com.github.aarcangeli.serioussamandroid.NativeEvents.FatalErrorEvent;
@@ -86,6 +90,19 @@ public class MainActivity extends AppCompatActivity {
 
     private InputProcessor processor = new InputProcessor();
     private InputMethodManager inputMethodManager;
+
+    private KeyboardHeightProvider keyboardHeightProvider;
+    private KeyboardHeightProvider.KeyboardListener listener = new KeyboardHeightProvider.KeyboardListener() {
+        @Override
+        public void onHeightChanged(int height) {
+            if (height > 0) {
+                Display display = getWindowManager().getDefaultDisplay();
+                Point size = new Point();
+                display.getSize(size);
+                executeShell(String.format(Locale.ENGLISH, "con_fHeightFactor = %.6f", (size.y - height) / (float) size.y));
+            }
+        }
+    };
 
     @Override
     @SuppressLint("ClickableViewAccessibility")
@@ -182,6 +199,8 @@ public class MainActivity extends AppCompatActivity {
 
         updateSoftKeyboardVisible();
 
+        keyboardHeightProvider = new KeyboardHeightProvider(this);
+
 //        getWindow().getDecorView().getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
 //            @Override
 //            public boolean onPreDraw() {
@@ -249,6 +268,7 @@ public class MainActivity extends AppCompatActivity {
         super.onStart();
         sensorManager.registerListener(motionListener, sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE), 10000);
         EventBus.getDefault().register(this);
+        keyboardHeightProvider.addKeyboardListener(listener);
     }
 
     @Override
@@ -256,6 +276,7 @@ public class MainActivity extends AppCompatActivity {
         super.onStop();
         sensorManager.unregisterListener(motionListener);
         EventBus.getDefault().unregister(this);
+        keyboardHeightProvider.removeKeyboardListener(listener);
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
@@ -322,6 +343,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         syncOptions();
+        keyboardHeightProvider.onResume();
     }
 
     @Override
@@ -330,6 +352,7 @@ public class MainActivity extends AppCompatActivity {
         glSurfaceView.stop();
         executeShell("HideConsole();");
         executeShell("HideComputer();");
+        keyboardHeightProvider.onPause();
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -570,10 +593,6 @@ public class MainActivity extends AppCompatActivity {
         updateSoftKeyboardVisible();
     }
 
-    public static void executeShell(String command) {
-        nShellExecute(command);
-    }
-
     private class MyBtnListener implements View.OnTouchListener {
         boolean isTracking;
         float lastX, lastY;
@@ -612,6 +631,10 @@ public class MainActivity extends AppCompatActivity {
             }
             return true;
         }
+    }
+
+    public static void executeShell(String command) {
+        nShellExecute(command);
     }
 
     private static native void setAxisValue(int key, float value);
