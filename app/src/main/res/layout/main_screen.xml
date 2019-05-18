@@ -39,8 +39,8 @@
             android:layout_height="60dp"
             android:layout_marginBottom="16dp"
             app:btnBitmap="@drawable/baseline_keyboard_arrow_right_black_48"
-            app:layout_constraintBottom_toTopOf="@+id/input_crunch"
-            app:layout_constraintEnd_toEndOf="@+id/input_crunch" />
+            app:layout_constraintBottom_toTopOf="@id/input_crunch"
+            app:layout_constraintEnd_toEndOf="@id/input_crunch" />
 
         <com.github.aarcangeli.serioussamandroid.views.JoystickView
             android:id="@+id/input_overlay"

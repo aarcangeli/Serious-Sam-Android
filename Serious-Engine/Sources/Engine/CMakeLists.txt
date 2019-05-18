@@ -224,7 +224,7 @@ set(
   ${SE_BASE}/Sound/SoundLibrary_android.cpp
   ${SE_BASE}/_android/Registry.cpp
   ${SE_BASE}/_android/MultiMonitor.cpp
-  ${SE_BASE}/_android/CommunicationInterface.cpp
+  ${SE_BASE}/Network/CommunicationInterface_android.cpp
   ${SE_BASE}/Graphics/ViewPort_android.cpp
   ${SE_BASE}/_android/CGfxLibrary.cpp
   ${SE_BASE}/_android/GameAgent.cpp

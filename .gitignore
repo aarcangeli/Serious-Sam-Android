@@ -10,3 +10,5 @@ extracted
 shots
 /signing.properties
 stack.txt
+app/debug
+app/release

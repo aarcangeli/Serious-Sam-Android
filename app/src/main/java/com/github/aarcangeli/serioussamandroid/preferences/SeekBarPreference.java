@@ -3,7 +3,6 @@ package com.github.aarcangeli.serioussamandroid.preferences;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.preference.DialogPreference;
 import android.util.AttributeSet;
 import android.view.Gravity;
