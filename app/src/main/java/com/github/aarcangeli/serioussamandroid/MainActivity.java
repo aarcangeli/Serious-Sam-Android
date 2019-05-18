@@ -70,7 +70,6 @@ public class MainActivity extends AppCompatActivity {
     private static final int AXIS_LOOK_LR = 7;
     private static final int AXIS_LOOK_BK = 8;
 
-    public static final float DEAD_ZONE = 0.3f;
     private static final float MULT_VIEW_CONTROLLER = 2.5f;
     private static final float MULT_VIEW_TRACKER = 0.4f;
     private static final float MULT_VIEW_GYROSCOPE = 0.8f;
@@ -87,6 +86,8 @@ public class MainActivity extends AppCompatActivity {
     private String showTouchController;
     private float gyroSensibility;
     private float aimViewSensibility;
+    private float ctrlAimSensibility;
+    public float deadZone;
     private boolean enableTouchController;
 
     private InputProcessor processor = new InputProcessor();
@@ -96,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
     private KeyboardHeightProvider.KeyboardListener listener = new KeyboardHeightProvider.KeyboardListener() {
         @Override
         public void onHeightChanged(int height) {
-            if (height > 0) {
+            if (gameState == GameState.CONSOLE || gameState == GameState.MENU || gameState == GameState.COMPUTER) {
                 Display display = getWindowManager().getDefaultDisplay();
                 Point size = new Point();
                 display.getSize(size);
@@ -394,8 +395,8 @@ public class MainActivity extends AppCompatActivity {
         if (ev.getAction() == MotionEvent.ACTION_MOVE) {
             setAxisValue(AXIS_MOVE_FB, applyDeadZone(-ev.getAxisValue(MotionEvent.AXIS_Y)));
             setAxisValue(AXIS_MOVE_LR, applyDeadZone(-ev.getAxisValue(MotionEvent.AXIS_X)));
-            setAxisValue(AXIS_LOOK_LR, applyDeadZone(-ev.getAxisValue(MotionEvent.AXIS_Z) * MULT_VIEW_CONTROLLER));
-            setAxisValue(AXIS_LOOK_UD, applyDeadZone(-ev.getAxisValue(MotionEvent.AXIS_RZ) * MULT_VIEW_CONTROLLER));
+            setAxisValue(AXIS_LOOK_LR, applyDeadZone(-ev.getAxisValue(MotionEvent.AXIS_Z)) * MULT_VIEW_CONTROLLER * ctrlAimSensibility);
+            setAxisValue(AXIS_LOOK_UD, applyDeadZone(-ev.getAxisValue(MotionEvent.AXIS_RZ)) * MULT_VIEW_CONTROLLER * ctrlAimSensibility);
             nDispatchKeyEvent(KeyEvent.KEYCODE_BUTTON_R2, ev.getAxisValue(MotionEvent.AXIS_RTRIGGER) > .5f ? 1 : 0);
             nDispatchKeyEvent(KeyEvent.KEYCODE_BUTTON_L2, ev.getAxisValue(MotionEvent.AXIS_RTRIGGER) < -.5f ? 1 : 0);
             nDispatchKeyEvent(KeyEvent.KEYCODE_DPAD_LEFT, ev.getAxisValue(MotionEvent.AXIS_HAT_X) < -.5f ? 1 : 0);
@@ -407,14 +408,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private float applyDeadZone(float input) {
-        if (input < -DEAD_ZONE) {
-            input = (input + DEAD_ZONE) / (1 - DEAD_ZONE);
-        } else if (input > DEAD_ZONE) {
-            input = (input - DEAD_ZONE) / (1 - DEAD_ZONE);
+        if (input < -deadZone) {
+            return (input + deadZone) / (1 - deadZone);
+        } else if (input > deadZone) {
+            return (input - deadZone) / (1 - deadZone);
         } else {
-            input = 0;
+            return 0;
         }
-        return input;
     }
 
     public static void tryPremain(Context context) {
@@ -512,6 +512,13 @@ public class MainActivity extends AppCompatActivity {
                     case KeyEvent.KEYCODE_F12:
                         executeShell("MenuEvent(" + VK_F12 + ")");
                         break;
+                    case KeyEvent.KEYCODE_TAB:
+                        executeShell("MenuEvent(" + VK_TAB + ")");
+                        break;
+                }
+                if (event.getRepeatCount() == 0 && gameState == GameState.CONSOLE && keyCode == KeyEvent.KEYCODE_BUTTON_START) {
+                    executeShell("HideConsole();");
+                    keyboardHeightProvider.hideKeyboard();
                 }
             }
         } else if (gameState == GameState.COMPUTER) {
@@ -593,6 +600,8 @@ public class MainActivity extends AppCompatActivity {
         showTouchController = preferences.getString("showTouchController", "Auto");
         gyroSensibility = preferences.getInt("gyro_sensibility", 100) / 100.f;
         aimViewSensibility = preferences.getInt("aimView_sensibility", 100) / 100.f;
+        ctrlAimSensibility = preferences.getInt("ctrl_aimSensibility", 100) / 100.f;
+        deadZone = preferences.getInt("ctrl_deadZone", 20) / 100.f;
         executeShell("hud_iStats=" + (preferences.getBoolean("hud_iStats", false) ? 2 : 0) + ";");
         updateSoftKeyboardVisible();
     }

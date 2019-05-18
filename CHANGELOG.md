@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Touch controller visibility setting
 - Touch drag sensibility setting
 - Input opacity setting
+- Controller dead zone setting
+- Controller view sensibility setting
 
 ## [1.03.3] - 2019-04-20
 ### Fixed

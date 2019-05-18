@@ -35,6 +35,22 @@
             android:text="%"
             android:title="Input Opacity" />
     </PreferenceCategory>
+    <PreferenceCategory android:title="Controller">
+        <com.github.aarcangeli.serioussamandroid.preferences.SeekBarPreference
+            android:defaultValue="20"
+            android:key="ctrl_deadZone"
+            android:max="100"
+            android:summary="%s%%"
+            android:text="%"
+            android:title="Dead zone" />
+        <com.github.aarcangeli.serioussamandroid.preferences.SeekBarPreference
+            android:defaultValue="100"
+            android:key="ctrl_aimSensibility"
+            android:max="200"
+            android:summary="%s%%"
+            android:text="%"
+            android:title="View sensibility" />
+    </PreferenceCategory>
     <PreferenceCategory android:title="Debug">
         <CheckBoxPreference
             android:defaultValue="false"
