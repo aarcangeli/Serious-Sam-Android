@@ -20,6 +20,13 @@
             android:summary="%s%%"
             android:text="%"
             android:title="Gyroscope sensibility" />
+        <com.github.aarcangeli.serioussamandroid.preferences.SeekBarPreference
+            android:defaultValue="100"
+            android:key="aimView_sensibility"
+            android:max="200"
+            android:summary="%s%%"
+            android:text="%"
+            android:title="Drag sensibility" />
     </PreferenceCategory>
     <PreferenceCategory android:title="Debug">
         <CheckBoxPreference

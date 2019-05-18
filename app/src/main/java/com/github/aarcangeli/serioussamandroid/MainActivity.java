@@ -79,6 +79,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean useGyroscope;
     private String showTouchController;
     private float gyroSensibility;
+    private float aimViewSensibility;
     private boolean enableTouchController;
 
     private InputProcessor processor = new InputProcessor();
@@ -468,6 +469,7 @@ public class MainActivity extends AppCompatActivity {
         useGyroscope = preferences.getBoolean("use_gyroscope", true);
         showTouchController = preferences.getString("showTouchController", "Auto");
         gyroSensibility = preferences.getInt("gyro_sensibility", 100) / 100.f;
+        aimViewSensibility = preferences.getInt("aimView_sensibility", 100) / 100.f;
         executeShell("hud_iStats=" + (preferences.getBoolean("hud_iStats", false) ? 2 : 0) + ";");
         updateSoftKeyboardVisible();
     }
@@ -507,8 +509,8 @@ public class MainActivity extends AppCompatActivity {
             } else if (event.getAction() == MotionEvent.ACTION_MOVE && isTracking) {
                 float rawX = event.getRawX();
                 float rawY = event.getRawY();
-                shiftAxisValue(AXIS_LOOK_LR, -Utils.convertPixelsToDp(rawX - lastX, MainActivity.this) * MULT_VIEW_TRACKER);
-                shiftAxisValue(AXIS_LOOK_UD, -Utils.convertPixelsToDp(rawY - lastY, MainActivity.this) * MULT_VIEW_TRACKER);
+                shiftAxisValue(AXIS_LOOK_LR, -Utils.convertPixelsToDp(rawX - lastX, MainActivity.this) * MULT_VIEW_TRACKER * aimViewSensibility);
+                shiftAxisValue(AXIS_LOOK_UD, -Utils.convertPixelsToDp(rawY - lastY, MainActivity.this) * MULT_VIEW_TRACKER * aimViewSensibility);
                 lastX = rawX;
                 lastY = rawY;
             }
