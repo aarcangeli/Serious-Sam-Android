@@ -2,6 +2,7 @@ package com.github.aarcangeli.serioussamandroid.views;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -9,6 +10,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
+import android.preference.PreferenceManager;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.Button;
@@ -28,6 +30,16 @@ public class ButtonView extends Button {
     Bitmap tempBmp;
     Canvas c = new Canvas();
     private Paint alphaPaint = new Paint();
+
+    private final SharedPreferences preferences;
+    private int opacity;
+
+    private SharedPreferences.OnSharedPreferenceChangeListener preferenceListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+        @Override
+        public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+            readPreferences();
+        }
+    };
 
     public ButtonView(Context context) {
         this(context, null);
@@ -49,6 +61,14 @@ public class ButtonView extends Button {
                 typedArray.recycle();
             }
         }
+
+        preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+        preferences.registerOnSharedPreferenceChangeListener(preferenceListener);
+        readPreferences();
+    }
+
+    private void readPreferences() {
+        opacity = preferences.getInt("input_opacity", 70) * 255 / 100;
     }
 
     @Override
@@ -104,7 +124,7 @@ public class ButtonView extends Button {
 
         // copy to destination canvas
         c.restore();
-        alphaPaint.setAlpha(200);
+        alphaPaint.setAlpha(opacity);
         canvas.drawBitmap(tempBmp, 0, 0, alphaPaint);
     }
 }

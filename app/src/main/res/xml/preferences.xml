@@ -27,6 +27,13 @@
             android:summary="%s%%"
             android:text="%"
             android:title="Drag sensibility" />
+        <com.github.aarcangeli.serioussamandroid.preferences.SeekBarPreference
+            android:defaultValue="70"
+            android:key="input_opacity"
+            android:max="100"
+            android:summary="%s%%"
+            android:text="%"
+            android:title="Input Opacity" />
     </PreferenceCategory>
     <PreferenceCategory android:title="Debug">
         <CheckBoxPreference

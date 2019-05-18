@@ -2,6 +2,7 @@ package com.github.aarcangeli.serioussamandroid.views;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -9,6 +10,7 @@ import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.RadialGradient;
 import android.graphics.Shader;
+import android.preference.PreferenceManager;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -34,6 +36,16 @@ public class JoystickView extends View {
     private Listener listener;
     private RadialGradient padShader;
 
+    private final SharedPreferences preferences;
+    private int opacity;
+
+    private SharedPreferences.OnSharedPreferenceChangeListener preferenceListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+        @Override
+        public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+            readPreferences();
+        }
+    };
+
     // temporaney canvas for opacity
     Bitmap tempBmp;
     Canvas c = new Canvas();
@@ -45,6 +57,14 @@ public class JoystickView extends View {
 
     public JoystickView(Context context, AttributeSet attrs) {
         super(context, attrs);
+
+        preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+        preferences.registerOnSharedPreferenceChangeListener(preferenceListener);
+        readPreferences();
+    }
+
+    private void readPreferences() {
+        opacity = preferences.getInt("input_opacity", 70) * 255 / 100;
     }
 
     @Override
@@ -117,7 +137,7 @@ public class JoystickView extends View {
 
         // copy to destination canvas
         c.restore();
-        alphaPaint.setAlpha(200);
+        alphaPaint.setAlpha(opacity);
         canvas.drawBitmap(tempBmp, 0, 0, alphaPaint);
     }
 
