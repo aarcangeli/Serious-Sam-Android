@@ -48,6 +48,7 @@ import static com.github.aarcangeli.serioussamandroid.NativeEvents.GameState;
 import static com.github.aarcangeli.serioussamandroid.NativeEvents.OpenSettingsEvent;
 import static com.github.aarcangeli.serioussamandroid.NativeEvents.RestartEvent;
 import static com.github.aarcangeli.serioussamandroid.NativeEvents.StateChangeEvent;
+import static com.github.aarcangeli.serioussamandroid.input.VirtualKeyboard.*;
 import static com.github.aarcangeli.serioussamandroid.views.JoystickView.Listener;
 
 public class MainActivity extends AppCompatActivity {
@@ -380,35 +381,90 @@ public class MainActivity extends AppCompatActivity {
         if (keyCode == KeyEvent.KEYCODE_VOLUME_UP || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
             return false;
         }
-        if (event.getRepeatCount() == 0) {
-            if (gameState == GameState.MENU) {
-                if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                    switch (keyCode) {
-                        case KeyEvent.KEYCODE_DPAD_DOWN:
-                            executeShell("MenuEvent(0)");
-                            break;
-                        case KeyEvent.KEYCODE_DPAD_RIGHT:
-                            executeShell("MenuEvent(1)");
-                            break;
-                        case KeyEvent.KEYCODE_DPAD_UP:
-                            executeShell("MenuEvent(2)");
-                            break;
-                        case KeyEvent.KEYCODE_DPAD_LEFT:
-                            executeShell("MenuEvent(3)");
-                            break;
-                        case KeyEvent.KEYCODE_ENTER:
-                        case KeyEvent.KEYCODE_BUTTON_A:
-                            executeShell("MenuEvent(4)");
-                            break;
-                        case KeyEvent.KEYCODE_BUTTON_B:
-                        case KeyEvent.KEYCODE_ESCAPE:
-                        case KeyEvent.KEYCODE_BACK:
-                            executeShell("GoMenuBack()");
-                            break;
-                    }
+        if (event.getAction() == KeyEvent.ACTION_DOWN && event.isPrintingKey()) {
+            executeShell("MenuChar(" + event.getUnicodeChar() + ")");
+        }
+        if (gameState == GameState.MENU) {
+            if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                switch (keyCode) {
+                    case KeyEvent.KEYCODE_DPAD_DOWN:
+                        executeShell("MenuEvent(" + VK_DOWN + ")");
+                        break;
+                    case KeyEvent.KEYCODE_DPAD_RIGHT:
+                        executeShell("MenuEvent(" + VK_RIGHT + ")");
+                        break;
+                    case KeyEvent.KEYCODE_DPAD_UP:
+                        executeShell("MenuEvent(" + VK_UP + ")");
+                        break;
+                    case KeyEvent.KEYCODE_DPAD_LEFT:
+                        executeShell("MenuEvent(" + VK_LEFT + ")");
+                        break;
+                    case KeyEvent.KEYCODE_MOVE_HOME:
+                        executeShell("MenuEvent(" + VK_HOME + ")");
+                        break;
+                    case KeyEvent.KEYCODE_MOVE_END:
+                        executeShell("MenuEvent(" + VK_END + ")");
+                        break;
+                    case KeyEvent.KEYCODE_DEL:
+                        executeShell("MenuEvent(" + VK_BACK + ")");
+                        break;
+                    case KeyEvent.KEYCODE_FORWARD_DEL:
+                        executeShell("MenuEvent(" + VK_DELETE + ")");
+                        break;
+                    case KeyEvent.KEYCODE_ENTER:
+                    case KeyEvent.KEYCODE_NUMPAD_ENTER:
+                    case KeyEvent.KEYCODE_BUTTON_A:
+                        executeShell("MenuEvent(" + VK_RETURN + ")");
+                        break;
+                    case KeyEvent.KEYCODE_BUTTON_B:
+                    case KeyEvent.KEYCODE_ESCAPE:
+                    case KeyEvent.KEYCODE_BACK:
+                        executeShell("GoMenuBack()");
+                        break;
+                    case KeyEvent.KEYCODE_F1:
+                        executeShell("MenuEvent(" + VK_F1 + ")");
+                        break;
+                    case KeyEvent.KEYCODE_F2:
+                        executeShell("MenuEvent(" + VK_F2 + ")");
+                        break;
+                    case KeyEvent.KEYCODE_F3:
+                        executeShell("MenuEvent(" + VK_F3 + ")");
+                        break;
+                    case KeyEvent.KEYCODE_F4:
+                        executeShell("MenuEvent(" + VK_F4 + ")");
+                        break;
+                    case KeyEvent.KEYCODE_F5:
+                        executeShell("MenuEvent(" + VK_F5 + ")");
+                        break;
+                    case KeyEvent.KEYCODE_F6:
+                        executeShell("MenuEvent(" + VK_F6 + ")");
+                        break;
+                    case KeyEvent.KEYCODE_F7:
+                        executeShell("MenuEvent(" + VK_F7 + ")");
+                        break;
+                    case KeyEvent.KEYCODE_F8:
+                        executeShell("MenuEvent(" + VK_F8 + ")");
+                        break;
+                    case KeyEvent.KEYCODE_F9:
+                        executeShell("MenuEvent(" + VK_F9 + ")");
+                        break;
+                    case KeyEvent.KEYCODE_F10:
+                        executeShell("MenuEvent(" + VK_F10 + ")");
+                        break;
+                    case KeyEvent.KEYCODE_F11:
+                        executeShell("MenuEvent(" + VK_F11 + ")");
+                        break;
+                    case KeyEvent.KEYCODE_F12:
+                        executeShell("MenuEvent(" + VK_F12 + ")");
+                        break;
                 }
-            } else {
+            }
+        } else if (gameState != GameState.INTRO) {
+            if (event.getRepeatCount() == 0) {
                 if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                    if (keyCode == KeyEvent.KEYCODE_ESCAPE) {
+                        executeShell("sam_bMenu=1;");
+                    }
                     nDispatchKeyEvent(keyCode, 1);
                 }
                 if (event.getAction() == KeyEvent.ACTION_UP) {

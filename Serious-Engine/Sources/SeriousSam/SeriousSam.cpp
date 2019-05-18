@@ -252,27 +252,16 @@ void GoMenuBack() {
 }
 
 void MenuEvent(void* pArgs) {
-  INDEX event = NEXTARGUMENT(INDEX);
-  switch(event) {
-    case 0:
-      MenuOnKeyDown(VK_DOWN);
-      break;
-    case 1:
-      MenuOnKeyDown(VK_RIGHT);
-      break;
-    case 2:
-      MenuOnKeyDown(VK_UP);
-      break;
-    case 3:
-      MenuOnKeyDown(VK_LEFT);
-      break;
-    case 4:
-      MenuOnKeyDown(VK_RETURN);
-      break;
-    case 5:
-      GoMenuBack();
-      break;
-  }
+  INDEX vk = NEXTARGUMENT(INDEX);
+  MenuOnKeyDown(vk);
+}
+
+void MenuChar(void* pArgs) {
+  INDEX keyCode = NEXTARGUMENT(INDEX);
+  MSG msg;
+  msg.message = WM_CHAR;
+  msg.wParam = keyCode;
+  MenuOnChar(msg);
 }
 
 static void PlayDemo(void* pArgs)
@@ -562,6 +551,7 @@ BOOL Init()
   _pShell->DeclareSymbol("user void TouchDown(INDEX, INDEX);", (void *) &TouchDown);
   _pShell->DeclareSymbol("user void TouchUp(INDEX, INDEX);", (void *) &TouchUp);
   _pShell->DeclareSymbol("user void MenuEvent(INDEX);", (void *) &MenuEvent);
+  _pShell->DeclareSymbol("user void MenuChar(INDEX);", (void *) &MenuChar);
   _pShell->DeclareSymbol("user void GoMenuBack();", (void *) &GoMenuBack);
 
   InitializeGame();
