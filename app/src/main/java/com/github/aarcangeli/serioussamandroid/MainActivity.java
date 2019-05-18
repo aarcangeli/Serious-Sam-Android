@@ -34,7 +34,6 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.github.aarcangeli.serioussamandroid.input.InputProcessor;
-import com.github.aarcangeli.serioussamandroid.views.BgTrackerView;
 import com.github.aarcangeli.serioussamandroid.views.JoystickView;
 
 import org.greenrobot.eventbus.EventBus;
@@ -110,83 +109,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        Button useBtn = findViewById(R.id.input_use);
-        useBtn.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if(event.getAction() == MotionEvent.ACTION_DOWN) {
-                    nDispatchKeyEvent(KeyEvent.KEYCODE_BUTTON_R2, 1);
-                } else if (event.getAction() == MotionEvent.ACTION_UP) {
-                    nDispatchKeyEvent(KeyEvent.KEYCODE_BUTTON_R2, 0);
-                }
-                return false;
-            }
-        });
-
-        Button crunchBtn = findViewById(R.id.input_crunch);
-        crunchBtn.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if(event.getAction() == MotionEvent.ACTION_DOWN) {
-                    nDispatchKeyEvent(KeyEvent.KEYCODE_BUTTON_B, 1);
-                } else if (event.getAction() == MotionEvent.ACTION_UP) {
-                    nDispatchKeyEvent(KeyEvent.KEYCODE_BUTTON_B, 0);
-                }
-                return false;
-            }
-        });
-
-        Button jumpBtn = findViewById(R.id.input_jump);
-        jumpBtn.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if(event.getAction() == MotionEvent.ACTION_DOWN) {
-                    nDispatchKeyEvent(KeyEvent.KEYCODE_BUTTON_A, 1);
-                } else if (event.getAction() == MotionEvent.ACTION_UP) {
-                    nDispatchKeyEvent(KeyEvent.KEYCODE_BUTTON_A, 0);
-                }
-                return false;
-            }
-        });
-
-        Button prevBtn = findViewById(R.id.buttonPrev);
-        prevBtn.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if(event.getAction() == MotionEvent.ACTION_DOWN) {
-                    nDispatchKeyEvent(KeyEvent.KEYCODE_DPAD_LEFT, 1);
-                } else if (event.getAction() == MotionEvent.ACTION_UP) {
-                    nDispatchKeyEvent(KeyEvent.KEYCODE_DPAD_LEFT, 0);
-                }
-                return true;
-            }
-        });
-
-        Button nextbtn = findViewById(R.id.buttonNext);
-        nextbtn.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if(event.getAction() == MotionEvent.ACTION_DOWN) {
-                    nDispatchKeyEvent(KeyEvent.KEYCODE_DPAD_RIGHT, 1);
-                } else if (event.getAction() == MotionEvent.ACTION_UP) {
-                    nDispatchKeyEvent(KeyEvent.KEYCODE_DPAD_RIGHT, 0);
-                }
-                return true;
-            }
-        });
-
-        Button fireBtn = findViewById(R.id.input_fire);
-        fireBtn.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if(event.getAction() == MotionEvent.ACTION_DOWN) {
-                    nDispatchKeyEvent(KeyEvent.KEYCODE_BUTTON_R1, 1);
-                } else if (event.getAction() == MotionEvent.ACTION_UP) {
-                    nDispatchKeyEvent(KeyEvent.KEYCODE_BUTTON_R1, 0);
-                }
-                return true;
-            }
-        });
+        findViewById(R.id.input_use).setOnTouchListener(new MyBtnListener(KeyEvent.KEYCODE_BUTTON_R2));
+        findViewById(R.id.input_crunch).setOnTouchListener(new MyBtnListener(KeyEvent.KEYCODE_BUTTON_B));
+        findViewById(R.id.input_jump).setOnTouchListener(new MyBtnListener(KeyEvent.KEYCODE_BUTTON_A));
+        findViewById(R.id.buttonPrev).setOnTouchListener(new MyBtnListener(KeyEvent.KEYCODE_DPAD_LEFT));
+        findViewById(R.id.buttonNext).setOnTouchListener(new MyBtnListener(KeyEvent.KEYCODE_DPAD_RIGHT));
+        findViewById(R.id.input_fire).setOnTouchListener(new MyBtnListener(KeyEvent.KEYCODE_BUTTON_R1));
+        findViewById(R.id.bgTrackerView).setOnTouchListener(new MyBtnListener());
 
         JoystickView joystick = findViewById(R.id.input_overlay);
         joystick.setListener(new Listener() {
@@ -195,17 +124,6 @@ public class MainActivity extends AppCompatActivity {
                 if (gameState == GameState.NORMAL) {
                     setAxisValue(AXIS_MOVE_LR, deltaX);
                     setAxisValue(AXIS_MOVE_FB, deltaY);
-                }
-            }
-        });
-
-        BgTrackerView bgTracker = findViewById(R.id.bgTrackerView);
-        bgTracker.setListener(new BgTrackerView.Listener() {
-            @Override
-            public void move(float deltaX, float deltaY) {
-                if (gameState == GameState.NORMAL) {
-                    shiftAxisValue(AXIS_LOOK_LR, deltaX * MULT_VIEW_TRACKER);
-                    shiftAxisValue(AXIS_LOOK_UD, deltaY * MULT_VIEW_TRACKER);
                 }
             }
         });
@@ -556,6 +474,46 @@ public class MainActivity extends AppCompatActivity {
 
     public static void executeShell(String command) {
         nShellExecute(command);
+    }
+
+    private class MyBtnListener implements View.OnTouchListener {
+        boolean isTracking;
+        float lastX, lastY;
+        private int btnToBind;
+
+        public MyBtnListener() {
+            this.btnToBind = 0;
+        }
+
+        public MyBtnListener(int btnToBind) {
+            this.btnToBind = btnToBind;
+        }
+
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                isTracking = true;
+                lastX = event.getRawX();
+                lastY = event.getRawY();
+                if (this.btnToBind != 0) {
+                    nDispatchKeyEvent(btnToBind, 1);
+                }
+            } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                if (this.btnToBind != 0) {
+                    nDispatchKeyEvent(btnToBind, 0);
+                }
+            } else if (event.getAction() == MotionEvent.ACTION_POINTER_UP) {
+                isTracking = false;
+            } else if (event.getAction() == MotionEvent.ACTION_MOVE && isTracking) {
+                float rawX = event.getRawX();
+                float rawY = event.getRawY();
+                shiftAxisValue(AXIS_LOOK_LR, -Utils.convertPixelsToDp(rawX - lastX, MainActivity.this) * MULT_VIEW_TRACKER);
+                shiftAxisValue(AXIS_LOOK_UD, -Utils.convertPixelsToDp(rawY - lastY, MainActivity.this) * MULT_VIEW_TRACKER);
+                lastX = rawX;
+                lastY = rawY;
+            }
+            return true;
+        }
     }
 
     private static native void setAxisValue(int key, float value);
