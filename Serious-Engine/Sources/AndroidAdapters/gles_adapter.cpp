@@ -115,9 +115,8 @@ namespace gles_adapter {
     varying vec2 vTexCoord;
 
     void main() {
-      vec4 finalColor = vColor;
-      if (enableTexture > 0.5) finalColor = finalColor * texture2D(mainTexture, vTexCoord);
-      gl_FragColor = finalColor;
+      if (enableTexture > 0.5) gl_FragColor = vColor * texture2D(mainTexture, vTexCoord);
+      else gl_FragColor = vColor;
 
       // alpha test
       if (enableAlphaTest > 0.5 && gl_FragColor.w < 0.5) {
