@@ -160,8 +160,6 @@ run_ecc(
   Global
 )
 
-message("EntitiesMP srcs: ${SOURCES}")
-
 add_library(EntitiesMP SHARED ${SOURCES})
 target_compile_options(EntitiesMP PUBLIC "-I${CMAKE_CURRENT_SOURCE_DIR}")
 target_compile_options(EntitiesMP PRIVATE "-I${CMAKE_CURRENT_SOURCE_DIR}/StdH")

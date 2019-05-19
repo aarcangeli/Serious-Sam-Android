@@ -12,3 +12,4 @@ shots
 stack.txt
 app/debug
 app/release
+/cmake-*
