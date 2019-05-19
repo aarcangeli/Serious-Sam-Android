@@ -5,10 +5,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [1.04.0] - 2019-05-19
+### Added
 - Ability to aim while pressing the shoot button (or other buttons)
-- Added serious bomb button
+- Serious bomb button
+- Chat console
 - Gyroscope sensibility setting
-- Enabled console
 - Touch controller visibility setting
 - Touch drag sensibility setting
 - Input opacity setting
@@ -62,7 +65,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## 1.00 - 2019-02-18
 - Initial Release
 
-[Unreleased]: https://github.com/aarcangeli/Serious-Sam-Android/compare/v1.03.3...HEAD
+[Unreleased]: https://github.com/aarcangeli/Serious-Sam-Android/compare/v1.04.0...HEAD
+[1.04.0]: https://github.com/aarcangeli/Serious-Sam-Android/compare/v1.03.3...v1.04.0
 [1.03.3]: https://github.com/aarcangeli/Serious-Sam-Android/compare/v1.03.2...v1.03.3
 [1.03.2]: https://github.com/aarcangeli/Serious-Sam-Android/compare/v1.03.1...v1.03.2
 [1.03.1]: https://github.com/aarcangeli/Serious-Sam-Android/compare/v1.03.0...v1.03.1
