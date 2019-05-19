@@ -228,6 +228,7 @@ set(
   ${SE_BASE}/Graphics/ViewPort_android.cpp
   ${SE_BASE}/_android/CGfxLibrary.cpp
   ${SE_BASE}/_android/GameAgent.cpp
+  ${SE_BASE}/VirtualKeyboard/VirtualKeyboard.cpp
 
   # excluded sources
   #"${SE_BASE}/Graphics/Gfx_wrapper_Direct3D.cpp"

@@ -23,6 +23,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #define DECL_DLL
 #include <EntitiesMP/Global.h>
 #include <SeriousSam/GUI/Menus/MenuManager.h>
+#include <Engine/VirtualKeyboard/VirtualKeyboard.h>
 #include "resource.h"
 #include "SplashScreen.h"
 #include "MainWindow.h"
@@ -40,6 +41,8 @@ typedef CGame *(*GAME_Create_t)(void);
 void drawBannerFpsVersion(CDrawPort *pdp, int64_t deltaFrame, float fps);
 
 extern CGame *_pGame = NULL;
+
+CVirtualKeyboard keyboard;
 
 // application state variables
 extern BOOL _bRunning = TRUE;
@@ -166,6 +169,11 @@ void TouchDown(void* pArgs) {
     return;
   }
   ignoreTouchInputs = false;
+
+  if (_pGame->gm_csConsoleState != CS_OFF) {
+    keyboard.MouseDown(x, y);
+    return;
+  }
 
   if (bMenuActive) {
     MenuOnMouseMove(x, y);
@@ -882,13 +890,28 @@ void DoGame(void)
     // print display mode info if needed
     PrintDisplayModeInfo();
 
-    // render console
-    _pGame->ConsoleRender(pdp);
-
     // draw fps and frame time
     if (!bMenuActive && _pGame->gm_csConsoleState == CS_OFF && _pGame->gm_csComputerState == CS_OFF) {
       drawBannerFpsVersion(pdp, deltaFrame, fps);
     }
+
+    if (_pGame->gm_csConsoleState != CS_OFF) {
+      MSG keyboardMsg = keyboard.DoKeyboard(pdp);
+      if (keyboardMsg.message == WM_CHAR) {
+        _pGame->ConsoleChar(keyboardMsg);
+      }
+      if (keyboardMsg.message == WM_KEYDOWN) {
+        if (keyboardMsg.wParam == VK_ESCAPE) {
+          HideConsole();
+        } else {
+          _pGame->ConsoleKeyDown(keyboardMsg);
+        }
+      }
+      _pShell->SetFLOAT("con_fHeightFactor", 1.0f - keyboard.keyboardHeight);
+    }
+
+    // render console
+    _pGame->ConsoleRender(pdp);
 
     if (_gmRunningGameMode == GM_INTRO) {
       g_cb.setSeriousState(GS_INTRO);
