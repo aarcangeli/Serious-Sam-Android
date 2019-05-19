@@ -1,47 +1,10 @@
 # find ecc from /Serious-Engine/Sources/Tools.Win32
-set(ECC_PRECOMPILED "${PROJECT_ROOT}/Serious-Engine/Sources/Tools.Win32/ecc.exe")
-if (EXISTS "${ECC_PRECOMPILED}")
-  set(ECC_EXECUTABLE "${ECC_PRECOMPILED}" CACHE STRING "Global scope" FORCE)
+set(ECC_PRECOMPILED "${PROJECT_ROOT}/Serious-Engine/Tools.Win32/ecc.exe")
 
-else ()
-
-  set(ECC_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ecc-msvc")
-  set(ECC_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/build")
-  set(ECC_EXECUTABLE "${CMAKE_CURRENT_BINARY_DIR}/build/ecc.exe" CACHE STRING "Global scope" FORCE)
-
-  file(MAKE_DIRECTORY "${ECC_BINARY_DIR}")
-
-  # compile ecc with visual studio (we need an exe)
-  execute_process(
-    COMMAND
-    ${CMAKE_COMMAND}
-    -G "Visual Studio 15 2017"
-    "-DPROJECT_ROOT=${PROJECT_ROOT}"
-    "-DSE_GENERATED_DIR=${SE_GENERATED_DIR}"
-    "-DSE_SOURCES=${SE_SOURCES}"
-    "-DCMAKE_BUILD_TYPE=Release"
-    "${ECC_SOURCE_DIR}"
-
-    WORKING_DIRECTORY "${ECC_BINARY_DIR}"
-    OUTPUT_FILE "${CMAKE_CURRENT_BINARY_DIR}/configure.log.txt"
-    ERROR_FILE "${CMAKE_CURRENT_BINARY_DIR}/configure.err.txt"
-    RESULT_VARIABLE retcode
-  )
-
-  if (NOT "${retcode}" STREQUAL "0")
-    message(FATAL_ERROR "Cannot configure ecc compiler (returned ${retcode})\nSee ${CMAKE_CURRENT_BINARY_DIR}/configure.err.txt")
-  endif ()
-
-  add_custom_command(
-    OUTPUT "${ECC_EXECUTABLE}"
-    COMMAND ${CMAKE_COMMAND} --build .
-    WORKING_DIRECTORY "${ECC_BINARY_DIR}"
-    DEPENDS
-    "${CMAKE_CURRENT_SOURCE_DIR}"
-    "${CMAKE_CURRENT_SOURCE_DIR}/ecc-msvc"
-  )
-
+if (NOT EXISTS "${ECC_PRECOMPILED}")
+  message(FATAL_ERROR "Serious-Engine/Tools.Win32/ecc.exe not found.\nYou need to compile it manually from Serious-Engine/Sources/Ecc/ecc.sln")
 endif ()
 
+set(ECC_EXECUTABLE "${ECC_PRECOMPILED}" CACHE STRING "Global scope" FORCE)
 message("ECC_EXECUTABLE: ${ECC_EXECUTABLE}")
 ADD_CUSTOM_TARGET(se-ecc DEPENDS "${ECC_EXECUTABLE}")
