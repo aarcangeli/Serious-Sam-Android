@@ -172,8 +172,13 @@ void InitStreams(void) {
   }
   // find eventual extension for the mod's dlls
   _strModExt = "MP"; // default Second Encounter
-  LoadStringVar(CTString("ModExt.txt"), _strModExt);
-
+  CTFileName tmp;
+  
+  if(ExpandFilePath(EFP_READ, CTString("ModEXT.txt"), tmp) != EFP_NONE) {
+    LoadStringVar(CTString("ModEXT.txt"), _strModExt);
+  } else {
+    LoadStringVar(CTString("ModExt.txt"), _strModExt);
+  }
 
   CPrintF(TRANS("Loading group files...\n"));
 
