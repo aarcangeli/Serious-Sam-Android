@@ -370,22 +370,6 @@ void CPlayerWeapons_Precache(ULONG ulAvailable)
     pdec->PrecacheClass(CLASS_PROJECTILE, PRT_GRENADE);
   }
 
-/*
-  if ( ulAvailable&(1<<(WEAPON_PIPEBOMB-1)) ) {
-    pdec->PrecacheModel(MODEL_PIPEBOMB_STICK        );
-    pdec->PrecacheModel(MODEL_PIPEBOMB_HAND         );
-    pdec->PrecacheModel(MODEL_PB_BUTTON             );
-    pdec->PrecacheModel(MODEL_PB_SHIELD             );
-    pdec->PrecacheModel(MODEL_PB_STICK              );
-    pdec->PrecacheModel(MODEL_PB_BOMB               );
-    pdec->PrecacheTexture(TEXTURE_PB_STICK          );  
-    pdec->PrecacheTexture(TEXTURE_PB_BOMB           );  
-    pdec->PrecacheSound(SOUND_PIPEBOMB_FIRE         );
-    pdec->PrecacheSound(SOUND_PIPEBOMB_OPEN         );
-    pdec->PrecacheSound(SOUND_PIPEBOMB_THROW        );
-    pdec->PrecacheClass(CLASS_PIPEBOMB);
-  }
-*/
   if ( ulAvailable&(1<<(WEAPON_CHAINSAW-1))) {
     pdec->PrecacheModel(MODEL_CHAINSAW     );
     pdec->PrecacheModel(MODEL_CS_BODY      );
@@ -426,26 +410,10 @@ void CPlayerWeapons_Precache(ULONG ulAvailable)
     pdec->PrecacheSound(SOUND_LASER_FIRE);
     pdec->PrecacheClass(CLASS_PROJECTILE, PRT_LASER_RAY);
   }
-/*
-  if ( ulAvailable&(1<<(WEAPON_GHOSTBUSTER-1)) ) {
-    pdec->PrecacheModel(MODEL_GHOSTBUSTER     );
-    pdec->PrecacheModel(MODEL_GB_BODY         );
-    pdec->PrecacheModel(MODEL_GB_ROTATOR      );
-    pdec->PrecacheModel(MODEL_GB_EFFECT1      );
-    pdec->PrecacheModel(MODEL_GB_EFFECT1FLARE );
-    pdec->PrecacheTexture(TEXTURE_GB_ROTATOR  );  
-    pdec->PrecacheTexture(TEXTURE_GB_BODY     );  
-    pdec->PrecacheTexture(TEXTURE_GB_LIGHTNING);  
-    pdec->PrecacheTexture(TEXTURE_GB_FLARE    );  
-    pdec->PrecacheSound(SOUND_GB_FIRE         );
-    pdec->PrecacheClass(CLASS_GHOSTBUSTERRAY);
-  }
-  */
   if ( ulAvailable&(1<<(WEAPON_IRONCANNON-1)) /*||
        ulAvailable&(1<<(WEAPON_NUKECANNON-1))*/ ) {
     pdec->PrecacheModel(MODEL_CANNON    );
     pdec->PrecacheModel(MODEL_CN_BODY   );
-//    pdec->PrecacheModel(MODEL_CN_NUKEBOX);
     pdec->PrecacheTexture(TEXTURE_CANNON);
     pdec->PrecacheSound(SOUND_CANNON    );
     pdec->PrecacheSound(SOUND_CANNON_PREPARE);
@@ -644,8 +612,6 @@ components:
   1 class   CLASS_PROJECTILE        "Classes\\Projectile.ecl",
   2 class   CLASS_BULLET            "Classes\\Bullet.ecl",
   3 class   CLASS_WEAPONEFFECT      "Classes\\PlayerWeaponsEffects.ecl",
-  4 class   CLASS_PIPEBOMB          "Classes\\Pipebomb.ecl",
-  5 class   CLASS_GHOSTBUSTERRAY    "Classes\\GhostBusterRay.ecl",
   6 class   CLASS_CANNONBALL        "Classes\\CannonBall.ecl",
   7 class   CLASS_WEAPONITEM        "Classes\\WeaponItem.ecl",
   8 class   CLASS_BASIC_EFFECT      "Classes\\BasicEffect.ecl",
@@ -2232,30 +2198,6 @@ functions:
     eLaunch.prtType = PRT_ROCKET;
     penRocket->Initialize(eLaunch);
   };
-
-  /*
-  // drop pipebomb
-  void DropPipebomb(void) {
-    // pipebomb start position
-    CPlacement3D plPipebomb;
-    CalcWeaponPosition(
-      FLOAT3D(wpn_fFX[WEAPON_PIPEBOMB],wpn_fFY[WEAPON_PIPEBOMB], 0), 
-      plPipebomb, TRUE);
-    // create pipebomb
-    CEntityPointer penPipebomb = CreateEntity(plPipebomb, CLASS_PIPEBOMB);
-    // init and drop pipebomb
-    EDropPipebomb eDrop;
-    eDrop.penLauncher = m_penPlayer;
-    if (((CPlayer&)*m_penPlayer).en_plViewpoint.pl_OrientationAngle(2) > 10.0f) {
-      eDrop.fSpeed = 30.0f;
-    } else if (((CPlayer&)*m_penPlayer).en_plViewpoint.pl_OrientationAngle(2) > -20.0f) {
-      eDrop.fSpeed = 20.0f;
-    } else {
-      eDrop.fSpeed = 5.0f;
-    }
-    penPipebomb->Initialize(eDrop);
-    m_penPipebomb = penPipebomb;
-  };*/
 
   // flamer source
   void GetFlamerSourcePlacement(CPlacement3D &plSource, CPlacement3D &plInFrontOfPipe) {
@@ -5243,50 +5185,6 @@ procedures:
     }
     return EEnd();
   };
-
-  /*
-  // ***************** FIRE GHOSTBUSTER *****************
-  GhostBusterStart() {
-    GetAnimator()->FireAnimation(BODY_ANIM_SHOTGUN_FIRESHORT, AOF_LOOPING);
-    // create ray
-    m_penGhostBusterRay = CreateEntity(GetPlacement(), CLASS_GHOSTBUSTERRAY);
-    EGhostBusterRay egbr;
-    egbr.penOwner = this;
-    m_penGhostBusterRay->Initialize(egbr);
-    // play anim
-    m_moWeapon.PlayAnim(GHOSTBUSTER_ANIM_FIRE, AOF_LOOPING|AOF_NORESTART);
-    // play fire sound
-    CPlayer &pl = (CPlayer&)*m_penPlayer;
-    pl.m_soWeapon0.Set3DParameters(50.0f, 5.0f, 1.0f, 1.0f);      // fire
-    PlaySound(pl.m_soWeapon0, SOUND_GB_FIRE, SOF_3D|SOF_LOOP|SOF_VOLUMETRIC);
-    return EEnd();
-  };
-
-  GhostBusterStop() {
-    GetAnimator()->FireAnimationOff();
-    // destroy ray
-    ((CGhostBusterRay&)*m_penGhostBusterRay).DestroyGhostBusterRay();    
-    CPlayer &pl = (CPlayer&)*m_penPlayer;
-    pl.m_soWeapon0.Stop();
-    jump Idle();
-  };
-
-  FireGhostBuster() {
-    // fire one cell
-    if (m_iElectricity>0) {
-      FireGhostBusterRay();
-      DecAmmo(m_iElectricity, 1);
-      SpawnRangeSound(20.0f);
-      autowait(0.05f);
-      // no napalm -> change weapon
-      if (m_iElectricity<=0) { SelectNewWeapon(); }
-    } else {
-      ASSERTALWAYS("GhostBuster - Auto weapon change not working.");
-      m_bFireWeapon = m_bHasAmmo = FALSE;
-    }
-    return EEnd();
-  };
-  */
 
   // ***************** FIRE CANNON *****************
 
