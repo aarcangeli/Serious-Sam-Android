@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "stdh.h"
+#include "StdH.h"
 #include <Engine/Base/CTString.h>
 
 #include <Engine/Graphics/GfxLibrary.h>
@@ -22,7 +22,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/ErrorReporting.h>
 #include <Engine/Base/Console.h>
 #include <Engine/Base/Shell.h>
-#include <Engine/Base/Statistics_internal.h>
+#include <Engine/Base/Statistics_Internal.h>
 #include <Engine/Base/ListIterator.inl>
 #include <Engine/Math/Functions.h>
 #include <Engine/Math/AABBox.h>

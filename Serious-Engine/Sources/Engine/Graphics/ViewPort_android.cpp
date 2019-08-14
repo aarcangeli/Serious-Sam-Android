@@ -2,7 +2,7 @@
 #include <Engine/Graphics/ViewPort.h>
 #include <Engine/Graphics/GfxProfile.h>
 #include <Engine/Graphics/GfxLibrary.h>
-#include <Engine/Base/Statistics_internal.h>
+#include <Engine/Base/Statistics_Internal.h>
 #include <Engine/Base/ErrorReporting.h>
 #include <vector>
 

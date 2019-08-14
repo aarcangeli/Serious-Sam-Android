@@ -13,14 +13,14 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Brushes/Brush.h>
 #include <Engine/Brushes/BrushTransformed.h>
 #include <Engine/Light/LightSource.h>
 #include <Engine/Light/Gradient.h>
 #include <Engine/Base/ListIterator.inl>
-#include <Engine/Base/Statistics_internal.h>
+#include <Engine/Base/Statistics_Internal.h>
 #include <Engine/Graphics/Color.h>
 #include <Engine/Math/FixInt.h>
 #include <Engine/Entities/Entity.h>
