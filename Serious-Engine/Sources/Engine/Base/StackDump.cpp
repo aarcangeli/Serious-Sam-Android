@@ -15,7 +15,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "stdh.h"
 
-#include <Engine/Base/Console_Internal.h>
+#include <Engine/Base/Console_internal.h>
 
 #include <Engine/Build.h>
 

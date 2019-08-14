@@ -17,7 +17,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "CTString.h"
 
 #include <Engine/Base/Console.h>
-#include <Engine/Base/Console_Internal.h>
+#include <Engine/Base/Console_internal.h>
 
 #include <Engine/Base/Timer.h>
 #include <Engine/Base/ErrorReporting.h>
