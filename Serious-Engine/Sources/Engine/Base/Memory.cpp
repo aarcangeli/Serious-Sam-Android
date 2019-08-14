@@ -70,7 +70,7 @@ CMemHandlerInit::CMemHandlerInit(void)
 
 #undef AllocMemory
 
-void *AllocMemory( SLONG memsize )
+void *AllocMemory( SLLONG memsize )
 {
   void *pmem;
   ASSERTMSG(memsize>0, "AllocMemory: Block size is less or equal zero.");
@@ -87,7 +87,7 @@ void *AllocMemory( SLONG memsize )
 }
 
 #ifndef NDEBUG
-void *_debug_AllocMemory( SLONG memsize, int iType, const char *strFile, int iLine)
+void *_debug_AllocMemory( SLLONG memsize, int iType, const char *strFile, int iLine)
 {
 //  void *pmem;
 //  ASSERTMSG(memsize>0, "AllocMemory: Block size is less or equal zero.");
@@ -106,16 +106,16 @@ void *_debug_AllocMemory( SLONG memsize, int iType, const char *strFile, int iLi
 }
 #endif
 
-void *AllocMemoryAligned( SLONG memsize, SLONG slAlignPow2)
+void *AllocMemoryAligned( SLLONG memsize, SLLONG slAlignPow2)
 {
-  ULONG ulMem = (ULONG)AllocMemory(memsize+slAlignPow2*2);
-  ULONG ulMemAligned = ((ulMem+slAlignPow2-1) & ~(slAlignPow2-1)) + slAlignPow2;
-  ((ULONG *)ulMemAligned)[-1] = ulMem;
+  ULLONG ulMem = (ULLONG)AllocMemory(memsize+slAlignPow2*2);
+  ULLONG ulMemAligned = ((ulMem+slAlignPow2-1) & ~(slAlignPow2-1)) + slAlignPow2;
+  ((ULLONG *)ulMemAligned)[-1] = ulMem;
   return (void*)ulMemAligned;
 }
 void FreeMemoryAligned( void *memory)
 {
-  FreeMemory((void*) ( ( (ULONG*)memory )[-1] ) );
+  FreeMemory((void*) ( ( (ULLONG*)memory )[-1] ) );
 }
 
 void FreeMemory( void *memory )
@@ -124,7 +124,7 @@ void FreeMemory( void *memory )
   free( (char *)memory);
 }
 
-void ResizeMemory( void **ppv, SLONG slSize )
+void ResizeMemory( void **ppv, SLLONG slSize )
 {
   if (_bCheckAllAllocations) {
     _CrtCheckMemory();
@@ -138,12 +138,12 @@ void ResizeMemory( void **ppv, SLONG slSize )
   *ppv = pv;
 }
 
-void GrowMemory( void **ppv, SLONG newSize )
+void GrowMemory( void **ppv, SLLONG newSize )
 {
   ResizeMemory(ppv, newSize);
 }
 
-void ShrinkMemory( void **ppv, SLONG newSize )
+void ShrinkMemory( void **ppv, SLLONG newSize )
 {
   ResizeMemory(ppv, newSize);
 }
@@ -154,7 +154,7 @@ void ShrinkMemory( void **ppv, SLONG newSize )
  */
 char *StringDuplicate(const char *strOriginal) {
   // get the size
-  SLONG slSize = strlen(strOriginal)+1;
+  SLLONG slSize = strlen(strOriginal)+1;
   // allocate that much memory
   char *strCopy = (char *)AllocMemory(slSize);
   // copy it there
