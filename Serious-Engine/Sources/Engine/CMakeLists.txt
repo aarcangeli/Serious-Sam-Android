@@ -7,9 +7,9 @@ set(
   SE_GEN_SOURCES
 
   # generated files
-  "${SE_CURRENT_GENERATED_DIR}/Base/SCANNER.CPP"
+  "${SE_CURRENT_GENERATED_DIR}/Base/Scanner.cpp"
   "${SE_CURRENT_GENERATED_DIR}/Base/Parser.cpp"
-  "${SE_CURRENT_GENERATED_DIR}/Ska/Smcscan.cpp"
+  "${SE_CURRENT_GENERATED_DIR}/Ska/smcScan.cpp"
   "${SE_CURRENT_GENERATED_DIR}/Ska/smcPars.cpp"
 )
 
@@ -253,7 +253,7 @@ set(
 
 run_flex("${SE_CURRENT_GENERATED_DIR}/Base/Scanner.cpp" "${SE_BASE}/Base/Scanner.l" "${SE_BASE}/Base/FLEX.skl" "${SE_BASE}/Base")
 run_bison("${SE_CURRENT_GENERATED_DIR}/Base/Parser.cpp" "${SE_BASE}/Base/Parser.y" "${SE_CURRENT_GENERATED_DIR}/Base/Parser.c" "")
-run_flex("${SE_CURRENT_GENERATED_DIR}/Ska/Smcscan.cpp" "${SE_BASE}/Ska/Smcscan.l" "${SE_BASE}/Ska/smcFlex.skl" "${SE_BASE}/Ska")
+run_flex("${SE_CURRENT_GENERATED_DIR}/Ska/smcScan.cpp" "${SE_BASE}/Ska/smcScan.l" "${SE_BASE}/Ska/smcFlex.skl" "${SE_BASE}/Ska")
 run_bison("${SE_CURRENT_GENERATED_DIR}/Ska/smcPars.cpp" "${SE_BASE}/Ska/smcPars.y" "${SE_CURRENT_GENERATED_DIR}/Ska/smcPars.c" -psyy)
 
 add_library(Engine SHARED ${SE_ENGINE_SOURCES})
