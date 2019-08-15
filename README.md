@@ -1,5 +1,4 @@
 # Serious Sam Android
-
 ## Running the game
 1. Locate the game directory for "Serious Sam Classic The Second Encounter" ([steam](https://store.steampowered.com/app/41060/Serious_Sam_Classic_The_Second_Encounter/))
 1. [Download](https://github.com/aarcangeli/Serious-Sam-Android/releases/latest) and install the latest version of SeriousSamRelease.apk
@@ -21,8 +20,29 @@ Currently the game is playable only with a xbox 360 controller connected via usb
 
 NB: In some devices the OTG storage must be enabled (settings -> advanced -> OTG storage)
 
-### Compile from source
-If you want to compile the apk file from the source, proceed as follows:
+## Compile from source
+### Using Gradle script without Android Studio
+1. Clone or download the repository in a directory
+2. Download Android SDK (Command line tools only) https://developer.android.com/studio
+![alt text](https://image.prntscr.com/image/ztZ-0HbhRCSRhNwNScoJ-A.png)
+3. Unzip sdk-tools-windows-*.zip to C:\androidsdk (You can change path in local.properties)
+4. Download OpenJDK https://github.com/Skyrimus/openjdk-1.8.0-win/tree/master
+5. Unzip JDK to С:\jdk
+6. In cmd use command
+##### Set JAVA_HOME variable
+    set JAVA_HOME="C:\jdk\"
+7. Open cmd in C:\androidsdk\tools\bin\ folder and use command
+##### Download tools and NDK
+    sdkmanager.bat "cmake;3.10.2.4988404" "ndk-bundle" "platform-tools" "build-tools;29.0.0" "platforms;android-28" "platforms;android-27" "platforms;android-26" "platforms;android-25" "platforms;android-24" "platforms;android-23" "platforms;android-22" "platforms;android-21" "platforms;android-20" "platforms;android-19"
+8. Open cmd in C:\jdk\bin\ and generate your keystore
+##### Generate keystore, change password to keystore
+    keytool.exe -genkey -v -keystore release.keystore -alias release -keyalg RSA -keysize 2048 -validity 10000
+9. Move release.keystore to root path of Serious-Sam-Android source
+10. Configure signing.properties file
+11. Open cmd in Serious-Sam-Android folder and start compilation
+##### Compile NOW!
+    gradlew.bat assembleRelease
+### Using Android Studio
 1. Clone or download the repository in a directory
 1. Open the project in Android Studio
 1. Connect an android device with debugging enabled
@@ -80,3 +100,6 @@ These are just a few examples:
 [adapter]: Serious-Engine/Sources/AndroidAdapters/gles_adapter.cpp
 [X86 assembly]: https://en.wikipedia.org/wiki/X86_assembly_language
 [arm]: https://en.wikipedia.org/wiki/ARM_architecture
+
+## Acknowledgements
+* @Skyrimus - 4PDA
