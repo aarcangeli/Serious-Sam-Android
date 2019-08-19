@@ -11,8 +11,8 @@ import android.view.SurfaceView;
 
 public class SeriousSamSurface extends SurfaceView implements GestureDetector.OnGestureListener, GestureDetector.OnDoubleTapListener {
     private final GestureDetector gestureDetector;
-    private float scale = 0.5f;
     private MainActivity activity;
+    public float scale = 0.5f;
 
     public SeriousSamSurface(Context context) {
         this(context, null);

@@ -46,7 +46,6 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
 import java.util.Locale;
-
 import static com.github.aarcangeli.serioussamandroid.NativeEvents.EditTextEvent;
 import static com.github.aarcangeli.serioussamandroid.NativeEvents.FatalErrorEvent;
 import static com.github.aarcangeli.serioussamandroid.NativeEvents.GameState;
@@ -59,7 +58,6 @@ import static com.github.aarcangeli.serioussamandroid.views.JoystickView.Listene
 public class MainActivity extends AppCompatActivity {
     public static final String TAG = "SeriousSamJava";
     private final int REQUEST_WRITE_STORAGE = 1;
-
     private static final int AXIS_MOVE_UD = 0;
     private static final int AXIS_MOVE_LR = 1;
     private static final int AXIS_MOVE_FB = 2;
@@ -76,7 +74,6 @@ public class MainActivity extends AppCompatActivity {
 
     private SeriousSamSurface glSurfaceView;
     private File homeDir;
-
     private boolean isGameStarted = false;
     private SensorManager sensorManager;
     private SensorEventListener motionListener;
@@ -86,6 +83,7 @@ public class MainActivity extends AppCompatActivity {
     private String showTouchController;
     private float gyroSensibility;
     private float aimViewSensibility;
+    private String scale_FactorSet;
     private float ctrlAimSensibility;
     public float deadZone;
     private boolean enableTouchController;
@@ -216,7 +214,18 @@ public class MainActivity extends AppCompatActivity {
 //            }
 //        });
     }
-
+    public float scale = 0.5f;
+    public void scaleFactorSet() {
+        if (gameState == GameState.NORMAL) {
+            if ("Full".equalsIgnoreCase(scale_FactorSet)) {
+               scale = 1.0f;
+            } else if ("Half".equalsIgnoreCase(scale_FactorSet)) {
+               scale = 0.5f;
+            } else {
+               scale = 1.0f;
+            }
+        }
+    }
     public void updateSoftKeyboardVisible() {
         enableTouchController = false;
         if (gameState == GameState.NORMAL) {
@@ -606,10 +615,12 @@ public class MainActivity extends AppCompatActivity {
         showTouchController = preferences.getString("showTouchController", "Auto");
         gyroSensibility = preferences.getInt("gyro_sensibility", 100) / 100.f;
         aimViewSensibility = preferences.getInt("aimView_sensibility", 100) / 100.f;
+        scale_FactorSet = preferences.getString("scale_FactorSet", "Full");
         ctrlAimSensibility = preferences.getInt("ctrl_aimSensibility", 100) / 100.f;
         deadZone = preferences.getInt("ctrl_deadZone", 20) / 100.f;
         executeShell("hud_iStats=" + (preferences.getBoolean("hud_iStats", false) ? 2 : 0) + ";");
         updateSoftKeyboardVisible();
+		scaleFactorSet();
     }
 
     private class MyBtnListener implements View.OnTouchListener {
