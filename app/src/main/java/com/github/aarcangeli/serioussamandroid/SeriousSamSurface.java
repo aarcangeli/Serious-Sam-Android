@@ -8,16 +8,34 @@ import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
+import android.preference.PreferenceManager;
 
 public class SeriousSamSurface extends SurfaceView implements GestureDetector.OnGestureListener, GestureDetector.OnDoubleTapListener {
     private final GestureDetector gestureDetector;
     private MainActivity activity;
-    public float scale = 0.5f;
-
+    public float scale;
+    private String scale_FactorSet;
+	
     public SeriousSamSurface(Context context) {
         this(context, null);
     }
-
+    public void syncOptions() {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this.activity);
+        scale_FactorSet = preferences.getString("scale_FactorSet", "Full");
+		scaleFactorSet();
+    }
+    public void scaleFactorSet() {
+            if ("Full".equalsIgnoreCase(scale_FactorSet)) {
+               scale = 1.0f;
+            } else if ("Half".equalsIgnoreCase(scale_FactorSet)) {
+               scale = 0.5f;
+            } else {
+               scale = 1.0f;
+            }
+    }
     public SeriousSamSurface(Context context, AttributeSet attrs) {
         super(context, attrs);
 

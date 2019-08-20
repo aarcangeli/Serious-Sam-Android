@@ -83,7 +83,6 @@ public class MainActivity extends AppCompatActivity {
     private String showTouchController;
     private float gyroSensibility;
     private float aimViewSensibility;
-    private String scale_FactorSet;
     private float ctrlAimSensibility;
     public float deadZone;
     private boolean enableTouchController;
@@ -214,18 +213,7 @@ public class MainActivity extends AppCompatActivity {
 //            }
 //        });
     }
-    public float scale = 0.5f;
-    public void scaleFactorSet() {
-        if (gameState == GameState.NORMAL) {
-            if ("Full".equalsIgnoreCase(scale_FactorSet)) {
-               scale = 1.0f;
-            } else if ("Half".equalsIgnoreCase(scale_FactorSet)) {
-               scale = 0.5f;
-            } else {
-               scale = 1.0f;
-            }
-        }
-    }
+
     public void updateSoftKeyboardVisible() {
         enableTouchController = false;
         if (gameState == GameState.NORMAL) {
@@ -355,6 +343,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         syncOptions();
+		glSurfaceView.syncOptions();
         keyboardHeightProvider.onResume();
     }
 
@@ -615,12 +604,10 @@ public class MainActivity extends AppCompatActivity {
         showTouchController = preferences.getString("showTouchController", "Auto");
         gyroSensibility = preferences.getInt("gyro_sensibility", 100) / 100.f;
         aimViewSensibility = preferences.getInt("aimView_sensibility", 100) / 100.f;
-        scale_FactorSet = preferences.getString("scale_FactorSet", "Full");
         ctrlAimSensibility = preferences.getInt("ctrl_aimSensibility", 100) / 100.f;
         deadZone = preferences.getInt("ctrl_deadZone", 20) / 100.f;
         executeShell("hud_iStats=" + (preferences.getBoolean("hud_iStats", false) ? 2 : 0) + ";");
         updateSoftKeyboardVisible();
-		scaleFactorSet();
     }
 
     private class MyBtnListener implements View.OnTouchListener {
