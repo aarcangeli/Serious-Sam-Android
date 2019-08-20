@@ -46,7 +46,6 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
 import java.util.Locale;
-
 import static com.github.aarcangeli.serioussamandroid.NativeEvents.EditTextEvent;
 import static com.github.aarcangeli.serioussamandroid.NativeEvents.FatalErrorEvent;
 import static com.github.aarcangeli.serioussamandroid.NativeEvents.GameState;
@@ -59,7 +58,6 @@ import static com.github.aarcangeli.serioussamandroid.views.JoystickView.Listene
 public class MainActivity extends AppCompatActivity {
     public static final String TAG = "SeriousSamJava";
     private final int REQUEST_WRITE_STORAGE = 1;
-
     private static final int AXIS_MOVE_UD = 0;
     private static final int AXIS_MOVE_LR = 1;
     private static final int AXIS_MOVE_FB = 2;
@@ -76,7 +74,6 @@ public class MainActivity extends AppCompatActivity {
 
     private SeriousSamSurface glSurfaceView;
     private File homeDir;
-
     private boolean isGameStarted = false;
     private SensorManager sensorManager;
     private SensorEventListener motionListener;
@@ -346,6 +343,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         syncOptions();
+		glSurfaceView.syncOptions();
         keyboardHeightProvider.onResume();
     }
 
