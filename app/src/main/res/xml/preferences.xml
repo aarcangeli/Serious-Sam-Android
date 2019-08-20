@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory android:title="Graphics">
+        <ListPreference
+            android:defaultValue="Full"
+            android:entries="@array/ResolutionScaleFactorEntries"
+            android:entryValues="@array/FullHalf"
+            android:key="scale_FactorSet"
+            android:summary="%s"
+            android:title="Screen resolution (need restart)" />
+    </PreferenceCategory>
     <PreferenceCategory android:title="Inputs">
         <ListPreference
             android:defaultValue="Auto"
@@ -27,13 +36,6 @@
             android:summary="%s%%"
             android:text="%"
             android:title="Drag sensibility" />
-        <ListPreference
-            android:defaultValue="Full"
-            android:entries="@array/ResolutionScaleFactorEntries"
-            android:entryValues="@array/FullHalf"
-            android:key="scale_FactorSet"
-            android:summary="%s"
-            android:title="Resolution scale factor" />
         <com.github.aarcangeli.serioussamandroid.preferences.SeekBarPreference
             android:defaultValue="70"
             android:key="input_opacity"
