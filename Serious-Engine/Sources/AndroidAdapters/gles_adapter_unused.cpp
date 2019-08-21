@@ -1647,4 +1647,3 @@ namespace gles_adapter {
     reportError("glGetDoublev");
   };
 }
-             

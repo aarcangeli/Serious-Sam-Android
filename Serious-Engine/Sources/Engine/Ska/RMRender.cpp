@@ -30,7 +30,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Templates/DynamicContainer.cpp>
 #include <Engine/Graphics/Drawport.h>
 #include <Engine/Graphics/Fog_internal.h>
-#include <Engine/Base/Statistics_internal.h>
+#include <Engine/Base/Statistics_Internal.h>
 
 static CAnyProjection3D _aprProjection;
 static CDrawPort *_pdp = NULL;

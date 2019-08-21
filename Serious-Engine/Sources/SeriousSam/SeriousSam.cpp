@@ -60,8 +60,8 @@ extern FLOAT sam_fPlayerOffset = 0.0f;
 
 // display mode settings
 extern INDEX sam_bFullScreenActive = FALSE;
-extern INDEX sam_iScreenSizeI = 1024;  // current size of the window
-extern INDEX sam_iScreenSizeJ = 768;  // current size of the window
+extern INDEX sam_iScreenSizeI = 640;  // current size of the window
+extern INDEX sam_iScreenSizeJ = 480;  // current size of the window
 extern INDEX sam_iDisplayDepth  = 0;  // 0==default, 1==16bit, 2==32bit
 extern INDEX sam_iDisplayAdapter = 0;
 extern INDEX sam_iGfxAPI = 0;         // 0==OpenGL

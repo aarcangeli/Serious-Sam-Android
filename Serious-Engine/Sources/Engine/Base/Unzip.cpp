@@ -16,7 +16,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 // unzip.cpp : Defines the entry point for the console application.
 //
 
-#include "stdh.h"
+#include "StdH.h"
 #include <Engine/Base/Stream.h>
 #include <Engine/Base/FileName.h>
 #include <Engine/Base/Translation.h>

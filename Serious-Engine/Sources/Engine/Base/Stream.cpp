@@ -13,10 +13,10 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "stdh.h"
+#include "StdH.h"
 
-#include <sys\types.h>
-#include <sys\stat.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <fcntl.h>
 //#include <io.h>
 //#include <DbgHelp.h>
@@ -172,8 +172,13 @@ void InitStreams(void) {
   }
   // find eventual extension for the mod's dlls
   _strModExt = "MP"; // default Second Encounter
-  LoadStringVar(CTString("ModExt.txt"), _strModExt);
-
+  CTFileName tmp;
+  
+  if(ExpandFilePath(EFP_READ, CTString("ModEXT.txt"), tmp) != EFP_NONE) {
+    LoadStringVar(CTString("ModEXT.txt"), _strModExt);
+  } else {
+    LoadStringVar(CTString("ModExt.txt"), _strModExt);
+  }
 
   CPrintF(TRANS("Loading group files...\n"));
 

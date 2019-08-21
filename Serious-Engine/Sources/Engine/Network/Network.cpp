@@ -36,7 +36,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Templates/Stock_CEntityClass.h>
 
 
-#include <Engine/Base/Statistics_internal.h>
+#include <Engine/Base/Statistics_Internal.h>
 #include <Engine/Graphics/DrawPort.h>
 #include <Engine/Sound/SoundLibrary.h>
 #include <Engine/Sound/SoundListener.h>

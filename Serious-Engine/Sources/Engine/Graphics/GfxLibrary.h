@@ -42,7 +42,7 @@ extern CStaticStackArray<INDEX>       _aiCommonElements;
 extern CStaticStackArray<INDEX>       _aiCommonQuads;
 
 
-#include <Engine/Graphics/GFX_wrapper.h>
+#include <Engine/Graphics/Gfx_wrapper.h>
 
 
 #define SQRTTABLESIZE   8192

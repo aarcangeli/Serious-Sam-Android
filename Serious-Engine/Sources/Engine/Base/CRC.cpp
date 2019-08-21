@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "stdh.h"
+#include "StdH.h"
 
 // Note: this CRC calculation algorithm, although originating from MSDN examples,
 // is in fact identical to the Adler32 used in ZIP's CRC calculation.
