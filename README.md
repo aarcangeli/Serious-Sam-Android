@@ -16,90 +16,42 @@
 1. Start the game
    * The first time will ask you permission to read from external storage
 
-Currently the game is playable only with a xbox 360 controller connected via usb
-
-NB: In some devices the OTG storage must be enabled (settings -> advanced -> OTG storage)
-
 ## Compile from source
+
+### Using Android Studio
+1. Clone or download the repository in a directory
+1. Open the project in Android Studio
+1. If necessary install the suggested packages
+1. Connect an android device with debugging enabled
+1. Compile and run the game
+
 ### Using Gradle script without Android Studio
 1. Clone or download the repository in a directory
 2. Download Android SDK (Command line tools only) https://developer.android.com/studio
 ![alt text](https://image.prntscr.com/image/ztZ-0HbhRCSRhNwNScoJ-A.png)
 3. Unzip sdk-tools-windows-*.zip to C:\androidsdk (You can change path in local.properties)
-4. Download OpenJDK https://github.com/Skyrimus/openjdk-1.8.0-win/tree/master
-5. Unzip JDK to С:\jdk
-6. In cmd use command
-##### Set JAVA_HOME variable
+3. Create a file named 'local.properties' in the project root (near settings.gradle) with the following content:
+```
+sdk.dir=C:\\androidsdk
+ndk.dir=C:\\androidsdk\\ndk-bundle
+```
+5. Download and install [Java SE](https://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html)
+   or [OpenJDK](https://github.com/Skyrimus/openjdk-1.8.0-win/tree/master)
+6. In cmd set JAVA_HOME use command
+```cmd
     set JAVA_HOME="C:\jdk\"
-7. Open cmd in C:\androidsdk\tools\bin\ folder and use command
-##### Download tools and NDK
+```
+7. Download tools and NDK. Open cmd in C:\androidsdk\tools\bin\ folder and use command
+```cmd
     sdkmanager.bat "cmake;3.10.2.4988404" "ndk-bundle" "platform-tools" "build-tools;29.0.0" "platforms;android-28" "platforms;android-27" "platforms;android-26" "platforms;android-25" "platforms;android-24" "platforms;android-23" "platforms;android-22" "platforms;android-21" "platforms;android-20" "platforms;android-19"
+```
 8. Open cmd in C:\jdk\bin\ and generate your keystore
-##### Generate keystore, change password to keystore
+```cmd
     keytool.exe -genkey -v -keystore release.keystore -alias release -keyalg RSA -keysize 2048 -validity 10000
+```
 9. Move release.keystore to root path of Serious-Sam-Android source
 10. Configure signing.properties file
 11. Open cmd in Serious-Sam-Android folder and start compilation
-##### Compile NOW!
-    gradlew.bat assembleRelease
-### Using Android Studio
-1. Clone or download the repository in a directory
-1. Open the project in Android Studio
-1. Connect an android device with debugging enabled
-1. Compile and run the game
-
-If you have a precompiled version of ecc.exe you can put it inside the directory /Serious-Engine/Sources/Tools.Win32 and
-resync the project (File -> Sync with Gradle Files)
-
-## Porting notes:
-
-### Graphic Engine
-
-Serious Sam has been designed to work on a desktop computer in OpenGL or DirectX.<br>
-This project is based on OpenGL ES, a subset of OpenGL, and many features that are necessary to run
-Serious Sam are not avaiable on android.
-
-The problem is solved by implementing an [adapter] that allows you to run OpenGL calls on OpenGL ES.
-
-### Instruction set
-
-[X86 assembly] is quite offen used in Serious Engine.
-Since the main hardware platform for Android is [ARM],
-in some cases it was necessary to convert asm codes into compatible equivalents.
-
-CroTeam has provided (in most cases) a constant that enable to switch from asm to an equivalent C code.
-
-There was another problem with some undefineds behaviors from the [specs](http://c0x.coding-guidelines.com/6.3.1.4.html)
-
-For example:
-
-```C
-float source = 1e20f; // a logically large number for a 16-bit signed integer
-int32_t destination = (int32_t) source;
-printf("destination: %i", destination);
+```cmd
+    gradlew assembleRelease
 ```
-
-Running this snippet on Windows or Android we got two different results:
-
-- Windows: destination: -2147483648
-- Android: destination: 2147483647
-
-This difference caused some troubles.
-
-### Compiler
-
-Serious Engine must be compiled with MSVC while Android ndk with Clang.
-These two programs have differences.
-
-These are just a few examples:
-- ISO C++ forbids forward references to 'enum' types
-- CTString instances are not casted automatically into char* when putted inside printf()
-- error: non-const lvalue reference to type 'Vector<...>' cannot bind to a temporary of type 'Vector<...>'
-- error: cannot initialize a parameter of type 'void *' with an rvalue of type 'BOOL (*)()'
-
-[adapter]: Serious-Engine/Sources/AndroidAdapters/gles_adapter.cpp
-[X86 assembly]: https://en.wikipedia.org/wiki/X86_assembly_language
-[arm]: https://en.wikipedia.org/wiki/ARM_architecture
-
-## Acknowledgements
-* @Skyrimus - 4PDA
