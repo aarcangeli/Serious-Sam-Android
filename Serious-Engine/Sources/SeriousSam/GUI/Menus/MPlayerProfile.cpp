@@ -116,6 +116,7 @@ void CPlayerProfileMenu::Initialize_t(void)
   gm_mgWeaponHide.mg_boxOnScreen = BoxPlayerSwitch(7.0f);
   gm_mgWeaponHide.mg_iCenterI = -1;
   gm_mgWeaponHide.mg_pOnTriggerChange = NULL;
+  gm_mgWeaponHide.mg_bEnabled = FALSE;
 
   TRIGGER_MG(gm_mg3rdPerson, 4.0, gm_mgWeaponHide, gm_mgQuotes, TRANS("PREFER 3RD PERSON VIEW"), astrNoYes);
   gm_mg3rdPerson.mg_boxOnScreen = BoxPlayerSwitch(8.0f);
@@ -157,6 +158,7 @@ void CPlayerProfileMenu::Initialize_t(void)
   gm_mgCustomizeControls.mg_pmgRight = &gm_mgModel;
   gm_mgCustomizeControls.mg_strTip = TRANS("customize controls for this player");
   gm_lhGadgets.AddTail(gm_mgCustomizeControls.mg_lnNode);
+  gm_mgCustomizeControls.mg_bEnabled = FALSE;
 
   gm_mgModel.mg_boxOnScreen = BoxPlayerModel();
   gm_mgModel.mg_pmgLeft = &gm_mgNameField;
