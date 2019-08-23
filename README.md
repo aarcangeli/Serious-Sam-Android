@@ -13,7 +13,7 @@
    * SE1_00_Music.gro
    * 1_04_patch.gro
    * 1_07_tools.gro
-   * [OPTIONAL] Download SE_01_Options.gro for support Options menu from  https://github.com/aarcangeli/Serious-Sam-Android/tree/master/Put%20.gro%20in%20game%20folder
+   * [OPTIONAL] Download SE1_00_Options.gro for support Options menu from  https://github.com/aarcangeli/Serious-Sam-Android/tree/master/Put%20.gro%20in%20game%20folder
 1. Start the game
    * The first time will ask you permission to read from external storage
    * For save changed settings use QUIT button and push YES.
