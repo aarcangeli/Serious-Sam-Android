@@ -24,6 +24,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <EntitiesMP/MusicHolder.h>
 #include <EntitiesMP/EnemyBase.h>
 #include <EntitiesMP/EnemyCounter.h>
+#include <AndroidAdapters/binding-callbacks.h>
 
 #define ENTITY_DEBUG
 
@@ -634,7 +635,7 @@ static void HUD_DrawSniperMask( void )
     if (_fResolutionScaling<=1.3f) {
       _pDP->SetFont( _pfdConsoleFont);
       _pDP->SetTextAspect( 1.0f);
-      _pDP->SetTextScaling(1.0f);
+      _pDP->SetTextScaling(g_cb.globalScale);
       _fIconSize = 22.8f;
       _fLeftX = 159.0f;
       _fLeftYU = 8.0f;
@@ -739,7 +740,7 @@ static void HUD_DrawEntityStack()
       pixFontHeight = _pfdConsoleFont->fd_pixCharHeight;
       pixTextBottom = _pixDPHeight*0.83;
       _pDP->SetFont( _pfdConsoleFont);
-      _pDP->SetTextScaling( 1.0f);
+      _pDP->SetTextScaling(g_cb.globalScale);
     
       INDEX ctStates = DBG_prenStackOutputEntity->en_stslStateStack.Count();
       strTemp.PrintF("-- stack of '%s'(%s)@%gs\n", DBG_prenStackOutputEntity->GetName(),
@@ -1351,7 +1352,7 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
     PIX pixFontHeight = _pfdConsoleFont->fd_pixCharHeight;
     const COLOR colCheat = _colHUDText;
     _pDP->SetFont( _pfdConsoleFont);
-    _pDP->SetTextScaling( 1.0f);
+    _pDP->SetTextScaling(g_cb.globalScale);
     const FLOAT fchtTM = cht_fTranslationMultiplier; // for text formatting sake :)
     if( fchtTM > 1.0f)  { _pDP->PutTextR( "turbo",     _pixDPWidth-1, _pixDPHeight-pixFontHeight*iLine, colCheat|ulAlpha); iLine++; }
     if( cht_bInvisible) { _pDP->PutTextR( "invisible", _pixDPWidth-1, _pixDPHeight-pixFontHeight*iLine, colCheat|ulAlpha); iLine++; }
