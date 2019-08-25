@@ -56,6 +56,8 @@ ULONG _ulVirtuallyAllocatedSpaceTotal = 0;
 
 // global string with application path
 CTFileName _fnmApplicationPath;
+// global string with application path
+CTFileName _fnmApplicationLibPath;
 // global string with filename of the started application
 CTFileName _fnmApplicationExe;
 // global string with current MOD path
@@ -1546,6 +1548,17 @@ static INDEX ExpandFilePath_read(ULONG ulType, const CTFileName &fnmFile, CTFile
 
 // Expand a file's filename to full path
 INDEX ExpandFilePath(ULONG ulType, const CTFileName &fnmFile, CTFileName &fnmExpanded) {
+
+  if (fnmFile.FileExt() == ".so") {
+    CTString absolute = _fnmApplicationLibPath + fnmFile;
+    FILE *pFile = fopen(absolute.str_String, "rb");
+    if (pFile) {
+      fclose(pFile);
+      fnmExpanded = absolute;
+      return EFP_FILE;
+    }
+  }
+
   CTFileName fnmFileAbsolute = fnmFile;
   fnmFileAbsolute.SetAbsolutePath();
 

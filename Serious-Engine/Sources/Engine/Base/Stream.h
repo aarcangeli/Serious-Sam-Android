@@ -383,6 +383,8 @@ ENGINE_API void MakeDirList(
 
 // global string with application path
 ENGINE_API extern CTFileName _fnmApplicationPath;
+// global string with lib path
+ENGINE_API extern CTFileName _fnmApplicationLibPath;
 // global string with current MOD path
 ENGINE_API extern CTFileName _fnmMod;
 // global string with current name (the parameter that is passed on cmdline)

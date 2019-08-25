@@ -12,4 +12,8 @@
 // bypass "CONNECTION SETTINGS" options
 #define DISABLE_NETSETTINGS
 
+// defined: TCP
+// undefined: UDP
+//#define USE_TCP
+
 #endif

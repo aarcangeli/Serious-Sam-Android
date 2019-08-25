@@ -44,14 +44,17 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
 }
 
 extern "C"
-JNIEXPORT void JNICALL Java_com_github_aarcangeli_serioussamandroid_SeriousSamSurface_nInitialize(JNIEnv* env, jobject obj, jstring homeDir_) {
+JNIEXPORT void JNICALL Java_com_github_aarcangeli_serioussamandroid_SeriousSamSurface_nInitialize(JNIEnv* env, jobject obj, jstring homeDir_, jstring libDir_) {
   g_errorCalllback = &androidReportError;
 
   // set home dir
   const char *homeDir = env->GetStringUTFChars(homeDir_, 0);
+  const char *libDir = env->GetStringUTFChars(libDir_, 0);
   _fnmApplicationPath = CTString(homeDir) + "/";
+  _fnmApplicationLibPath = CTString(libDir) + "/";
   _fnmApplicationExe = CTFILENAME("Bin/SeriousSam.exe");
   env->ReleaseStringUTFChars(homeDir_, homeDir);
+  env->ReleaseStringUTFChars(libDir_, libDir);
 
   // start main thread
   pthread_create(&g_mySeriousThreadId, 0, &seriousMain, nullptr);

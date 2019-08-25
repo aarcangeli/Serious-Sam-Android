@@ -43,6 +43,7 @@ import com.hold1.keyboardheightprovider.KeyboardHeightProvider;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.util.Locale;
@@ -169,6 +170,7 @@ public class MainActivity extends AppCompatActivity {
 
         homeDir = getHomeDir();
         Log.i(TAG, "HomeDir: " + homeDir);
+        Log.i(TAG, "LibDir: " + getLibDir(this));
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 
@@ -417,8 +419,13 @@ public class MainActivity extends AppCompatActivity {
         if (hasStoragePermission(context)) {
             File homeDir = getHomeDir();
             if (!homeDir.exists()) homeDir.mkdirs();
-            SeriousSamSurface.initializeLibrary(homeDir.getAbsolutePath());
+            SeriousSamSurface.initializeLibrary(homeDir.getAbsolutePath(), getLibDir(context));
         }
+    }
+
+    @NotNull
+    private static String getLibDir(Context context) {
+        return context.getApplicationInfo().dataDir + "/lib";
     }
 
     @NonNull
@@ -593,7 +600,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void startGame() {
         if (!homeDir.exists()) homeDir.mkdirs();
-        SeriousSamSurface.initializeLibrary(homeDir.getAbsolutePath());
+        SeriousSamSurface.initializeLibrary(homeDir.getAbsolutePath(), getLibDir(this));
         isGameStarted = true;
         glSurfaceView.start();
     }

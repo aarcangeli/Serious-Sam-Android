@@ -9,8 +9,6 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.content.SharedPreferences;
-import android.content.pm.ActivityInfo;
-import android.content.pm.PackageManager;
 import android.preference.PreferenceManager;
 
 public class SeriousSamSurface extends SurfaceView implements GestureDetector.OnGestureListener, GestureDetector.OnDoubleTapListener {
@@ -168,11 +166,11 @@ public class SeriousSamSurface extends SurfaceView implements GestureDetector.On
         }
     }
 
-    public static void initializeLibrary(String homeDir) {
+    public static void initializeLibrary(String homeDir, String libDir) {
         loadNativeLibrary();
         synchronized (SeriousSamSurface.class) {
             if (!isInitialized) {
-                nInitialize(homeDir);
+                nInitialize(homeDir, libDir);
                 isInitialized = true;
             }
         }
@@ -184,7 +182,7 @@ public class SeriousSamSurface extends SurfaceView implements GestureDetector.On
 
     // native bindings
     private static boolean isLoaded, isInitialized;
-    private static native void nInitialize(String homeDir);
+    private static native void nInitialize(String homeDir, String libDir);
     private static native void nSetSurface(Surface surface);
     private static native void nOnStart();
     private static native void nOnStop();

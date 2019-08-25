@@ -18,8 +18,16 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 
+#include <cerrno>
+#include <cstring>
+#include <errno.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <config.h>
+
 #define HOSTENT hostent
-#define INVALID_SOCKET  (SOCKET)(~0)
+#define INVALID_SOCKET  (-1)
 #define SOCKET_ERROR            (-1)
 
 // modified version of Engine/Network/CommunicationInterface.cpp with network disabled
@@ -122,9 +130,8 @@ CCommunicationInterface::CCommunicationInterface(void) {
 
 };
 
-
 // initialize
-void CCommunicationInterface::Init(void) {
+void CCommunicationInterface::Init() {
   CTSingleLock slComm(&cm_csComm, TRUE);
 
   cci_bWinSockOpen = FALSE;
@@ -135,8 +142,7 @@ void CCommunicationInterface::Init(void) {
 
   cci_pbMasterInput.Clear();
   cci_pbMasterOutput.Clear();
-
-};
+}
 
 // close
 void CCommunicationInterface::Close(void) {
@@ -156,30 +162,75 @@ void CCommunicationInterface::Close(void) {
 
 };
 
-void CCommunicationInterface::InitWinsock(void) {
-  FatalError("CCommunicationInterface::InitWinsock should not be called");
-};
-
-void CCommunicationInterface::EndWinsock(void) {
-};
-
-
 // prepares the comm interface for use - MUST be invoked before any data can be sent/received
 void CCommunicationInterface::PrepareForUse(BOOL bUseNetwork, BOOL bClient) {
-  ASSERT(!bUseNetwork);
 
   // clear the network conditions emulation data
   _pbsSend.Clear();
   _pbsRecv.Clear();
 
-  // make sure winsock is off (could be on if enumeration was triggered)
-  GameAgent_EnumCancel();
-  EndWinsock();
+  // if the network is already initialized, shut it down before proceeding
+  if (cm_bNetworkInitialized) {
+    Unprepare();
+  }
+
+  if (bUseNetwork) {
+    CPrintF(TRANS("Initializing TCP/IP...\n"));
+    if (bClient) {
+      CPrintF(TRANS("  opening as client\n"));
+    } else {
+      CPrintF(TRANS("  opening as server\n"));
+    }
+
+#ifdef  USE_TCP
+    cci_hSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+#else
+    cci_hSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+#endif
+    if (cci_hSocket == INVALID_SOCKET) {
+      ThrowF_t(TRANS("Cannot open socket. %s (%i)"), std::strerror(errno), errno);
+    }
+
+    // set non blocking
+    struct timeval read_timeout;
+    read_timeout.tv_sec = 0;
+    read_timeout.tv_usec = 10;
+    setsockopt(cci_hSocket, SOL_SOCKET, SO_RCVTIMEO, &read_timeout, sizeof read_timeout);
+
+    int flagTrue = 1;
+    setsockopt(cci_hSocket, SOL_SOCKET, SO_REUSEADDR, &flagTrue, sizeof(flagTrue));
+
+    if (!bClient) {
+
+      sockaddr_in servaddr{};
+      servaddr.sin_family = AF_INET;
+      servaddr.sin_addr.s_addr = INADDR_ANY;
+      servaddr.sin_port = htons(net_iPort);
+
+      int res = bind(cci_hSocket, (const struct sockaddr *)&servaddr,sizeof(servaddr));
+      if (res < 0) {
+        ThrowF_t(TRANS("Cannot bind port %li. %s (%i)"), net_iPort, std::strerror(errno), errno);
+      }
+
+    }
+
+    cci_bSocketOpen = TRUE;
+    cm_bNetworkInitialized = true;
+    cm_ciBroadcast.SetLocal(nullptr);
+    CPrintF(TRANS("  opened socket: \n"));
+  }
+
 };
 
 
 // shut down the communication interface
 void CCommunicationInterface::Unprepare(void) {
+  if (cci_bWinSockOpen) {
+    close(cci_hSocket);
+    cm_ciBroadcast.Clear();
+    cci_bBound = FALSE;
+    cci_bWinSockOpen = false;
+  }
 };
 
 
@@ -204,34 +255,11 @@ void CCommunicationInterface::GetHostName(CTString &strName, CTString &strAddres
 */
 
 
-// create an inet-family socket
-void CCommunicationInterface::CreateSocket_t() {
-  FatalError("CCommunicationInterface::CreateSocket_t should not be called");
-};
-
-// bind socket to the given address
-void CCommunicationInterface::Bind_t(ULONG ulLocalHost, ULONG ulLocalPort) {
-  FatalError("CCommunicationInterface::Bind_t should not be called");
-};
-
-
-// set socket to non-blocking mode
-void CCommunicationInterface::SetNonBlocking_t(void) {
-  FatalError("CCommunicationInterface::SetNonBlocking_t should not be called");
-};
-
-
 // get generic socket error info string about last error
 CTString CCommunicationInterface::GetSocketError(INDEX iError) {
   CTString strError;
   strError.PrintF(TRANS("Socket %d, Error %d"), cci_hSocket, iError);
   return strError;
-};
-
-
-// open an UDP socket at given port
-void CCommunicationInterface::OpenSocket_t(ULONG ulLocalHost, ULONG ulLocalPort) {
-  FatalError("CCommunicationInterface::OpenSocket_t should not be called");
 };
 
 // get address of this host
@@ -716,6 +744,7 @@ void CCommunicationInterface::Client_OpenNet_t(ULONG ulServerAddress) {
     // if there is something in the input buffer
     if (cm_ciLocalClient.ci_pbReliableInputBuffer.pb_ulNumOfPackets > 0) {
       ppaReadPacket = cm_ciLocalClient.ci_pbReliableInputBuffer.GetFirstPacket();
+      CPrintF("Received packet\n");
       // and it is a connection confirmation
       if (ppaReadPacket->pa_ubReliable && UDP_PACKET_CONNECT_RESPONSE) {
         // the client has succedeed to connect, so read the uwID from the packet
@@ -892,116 +921,102 @@ BOOL CCommunicationInterface::Client_Update(void) {
 
 // update master UDP socket and route its messages
 void CCommunicationInterface::UpdateMasterBuffers() {
+
   UBYTE aub[MAX_PACKET_SIZE];
   CAddress adrIncomingAddress;
-//  SOCKADDR_IN sa;
-//  int size = sizeof(sa);
+  sockaddr_in cliaddr;
+  int size = sizeof(cliaddr);
   SLONG slSizeReceived;
-  SLONG slSizeSent;
+  ssize_t slSizeSent;
   BOOL bSomethingDone;
   CPacket *ppaNewPacket;
   CTimerValue tvNow;
 
   if (cci_bBound) {
-    FatalError("should never happen");
-//    // read from the socket while there is incoming data
-//    do {
-//
-//      // initially, nothing is done
-//      bSomethingDone = FALSE;
-//      slSizeReceived = recvfrom(cci_hSocket, (char *) aub, MAX_PACKET_SIZE, 0, (SOCKADDR * ) & sa,
-//                                &size);
-//      tvNow = _pTimer->GetHighPrecisionTimer();
-//
-//      adrIncomingAddress.adr_ulAddress = ntohl(sa.sin_addr.s_addr);
-//      adrIncomingAddress.adr_uwPort = ntohs(sa.sin_port);
-//
-//      //On error, report it to the console (if error is not a no data to read message)
-//      if (slSizeReceived == SOCKET_ERROR) {
-//        int iResult = WSAGetLastError();
-//        if (iResult != WSAEWOULDBLOCK) {
-//          // report it
-//          if (iResult != WSAECONNRESET || net_bReportICMPErrors) {
-//            CPrintF(TRANS("Socket error during UDP receive. %s\n"),
-//                    (const char *) GetSocketError(iResult));
-//            return;
-//          }
-//        }
-//
-//        // if block received
-//      } else {
-//        // if there is not at least one byte more in the packet than the header size
-//        if (slSizeReceived <= MAX_HEADER_SIZE) {
-//          // the packet is in error
-//          extern INDEX net_bReportMiscErrors;
-//          if (net_bReportMiscErrors) {
-//            CPrintF(TRANS("WARNING: Bad UDP packet from '%s'\n"),
-//                    AddressToString(adrIncomingAddress.adr_ulAddress));
-//          }
-//          // there might be more to do
-//          bSomethingDone = TRUE;
-//        } else if (net_fDropPackets <= 0 || (FLOAT(rand()) / RAND_MAX) > net_fDropPackets) {
-//          // if no packet drop emulation (or the packet is not dropped), form the packet
-//          // and add it to the end of the UDP Master's input buffer
-//          ppaNewPacket = new CPacket;
-//          ppaNewPacket->WriteToPacketRaw(aub, slSizeReceived);
-//          ppaNewPacket->pa_adrAddress.adr_ulAddress = adrIncomingAddress.adr_ulAddress;
-//          ppaNewPacket->pa_adrAddress.adr_uwPort = adrIncomingAddress.adr_uwPort;
-//
-//          if (net_bReportPackets == TRUE) {
-//            CPrintF("%lu: Received sequence: %d from ID: %d, reliable flag: %d\n",
-//                    (ULONG) tvNow.GetMilliseconds(), ppaNewPacket->pa_ulSequence,
-//                    ppaNewPacket->pa_adrAddress.adr_uwID, ppaNewPacket->pa_ubReliable);
-//          }
-//
-//          cci_pbMasterInput.AppendPacket(*ppaNewPacket, FALSE);
-//          // there might be more to do
-//          bSomethingDone = TRUE;
-//
-//        }
-//      }
-//
-//    } while (bSomethingDone);
-  }
-//
-//  // write from the output buffer to the socket
-  while (cci_pbMasterOutput.pb_ulNumOfPackets > 0) {
-    FatalError("should never happen");
-//    ppaNewPacket = cci_pbMasterOutput.PeekFirstPacket();
-//
-//    sa.sin_family = AF_INET;
-//    sa.sin_addr.s_addr = htonl(ppaNewPacket->pa_adrAddress.adr_ulAddress);
-//    sa.sin_port = htons(ppaNewPacket->pa_adrAddress.adr_uwPort);
-//
-//    slSizeSent = sendto(cci_hSocket, (char *) ppaNewPacket->pa_pubPacketData,
-//                        (int) ppaNewPacket->pa_slSize, 0, (SOCKADDR * ) & sa, sizeof(sa));
-//    cci_bBound = TRUE;   // UDP socket that did a send is considered bound
-//    tvNow = _pTimer->GetHighPrecisionTimer();
-//
-//    // if some error
-//    if (slSizeSent == SOCKET_ERROR) {
-//      int iResult = WSAGetLastError();
-//      // if output UDP buffer full, stop sending
-//      if (iResult == WSAEWOULDBLOCK) {
-//        return;
-//        // report it
-//      } else if (iResult != WSAECONNRESET || net_bReportICMPErrors) {
-//        CPrintF(TRANS("Socket error during UDP send. %s\n"), (const char *) GetSocketError(iResult));
-//      }
-//      return;
-//      // if all sent ok
-//    } else {
-//
-//      if (net_bReportPackets == TRUE) {
-//        CPrintF("%lu: Sent sequence: %d to ID: %d, reliable flag: %d\n", (ULONG) tvNow.GetMilliseconds(), ppaNewPacket->pa_ulSequence, ppaNewPacket->pa_adrAddress.adr_uwID, ppaNewPacket->pa_ubReliable);
-//      }
-//
-//      cci_pbMasterOutput.RemoveFirstPacket(TRUE);
-//      bSomethingDone = TRUE;
-//    }
-//
+    // read from the socket while there is incoming data
+    do {
+
+      // initially, nothing is done
+      bSomethingDone = FALSE;
+      slSizeReceived = recvfrom(cci_hSocket, (char *)aub, MAX_PACKET_SIZE, 0,
+                                (struct sockaddr *)&cliaddr, &size);
+      tvNow = _pTimer->GetHighPrecisionTimer();
+
+      adrIncomingAddress.adr_ulAddress = ntohl(cliaddr.sin_addr.s_addr);
+      adrIncomingAddress.adr_uwPort = ntohs(cliaddr.sin_port);
+
+      //On error, report it to the console (if error is not a no data to read message)
+      if (slSizeReceived < 0) {
+        // if block received
+        if (errno != EAGAIN) {
+          CPrintF(TRANS("Socket error during UDP receive. %s (%i)\n"), std::strerror(errno), errno);
+        }
+      } else {
+        CPrintF("Received %i bytes\n", slSizeReceived);
+        // if there is not at least one byte more in the packet than the header size
+        if (slSizeReceived <= MAX_HEADER_SIZE) {
+          // the packet is in error
+          extern INDEX net_bReportMiscErrors;
+          if (net_bReportMiscErrors) {
+            CPrintF(TRANS("WARNING: Bad UDP packet from '%s'\n"),
+                    AddressToString(adrIncomingAddress.adr_ulAddress));
+          }
+          // there might be more to do
+          bSomethingDone = TRUE;
+        } else if (net_fDropPackets <= 0 || (FLOAT(rand()) / RAND_MAX) > net_fDropPackets) {
+          // if no packet drop emulation (or the packet is not dropped), form the packet
+          // and add it to the end of the UDP Master's input buffer
+          ppaNewPacket = new CPacket;
+          ppaNewPacket->WriteToPacketRaw(aub, slSizeReceived);
+          ppaNewPacket->pa_adrAddress.adr_ulAddress = adrIncomingAddress.adr_ulAddress;
+          ppaNewPacket->pa_adrAddress.adr_uwPort = adrIncomingAddress.adr_uwPort;
+
+          if (net_bReportPackets == TRUE) {
+            CPrintF("%lu: Received sequence: %d from ID: %d, reliable flag: %d\n",
+                    (ULONG) tvNow.GetMilliseconds(), ppaNewPacket->pa_ulSequence,
+                    ppaNewPacket->pa_adrAddress.adr_uwID, ppaNewPacket->pa_ubReliable);
+          }
+
+          cci_pbMasterInput.AppendPacket(*ppaNewPacket, FALSE);
+          // there might be more to do
+          bSomethingDone = TRUE;
+
+        }
+      }
+
+    } while (bSomethingDone);
   }
 
+  // write from the output buffer to the socket
+  while (cci_pbMasterOutput.pb_ulNumOfPackets > 0) {
+    ppaNewPacket = cci_pbMasterOutput.PeekFirstPacket();
+
+    cliaddr.sin_family = AF_INET;
+    cliaddr.sin_addr.s_addr = htonl(ppaNewPacket->pa_adrAddress.adr_ulAddress);
+    cliaddr.sin_port = htons(ppaNewPacket->pa_adrAddress.adr_uwPort);
+
+    slSizeSent = sendto(cci_hSocket, (char *) ppaNewPacket->pa_pubPacketData,
+                        (int) ppaNewPacket->pa_slSize, 0, (const struct sockaddr *) &cliaddr, sizeof(cliaddr));
+    cci_bBound = TRUE;   // UDP socket that did a send is considered bound
+    tvNow = _pTimer->GetHighPrecisionTimer();
+
+    // if some error
+    if (slSizeSent < 0) {
+      CPrintF(TRANS("Socket error during UDP send. %s (%i)\n"), std::strerror(errno), errno);
+      return;
+      // if all sent ok
+    } else {
+      CPrintF("Sent %i bytes\n", slSizeSent);
+
+      if (net_bReportPackets == TRUE) {
+        CPrintF("%lu: Sent sequence: %d to ID: %d, reliable flag: %d\n", (ULONG) tvNow.GetMilliseconds(), ppaNewPacket->pa_ulSequence, ppaNewPacket->pa_adrAddress.adr_uwID, ppaNewPacket->pa_ubReliable);
+      }
+
+      cci_pbMasterOutput.RemoveFirstPacket(TRUE);
+      bSomethingDone = TRUE;
+    }
+
+  }
 
 };
 
