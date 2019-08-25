@@ -274,6 +274,10 @@ void HideComputer() {
   }
 }
 
+void ViewportResized() {
+  _tmDisplayModeChanged = _pTimer->GetRealTimeTick();
+}
+
 void MenuEvent(void* pArgs) {
   INDEX vk = NEXTARGUMENT(INDEX);
   MenuOnKeyDown(vk);
@@ -592,6 +596,7 @@ BOOL Init()
   _pShell->DeclareSymbol("user void ToggleConsole();", (void *) &ToggleConsole);
   _pShell->DeclareSymbol("user void HideConsole();", (void *) &HideConsole);
   _pShell->DeclareSymbol("user void HideComputer();", (void *) &HideComputer);
+  _pShell->DeclareSymbol("user void ViewportResized();", (void *) &ViewportResized);
   _pShell->DeclareSymbol("INDEX input_iIsShiftPressed;", (void *) &g_cb.isShiftPressed);
   _pShell->DeclareSymbol("FLOAT input_uiScale;", (void *) &g_cb.globalScale);
 
@@ -1335,6 +1340,11 @@ void seriousSubMain() {
 
 void drawBannerFpsVersion(CDrawPort *pdp, int64_t deltaFrame, float fps) {
   static int textWidthMax = 0;
+  static float lastGlobalScale = g_cb.globalScale;
+  if (lastGlobalScale != g_cb.globalScale) {
+    lastGlobalScale = g_cb.globalScale;
+    textWidthMax = 0;
+  }
   SLONG slDPWidth = pdp->GetWidth();
   SLONG slDPHeight = pdp->GetHeight();
   pdp->SetFont(_pfdDisplayFont);

@@ -7,7 +7,7 @@
             android:entryValues="@array/FullHalf"
             android:key="scale_FactorSet"
             android:summary="%s"
-            android:title="Screen resolution (need restart)" />
+            android:title="Screen resolution" />
     </PreferenceCategory>
     <PreferenceCategory android:title="Inputs">
         <ListPreference

@@ -222,7 +222,7 @@ void CGame::ConsolePrintLastLines(CDrawPort *pdp)
   _pfdConsoleFont->SetFixedWidth();
   pdp->SetFont( _pfdConsoleFont);
   pdp->SetTextScaling(g_cb.globalScale);
-  PIX pixCharHeight = _pfdConsoleFont->GetHeight() -1;
+  PIX pixCharHeight = (PIX) ((_pfdConsoleFont->GetHeight() - 1) * g_cb.globalScale);
   // put some filter underneath for easier reading
   pdp->Fill( 0, 0, pdp->GetWidth(), pixCharHeight*ctLines, C_BLACK|128);
   // for each line
