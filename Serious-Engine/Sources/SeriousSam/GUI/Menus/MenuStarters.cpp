@@ -18,6 +18,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "StdH.h"
 #include <Engine/Build.h>
 #include <AndroidAdapters/binding-callbacks.h>
+#include <config.h>
 
 #include "MenuManager.h"
 #include "MenuStarters.h"
@@ -453,6 +454,7 @@ void StartSelectPlayersMenuFromOpen(void)
   gmCurrent.gm_pgmParentMenu = &_pGUIM->gmNetworkOpenMenu;
   ChangeToMenu(&gmCurrent);
 
+#ifndef DISABLE_NETSETTINGS
   /*if (sam_strNetworkSettings=="")*/ {
     void StartNetworkSettingsMenu(void);
     StartNetworkSettingsMenu();
@@ -460,6 +462,7 @@ void StartSelectPlayersMenuFromOpen(void)
     _pGUIM->gmLoadSaveMenu.gm_pgmParentMenu = &_pGUIM->gmNetworkOpenMenu;
     _pGUIM->gmLoadSaveMenu.gm_pgmNextMenu = &gmCurrent;
   }
+#endif
 }
 
 void StartSelectPlayersMenuFromServers(void)
@@ -472,6 +475,7 @@ void StartSelectPlayersMenuFromServers(void)
   gmCurrent.gm_pgmParentMenu = &_pGUIM->gmServersMenu;
   ChangeToMenu(&gmCurrent);
 
+#ifndef DISABLE_NETSETTINGS
   /*if (sam_strNetworkSettings=="")*/ {
     void StartNetworkSettingsMenu(void);
     StartNetworkSettingsMenu();
@@ -479,6 +483,7 @@ void StartSelectPlayersMenuFromServers(void)
     _pGUIM->gmLoadSaveMenu.gm_pgmParentMenu = &_pGUIM->gmServersMenu;
     _pGUIM->gmLoadSaveMenu.gm_pgmNextMenu = &gmCurrent;
   }
+#endif
 }
 
 // -------- Save/Load Menu Calling Functions
