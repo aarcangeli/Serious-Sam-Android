@@ -1340,6 +1340,11 @@ void seriousSubMain() {
 
 void drawBannerFpsVersion(CDrawPort *pdp, int64_t deltaFrame, float fps) {
   static int textWidthMax = 0;
+  static float lastGlobalScale = g_cb.globalScale;
+  if (lastGlobalScale != g_cb.globalScale) {
+    lastGlobalScale = g_cb.globalScale;
+    textWidthMax = 0;
+  }
   SLONG slDPWidth = pdp->GetWidth();
   SLONG slDPHeight = pdp->GetHeight();
   pdp->SetFont(_pfdDisplayFont);
