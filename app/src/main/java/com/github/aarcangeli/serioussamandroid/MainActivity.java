@@ -342,8 +342,8 @@ public class MainActivity extends AppCompatActivity {
             glSurfaceView.start();
         }
 
-        syncOptions();
 		glSurfaceView.syncOptions();
+        syncOptions();
         keyboardHeightProvider.onResume();
     }
 
@@ -606,7 +606,7 @@ public class MainActivity extends AppCompatActivity {
         aimViewSensibility = preferences.getInt("aimView_sensibility", 100) / 100.f;
         ctrlAimSensibility = preferences.getInt("ctrl_aimSensibility", 100) / 100.f;
         deadZone = preferences.getInt("ctrl_deadZone", 20) / 100.f;
-        float uiScale = Utils.convertDpToPixel(1.0f, this);
+        float uiScale = Utils.convertDpToPixel(1.0f, this) * glSurfaceView.getScale();
         executeShell("hud_iStats=" + (preferences.getBoolean("hud_iStats", false) ? 2 : 0) + ";");
         executeShell("input_uiScale=" + uiScale + ";");
         Log.i(TAG, "uiScale: " + uiScale);
