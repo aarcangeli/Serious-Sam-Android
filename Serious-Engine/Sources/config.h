@@ -4,7 +4,7 @@
 #define CONFIG_H
 
 // enable network multiplayer mode
-//#define ENABLE_NETWORK
+#define ENABLE_NETWORK
 
 // enable splitscreen mode (unstable)
 //#define ENABLE_SPLITSCREEN
