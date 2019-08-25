@@ -593,6 +593,7 @@ BOOL Init()
   _pShell->DeclareSymbol("user void HideConsole();", (void *) &HideConsole);
   _pShell->DeclareSymbol("user void HideComputer();", (void *) &HideComputer);
   _pShell->DeclareSymbol("INDEX input_iIsShiftPressed;", (void *) &g_cb.isShiftPressed);
+  _pShell->DeclareSymbol("FLOAT input_uiScale;", (void *) &g_cb.globalScale);
 
   InitializeGame();
   _pNetwork->md_strGameID = sam_strGameName;
@@ -1337,12 +1338,12 @@ void drawBannerFpsVersion(CDrawPort *pdp, int64_t deltaFrame, float fps) {
   SLONG slDPWidth = pdp->GetWidth();
   SLONG slDPHeight = pdp->GetHeight();
   pdp->SetFont(_pfdDisplayFont);
-  pdp->SetTextScaling(1);
+  pdp->SetTextScaling(g_cb.globalScale);
   pdp->SetTextAspect(1.0f);
   CTString str = CTString(0, SSA_VERSION " fps: %.2f; frame: %.2f ms", fps, deltaFrame / 1000000.f);
   ULONG textWidth = pdp->GetTextWidth(str);
   if (textWidth > textWidthMax) {
     textWidthMax = textWidth;
   }
-  pdp->PutText(str, slDPWidth - textWidthMax, 30, LCDGetColor(C_GREEN | 255, "display mode"));
+  pdp->PutText(str, slDPWidth - textWidthMax, (PIX)(g_cb.globalScale * 30), LCDGetColor(C_GREEN | 255, "display mode"));
 }

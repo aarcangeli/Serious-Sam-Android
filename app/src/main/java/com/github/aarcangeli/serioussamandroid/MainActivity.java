@@ -243,7 +243,7 @@ public class MainActivity extends AppCompatActivity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
 
-        if (gameState == GameState.MENU) {
+        if (gameState == GameState.MENU || gameState == GameState.CONSOLE) {
             getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN);
         } else {
             getWindow().getDecorView().setSystemUiVisibility(
@@ -606,7 +606,10 @@ public class MainActivity extends AppCompatActivity {
         aimViewSensibility = preferences.getInt("aimView_sensibility", 100) / 100.f;
         ctrlAimSensibility = preferences.getInt("ctrl_aimSensibility", 100) / 100.f;
         deadZone = preferences.getInt("ctrl_deadZone", 20) / 100.f;
+        float uiScale = Utils.convertDpToPixel(1.0f, this);
         executeShell("hud_iStats=" + (preferences.getBoolean("hud_iStats", false) ? 2 : 0) + ";");
+        executeShell("input_uiScale=" + uiScale + ";");
+        Log.i(TAG, "uiScale: " + uiScale);
         updateSoftKeyboardVisible();
     }
 

@@ -28,6 +28,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/Statistics.h>
 #include <Engine/CurrentVersion.h>
 #include <EntitiesMP/Common/playerCommons.h>
+#include <AndroidAdapters/binding-callbacks.h>
 #include "Camera.h"
 #include "LCDDrawing.h"
 
@@ -980,7 +981,7 @@ void CGame::InitInternal( void)
 
   _pShell->DeclareSymbol("INDEX gam_iRecordHighScore;", &gam_iRecordHighScore);
 
-  _pShell->DeclareSymbol("persistent user FLOAT con_fHeightFactor;", &con_fHeightFactor);
+  _pShell->DeclareSymbol("user FLOAT con_fHeightFactor;", &con_fHeightFactor);
   _pShell->DeclareSymbol("persistent user FLOAT con_tmLastLines;",   &con_tmLastLines);
   _pShell->DeclareSymbol("user INDEX con_bTalk;", &con_bTalk);
   _pShell->DeclareSymbol("user void ReportDemoProfile(void);", (void*) &ReportDemoProfile);
@@ -1799,7 +1800,7 @@ static void PrintStats( CDrawPort *pdpDrawPort)
   if( hud_bShowClock) {
     // set font, spacing and scale
     pdpDrawPort->SetFont( _pfdConsoleFont);
-    pdpDrawPort->SetTextScaling(1.0f);
+    pdpDrawPort->SetTextScaling(g_cb.globalScale);
     pdpDrawPort->SetTextAspect( 1.0f);
     // determine time
     struct tm *newtime;
@@ -1891,7 +1892,7 @@ static void PrintStats( CDrawPort *pdpDrawPort)
 
     // adjust and set font
     pdpDrawPort->SetFont( _pfdConsoleFont);
-    pdpDrawPort->SetTextScaling( 1.0f);
+    pdpDrawPort->SetTextScaling(g_cb.globalScale);
     pdpDrawPort->SetTextLineSpacing( -1);
 
     // put filter
@@ -2301,7 +2302,7 @@ void CGame::GameRedrawView( CDrawPort *pdpDrawPort, ULONG ulFlags)
       if (_pNetwork->IsRecordingDemo()) {
         // setup font
         dpMsg.SetFont( _pfdDisplayFont);
-        dpMsg.SetTextScaling( 1.0f);
+        dpMsg.SetTextScaling(g_cb.globalScale);
         dpMsg.SetTextAspect( 1.0f);
         dpMsg.PutText( TRANS("Recording"), 
         dpMsg.GetWidth()*0.1f, 
