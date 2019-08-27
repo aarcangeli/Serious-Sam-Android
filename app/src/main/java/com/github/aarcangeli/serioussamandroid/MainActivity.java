@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.AssetManager;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Point;
@@ -45,6 +46,10 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
+import java.io.OutputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.IOException;
 import java.util.Locale;
 import static com.github.aarcangeli.serioussamandroid.NativeEvents.EditTextEvent;
 import static com.github.aarcangeli.serioussamandroid.NativeEvents.FatalErrorEvent;
@@ -74,6 +79,7 @@ public class MainActivity extends AppCompatActivity {
 
     private SeriousSamSurface glSurfaceView;
     private File homeDir;
+    private File ScriptsDir = getScriptsDir();
     private boolean isGameStarted = false;
     private SensorManager sensorManager;
     private SensorEventListener motionListener;
@@ -100,11 +106,57 @@ public class MainActivity extends AppCompatActivity {
             executeShell(String.format(Locale.ENGLISH, "con_fHeightFactor = %.6f", (size.y - height) / (float) size.y));
         }
     };
+    private void copyFolder(String name) throws IOException {
+        AssetManager assetManager = getAssets();
+        String[] files = null;
+        String state = Environment.getExternalStorageState();
+
+        if (Environment.MEDIA_MOUNTED.equals(state)) {
+            try {
+                files = assetManager.list(name);
+            } catch (IOException e) {
+                Log.i("===", "Failed to get asset file list.\n" + e);
+            }
+            for (String filename : files) {
+                InputStream in = null;
+                OutputStream out = null;
+                File folder = new File(ScriptsDir.getAbsolutePath() + "/" + name);
+                boolean success = true;
+                if (!folder.exists()) {
+                    success = folder.mkdir();
+                }
+                if (success) {
+                    try {
+                        in = assetManager.open(name + "/" + filename);
+                        out = new FileOutputStream(ScriptsDir.getAbsolutePath() + "/" + name + "/" + filename);
+                        copyFile(in, out);
+                    } catch (IOException e) {
+                        Log.i("===", "Failed to copy asset file: " + filename + " " + e);
+                    } finally {
+                        in.close();
+                        out.close();
+                    }
+                }
+            }
+        }
+    }
+    private void copyFile(InputStream in, OutputStream out) throws IOException {
+        byte[] buffer = new byte[1024];
+        int read;
+        while((read = in.read(buffer)) != -1) {
+            out.write(buffer, 0, read);
+        }
+    }
 
     @Override
     @SuppressLint("ClickableViewAccessibility")
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        try {
+            copyFolder("Menu");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 
         setContentView(R.layout.main_screen);
@@ -416,7 +468,9 @@ public class MainActivity extends AppCompatActivity {
     public static void tryPremain(Context context) {
         if (hasStoragePermission(context)) {
             File homeDir = getHomeDir();
+            File ScriptsDir = getScriptsDir();
             if (!homeDir.exists()) homeDir.mkdirs();
+            if (!ScriptsDir.exists()) ScriptsDir.mkdirs();
             SeriousSamSurface.initializeLibrary(homeDir.getAbsolutePath());
         }
     }
@@ -425,7 +479,12 @@ public class MainActivity extends AppCompatActivity {
     private static File getHomeDir() {
         return new File(Environment.getExternalStorageDirectory(), "SeriousSam").getAbsoluteFile();
     }
-
+	
+    private static File getScriptsDir() {
+		File homeDir = getHomeDir();
+        return new File(homeDir.getAbsolutePath(), "Scripts").getAbsoluteFile();
+    }
+	
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
         int keyCode = event.getKeyCode();
