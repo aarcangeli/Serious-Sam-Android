@@ -20,6 +20,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #endif
 
 // intra-process mutex (only used by thread of same process)
+// NOTE: mutex has no interface - it is locked using CTSingleLock
 class CTCriticalSection {
 public:
   void *cs_pvObject;  // object is internal to implementation
@@ -30,10 +31,6 @@ public:
   INDEX Lock(void);
   INDEX TryToLock(void);
   INDEX Unlock(void);
-
-private:
-  ULONG LockCounter;
-  ULONG owner;
 };
 
 // lock object for locking a mutex with automatic unlocking
@@ -50,6 +47,6 @@ public:
   ENGINE_API void Unlock(void);
 };
 
-#endif  /* include-once check. */
 
+#endif  /* include-once check. */
 
