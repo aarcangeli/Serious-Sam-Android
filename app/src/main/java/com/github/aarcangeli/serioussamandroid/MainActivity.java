@@ -152,11 +152,7 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("ClickableViewAccessibility")
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        try {
-            copyFolder("Menu");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
         inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 
         setContentView(R.layout.main_screen);
@@ -244,6 +240,11 @@ public class MainActivity extends AppCompatActivity {
         if (!hasStoragePermission(this)) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_STORAGE);
         } else {
+		try {
+            copyFolder("Menu");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
             startGame();
         }
 
