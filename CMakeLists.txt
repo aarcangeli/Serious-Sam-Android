@@ -7,6 +7,11 @@ set(SE_SOURCES "${PROJECT_ROOT}/Serious-Engine/Sources")
 set(LIBS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/libs)
 include(compilerFlags)
 
+# build options
+option(ENABLE_NETWORK "Enable network multiplayer mode (beta)" OFF)
+option(ENABLE_SPLITSCREEN "Enable splitscreen mode (not working)" OFF)
+option(DISABLE_NETSETTINGS "Will skip network settings option" ON)
+
 if (NOT ANDROID)
     file(READ "local.properties" local)
     string(REGEX MATCH "ndk.dir=([^\r\n]*)" _ ${local})
