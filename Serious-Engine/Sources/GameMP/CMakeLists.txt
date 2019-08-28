@@ -15,7 +15,11 @@ set(
   Camera.cpp
 )
 
-add_library(GameMP SHARED ${SOURCES})
+if (STATIC_LINKING)
+  add_library(GameMP STATIC ${SOURCES})
+else ()
+  add_library(GameMP SHARED ${SOURCES})
+endif ()
 
 target_link_libraries(GameMP EntitiesMP)
 

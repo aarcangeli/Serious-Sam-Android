@@ -955,7 +955,7 @@ static void VarApply(void)
 {
   CVarMenu &gmCurrent = _pGUIM->gmVarMenu;
 
-  FlushVarSettings(TRUE);
+  varlist::FlushVarSettings(TRUE);
   gmCurrent.EndMenu();
   gmCurrent.StartMenu();
 }

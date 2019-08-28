@@ -37,7 +37,7 @@ public:
   inline CTimerValue(__int64 llValue) : tv_llValue(llValue) {};
 public:
   /* Constructor. */
-  inline CTimerValue(void) {};
+  inline CTimerValue(void) : tv_llValue(0) {};
   /* Constructor from seconds. */
   inline CTimerValue(double dSeconds);
   /* Clear timer value (set it to zero). */

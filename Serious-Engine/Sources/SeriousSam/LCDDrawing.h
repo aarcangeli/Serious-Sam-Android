@@ -19,11 +19,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
   #pragma once
 #endif
 
+namespace SeriousSam {
 extern void LCDInit(void);
 extern void LCDEnd(void);
 extern void LCDPrepare(FLOAT fFade);
 extern void LCDSetDrawport(CDrawPort *pdp);
-extern void LCDDrawBox(PIX pixUL, PIX pixDR, PIXaabbox2D &box, COLOR col);
+extern void LCDDrawBox(PIX pixUL, PIX pixDR, const PIXaabbox2D &box, COLOR col);
 extern void LCDScreenBox(COLOR col);
 extern void LCDScreenBoxOpenLeft(COLOR col);
 extern void LCDScreenBoxOpenRight(COLOR col);
@@ -34,7 +35,8 @@ extern void LCDDrawPointer(PIX pixI, PIX pixJ);
 extern COLOR LCDGetColor(COLOR colDefault, const char *strName);
 extern COLOR LCDFadedColor(COLOR col);
 extern COLOR LCDBlinkingColor(COLOR col0, COLOR col1);
-
+} // namespace SeriousSam
+using namespace SeriousSam;
 
 #endif  /* include-once check. */
 
