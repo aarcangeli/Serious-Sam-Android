@@ -47,9 +47,9 @@ ULONG _ulMaxLenghtOfSavingFile = (1UL << 20) * 128;
 extern INDEX fil_bPreferZips = FALSE;
 
 // set if current thread has currently enabled stream handling
-static thread_local BOOL _bThreadCanHandleStreams = FALSE;
+CThreadLocal<BOOL> _bThreadCanHandleStreams;
 // list of currently opened streams
-static thread_local CListHead *_plhOpenedStreams = NULL;
+CThreadLocal<CListHead *> _plhOpenedStreams;
 
 ULONG _ulVirtuallyAllocatedSpace = 0;
 ULONG _ulVirtuallyAllocatedSpaceTotal = 0;
@@ -262,19 +262,19 @@ void IgnoreApplicationPath(void) {
 
 /* Static function enable stream handling. */
 void CTStream::EnableStreamHandling(void) {
-  ASSERT(!_bThreadCanHandleStreams && _plhOpenedStreams == NULL);
+  ASSERT(!*_bThreadCanHandleStreams && *_plhOpenedStreams == NULL);
 
-  _bThreadCanHandleStreams = TRUE;
-  _plhOpenedStreams = new CListHead;
+  *_bThreadCanHandleStreams = TRUE;
+  *_plhOpenedStreams = new CListHead;
 }
 
 /* Static function disable stream handling. */
 void CTStream::DisableStreamHandling(void) {
-  ASSERT(_bThreadCanHandleStreams && _plhOpenedStreams != NULL);
+  ASSERT(*_bThreadCanHandleStreams && *_plhOpenedStreams != NULL);
 
-  _bThreadCanHandleStreams = FALSE;
-  delete _plhOpenedStreams;
-  _plhOpenedStreams = NULL;
+  *_bThreadCanHandleStreams = FALSE;
+  delete *_plhOpenedStreams;
+  *_plhOpenedStreams = NULL;
 }
 
 #ifdef PLATFORM_WIN32
@@ -331,7 +331,7 @@ void CTStream::Throw_t(char *strFormat, ...)  // throws char *
 {
   const SLONG slBufferSize = 256;
   char strFormatBuffer[slBufferSize];
-  static thread_local char strBuffer[slBufferSize];
+  static char strBuffer[slBufferSize];
   // add the stream description to the format string
   _snprintf(strFormatBuffer, slBufferSize, "%s (%s)", strFormat,
             strm_strStreamDescription.str_String);
@@ -339,7 +339,7 @@ void CTStream::Throw_t(char *strFormat, ...)  // throws char *
   va_list arg;
   va_start(arg, strFormat); // variable arguments start after this argument
   _vsnprintf(strBuffer, slBufferSize, strFormatBuffer, arg);
-  throw strBuffer;
+  ::ThrowF_t("%s", CTString(strBuffer));
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -880,7 +880,7 @@ CTFileStream::~CTFileStream(void) {
 // throws char *
 void CTFileStream::Open_t(const CTFileName &fnFileName, CTStream::OpenMode om/*=OM_READ*/) {
   // if current thread has not enabled stream handling
-  if (!_bThreadCanHandleStreams) {
+  if (!*_bThreadCanHandleStreams) {
     // error
     ::ThrowF_t(TRANS("Cannot open file `%s', stream handling is not enabled for this thread"),
                (CTString &) fnFileName);
@@ -934,7 +934,7 @@ void CTFileStream::Open_t(const CTFileName &fnFileName, CTStream::OpenMode om/*=
   // if file opening was successfull, set stream description to file name
   strm_strStreamDescription = fnmFullFileName;
   // add this newly opened file into opened stream list
-  _plhOpenedStreams->AddTail(strm_lnListNode);
+  (*_plhOpenedStreams)->AddTail(strm_lnListNode);
 }
 
 void MakeSureDirectoryPathExists(CTFileName file) {
@@ -970,7 +970,7 @@ void CTFileStream::Create_t(const CTFileName &fnFileName,
   fnFileNameAbsolute.SetAbsolutePath();
 
   // if current thread has not enabled stream handling
-  if (!_bThreadCanHandleStreams) {
+  if (!*_bThreadCanHandleStreams) {
     // error
     ::ThrowF_t(TRANS("Cannot create file `%s', stream handling is not enabled for this thread"),
                (CTString &) fnFileNameAbsolute);
@@ -1000,7 +1000,7 @@ void CTFileStream::Create_t(const CTFileName &fnFileName,
   // mark that file is created for writing
   fstrm_bReadOnly = FALSE;
   // add this newly created file into opened stream list
-  _plhOpenedStreams->AddTail(strm_lnListNode);
+  (*_plhOpenedStreams)->AddTail(strm_lnListNode);
 }
 
 /*
@@ -1147,7 +1147,7 @@ BOOL CTFileStream::PointerInStream(void *pPointer) {
  */
 CTMemoryStream::CTMemoryStream(void) {
   // if current thread has not enabled stream handling
-  if (!_bThreadCanHandleStreams) {
+  if (!*_bThreadCanHandleStreams) {
     // error
     ::FatalError(TRANS("Can create memory stream, stream handling is not enabled for this thread"));
   }
@@ -1159,7 +1159,7 @@ CTMemoryStream::CTMemoryStream(void) {
   // set stream description
   strm_strStreamDescription = "dynamic memory stream";
   // add this newly created memory stream into opened stream list
-  _plhOpenedStreams->AddTail(strm_lnListNode);
+  (*_plhOpenedStreams)->AddTail(strm_lnListNode);
   // allocate amount of memory needed to hold maximum allowed file length (when saving)
   mstrm_pubBuffer = (UBYTE *) malloc(_ulMaxLenghtOfSavingFile);
   mstrm_pubBufferEnd = mstrm_pubBuffer + _ulMaxLenghtOfSavingFile;
@@ -1172,7 +1172,7 @@ CTMemoryStream::CTMemoryStream(void) {
 CTMemoryStream::CTMemoryStream(void *pvBuffer, SLONG slSize,
                                CTStream::OpenMode om /*= CTStream::OM_READ*/) {
   // if current thread has not enabled stream handling
-  if (!_bThreadCanHandleStreams) {
+  if (!*_bThreadCanHandleStreams) {
     // error
     ::FatalError(TRANS("Can create memory stream, stream handling is not enabled for this thread"));
   }
@@ -1198,7 +1198,7 @@ CTMemoryStream::CTMemoryStream(void *pvBuffer, SLONG slSize,
   // set stream description
   strm_strStreamDescription = "dynamic memory stream";
   // add this newly created memory stream into opened stream list
-  _plhOpenedStreams->AddTail(strm_lnListNode);
+  (*_plhOpenedStreams)->AddTail(strm_lnListNode);
 }
 
 /* Destructor. */

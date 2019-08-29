@@ -16,7 +16,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "StdH.h"
 #include <Engine/Base/KeyNames.h>
 #include <Engine/CurrentVersion.h>
-#include <GameMP/LCDDrawing.h>
+#include <SeriousSam/LCDDrawing.h>
 #include "MGHighScore.h"
 
 #define HSCOLUMNS 6

@@ -19,8 +19,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 CListHead _lhVarSettings;
 
-CTString _strFile;
-INDEX _ctLines;
+INDEX _ctLineNumber;
+
+namespace varlist {
 
 CTString GetNonEmptyLine_t(CTStream &strm)
 {
@@ -29,7 +30,7 @@ CTString GetNonEmptyLine_t(CTStream &strm)
      ThrowF_t(TRANS("Unexpected end of file"));
    }
    CTString str;
-   _ctLines++;
+   _ctLineNumber++;
    strm.GetLine_t(str);
    str.TrimSpacesLeft();
    if (str.RemovePrefix("//")) {  // skip comments
@@ -152,20 +153,20 @@ void ParseCFG_t(CTStream &strm)
   }
 }
 
-
 void LoadVarSettings(const CTFileName &fnmCfg)
 {
   FlushVarSettings(FALSE);
+  static CTString _strFile;
 
   try {
     CTFileStream strm;
     strm.Open_t(fnmCfg);
-    _ctLines = 0;
+    _ctLineNumber = 0;
     _strFile = fnmCfg;
     ParseCFG_t(strm);
 
   } catch ( const char * strError) {
-    CPrintF("%s (%d) : %s\n", (const char*)_strFile, _ctLines, strError);
+    CPrintF("%s (%d) : %s\n", (const char*)_strFile, _ctLineNumber, strError);
   }
 
   FOREACHINLIST(CVarSetting, vs_lnNode, _lhVarSettings, itvs) {
@@ -224,6 +225,8 @@ void FlushVarSettings(BOOL bApply)
     _pShell->Execute(strCmd);
   }
 }
+
+} // namespace varlist
 
 CVarSetting::CVarSetting()
 {

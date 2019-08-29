@@ -160,7 +160,11 @@ run_ecc(
   Global
 )
 
-add_library(EntitiesMP SHARED ${SOURCES})
+if (STATIC_LINKING)
+  add_library(EntitiesMP STATIC ${SOURCES})
+else ()
+  add_library(EntitiesMP SHARED ${SOURCES})
+endif ()
 target_compile_options(EntitiesMP PUBLIC "-I${CMAKE_CURRENT_SOURCE_DIR}")
 target_compile_options(EntitiesMP PRIVATE "-I${CMAKE_CURRENT_SOURCE_DIR}/StdH")
 target_compile_options(EntitiesMP PUBLIC "-I${SE_CURRENT_GENERATED_DIR}")

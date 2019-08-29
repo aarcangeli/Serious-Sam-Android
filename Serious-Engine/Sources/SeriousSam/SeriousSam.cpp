@@ -31,6 +31,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "LCDDrawing.h"
 #include "CmdLine.h"
 #include "Credits.h"
+#include <config.h>
 
 #ifndef SSA_VERSION
 #define SSA_VERSION ""
@@ -39,7 +40,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 typedef CGame *(*GAME_Create_t)(void);
 void drawBannerFpsVersion(CDrawPort *pdp, int64_t deltaFrame, float fps);
 
+// _pGame reused from GameMP module
+#ifndef STATIC_LINKING
 extern CGame *_pGame = NULL;
+#endif
 
 // application state variables
 extern BOOL _bRunning = TRUE;
@@ -495,10 +499,15 @@ void LoadAndForceTexture(CTextureObject &to, CTextureObject *&pto, const CTFileN
   }
 }
 
+#ifdef STATIC_LINKING
+extern "C" CGame *GAME_Create(void);
+#endif
+
 void InitializeGame(void)
 {
   try {
 
+#ifndef STATIC_LINKING
     void *libGameMP = dlopen("libGameMP.so", RTLD_NOW);
     if (!libGameMP) {
       FatalError("  Cannot load GameMP");
@@ -511,6 +520,7 @@ void InitializeGame(void)
     }
     CPrintF("  GAME_Create found\n");
     CPrintF("\n");
+#endif
 
     _pGame = GAME_Create();
 
@@ -716,8 +726,6 @@ BOOL Init()
   } else {
     StartNextDemo();
   }
-# else
-  StartNextDemo();
 #endif
 
   return TRUE;
@@ -1231,7 +1239,8 @@ void setControls(PlayerControls &ctrls) {
   }
 }
 
-void seriousSubMain() {
+void seriousSamInitialize() {
+
   CTStream::EnableStreamHandling();
 
   if (FileExists(_modToLoadTxt)) {
@@ -1264,6 +1273,14 @@ void seriousSubMain() {
   _bQuitScreen = TRUE;
   _pGame->gm_csConsoleState  = CS_OFF;
   _pGame->gm_csComputerState = CS_OFF;
+
+}
+
+void seriousSubMain() {
+
+  seriousSamInitialize();
+
+  StartNextDemo();
 
   while(_bRunning && !_fnmModToLoad.Length()) {
     g_cb.syncSeriousThreads();
