@@ -72,7 +72,6 @@ void COptionsMenu::Initialize_t(void)
   gm_mgNetworkOptions.mg_strTip = TRANS("choose your connection parameters");
   gm_lhGadgets.AddTail(gm_mgNetworkOptions.mg_lnNode);
   gm_mgNetworkOptions.mg_pActivatedFunction = NULL;
-  gm_mgNetworkOptions.mg_bEnabled = FALSE;
   
   gm_mgCustomOptions.mg_bfsFontSize = BFS_LARGE;
   gm_mgCustomOptions.mg_boxOnScreen = BoxBigRow(5.1f);
