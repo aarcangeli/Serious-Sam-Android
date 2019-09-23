@@ -17,6 +17,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/CurrentVersion.h>
 #include "MenuPrinting.h"
 #include "MOptions.h"
+#include <config.h>
 
 
 void COptionsMenu::Initialize_t(void)
@@ -72,6 +73,9 @@ void COptionsMenu::Initialize_t(void)
   gm_mgNetworkOptions.mg_strTip = TRANS("choose your connection parameters");
   gm_lhGadgets.AddTail(gm_mgNetworkOptions.mg_lnNode);
   gm_mgNetworkOptions.mg_pActivatedFunction = NULL;
+#ifdef DISABLE_NETSETTINGS
+  gm_mgNetworkOptions.mg_bEnabled = false;
+#endif
   
   gm_mgCustomOptions.mg_bfsFontSize = BFS_LARGE;
   gm_mgCustomOptions.mg_boxOnScreen = BoxBigRow(5.1f);

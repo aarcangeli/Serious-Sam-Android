@@ -51,6 +51,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.IOException;
 import java.util.Locale;
+
 import static com.github.aarcangeli.serioussamandroid.NativeEvents.EditTextEvent;
 import static com.github.aarcangeli.serioussamandroid.NativeEvents.FatalErrorEvent;
 import static com.github.aarcangeli.serioussamandroid.NativeEvents.GameState;
@@ -79,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
 
     private SeriousSamSurface glSurfaceView;
     private File homeDir;
-    private File ScriptsDir = getScriptsDir();
+    private File scriptsDir;
     private boolean isGameStarted = false;
     private SensorManager sensorManager;
     private SensorEventListener motionListener;
@@ -106,6 +107,7 @@ public class MainActivity extends AppCompatActivity {
             executeShell(String.format(Locale.ENGLISH, "con_fHeightFactor = %.6f", (size.y - height) / (float) size.y));
         }
     };
+
     private void copyFolder(String name) throws IOException {
         AssetManager assetManager = getAssets();
         String[] files = null;
@@ -115,12 +117,12 @@ public class MainActivity extends AppCompatActivity {
             try {
                 files = assetManager.list(name);
             } catch (IOException e) {
-                Log.i("===", "Failed to get asset file list.\n" + e);
+                Log.i(TAG, "Failed to get asset file list.\n" + e);
             }
             for (String filename : files) {
                 InputStream in = null;
                 OutputStream out = null;
-                File folder = new File(ScriptsDir.getAbsolutePath() + "/" + name);
+                File folder = new File(scriptsDir.getAbsolutePath() + "/" + name);
                 boolean success = true;
                 if (!folder.exists()) {
                     success = folder.mkdir();
@@ -128,10 +130,10 @@ public class MainActivity extends AppCompatActivity {
                 if (success) {
                     try {
                         in = assetManager.open(name + "/" + filename);
-                        out = new FileOutputStream(ScriptsDir.getAbsolutePath() + "/" + name + "/" + filename);
+                        out = new FileOutputStream(scriptsDir.getAbsolutePath() + "/" + name + "/" + filename);
                         copyFile(in, out);
                     } catch (IOException e) {
-                        Log.i("===", "Failed to copy asset file: " + filename + " " + e);
+                        Log.i(TAG, "Failed to copy asset file: " + filename + " " + e);
                     } finally {
                         in.close();
                         out.close();
@@ -140,10 +142,11 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
     private void copyFile(InputStream in, OutputStream out) throws IOException {
         byte[] buffer = new byte[1024];
         int read;
-        while((read = in.read(buffer)) != -1) {
+        while ((read = in.read(buffer)) != -1) {
             out.write(buffer, 0, read);
         }
     }
@@ -216,6 +219,7 @@ public class MainActivity extends AppCompatActivity {
         }, null);
 
         homeDir = getHomeDir();
+        scriptsDir = getScriptsDir();
         Log.i(TAG, "HomeDir: " + homeDir);
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
@@ -240,11 +244,11 @@ public class MainActivity extends AppCompatActivity {
         if (!hasStoragePermission(this)) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_STORAGE);
         } else {
-		try {
-            copyFolder("Menu");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+            try {
+                copyFolder("Menu");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             startGame();
         }
 
@@ -395,7 +399,7 @@ public class MainActivity extends AppCompatActivity {
             glSurfaceView.start();
         }
 
-		glSurfaceView.syncOptions();
+        glSurfaceView.syncOptions();
         syncOptions();
         keyboardHeightProvider.onResume();
     }
@@ -406,6 +410,7 @@ public class MainActivity extends AppCompatActivity {
         glSurfaceView.stop();
         executeShell("HideConsole();");
         executeShell("HideComputer();");
+        executeShell("SaveOptions();");
         keyboardHeightProvider.onPause();
     }
 
@@ -480,12 +485,11 @@ public class MainActivity extends AppCompatActivity {
     private static File getHomeDir() {
         return new File(Environment.getExternalStorageDirectory(), "SeriousSam").getAbsoluteFile();
     }
-	
+
     private static File getScriptsDir() {
-		File homeDir = getHomeDir();
-        return new File(homeDir.getAbsolutePath(), "Scripts").getAbsoluteFile();
+        return new File(getHomeDir(), "Scripts");
     }
-	
+
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
         int keyCode = event.getKeyCode();

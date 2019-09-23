@@ -244,6 +244,11 @@ void TouchUp(void* pArgs) {
   }
 }
 
+void SaveOptions(void* pArgs) {
+  CTFileName fnmPersistentSymbols = CTString("Scripts\\PersistentSymbols.ini");
+  _pShell->StorePersistentSymbols(fnmPersistentSymbols);
+}
+
 void ExitConfirm(void);
 void GoMenuBack() {
   if (bMenuActive) {
@@ -600,6 +605,7 @@ BOOL Init()
   _pShell->DeclareSymbol("user void TouchMove(INDEX, INDEX);", (void *) &TouchMove);
   _pShell->DeclareSymbol("user void TouchDown(INDEX, INDEX);", (void *) &TouchDown);
   _pShell->DeclareSymbol("user void TouchUp(INDEX, INDEX);", (void *) &TouchUp);
+  _pShell->DeclareSymbol("user void SaveOptions();", (void *) &SaveOptions);
   _pShell->DeclareSymbol("user void MenuEvent(INDEX);", (void *) &MenuEvent);
   _pShell->DeclareSymbol("user void MenuChar(INDEX);", (void *) &MenuChar);
   _pShell->DeclareSymbol("user void GoMenuBack();", (void *) &GoMenuBack);
