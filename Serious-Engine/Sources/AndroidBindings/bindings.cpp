@@ -11,6 +11,7 @@
 #include <android/log.h>
 
 void processInputs();
+CTFileName fnmPersistentSymbolsS = CTString("Scripts\\PersistentSymbols.ini");
 
 pthread_mutex_t g_mySeriousMutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_t g_mySeriousThreadId;
@@ -254,6 +255,7 @@ void *seriousMain(void *unused) {
   } catch (const char *msg) {
     FatalError("%s", msg);
   }
+    _pShell->StorePersistentSymbols(fnmPersistentSymbolsS);
 
   // close app
   exit(0);

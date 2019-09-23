@@ -1173,7 +1173,8 @@ void CGfxLibrary::Init(void)
   _pShell->DeclareSymbol("persistent user INDEX tex_bAlternateCompression;", &tex_bAlternateCompression);
   _pShell->DeclareSymbol("persistent user INDEX tex_bDynamicMipmaps;", &tex_bDynamicMipmaps);
   _pShell->DeclareSymbol("persistent user INDEX tex_iDithering;",  &tex_iDithering);
-  _pShell->DeclareSymbol("persistent user INDEX tex_iFiltering;",  &tex_iFiltering);
+/*  _pShell->DeclareSymbol("persistent user INDEX tex_iFiltering;",  &tex_iFiltering);
+	TEMPORARY FIX ARTEFACTS IF USING SHARPEN TEXTURE FILTERING METHOD */
   _pShell->DeclareSymbol("persistent user INDEX tex_iEffectFiltering;",   &tex_iEffectFiltering);
   _pShell->DeclareSymbol("persistent user INDEX tex_bProgressiveFilter;", &tex_bProgressiveFilter);
   _pShell->DeclareSymbol("           user INDEX tex_bColorizeMipmaps;",   &tex_bColorizeMipmaps);

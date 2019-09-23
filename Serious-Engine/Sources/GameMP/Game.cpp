@@ -1018,9 +1018,7 @@ void CGame::InitInternal( void)
   CAM_Init();
 
   // load persistent symbols
-  if (!_bDedicatedServer) {
     _pShell->Execute(CTString("include \"")+fnmPersistentSymbols+"\";");
-  }
   // execute the startup script
   _pShell->Execute(CTString("include \"")+fnmStartupScript+"\";");
 
@@ -1071,9 +1069,7 @@ void CGame::EndInternal(void)
   // remove game timer handler
   _pTimer->RemHandler( &m_gthGameTimerHandler);
   // save persistent symbols
-  if (!_bDedicatedServer) {
     _pShell->StorePersistentSymbols(fnmPersistentSymbols);
-  }
 
   LCDEnd();
 
