@@ -16,6 +16,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "StdAfx.h"
 #include "LCDDrawing.h"
 
+namespace GameMP {
+
 static CTextureObject _toPointer;
 static CTextureObject _toBcgClouds;
 static CTextureObject _toBcgGrid;
@@ -71,19 +73,19 @@ extern void LCDDrawBox(PIX pixUL, PIX pixDR, const PIXaabbox2D &box, COLOR col)
 {
   // up
   _pdp->DrawLine(
-    box.Min()(1)-pixUL, box.Min()(2)-pixUL, 
+    box.Min()(1)-pixUL, box.Min()(2)-pixUL,
     box.Max()(1)+pixDR, box.Min()(2)-pixUL, col);
   // down
   _pdp->DrawLine(
-    box.Min()(1)-pixUL, box.Max()(2)+pixDR, 
+    box.Min()(1)-pixUL, box.Max()(2)+pixDR,
     box.Max()(1)+pixDR, box.Max()(2)+pixDR, col);
   // left
   _pdp->DrawLine(
-    box.Min()(1)-pixUL, box.Min()(2)-pixUL, 
+    box.Min()(1)-pixUL, box.Min()(2)-pixUL,
     box.Min()(1)-pixUL, box.Max()(2)+pixDR, col);
   // right
   _pdp->DrawLine(
-    box.Max()(1)+pixDR, box.Min()(2)-pixUL, 
+    box.Max()(1)+pixDR, box.Min()(2)-pixUL,
     box.Max()(1)+pixDR, box.Max()(2)+pixDR+1, col);
 }
 
@@ -91,15 +93,15 @@ extern void LCDScreenBoxOpenLeft(COLOR col)
 {
   // up
   _pdp->DrawLine(
-    _boxScreen.Min()(1)-1, _boxScreen.Min()(2), 
+    _boxScreen.Min()(1)-1, _boxScreen.Min()(2),
     _boxScreen.Max()(1)-1, _boxScreen.Min()(2), col);
   // down
   _pdp->DrawLine(
-    _boxScreen.Min()(1)-1, _boxScreen.Max()(2)-1, 
+    _boxScreen.Min()(1)-1, _boxScreen.Max()(2)-1,
     _boxScreen.Max()(1)-1, _boxScreen.Max()(2)-1, col);
   // right
   _pdp->DrawLine(
-    _boxScreen.Max()(1)-1, _boxScreen.Min()(2), 
+    _boxScreen.Max()(1)-1, _boxScreen.Min()(2),
     _boxScreen.Max()(1)-1, _boxScreen.Max()(2)-1+1, col);
 }
 
@@ -107,15 +109,15 @@ extern void LCDScreenBoxOpenRight(COLOR col)
 {
   // up
   _pdp->DrawLine(
-    _boxScreen.Min()(1)-1, _boxScreen.Min()(2), 
+    _boxScreen.Min()(1)-1, _boxScreen.Min()(2),
     _boxScreen.Max()(1)-1, _boxScreen.Min()(2), col);
   // down
   _pdp->DrawLine(
-    _boxScreen.Min()(1)-1, _boxScreen.Max()(2)-1, 
+    _boxScreen.Min()(1)-1, _boxScreen.Max()(2)-1,
     _boxScreen.Max()(1)-1, _boxScreen.Max()(2)-1, col);
   // left
   _pdp->DrawLine(
-    _boxScreen.Min()(1), _boxScreen.Min()(2), 
+    _boxScreen.Min()(1), _boxScreen.Min()(2),
     _boxScreen.Min()(1), _boxScreen.Max()(2)-1+1, col);
 }
 
@@ -127,10 +129,10 @@ extern void LCDScreenBox(COLOR col)
 extern void LCDRenderClouds1(void)
 {
   MEXaabbox2D boxBcgClouds1;
-  TiledTexture(_boxScreen, 1.3f*_pdp->GetWidth()/640.0f, 
+  TiledTexture(_boxScreen, 1.3f*_pdp->GetWidth()/640.0f,
     MEX2D(sin(_tmNow*0.75f)*50,sin(_tmNow*0.9f)*40),   boxBcgClouds1);
   _pdp->PutTexture(&_toBcgClouds, _boxScreen, boxBcgClouds1, C_dGREEN|_ulA>>1);
-  TiledTexture(_boxScreen, 0.8f*_pdp->GetWidth()/640.0f, 
+  TiledTexture(_boxScreen, 0.8f*_pdp->GetWidth()/640.0f,
     MEX2D(sin(_tmNow*0.95f)*50,sin(_tmNow*0.8f)*40),   boxBcgClouds1);
   _pdp->PutTexture(&_toBcgClouds, _boxScreen, boxBcgClouds1, C_dGREEN|_ulA>>1);
 }
@@ -224,4 +226,6 @@ extern void LCDDrawPointer(PIX pixI, PIX pixJ)
   pixJ-=1;
   _pdp->PutTexture( &_toPointer, PIXaabbox2D( PIX2D(pixI, pixJ), PIX2D(pixI+pixSizeI, pixJ+pixSizeJ)),
                     LCDFadedColor(C_WHITE|255));
+}
+
 }

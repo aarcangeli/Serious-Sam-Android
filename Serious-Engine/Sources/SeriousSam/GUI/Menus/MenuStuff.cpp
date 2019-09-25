@@ -146,6 +146,8 @@ extern CTString astrSoundAPIRadioTexts[] = {
   RADIOTRANS("EAX"),
 };
 
+namespace SeriousSam {
+
 ULONG GetSpawnFlagsForGameType(INDEX iGameType)
 {
   if (iGameType == -1) return SPF_SINGLEPLAYER;
@@ -177,6 +179,8 @@ BOOL IsMenuEnabled(const CTString &strMenuName)
   BOOL(*pFunc)(const CTString &) = (BOOL(*)(const CTString &))pss->ss_pvValue;
   return pFunc(strMenuName);
 }
+
+} // namespace SeriousSam
 
 // initialize game type strings table
 void InitGameTypes(void)

@@ -18,7 +18,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "MenuPrinting.h"
 #include "MenuStuff.h"
 #include "MMain.h"
-
+#include <config.h>
 
 void CMainMenu::Initialize_t(void)
 {
@@ -127,8 +127,17 @@ void CMainMenu::StartMenu(void)
   gm_mgSplitScreen.mg_bEnabled = IsMenuEnabled("Split Screen");
   gm_mgHighScore.mg_bEnabled = IsMenuEnabled("High Score");
 
+#ifdef ENABLE_SPLITSCREEN
+  gm_mgSplitScreen.mg_bEnabled = true;
+#else
   gm_mgSplitScreen.mg_bEnabled = false;
+#endif
+
+#ifdef ENABLE_NETWORK
+  gm_mgNetwork.mg_bEnabled = true;
+#else
   gm_mgNetwork.mg_bEnabled = false;
+#endif
 
   CGameMenu::StartMenu();
 }

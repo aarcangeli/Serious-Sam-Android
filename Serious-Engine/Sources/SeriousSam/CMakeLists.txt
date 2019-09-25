@@ -59,8 +59,11 @@ set(
   SeriousSam.cpp
   VarList.cpp
 )
-
-add_library(SeriousSam SHARED ${SOURCES})
+if (STATIC_LINKING)
+  add_library(SeriousSam STATIC ${SOURCES})
+else ()
+  add_library(SeriousSam SHARED ${SOURCES})
+endif ()
 target_compile_options(SeriousSam PRIVATE "-I${CMAKE_CURRENT_SOURCE_DIR}")
 target_compile_options(SeriousSam PRIVATE "-I${CMAKE_CURRENT_SOURCE_DIR}/GUI/Menus")
 target_link_libraries(SeriousSam Engine)

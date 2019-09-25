@@ -23,7 +23,11 @@ set(
         lib/vorbisfile.c
         lib/window.c
 )
-add_library(vorbis SHARED ${SOURCES})
+if (STATIC_LINKING)
+  add_library(vorbis STATIC ${SOURCES})
+else ()
+  add_library(vorbis SHARED ${SOURCES})
+endif ()
 target_link_libraries(vorbis libogg)
 target_compile_options(vorbis PUBLIC "-I${CMAKE_CURRENT_SOURCE_DIR}/include")
 target_compile_options(vorbis PRIVATE "-I${CMAKE_CURRENT_SOURCE_DIR}/lib")

@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory android:title="Graphics">
+        <ListPreference
+            android:defaultValue="Full"
+            android:entries="@array/ResolutionScaleFactorEntries"
+            android:entryValues="@array/FullHalf"
+            android:key="scale_FactorSet"
+            android:summary="%s"
+            android:title="Screen resolution" />
+    </PreferenceCategory>
     <PreferenceCategory android:title="Inputs">
         <ListPreference
             android:defaultValue="Auto"

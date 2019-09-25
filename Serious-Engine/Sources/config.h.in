@@ -1,0 +1,11 @@
+// add #include <config.h> to load this configs
+
+#ifndef CONFIG_H
+#define CONFIG_H
+
+#cmakedefine STATIC_LINKING
+#cmakedefine ENABLE_NETWORK
+#cmakedefine ENABLE_SPLITSCREEN
+#cmakedefine DISABLE_NETSETTINGS
+
+#endif

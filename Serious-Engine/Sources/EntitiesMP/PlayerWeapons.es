@@ -80,8 +80,6 @@ uses "EntitiesMP/WeaponItem";
 uses "EntitiesMP/AmmoItem";
 uses "EntitiesMP/AmmoPack";
 uses "EntitiesMP/ModelHolder2";
-//uses "EntitiesMP/Pipebomb";
-//uses "EntitiesMP/GhostBusterRay";
 uses "EntitiesMP/CannonBall";
 
 
@@ -130,22 +128,6 @@ enum WeaponType {
 %{
 // AVAILABLE WEAPON MASK
 #define WEAPONS_ALLAVAILABLEMASK 0x3FFF
-
-/*
-#if BUILD_TEST
-  #define WEAPONS_DISABLEDMASK (\
-    (1<<(WEAPON_TOMMYGUN       -1))|\
-    (1<<(WEAPON_GRENADELAUNCHER-1))|\
-    (1<<(WEAPON_PIPEBOMB       -1))|\
-    (1<<(WEAPON_FLAMER         -1))|\
-    (1<<(WEAPON_LASER          -1))|\
-    (1<<(WEAPON_GHOSTBUSTER    -1))|\
-    (1<<(WEAPON_IRONCANNON     -1))|\
-    (1<<(WEAPON_NUKECANNON     -1)))
-#else 
-  #define WEAPONS_DISABLEDMASK (0)
-#endif
-  */
 
 #define MAX_WEAPONS 30
 
@@ -370,22 +352,6 @@ void CPlayerWeapons_Precache(ULONG ulAvailable)
     pdec->PrecacheClass(CLASS_PROJECTILE, PRT_GRENADE);
   }
 
-/*
-  if ( ulAvailable&(1<<(WEAPON_PIPEBOMB-1)) ) {
-    pdec->PrecacheModel(MODEL_PIPEBOMB_STICK        );
-    pdec->PrecacheModel(MODEL_PIPEBOMB_HAND         );
-    pdec->PrecacheModel(MODEL_PB_BUTTON             );
-    pdec->PrecacheModel(MODEL_PB_SHIELD             );
-    pdec->PrecacheModel(MODEL_PB_STICK              );
-    pdec->PrecacheModel(MODEL_PB_BOMB               );
-    pdec->PrecacheTexture(TEXTURE_PB_STICK          );  
-    pdec->PrecacheTexture(TEXTURE_PB_BOMB           );  
-    pdec->PrecacheSound(SOUND_PIPEBOMB_FIRE         );
-    pdec->PrecacheSound(SOUND_PIPEBOMB_OPEN         );
-    pdec->PrecacheSound(SOUND_PIPEBOMB_THROW        );
-    pdec->PrecacheClass(CLASS_PIPEBOMB);
-  }
-*/
   if ( ulAvailable&(1<<(WEAPON_CHAINSAW-1))) {
     pdec->PrecacheModel(MODEL_CHAINSAW     );
     pdec->PrecacheModel(MODEL_CS_BODY      );
@@ -426,21 +392,7 @@ void CPlayerWeapons_Precache(ULONG ulAvailable)
     pdec->PrecacheSound(SOUND_LASER_FIRE);
     pdec->PrecacheClass(CLASS_PROJECTILE, PRT_LASER_RAY);
   }
-/*
-  if ( ulAvailable&(1<<(WEAPON_GHOSTBUSTER-1)) ) {
-    pdec->PrecacheModel(MODEL_GHOSTBUSTER     );
-    pdec->PrecacheModel(MODEL_GB_BODY         );
-    pdec->PrecacheModel(MODEL_GB_ROTATOR      );
-    pdec->PrecacheModel(MODEL_GB_EFFECT1      );
-    pdec->PrecacheModel(MODEL_GB_EFFECT1FLARE );
-    pdec->PrecacheTexture(TEXTURE_GB_ROTATOR  );  
-    pdec->PrecacheTexture(TEXTURE_GB_BODY     );  
-    pdec->PrecacheTexture(TEXTURE_GB_LIGHTNING);  
-    pdec->PrecacheTexture(TEXTURE_GB_FLARE    );  
-    pdec->PrecacheSound(SOUND_GB_FIRE         );
-    pdec->PrecacheClass(CLASS_GHOSTBUSTERRAY);
-  }
-  */
+
   if ( ulAvailable&(1<<(WEAPON_IRONCANNON-1)) /*||
        ulAvailable&(1<<(WEAPON_NUKECANNON-1))*/ ) {
     pdec->PrecacheModel(MODEL_CANNON    );
@@ -480,24 +432,6 @@ void CPlayerWeapons_Init(void) {
   CPlayerWeapons_Precache(0x03);
 }
 
-// weapons positions for raycasting and firing
-/*
-static FLOAT afKnifePos[4] = { -0.01f, 0.25f, 0.0f};
-static FLOAT afColtPos[4] = { -0.01f, 0.1f, 0.0f};
-static FLOAT afDoubleColtPos[4] = { -0.01f, 0.1f, 0.0f};
-static FLOAT afSingleShotgunPos[4] = { 0.0f, 0.1f, 0.0f};
-static FLOAT afDoubleShotgunPos[4] = {  0.0f, 0.1f, 0.0f};
-static FLOAT afTommygunPos[4] = { 0.0f, 0.1f, 0.0f};
-static FLOAT afMinigunPos[4] = { 0.0f, -0.075f, 0.0f};
-static FLOAT afRocketLauncherPos[4] = { -0.175f, 0.19f, -0.23f};
-static FLOAT afGrenadeLauncherPos[4] = { 0.0f, 0.16f, -1.42f};
-static FLOAT afPipebombPos[4] = { 0.01f, 0.04f, -0.44f};
-static FLOAT afFlamerPos[4] = { 0.0f, 0.18f, -0.62f};
-static FLOAT afLaserPos[4] = {  0.0f, -0.095f, -0.65f};
-static FLOAT afGhostBusterPos[4] = { 0.0f, 0.0f, -0.74f};
-static FLOAT afCannonPos[4] = { 0.0f, 0.0f, -0.74f};
-*/
-
 // extra weapon positions for shells dropout
 static FLOAT afSingleShotgunShellPos[3] = { 0.2f, 0.0f, -0.31f};
 static FLOAT afDoubleShotgunShellPos[3] = { 0.0f, 0.0f, -0.5f};
@@ -512,12 +446,6 @@ static FLOAT afDoubleShotgunPipe[3] = { 0.2f, 0.0f, -1.25f};
 static FLOAT afTommygunPipe[3] = { -0.06f, 0.1f, -0.6f};
 static FLOAT afMinigunPipe[3] = { -0.06f, 0.0f, -0.6f};
 static FLOAT afMinigunPipe3rdView[3] = { 0.25f, 0.3f, -2.5f};
-
-//static FLOAT afLaserPos[4] = {  0.0f, -0.095f, -0.65f};
-//static FLOAT afLaser1Pos[4] = { -0.115f, -0.05f, -0.65f};
-//static FLOAT afLaser2Pos[4] = {  0.115f, -0.05f, -0.65f};
-//static FLOAT afLaser3Pos[4] = { -0.145f, -0.14f, -0.8f};
-//static FLOAT afLaser4Pos[4] = {  0.145f, -0.14f, -0.8f};
 
 #define TM_START m_aMiniGun
 #define F_OFFSET_CHG m_aMiniGunLast
@@ -613,15 +541,10 @@ properties:
 236 BOOL  m_bSniping = FALSE,
 237 FLOAT m_fMinimumZoomFOV  = 53.1f,
 238 FLOAT m_tmLastSniperFire = 0.0f,
-// pipebomb
-//235 CEntityPointer m_penPipebomb,
-//236 INDEX m_bPipeBombDropped = FALSE,
 // flamer
 240 CEntityPointer m_penFlame,
 // laser
 245 INDEX m_iLaserBarrel = 0,
-// ghostbuster
-//250 CEntityPointer m_penGhostBusterRay,
 // fire flare
 251 INDEX m_iFlare = FLARE_REMOVE,       // 0-none, 1-remove, 2-add
 252 INDEX m_iSecondFlare = FLARE_REMOVE, // 0-none, 1-remove, 2-add
@@ -644,8 +567,6 @@ components:
   1 class   CLASS_PROJECTILE        "Classes\\Projectile.ecl",
   2 class   CLASS_BULLET            "Classes\\Bullet.ecl",
   3 class   CLASS_WEAPONEFFECT      "Classes\\PlayerWeaponsEffects.ecl",
-  4 class   CLASS_PIPEBOMB          "Classes\\Pipebomb.ecl",
-  5 class   CLASS_GHOSTBUSTERRAY    "Classes\\GhostBusterRay.ecl",
   6 class   CLASS_CANNONBALL        "Classes\\CannonBall.ecl",
   7 class   CLASS_WEAPONITEM        "Classes\\WeaponItem.ecl",
   8 class   CLASS_BASIC_EFFECT      "Classes\\BasicEffect.ecl",
@@ -743,20 +664,6 @@ components:
 //114 sound   SOUND_SNIPER_RELOAD         "ModelsMP\\Weapons\\Sniper\\Sounds\\Reload.wav",
 //115 sound   SOUND_SNIPER_ZOOM           "ModelsMP\\Weapons\\Sniper\\Sounds\\Zoom.wav",
 
-/*
-// ************** PIPEBOMB **************
-110 model   MODEL_PIPEBOMB_STICK        "Models\\Weapons\\Pipebomb\\HandWithStick.mdl",
-111 model   MODEL_PIPEBOMB_HAND         "Models\\Weapons\\Pipebomb\\HandWithBomb.mdl",
-112 model   MODEL_PB_BUTTON             "Models\\Weapons\\Pipebomb\\Button.mdl",
-113 model   MODEL_PB_SHIELD             "Models\\Weapons\\Pipebomb\\Shield.mdl",
-114 model   MODEL_PB_STICK              "Models\\Weapons\\Pipebomb\\Stick.mdl",
-115 model   MODEL_PB_BOMB               "Models\\Weapons\\Pipebomb\\Bomb.mdl",
-116 texture TEXTURE_PB_STICK            "Models\\Weapons\\Pipebomb\\Stick.tex",
-117 texture TEXTURE_PB_BOMB             "Models\\Weapons\\Pipebomb\\Bomb.tex",
-118 sound   SOUND_PIPEBOMB_FIRE         "Models\\Weapons\\Pipebomb\\Sounds\\Fire.wav",
-119 sound   SOUND_PIPEBOMB_OPEN         "Models\\Weapons\\Pipebomb\\Sounds\\Open.wav",
-120 sound   SOUND_PIPEBOMB_THROW        "Models\\Weapons\\Pipebomb\\Sounds\\Throw.wav",
-*/
 // ************** FLAMER **************
 130 model   MODEL_FLAMER                "ModelsMP\\Weapons\\Flamer\\Flamer.mdl",
 131 model   MODEL_FL_BODY               "ModelsMP\\Weapons\\Flamer\\Body.mdl",
@@ -794,20 +701,6 @@ components:
 159 sound   SOUND_CS_IDLE               "ModelsMP\\Weapons\\Chainsaw\\Sounds\\Idle.wav",
 162 sound   SOUND_CS_BRINGDOWN          "ModelsMP\\Weapons\\Chainsaw\\Sounds\\BringDown.wav",
 
-
-/*
-// ************** GHOSTBUSTER **************
-150 model   MODEL_GHOSTBUSTER           "Models\\Weapons\\GhostBuster\\GhostBuster.mdl",
-151 model   MODEL_GB_BODY               "Models\\Weapons\\GhostBuster\\Body.mdl",
-152 model   MODEL_GB_ROTATOR            "Models\\Weapons\\GhostBuster\\Rotator.mdl",
-153 model   MODEL_GB_EFFECT1            "Models\\Weapons\\GhostBuster\\Effect01.mdl",
-154 model   MODEL_GB_EFFECT1FLARE       "Models\\Weapons\\GhostBuster\\EffectFlare01.mdl",
-155 texture TEXTURE_GB_ROTATOR          "Models\\Weapons\\GhostBuster\\Rotator.tex",
-156 texture TEXTURE_GB_BODY             "Models\\Weapons\\GhostBuster\\Body.tex",
-157 texture TEXTURE_GB_LIGHTNING        "Models\\Weapons\\GhostBuster\\Lightning.tex",
-158 texture TEXTURE_GB_FLARE            "Models\\Weapons\\GhostBuster\\EffectFlare.tex",
-159 sound   SOUND_GB_FIRE               "Models\\Weapons\\GhostBuster\\Sounds\\_Fire.wav",
-*/
 // ************** CANNON **************
 170 model   MODEL_CANNON                "Models\\Weapons\\Cannon\\Cannon.mdl",
 171 model   MODEL_CN_BODY               "Models\\Weapons\\Cannon\\Body.mdl",
@@ -843,8 +736,6 @@ functions:
   void AddDependentsToPrediction(void)
   {
     m_penPlayer->AddToPrediction();
-  //m_penPipebomb->AddToPrediction();
-  //m_penGhostBusterRay->AddToPrediction();
     m_penFlame->AddToPrediction();
   }
   void Precache(void)
@@ -982,7 +873,7 @@ functions:
       CPlacement3D plWeaponMirror( FLOAT3D(wpn_fX[iWeaponData], wpn_fY[iWeaponData], wpn_fZ[iWeaponData]),
                                    ANGLE3D(AngleDeg(wpn_fH[iWeaponData]), AngleDeg(wpn_fP[iWeaponData]),
                                            AngleDeg(wpn_fB[iWeaponData])));
-      if( iWeaponData==WEAPON_DOUBLECOLT /*|| iWeaponData==WEAPON_PIPEBOMB*/) {
+      if( iWeaponData==WEAPON_DOUBLECOLT ) {
         FLOATmatrix3D mRotation;
         MakeRotationMatrixFast(mRotation, plView.pl_OrientationAngle);
         plWeaponMirror.pl_PositionVector(1) = -plWeaponMirror.pl_PositionVector(1);
@@ -1625,17 +1516,6 @@ functions:
         AddAttachmentToModel(this, m_moWeapon, GRENADELAUNCHER_ATTACHMENT_MOVING_PART, MODEL_GL_MOVINGPART, TEXTURE_GL_MOVINGPART, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
         AddAttachmentToModel(this, m_moWeapon, GRENADELAUNCHER_ATTACHMENT_GRENADE, MODEL_GL_GRENADE, TEXTURE_GL_MOVINGPART, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
         break;
-      /*
-      case WEAPON_PIPEBOMB:
-        SetComponents(this, m_moWeapon, MODEL_PIPEBOMB_HAND, TEXTURE_HAND, 0, 0, 0);
-        AddAttachmentToModel(this, m_moWeapon, HANDWITHBOMB_ATTACHMENT_BOMB, MODEL_PB_BOMB, TEXTURE_PB_BOMB, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
-        SetComponents(this, m_moWeaponSecond, MODEL_PIPEBOMB_STICK, TEXTURE_HAND, 0, 0, 0);
-        AddAttachmentToModel(this, m_moWeaponSecond, HANDWITHSTICK_ATTACHMENT_STICK, MODEL_PB_STICK, TEXTURE_PB_STICK, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
-        AddAttachmentToModel(this, m_moWeaponSecond, HANDWITHSTICK_ATTACHMENT_SHIELD, MODEL_PB_SHIELD, TEXTURE_PB_STICK, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
-        AddAttachmentToModel(this, m_moWeaponSecond, HANDWITHSTICK_ATTACHMENT_BUTTON, MODEL_PB_BUTTON, TEXTURE_PB_STICK, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
-        m_moWeaponSecond.StretchModel(FLOAT3D(1,1,1));
-        break;
-        */
       case WEAPON_FLAMER:
         SetComponents(this, m_moWeapon, MODEL_FLAMER, TEXTURE_HAND, 0, 0, 0);
         AddAttachmentToModel(this, m_moWeapon, FLAMER_ATTACHMENT_BODY, MODEL_FL_BODY, TEXTURE_FL_BODY, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
@@ -1658,26 +1538,6 @@ functions:
         AddAttachmentToModel(this, m_moWeapon, LASER_ATTACHMENT_RIGHTUP,   MODEL_LS_BARREL, TEXTURE_LS_BARREL, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
         AddAttachmentToModel(this, m_moWeapon, LASER_ATTACHMENT_RIGHTDOWN, MODEL_LS_BARREL, TEXTURE_LS_BARREL, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
         break;
-/*
-      case WEAPON_GHOSTBUSTER:
-        SetComponents(this, m_moWeapon, MODEL_GHOSTBUSTER, TEXTURE_HAND, 0, 0, 0);
-        AddAttachmentToModel(this, m_moWeapon, GHOSTBUSTER_ATTACHMENT_BODY, MODEL_GB_BODY, TEXTURE_GB_BODY, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
-        AddAttachmentToModel(this, m_moWeapon, GHOSTBUSTER_ATTACHMENT_ROTATOR, MODEL_GB_ROTATOR, TEXTURE_GB_ROTATOR, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
-        AddAttachmentToModel(this, m_moWeapon, GHOSTBUSTER_ATTACHMENT_EFFECT01, MODEL_GB_EFFECT1, TEXTURE_GB_LIGHTNING, 0, 0, 0);
-        AddAttachmentToModel(this, m_moWeapon, GHOSTBUSTER_ATTACHMENT_EFFECT02, MODEL_GB_EFFECT1, TEXTURE_GB_LIGHTNING, 0, 0, 0);
-        AddAttachmentToModel(this, m_moWeapon, GHOSTBUSTER_ATTACHMENT_EFFECT03, MODEL_GB_EFFECT1, TEXTURE_GB_LIGHTNING, 0, 0, 0);
-        AddAttachmentToModel(this, m_moWeapon, GHOSTBUSTER_ATTACHMENT_EFFECT04, MODEL_GB_EFFECT1, TEXTURE_GB_LIGHTNING, 0, 0, 0);
-        CModelObject *pmo;
-        pmo = &(m_moWeapon.GetAttachmentModel(GHOSTBUSTER_ATTACHMENT_EFFECT01)->amo_moModelObject);
-        AddAttachmentToModel(this, *pmo, EFFECT01_ATTACHMENT_FLARE, MODEL_GB_EFFECT1FLARE, TEXTURE_GB_FLARE, 0, 0, 0);
-        pmo = &(m_moWeapon.GetAttachmentModel(GHOSTBUSTER_ATTACHMENT_EFFECT02)->amo_moModelObject);
-        AddAttachmentToModel(this, *pmo, EFFECT01_ATTACHMENT_FLARE, MODEL_GB_EFFECT1FLARE, TEXTURE_GB_FLARE, 0, 0, 0);
-        pmo = &(m_moWeapon.GetAttachmentModel(GHOSTBUSTER_ATTACHMENT_EFFECT03)->amo_moModelObject);
-        AddAttachmentToModel(this, *pmo, EFFECT01_ATTACHMENT_FLARE, MODEL_GB_EFFECT1FLARE, TEXTURE_GB_FLARE, 0, 0, 0);
-        pmo = &(m_moWeapon.GetAttachmentModel(GHOSTBUSTER_ATTACHMENT_EFFECT04)->amo_moModelObject);
-        AddAttachmentToModel(this, *pmo, EFFECT01_ATTACHMENT_FLARE, MODEL_GB_EFFECT1FLARE, TEXTURE_GB_FLARE, 0, 0, 0);
-        break;
-        */
       case WEAPON_IRONCANNON:
 //      case WEAPON_NUKECANNON:
         SetComponents(this, m_moWeapon, MODEL_CANNON, TEXTURE_CANNON, 0, 0, 0);
@@ -2233,30 +2093,6 @@ functions:
     penRocket->Initialize(eLaunch);
   };
 
-  /*
-  // drop pipebomb
-  void DropPipebomb(void) {
-    // pipebomb start position
-    CPlacement3D plPipebomb;
-    CalcWeaponPosition(
-      FLOAT3D(wpn_fFX[WEAPON_PIPEBOMB],wpn_fFY[WEAPON_PIPEBOMB], 0), 
-      plPipebomb, TRUE);
-    // create pipebomb
-    CEntityPointer penPipebomb = CreateEntity(plPipebomb, CLASS_PIPEBOMB);
-    // init and drop pipebomb
-    EDropPipebomb eDrop;
-    eDrop.penLauncher = m_penPlayer;
-    if (((CPlayer&)*m_penPlayer).en_plViewpoint.pl_OrientationAngle(2) > 10.0f) {
-      eDrop.fSpeed = 30.0f;
-    } else if (((CPlayer&)*m_penPlayer).en_plViewpoint.pl_OrientationAngle(2) > -20.0f) {
-      eDrop.fSpeed = 20.0f;
-    } else {
-      eDrop.fSpeed = 5.0f;
-    }
-    penPipebomb->Initialize(eDrop);
-    m_penPipebomb = penPipebomb;
-  };*/
-
   // flamer source
   void GetFlamerSourcePlacement(CPlacement3D &plSource, CPlacement3D &plInFrontOfPipe) {
     CalcLerpedWeaponPosition(
@@ -2333,24 +2169,6 @@ functions:
     eLaunch.prtType = PRT_LASER_RAY;
     penLaser->Initialize(eLaunch);
   };
-
-  /*
-  // ghostbuster source
-  void GetGhostBusterSourcePlacement(CPlacement3D &plSource) {
-    CalcWeaponPosition(
-      FLOAT3D(wpn_fFX[WEAPON_GHOSTBUSTER],wpn_fFY[WEAPON_GHOSTBUSTER], 0), 
-      plSource, TRUE);
-  };
-
-  // fire ghost buster ray
-  void FireGhostBusterRay(void) {
-    // ray start position
-    CPlacement3D plRay;
-    GetGhostBusterSourcePlacement(plRay);
-    // fire ray
-    ((CGhostBusterRay&)*m_penGhostBusterRay).Fire(plRay);
-  };
-  */
 
   // fire cannon ball
   void FireCannonBall(INDEX iPower)
@@ -2626,18 +2444,6 @@ functions:
         m_iGrenades += iAmmoPicked;
         AddManaToPlayer( iAmmoPicked*100.0f*MANA_AMMO);
         break;
-/*
-      case WEAPON_PIPEBOMB:
-        iAmmoPicked = Max(5.0f, m_iMaxGrenades*fMaxAmmoRatio);
-        m_iGrenades += iAmmoPicked;
-        AddManaToPlayer( iAmmoPicked*100.0f*MANA_AMMO);
-        break;
-      case WEAPON_GHOSTBUSTER:
-        iAmmoPicked = Max(100.0f, m_iMaxElectricity*fMaxAmmoRatio);
-        m_iElectricity += iAmmoPicked;
-        AddManaToPlayer( iAmmoPicked*15.0f*MANA_AMMO);
-        break;
-        */
       // electricity
       case WEAPON_LASER:
         iAmmoPicked = Max(50.0f, m_iMaxElectricity*fMaxAmmoRatio);
@@ -2791,9 +2597,6 @@ functions:
         ((CPlayer&)*m_penPlayer).ItemPicked(TRANS("MKIII Grenade Launcher"), 0);
         fnmMsg = CTFILENAME("Data\\Messages\\Weapons\\grenadelauncher.txt"); 
         break;
-//      case WIT_PIPEBOMB:        
-//        fnmMsg = CTFILENAME("Data\\Messages\\Weapons\\pipebomb.txt"); 
-//        break;
       case WIT_FLAMER:          
         ((CPlayer&)*m_penPlayer).ItemPicked(TRANS("XOP Flamethrower"), 0);
         fnmMsg = CTFILENAME("DataMP\\Messages\\Weapons\\flamer.txt"); 
@@ -2806,9 +2609,6 @@ functions:
         ((CPlayer&)*m_penPlayer).ItemPicked(TRANS("XL2 Lasergun"), 0);
         fnmMsg = CTFILENAME("Data\\Messages\\Weapons\\laser.txt"); 
         break;
-//      case WIT_GHOSTBUSTER:     
-//        fnmMsg = CTFILENAME("Data\\Messages\\Weapons\\ghostbuster.txt"); 
-//        break;
       case WIT_CANNON:          
         ((CPlayer&)*m_penPlayer).ItemPicked(TRANS("SBC Cannon"), 0);
         fnmMsg = CTFILENAME("Data\\Messages\\Weapons\\cannon.txt"); 
@@ -3199,24 +2999,12 @@ functions:
         m_moWeapon.PlayAnim(ROCKETLAUNCHER_ANIM_WAIT1, AOF_LOOPING|AOF_NORESTART|AOF_SMOOTHCHANGE); break;
       case WEAPON_GRENADELAUNCHER:
         m_moWeapon.PlayAnim(GRENADELAUNCHER_ANIM_WAIT1, AOF_LOOPING|AOF_NORESTART|AOF_SMOOTHCHANGE); break;
-/*
-      case WEAPON_PIPEBOMB:
-        if (m_bPipeBombDropped) {
-          m_moWeaponSecond.PlayAnim(HANDWITHSTICK_ANIM_STICKTHROWWAIT1, AOF_LOOPING|AOF_NORESTART|AOF_SMOOTHCHANGE); break;
-        } else {
-          m_moWeapon.PlayAnim(HANDWITHBOMB_ANIM_BOMBWAIT2, AOF_LOOPING|AOF_NORESTART|AOF_SMOOTHCHANGE);
-          m_moWeaponSecond.PlayAnim(HANDWITHSTICK_ANIM_STICKWAIT1, AOF_LOOPING|AOF_NORESTART|AOF_SMOOTHCHANGE); break;
-        }*/
       case WEAPON_FLAMER:
         m_moWeapon.PlayAnim(FLAMER_ANIM_WAIT01, AOF_LOOPING|AOF_NORESTART|AOF_SMOOTHCHANGE); break;
       case WEAPON_CHAINSAW:
         m_moWeapon.PlayAnim(CHAINSAW_ANIM_WAIT1, AOF_LOOPING|AOF_NORESTART|AOF_SMOOTHCHANGE); break;
       case WEAPON_LASER:
         m_moWeapon.PlayAnim(LASER_ANIM_WAIT01, AOF_LOOPING|AOF_NORESTART|AOF_SMOOTHCHANGE); break;
-/*
-      case WEAPON_GHOSTBUSTER:
-        m_moWeapon.PlayAnim(GHOSTBUSTER_ANIM_WAIT03, AOF_LOOPING|AOF_NORESTART|AOF_SMOOTHCHANGE); break;
-        */
       case WEAPON_IRONCANNON:
 //      case WEAPON_NUKECANNON:
         m_moWeapon.PlayAnim(CANNON_ANIM_WAIT01, AOF_LOOPING|AOF_NORESTART|AOF_SMOOTHCHANGE); break;
@@ -3332,39 +3120,6 @@ functions:
     return m_moWeapon.GetAnimLength(GRENADELAUNCHER_ANIM_WAIT2);
   };
 
-/*
-  FLOAT PipeBombBoring(void) {
-    if (IRnd()&1 && !m_bPipeBombDropped) {
-      // play boring anim for hand with bomb
-      INDEX iAnim;
-      switch (IRnd()%4) {
-        case 0: iAnim = HANDWITHBOMB_ANIM_BOMBWAIT1; break;
-        case 1: iAnim = HANDWITHBOMB_ANIM_BOMBWAIT3; break;
-        case 2: iAnim = HANDWITHBOMB_ANIM_BOMBWAIT4; break;
-        case 3: iAnim = HANDWITHBOMB_ANIM_BOMBWAIT5; break;
-      }
-      m_moWeapon.PlayAnim(iAnim, AOF_SMOOTHCHANGE);
-      return m_moWeapon.GetAnimLength(iAnim);
-    } else {
-      // play boring anim for hand with stick
-      INDEX iAnimSecond;
-      if (m_bPipeBombDropped) {
-        switch (IRnd()%2) {
-          case 0: iAnimSecond = HANDWITHSTICK_ANIM_STICKTHROWWAIT2; break;
-          case 1: iAnimSecond = HANDWITHSTICK_ANIM_STICKTHROWWAIT3; break;
-        }
-      } else {
-        switch (IRnd()%3) {
-          case 0: iAnimSecond = HANDWITHSTICK_ANIM_STICKWAIT2; break;
-          case 1: iAnimSecond = HANDWITHSTICK_ANIM_STICKWAIT3; break;
-          case 2: iAnimSecond = HANDWITHSTICK_ANIM_STICKWAIT4; break;
-        }
-      }
-      m_moWeaponSecond.PlayAnim(iAnimSecond, AOF_SMOOTHCHANGE);
-      return m_moWeaponSecond.GetAnimLength(iAnimSecond);
-    }
-  };*/
-
   FLOAT FlamerBoring(void) {
     // play boring anim
     INDEX iAnim;
@@ -3397,20 +3152,6 @@ functions:
     m_moWeapon.PlayAnim(iAnim, AOF_SMOOTHCHANGE);
     return m_moWeapon.GetAnimLength(iAnim);
   };
-
-  /*
-  FLOAT GhostBusterBoring(void) {
-    // play boring anim
-    INDEX iAnim;
-    switch (IRnd()%3) {
-      case 0: iAnim = GHOSTBUSTER_ANIM_WAIT01; break;
-      case 1: iAnim = GHOSTBUSTER_ANIM_WAIT02; break;
-      case 2: iAnim = GHOSTBUSTER_ANIM_WAIT04; break;
-    }
-    m_moWeapon.PlayAnim(iAnim, AOF_SMOOTHCHANGE);
-    return m_moWeapon.GetAnimLength(iAnim);
-  };
-  */
 
   FLOAT CannonBoring(void) {
     // play boring anim
@@ -3718,12 +3459,6 @@ procedures:
       // mark that weapon change has ended
       m_tmWeaponChangeRequired = 0.0f;
       autocall ChangeKnifeStand() EEnd;
-/*    // pipebomb reload
-    } else if (m_iWantedWeapon == WEAPON_PIPEBOMB) {
-      // mark that weapon change has ended
-      m_tmWeaponChangeRequired = 0.0f;
-      jump Reload();
-      */
     }
     jump Idle();
   };
@@ -3767,9 +3502,6 @@ procedures:
       case WEAPON_GRENADELAUNCHER:
         m_iAnim = GRENADELAUNCHER_ANIM_DEACTIVATE;
         break;
-/*      case WEAPON_PIPEBOMB:
-        m_iAnim = HANDWITHBOMB_ANIM_DEACTIVATE;
-        break;*/
       case WEAPON_FLAMER:
         m_iAnim = FLAMER_ANIM_DEACTIVATE;
         break;
@@ -3782,11 +3514,6 @@ procedures:
       case WEAPON_LASER:
         m_iAnim = LASER_ANIM_DEACTIVATE;
         break;
-/*
-      case WEAPON_GHOSTBUSTER:
-        m_iAnim = GHOSTBUSTER_ANIM_DEACTIVATE;
-        break;
-        */
       case WEAPON_IRONCANNON:
 //      case WEAPON_NUKECANNON:
         m_iAnim = CANNON_ANIM_DEACTIVATE;
@@ -3815,16 +3542,6 @@ procedures:
       autowait(m_moWeapon.GetAnimLength(m_iAnim));
       return EEnd();
     }
-
-/*
-    // --->>>  PIPEBOMB SPECIFIC  <<<---
-    if (m_iCurrentWeapon==WEAPON_PIPEBOMB) {
-      m_moWeapon.PlayAnim(m_iAnim, 0);
-      m_moWeaponSecond.PlayAnim(HANDWITHSTICK_ANIM_DEACTIVATE, 0);
-      autowait(Max(m_moWeapon.GetAnimLength(m_iAnim), m_moWeaponSecond.GetAnimLength(HANDWITHSTICK_ANIM_DEACTIVATE)));
-      return EEnd();
-    }
-*/
 
     // reload colts automagicaly when puting them away
     BOOL bNowColt = m_iCurrentWeapon==WEAPON_COLT || m_iCurrentWeapon==WEAPON_DOUBLECOLT;
@@ -3883,9 +3600,6 @@ procedures:
       case WEAPON_GRENADELAUNCHER:
         m_iAnim = GRENADELAUNCHER_ANIM_ACTIVATE;
         break;
-/*    case WEAPON_PIPEBOMB:
-        m_iAnim = HANDWITHBOMB_ANIM_ACTIVATE;
-        break;*/
       case WEAPON_FLAMER:
         m_iAnim = FLAMER_ANIM_ACTIVATE;
         break;
@@ -3898,10 +3612,6 @@ procedures:
       case WEAPON_LASER:
         m_iAnim = LASER_ANIM_ACTIVATE;
         break;
-/*    case WEAPON_GHOSTBUSTER:
-        m_iAnim = GHOSTBUSTER_ANIM_ACTIVATE;
-        break;
-        */
       case WEAPON_IRONCANNON:
 //      case WEAPON_NUKECANNON:
         m_iAnim = CANNON_ANIM_ACTIVATE;
@@ -3934,28 +3644,8 @@ procedures:
       return EEnd();
     }
 
-    /*
-    // --->>>  PIPEBOMB SPECIFIC  <<<---
-    if (m_iCurrentWeapon==WEAPON_PIPEBOMB) {
-      m_moWeapon.PlayAnim(m_iAnim, 0);
-      m_moWeaponSecond.PlayAnim(HANDWITHSTICK_ANIM_ACTIVATE, 0);
-      autowait(Max(m_moWeapon.GetAnimLength(m_iAnim), m_moWeaponSecond.GetAnimLength(HANDWITHSTICK_ANIM_ACTIVATE)));
-      m_bPipeBombDropped = FALSE;
-      // mark that weapon change has ended
-      m_tmWeaponChangeRequired -= hud_tmWeaponsOnScreen/2;
-      return EEnd();
-    }
-    */
-
     m_moWeapon.PlayAnim(m_iAnim, 0);
     autowait(m_moWeapon.GetAnimLength(m_iAnim));
-
-/*
-    if( m_iCurrentWeapon == WEAPON_NUKECANNON)
-    {
-      autocall ChangeToNukeCannon() EEnd;
-    }
-    */
 
     // mark that weapon change has ended
     m_tmWeaponChangeRequired -= hud_tmWeaponsOnScreen/2;
@@ -3993,8 +3683,6 @@ procedures:
       jump FlamerStart();
   } else if (m_iCurrentWeapon==WEAPON_CHAINSAW) {
       jump ChainsawFire();
-/*  } else if (m_iCurrentWeapon==WEAPON_GHOSTBUSTER) {
-      autocall GhostBusterStart() EEnd;   */
     } else if (m_iCurrentWeapon==WEAPON_LASER) {
       GetAnimator()->FireAnimation(BODY_ANIM_SHOTGUN_FIRESHORT, AOF_LOOPING);
     } else if (m_iCurrentWeapon==WEAPON_TOMMYGUN) {
@@ -4041,7 +3729,6 @@ procedures:
       case WEAPON_TOMMYGUN: { jump TommyGunStop(); break; }
       case WEAPON_MINIGUN: { jump MiniGunSpinDown(); break; }
       case WEAPON_FLAMER: { jump FlamerStop(); break; }
-//      case WEAPON_GHOSTBUSTER: { jump GhostBusterStop(); break; }
       case WEAPON_LASER: { 
         GetAnimator()->FireAnimationOff();
         jump Idle();
@@ -4973,84 +4660,6 @@ procedures:
     return EEnd();
   };
 
-/*
-  // ***************** FIRE PIPEBOMB *****************
-  FirePipeBomb() {
-    // drop one pipebomb
-    if (m_iGrenades>=0) {
-      // fire bomb
-      if (m_bPipeBombDropped) {
-        m_bPipeBombDropped = FALSE;
-        m_moWeaponSecond.PlayAnim(HANDWITHSTICK_ANIM_STICKFIRE, 0);
-        autowait(0.35f);
-        // activate pipebomb
-        SendToTarget(m_penPipebomb, EET_START);
-        m_penPipebomb = NULL;
-        // sound
-        CPlayer &pl = (CPlayer&)*m_penPlayer;
-        PlaySound(pl.m_soWeapon0, SOUND_PIPEBOMB_FIRE, SOF_3D|SOF_VOLUMETRIC);
-        // no ammo -> change weapon
-        if (m_iGrenades<=0) {
-          autowait(m_moWeaponSecond.GetAnimLength(HANDWITHSTICK_ANIM_STICKFIRE)-0.35f);
-          SelectNewWeapon();
-          return EEnd();
-        }
-        // get new bomb
-        AddAttachmentToModel(this, m_moWeapon, HANDWITHBOMB_ATTACHMENT_BOMB, MODEL_PB_BOMB,
-                             TEXTURE_PB_BOMB, TEX_REFL_LIGHTBLUEMETAL01, TEX_SPEC_MEDIUM, 0);
-        m_moWeapon.PlayAnim(HANDWITHBOMB_ANIM_ACTIVATE, 0);
-        autowait(m_moWeapon.GetAnimLength(HANDWITHBOMB_ANIM_ACTIVATE));
-
-      // drop bomb
-      } else if (TRUE) {
-        m_bPipeBombDropped = TRUE;
-        // low drop
-        if (((CPlayer&)*m_penPlayer).en_plViewpoint.pl_OrientationAngle(2) < -20.0f) {
-          m_moWeapon.PlayAnim(HANDWITHBOMB_ANIM_BOMBTHROW1 ,0);
-        // high drop
-        } else {
-          m_moWeapon.PlayAnim(HANDWITHBOMB_ANIM_BOMBTHROW2 ,0);
-        }
-        autowait(0.5f);
-        // sound
-        CPlayer &pl = (CPlayer&)*m_penPlayer;
-        PlaySound(pl.m_soWeapon1, SOUND_PIPEBOMB_THROW, SOF_3D|SOF_VOLUMETRIC);
-        SpawnRangeSound(5.0f);
-        autowait(0.2f);
-        // drop bomb
-        DropPipebomb();
-        DecAmmo(m_iGrenades, 1);
-        RemoveAttachmentFromModel(m_moWeapon, HANDWITHBOMB_ATTACHMENT_BOMB);
-        autowait(0.2f);
-        // open stick shield
-        m_moWeaponSecond.PlayAnim(HANDWITHSTICK_ANIM_STICKTHROW ,0);
-        // sound
-        CPlayer &pl = (CPlayer&)*m_penPlayer;
-        PlaySound(pl.m_soWeapon2, SOUND_PIPEBOMB_OPEN, SOF_3D|SOF_VOLUMETRIC);
-        autowait(m_moWeaponSecond.GetAnimLength(HANDWITHSTICK_ANIM_STICKTHROW));
-      }
-    } else {
-      ASSERTALWAYS("Pipebomb - Auto weapon change not working.");
-      m_bFireWeapon = m_bHasAmmo = FALSE;
-    }
-    return EEnd();
-  };
-
-  ReloadPipeBomb() {
-    if (m_bPipeBombDropped) {
-      m_bPipeBombDropped = FALSE;
-      // close stick
-      m_moWeaponSecond.PlayAnim(HANDWITHSTICK_ANIM_STICKRETURN, 0);
-      // get new bomb
-      AddAttachmentToModel(this, m_moWeapon, HANDWITHBOMB_ATTACHMENT_BOMB, MODEL_PB_BOMB,
-                           TEXTURE_PB_BOMB, TEX_REFL_LIGHTBLUEMETAL01, TEX_SPEC_MEDIUM, 0);
-      m_moWeapon.PlayAnim(HANDWITHBOMB_ANIM_ACTIVATE, 0);
-      autowait(m_moWeapon.GetAnimLength(HANDWITHBOMB_ANIM_ACTIVATE));
-    }
-
-    return EEnd();
-  };*/
-
   // ***************** FIRE FLAMER *****************
   FlamerStart() {
     m_tmFlamerStart=_pTimer->CurrentTick();
@@ -5244,50 +4853,6 @@ procedures:
     return EEnd();
   };
 
-  /*
-  // ***************** FIRE GHOSTBUSTER *****************
-  GhostBusterStart() {
-    GetAnimator()->FireAnimation(BODY_ANIM_SHOTGUN_FIRESHORT, AOF_LOOPING);
-    // create ray
-    m_penGhostBusterRay = CreateEntity(GetPlacement(), CLASS_GHOSTBUSTERRAY);
-    EGhostBusterRay egbr;
-    egbr.penOwner = this;
-    m_penGhostBusterRay->Initialize(egbr);
-    // play anim
-    m_moWeapon.PlayAnim(GHOSTBUSTER_ANIM_FIRE, AOF_LOOPING|AOF_NORESTART);
-    // play fire sound
-    CPlayer &pl = (CPlayer&)*m_penPlayer;
-    pl.m_soWeapon0.Set3DParameters(50.0f, 5.0f, 1.0f, 1.0f);      // fire
-    PlaySound(pl.m_soWeapon0, SOUND_GB_FIRE, SOF_3D|SOF_LOOP|SOF_VOLUMETRIC);
-    return EEnd();
-  };
-
-  GhostBusterStop() {
-    GetAnimator()->FireAnimationOff();
-    // destroy ray
-    ((CGhostBusterRay&)*m_penGhostBusterRay).DestroyGhostBusterRay();    
-    CPlayer &pl = (CPlayer&)*m_penPlayer;
-    pl.m_soWeapon0.Stop();
-    jump Idle();
-  };
-
-  FireGhostBuster() {
-    // fire one cell
-    if (m_iElectricity>0) {
-      FireGhostBusterRay();
-      DecAmmo(m_iElectricity, 1);
-      SpawnRangeSound(20.0f);
-      autowait(0.05f);
-      // no napalm -> change weapon
-      if (m_iElectricity<=0) { SelectNewWeapon(); }
-    } else {
-      ASSERTALWAYS("GhostBuster - Auto weapon change not working.");
-      m_bFireWeapon = m_bHasAmmo = FALSE;
-    }
-    return EEnd();
-  };
-  */
-
   // ***************** FIRE CANNON *****************
 
   CannonFireStart()
@@ -5407,8 +4972,6 @@ procedures:
       autocall ReloadColt() EEnd;
     } else if (m_iCurrentWeapon == WEAPON_DOUBLECOLT) {
       autocall ReloadDoubleColt() EEnd;
-/*    } else if (m_iCurrentWeapon == WEAPON_PIPEBOMB) {
-      autocall ReloadPipeBomb() EEnd;*/
     }
 
     jump Idle();

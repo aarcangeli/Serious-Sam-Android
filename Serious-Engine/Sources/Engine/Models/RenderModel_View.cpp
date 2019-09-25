@@ -15,7 +15,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
  #include "StdH.h"
 
-#include <Engine/Base/Statistics_internal.h>
+#include <Engine/Base/Statistics_Internal.h>
 #include <Engine/Base/Console.h>
 #include <Engine/Models/ModelObject.h>
 #include <Engine/Models/ModelData.h>

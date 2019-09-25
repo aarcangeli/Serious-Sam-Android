@@ -157,6 +157,7 @@ void CPlayerProfileMenu::Initialize_t(void)
   gm_mgCustomizeControls.mg_pmgRight = &gm_mgModel;
   gm_mgCustomizeControls.mg_strTip = TRANS("customize controls for this player");
   gm_lhGadgets.AddTail(gm_mgCustomizeControls.mg_lnNode);
+  gm_mgCustomizeControls.mg_bEnabled = FALSE;
 
   gm_mgModel.mg_boxOnScreen = BoxPlayerModel();
   gm_mgModel.mg_pmgLeft = &gm_mgNameField;

@@ -16,7 +16,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 // If you happen to have the Exploration 3D library (in Engine/exploration3d/), you can enable its features here.
 #define USE_E3D 0
 
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Math/Object3D.h>
 

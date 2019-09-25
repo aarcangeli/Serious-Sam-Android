@@ -106,7 +106,7 @@ void CVarMenu::FillListItems(void)
 
 void CVarMenu::StartMenu(void)
 {
-  LoadVarSettings(gm_fnmMenuCFG);
+  varlist::LoadVarSettings(gm_fnmMenuCFG);
   // set default parameters for the list
   gm_iListOffset = 0;
   gm_ctListTotal = _lhVarSettings.Count();
@@ -122,7 +122,7 @@ void CVarMenu::EndMenu(void)
     gm_mgVar[i].mg_pvsVar = NULL;
     gm_mgVar[i].mg_iInList = -2;
   }
-  FlushVarSettings(FALSE);
+  varlist::FlushVarSettings(FALSE);
   _bVarChanged = FALSE;
 }
 

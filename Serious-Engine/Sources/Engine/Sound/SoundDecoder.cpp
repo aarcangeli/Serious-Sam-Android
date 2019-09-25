@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Sound/SoundDecoder.h>
 #include <Engine/Base/Stream.h>
@@ -24,6 +24,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/Translation.h>
 #include <Engine/Math/Functions.h>
 #include <dlfcn.h>
+#include <config.h>
 
 // generic function called if a dll function is not found
 static void FailFunction_t(const char *strName) {
@@ -61,12 +62,18 @@ public:
 };
 
 // define vorbis function pointers
+#ifdef STATIC_LINKING
+#define DLLFUNCTION(dll, output, name, inputs, params, required) \
+  auto p##name = &name;
+#else
 #define DLLFUNCTION(dll, output, name, inputs, params, required) \
   output (__cdecl *p##name) inputs = NULL;
+#endif
 #include "ov_functions.h"
 #undef DLLFUNCTION
 
 static void OV_SetFunctionPointers_t(void) {
+#ifndef STATIC_LINKING
   const char *strName;
   // get vo function pointers
   #define DLLFUNCTION(dll, output, name, inputs, params, required) \
@@ -75,12 +82,15 @@ static void OV_SetFunctionPointers_t(void) {
     if(p##name == NULL) FailFunction_t(strName);
   #include "ov_functions.h"
   #undef DLLFUNCTION
+#endif
 }
 static void OV_ClearFunctionPointers(void) {
+#ifndef STATIC_LINKING
   // clear vo function pointers
   #define DLLFUNCTION(dll, output, name, inputs, params, required) p##name = NULL;
   #include "ov_functions.h"
   #undef DLLFUNCTION
+#endif
 }
 
 // ogg file reading callbacks
@@ -152,6 +162,7 @@ void CSoundDecoder::InitPlugins(void)
 {
   try {
     // load vorbis
+#ifndef STATIC_LINKING
     if (_hOV==NULL) {
 #ifndef NDEBUG
   #define VORBISLIB "libvorbis.so"
@@ -165,6 +176,7 @@ void CSoundDecoder::InitPlugins(void)
     }
     // prepare function pointers
     OV_SetFunctionPointers_t();
+#endif
 
     // if all successful, enable mpx playing
     _bOVEnabled = TRUE;

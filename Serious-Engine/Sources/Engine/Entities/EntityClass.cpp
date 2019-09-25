@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Base/Stream.h>
 #include <Engine/Entities/EntityClass.h>
@@ -31,7 +31,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <Engine/Templates/Stock_CEntityClass.h>
 
+#include <config.h>
 #include <dlfcn.h>
+#include <map>
+#include <string>
 
 /////////////////////////////////////////////////////////////////////
 // CEntityClass
@@ -228,6 +231,9 @@ void CEntityClass::ReleaseComponents(void)
  */
 HINSTANCE LoadDLL_t(const char *strFileName) // throw char *
 {
+#ifdef STATIC_LINKING
+  FatalError("LoadDLL_t not supported with STATIC_LINKING");
+#else
   void *hiDLL = dlopen(strFileName, RTLD_NOW);
   if (hiDLL == NULL) {
     char *err = dlerror();
@@ -240,6 +246,7 @@ HINSTANCE LoadDLL_t(const char *strFileName) // throw char *
     ThrowF_t(TRANS("Cannot load so file '%s':\n%s"), strFileName, strError);
   }
   return hiDLL;
+#endif
 
 //  // if the DLL can not be loaded
 //  if (hiDLL==NULL) {
@@ -280,6 +287,10 @@ HINSTANCE LoadDLL_t(const char *strFileName) // throw char *
 //  return hiDLL;
 }
 
+#define DEFINE_CLASS(name) extern "C" CDLLEntityClass name##_DLLClass;
+#include "EntityClass_AllClasses.cpp"
+#undef DEFINE_CLASS
+
 /*
  * Read from stream.
  */
@@ -302,6 +313,20 @@ void CEntityClass::Read_t( CTStream *istr) // throw char *
 //  CTFileName fnmExpanded;
 //  ExpandFilePath(EFP_READ, fnmDLL, fnmExpanded);
 
+#ifdef STATIC_LINKING
+  static std::map<std::string, CDLLEntityClass *> allClasses = {
+#define DEFINE_CLASS(name) {#name, &name##_DLLClass},
+#include "EntityClass_AllClasses.cpp"
+#undef DEFINE_CLASS
+  };
+  auto itr = allClasses.find(std::string(strClassName.str_String));
+  if (itr == allClasses.end()) {
+    ThrowF_t(TRANS("Class '%s' not found in entity class package file '%s'"), strClassName, fnmDLL);
+  }
+  ec_pdecDLLClass = itr->second;
+
+#else
+
   fnmDLL = "lib" + fnmDLL.FileName() + _strModExt + ".so";
   ec_hiClassDLL = LoadDLL_t(fnmDLL);
   ec_fnmClassDLL = fnmDLL;
@@ -318,6 +343,8 @@ void CEntityClass::Read_t( CTStream *istr) // throw char *
     // report error
     ThrowF_t(TRANS("Class '%s' not found in entity class package file '%s'"), strClassName, fnmDLL);
   }
+
+#endif
 
   // obtain all components needed by the DLL
   {

@@ -87,6 +87,7 @@ BOOL GetLineCountBackward(const char *pchrStringStart, const char *pchrStringEnd
 
 void CGame::ConsoleRender(CDrawPort *pdp)
 {
+  float consoleScale = g_cb.globalScale;
   if( _pGame->gm_csConsoleState==CS_OFF) {
     con_iFirstLine = 1;
     tvConsoleLast  = _pTimer->GetHighPrecisionTimer();
@@ -138,6 +139,9 @@ void CGame::ConsoleRender(CDrawPort *pdp)
     fConsoleFadeValue = 1.0f;
   }
 
+  // fill the entire screen
+  pdp->Fill(LCDFadedColor(C_BLACK|225));
+
   // calculate size of console box so that it covers upper half of the screen
   FLOAT fHeight = ClampUp( fHeightFactor*fConsoleFadeValue*2, fHeightFactor);
   CDrawPort dpConsole( pdp, 0.0f, 0.0f, 1.0f, fHeight);
@@ -146,7 +150,6 @@ void CGame::ConsoleRender(CDrawPort *pdp)
 
   LCDPrepare(fConsoleFadeValue);
   LCDSetDrawport(&dpConsole);
-  dpConsole.Fill(LCDFadedColor(C_BLACK|225));
 
   PIX pixSizeI = dpConsole.GetWidth();
   PIX pixSizeJ = dpConsole.GetHeight();
@@ -154,7 +157,7 @@ void CGame::ConsoleRender(CDrawPort *pdp)
   COLOR colDark  = LCDFadedColor(SE_COL_BLUE_LIGHT|255);
   INDEX iBackwardLine = con_iFirstLine;
   if( iBackwardLine>1) Swap( colLight, colDark);
-  PIX pixLineSpacing = _pfdConsoleFont->fd_pixCharHeight + _pfdConsoleFont->fd_pixLineSpacing;
+  PIX pixLineSpacing = (PIX)((_pfdConsoleFont->fd_pixCharHeight + _pfdConsoleFont->fd_pixLineSpacing)*consoleScale);
 
   LCDRenderCloudsForComp();
   //LCDRenderGrid();
@@ -165,8 +168,9 @@ void CGame::ConsoleRender(CDrawPort *pdp)
 
   // setup font
   PIX pixTextX = (PIX)(dpConsole.GetWidth()*0.01f);
-  PIX pixYLine = dpConsole.GetHeight()-14;
+  PIX pixYLine = dpConsole.GetHeight()-(PIX)(14*consoleScale);
   dpConsole.SetFont( _pfdConsoleFont);
+  dpConsole.SetTextScaling(consoleScale);
 
   // print editing line of text
   dpConsole.SetTextMode(-1);
@@ -217,7 +221,8 @@ void CGame::ConsolePrintLastLines(CDrawPort *pdp)
   // setup font
   _pfdConsoleFont->SetFixedWidth();
   pdp->SetFont( _pfdConsoleFont);
-  PIX pixCharHeight = _pfdConsoleFont->GetHeight() -1;
+  pdp->SetTextScaling(g_cb.globalScale);
+  PIX pixCharHeight = (PIX) ((_pfdConsoleFont->GetHeight() - 1) * g_cb.globalScale);
   // put some filter underneath for easier reading
   pdp->Fill( 0, 0, pdp->GetWidth(), pixCharHeight*ctLines, C_BLACK|128);
   // for each line

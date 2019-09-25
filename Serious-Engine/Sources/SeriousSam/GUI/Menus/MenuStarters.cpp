@@ -18,6 +18,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "StdH.h"
 #include <Engine/Build.h>
 #include <AndroidAdapters/binding-callbacks.h>
+#include <config.h>
 
 #include "MenuManager.h"
 #include "MenuStarters.h"
@@ -38,7 +39,11 @@ extern CTString _strModServerSelected;
 
 void StartVideoOptionsMenu(void)
 {
+#if 0
   ChangeToMenu(&_pGUIM->gmVideoOptionsMenu);
+#else
+  g_cb.openSettings();
+#endif
 }
 
 void StartAudioOptionsMenu(void)
@@ -168,7 +173,7 @@ void StartCustomizeAxisMenu(void)
 
 void StartOptionsMenu(void)
 {
-#if 0
+#if 1
   _pGUIM->gmOptionsMenu.gm_pgmParentMenu = pgmCurrentMenu;
   ChangeToMenu(&_pGUIM->gmOptionsMenu);
 #else
@@ -449,6 +454,7 @@ void StartSelectPlayersMenuFromOpen(void)
   gmCurrent.gm_pgmParentMenu = &_pGUIM->gmNetworkOpenMenu;
   ChangeToMenu(&gmCurrent);
 
+#ifndef DISABLE_NETSETTINGS
   /*if (sam_strNetworkSettings=="")*/ {
     void StartNetworkSettingsMenu(void);
     StartNetworkSettingsMenu();
@@ -456,6 +462,7 @@ void StartSelectPlayersMenuFromOpen(void)
     _pGUIM->gmLoadSaveMenu.gm_pgmParentMenu = &_pGUIM->gmNetworkOpenMenu;
     _pGUIM->gmLoadSaveMenu.gm_pgmNextMenu = &gmCurrent;
   }
+#endif
 }
 
 void StartSelectPlayersMenuFromServers(void)
@@ -468,6 +475,7 @@ void StartSelectPlayersMenuFromServers(void)
   gmCurrent.gm_pgmParentMenu = &_pGUIM->gmServersMenu;
   ChangeToMenu(&gmCurrent);
 
+#ifndef DISABLE_NETSETTINGS
   /*if (sam_strNetworkSettings=="")*/ {
     void StartNetworkSettingsMenu(void);
     StartNetworkSettingsMenu();
@@ -475,6 +483,7 @@ void StartSelectPlayersMenuFromServers(void)
     _pGUIM->gmLoadSaveMenu.gm_pgmParentMenu = &_pGUIM->gmServersMenu;
     _pGUIM->gmLoadSaveMenu.gm_pgmNextMenu = &gmCurrent;
   }
+#endif
 }
 
 // -------- Save/Load Menu Calling Functions
@@ -537,19 +546,10 @@ void StartCustomLoadMenu(void)
 
 void StartAddonsLoadMenu(void)
 {
-  CLoadSaveMenu &gmCurrent = _pGUIM->gmLoadSaveMenu;
+  CVarMenu &gmCurrent = _pGUIM->gmVarMenu;
 
-  gmCurrent.gm_mgTitle.mg_strText = TRANS("EXECUTE ADDON");
-  gmCurrent.gm_bAllowThumbnails = FALSE;
-  gmCurrent.gm_iSortType = LSSORT_NAMEUP;
-  gmCurrent.gm_bSave = FALSE;
-  gmCurrent.gm_bManage = FALSE;
-  gmCurrent.gm_fnmDirectory = CTString("Scripts\\Addons\\");
-  gmCurrent.gm_fnmSelected = CTString("");
-  gmCurrent.gm_fnmExt = CTString(".ini");
-  gmCurrent.gm_pAfterFileChosen = &LSLoadAddon;
-  gmCurrent.gm_mgNotes.mg_strText = "";
-
+  gmCurrent.gm_mgTitle.mg_strText = TRANS("RENDERING OPTIONS");
+  gmCurrent.gm_fnmMenuCFG = CTFILENAME("Scripts\\Menu\\RenderingOptions.cfg");
   gmCurrent.gm_pgmParentMenu = &_pGUIM->gmOptionsMenu;
   ChangeToMenu(&gmCurrent);
 }

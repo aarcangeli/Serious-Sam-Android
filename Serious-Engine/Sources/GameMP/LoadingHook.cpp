@@ -17,6 +17,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "stdafx.h"
 #include "LCDDrawing.h"
 #include <locale.h>
+#include <AndroidAdapters/binding-callbacks.h>
 
 #define USECUSTOMTEXT 0
 
@@ -55,6 +56,8 @@ void RemapLevelNames(INDEX &iLevel)
 
 static void LoadingHook_t(CProgressHookInfo *pphi)
 {
+  float uiScale = g_cb.globalScale;
+
   // if user presses escape
   ULONG ulCheckFlags = 0x8000;
   if (pphi->phi_fCompleted>0) {
@@ -157,10 +160,10 @@ static void LoadingHook_t(CProgressHookInfo *pphi)
   PIX pixSizeI = dpHook.GetWidth();
   PIX pixSizeJ = dpHook.GetHeight();
   CFontData *pfd = _pfdConsoleFont;
-  PIX pixCharSizeI = pfd->fd_pixCharWidth  + pfd->fd_pixCharSpacing;
-  PIX pixCharSizeJ = pfd->fd_pixCharHeight + pfd->fd_pixLineSpacing;
+  PIX pixCharSizeI = (PIX)((pfd->fd_pixCharWidth  + pfd->fd_pixCharSpacing) * uiScale);
+  PIX pixCharSizeJ = (PIX)((pfd->fd_pixCharHeight + pfd->fd_pixLineSpacing) * uiScale);
 
-  PIX pixBarSizeJ = 17;//*pixSizeJ/480;
+  PIX pixBarSizeJ = (PIX) (17 * uiScale);//*pixSizeJ/480;
 
   COLOR colBcg = LerpColor(C_BLACK, SE_COL_BLUE_LIGHT, 0.30f)|0xff;
   COLOR colBar = LerpColor(C_BLACK, SE_COL_BLUE_LIGHT, 0.45f)|0xff;
@@ -173,7 +176,7 @@ static void LoadingHook_t(CProgressHookInfo *pphi)
   dpHook.DrawBorder(0, pixSizeJ-pixBarSizeJ, pixSizeI, pixBarSizeJ, colLines);
 
   dpHook.SetFont( _pfdConsoleFont);
-  dpHook.SetTextScaling( 1.0f);
+  dpHook.SetTextScaling(uiScale);
   dpHook.SetTextAspect( 1.0f);
   // print status text
   setlocale(LC_ALL, "");

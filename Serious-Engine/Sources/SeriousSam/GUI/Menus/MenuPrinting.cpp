@@ -17,6 +17,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "MenuPrinting.h"
 #include "ArrowDir.h"
+#include <AndroidAdapters/binding-callbacks.h>
 
 static const FLOAT _fBigStartJ = 0.25f;
 static const FLOAT _fBigSizeJ = 0.066f;
@@ -296,6 +297,6 @@ void SetFontMedium(CDrawPort *pdp)
 void SetFontSmall(CDrawPort *pdp)
 {
   pdp->SetFont( _pfdConsoleFont);
-  pdp->SetTextScaling( 1.0f);
+  pdp->SetTextScaling(g_cb.globalScale);
   pdp->SetTextAspect(1.0f);
 }

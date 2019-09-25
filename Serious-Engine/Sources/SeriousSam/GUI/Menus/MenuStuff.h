@@ -51,8 +51,13 @@ extern CTString astrSoundAPIRadioTexts[3];
 
 extern PIX apixWidths[20][2];
 
+
+namespace SeriousSam {
 ULONG GetSpawnFlagsForGameType(INDEX iGameType);
 BOOL IsMenuEnabled(const CTString &strMenuName);
+}
+using namespace SeriousSam;
+
 void InitGameTypes(void);
 
 int qsort_CompareFileInfos_NameUp(const void *elem1, const void *elem2);

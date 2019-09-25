@@ -16,6 +16,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "Stdh.h"
 #include "LCDDrawing.h"
 
+namespace SeriousSam {
+
 extern void LCDInit(void)
 {
   _pGame->LCDInit();
@@ -89,4 +91,6 @@ extern COLOR LCDBlinkingColor(COLOR col0, COLOR col1)
 extern void LCDDrawPointer(PIX pixI, PIX pixJ)
 {
   _pGame->LCDDrawPointer(pixI, pixJ);
+}
+
 }

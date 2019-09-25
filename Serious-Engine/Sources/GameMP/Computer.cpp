@@ -16,6 +16,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "StdAfx.h"
 #include "LCDDrawing.h"
 #include "CompMessage.h"
+#include <AndroidAdapters/binding-callbacks.h>
 
 extern CGame *_pGame;
 
@@ -444,10 +445,9 @@ static void UpdateSize(CDrawPort *pdp)
   _pixSizeJ = pixSizeJ;
 
   // determine scaling
-  _fScaling = 1.0f;
-  _fScaling2 = 1.0f;
+  _fScaling = g_cb.globalScale;
+  _fScaling2 = g_cb.globalScale;
   if (pixSizeJ<384) {
-    _fScaling = 1.0f;
     _fScaling2 = pixSizeJ/480.0f;
   }
 

@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Graphics/Texture.h>
 
@@ -30,7 +30,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Templates/Stock_CtextureData.h>
 #include <Engine/Templates/StaticArray.cpp>
 
-#include <Engine/Base/Statistics_internal.h>
+#include <Engine/Base/Statistics_Internal.h>
 
 
 extern INDEX tex_iNormalQuality;
@@ -204,6 +204,7 @@ CTextureData::CTextureData()
   td_slFrameSize = 0;
   td_ulInternalFormat = TEXFMT_NONE;
   td_ulProbeObject = NONE;
+  td_pulObjects = NULL;
   td_ulObject = NONE;
   td_pulFrames = NULL;
 
@@ -1311,7 +1312,7 @@ void CTextureData::SetAsCurrent( INDEX iFrameNo/*=0*/, BOOL bForceUpload/*=FALSE
 
   // if not already generated, generate bind number(s) and force upload
   const PIX pixTextureSize = pixWidth*pixHeight;
-  if( td_ulObject==NONE)
+  if((td_ctFrames>1 && td_pulObjects==NULL) || (td_ctFrames<=1 && td_ulObject==NONE))
   {
     // check whether frames are present
     ASSERT( td_pulFrames!=NULL && td_pulFrames[0]!=0xDEADBEEF); 
@@ -1391,7 +1392,7 @@ void CTextureData::SetAsCurrent( INDEX iFrameNo/*=0*/, BOOL bForceUpload/*=FALSE
       td_pulFrames = NULL;
     }
     // done uploading
-    ASSERT( td_ulObject!=NONE);
+    ASSERT((td_ctFrames>1 && td_pulObjects!=NULL) || (td_ctFrames==1 && td_ulObject!=NONE));
     return;
   }
 
@@ -1425,7 +1426,7 @@ void CTextureData::SetAsCurrent( INDEX iFrameNo/*=0*/, BOOL bForceUpload/*=FALSE
   MarkDrawn();
 
   // debug check
-  ASSERT( td_ulObject!=NONE);
+  ASSERT((td_ctFrames>1 && td_pulObjects!=NULL) || (td_ctFrames<=1 && td_ulObject!=NONE));
 }
 
 
@@ -1443,6 +1444,10 @@ void CTextureData::Unbind(void)
   }
   // free frame number(s)
   if( td_ctFrames>1) { // animation
+    if( td_pulObjects == NULL) {
+      ASSERT( td_ulProbeObject==NONE);
+      return;
+    }
     for( INDEX iFrame=0; iFrame<td_ctFrames; iFrame++) gfxDeleteTexture( td_pulObjects[iFrame]);
     FreeMemory( td_pulObjects);
     td_pulObjects = NULL;

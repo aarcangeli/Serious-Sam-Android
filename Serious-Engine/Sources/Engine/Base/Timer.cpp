@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Base/Timer.h>
 #include <Engine/Base/Console.h>
@@ -47,7 +47,7 @@ static inline __int64 ReadTSC(void)
 #pragma comment(lib, "winmm.lib")
 
 // current game time always valid for the currently active task
-static thread_local TIME _CurrentTickTimer = 0.0f;
+CThreadLocal<TIME> _CurrentTickTimer;
 
 // CTimer implementation
 
@@ -168,7 +168,7 @@ CTimer::CTimer(BOOL bInterrupt /*=TRUE*/)
   }
 
   // clear counters
-  _CurrentTickTimer = TIME(0);
+  *_CurrentTickTimer = TIME(0);
   tm_RealTimeTimer = TIME(0);
 
   tm_tmLastTickOnTime = TIME(0);
@@ -178,10 +178,17 @@ CTimer::CTimer(BOOL bInterrupt /*=TRUE*/)
   tm_fLerpFactor2 = 1.0f;
 
   if (tm_bInterrupt) {
-    pthread_create(&g_timerMainThread, 0, &CTimer_TimerMain, nullptr);
-    pthread_setname_np(g_timerMainThread, "SeriousSamTimer");
+    int ret = pthread_create(&g_timerMainThread, 0, &CTimer_TimerMain, nullptr);
+    if (ret != 0) {
+      const char *err;
+      FatalError("Cannot create multimedia thread: %s (%i)", strerror(ret), ret);
+    }
+//    pthread_setname_np(g_timerMainThread, "SeriousSamTimer");
 
     // make sure that timer interrupt is ticking
+
+    // In web threads are spawned in async
+#ifndef EMSCRIPTEN
     INDEX iTry = 1;
     for (; iTry <= 3; iTry++) {
       const TIME tmTickBefore = GetRealTimeTick();
@@ -194,6 +201,8 @@ CTimer::CTimer(BOOL bInterrupt /*=TRUE*/)
     if (iTry > 3) {
       FatalError(TRANS("Problem with initializing multimedia timer - please try again."));
     }
+#endif
+
   }
 }
 
@@ -274,7 +283,7 @@ TIME CTimer::GetRealTimeTick(void) const
  */
 void CTimer::SetCurrentTick(TIME tNewCurrentTick) {
   ASSERT(this!=NULL);
-  _CurrentTickTimer = tNewCurrentTick;
+  *_CurrentTickTimer = tNewCurrentTick;
 }
 
 /*
@@ -282,11 +291,11 @@ void CTimer::SetCurrentTick(TIME tNewCurrentTick) {
  */
 const TIME CTimer::CurrentTick(void) const {
   ASSERT(this!=NULL);
-  return _CurrentTickTimer;
+  return *_CurrentTickTimer;
 }
 const TIME CTimer::GetLerpedCurrentTick(void) const {
   ASSERT(this!=NULL);
-  return _CurrentTickTimer+tm_fLerpFactor*TickQuantum;
+  return *_CurrentTickTimer+tm_fLerpFactor*TickQuantum;
 }
 // Set factor for lerping between ticks.
 void CTimer::SetLerp(FLOAT fFactor) // sets both primary and secondary

@@ -1,10 +1,14 @@
 #include <Engine/StdH.h>
 #include <AndroidBindings/bindings.h>
 #include <Engine/Graphics/ViewPort.h>
-#include <jni.h>
 #include <GLES2/gl2.h>
 #include <Engine/Base/CTString.h>
 #include "key_codes.h"
+
+#include <jni.h>
+#include <android/native_window.h>
+#include <android/native_window_jni.h>
+#include <android/log.h>
 
 void processInputs();
 
@@ -24,12 +28,13 @@ CViewPort *g_pvpViewPort = nullptr;
 void (*g_textOnOk)(CTString str) = nullptr;
 void (*g_textOnCancel)() = nullptr;
 
+CThreadLocal<JNIEnv*> javaEnv;
+
 JNIEnv* getEnv() {
-  static thread_local JNIEnv* myEnv = nullptr;
-  if (!myEnv) {
-    g_javaWM->AttachCurrentThread(&myEnv, nullptr);
+  if (!*javaEnv) {
+    g_javaWM->AttachCurrentThread(&javaEnv.get(), nullptr);
   }
-  return myEnv;
+  return *javaEnv;
 }
 
 extern "C"
