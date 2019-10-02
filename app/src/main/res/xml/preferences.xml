@@ -8,6 +8,13 @@
             android:key="scale_FactorSet"
             android:summary="%s"
             android:title="Screen resolution" />
+        <ListPreference
+            android:defaultValue="On"
+            android:entries="@array/DinamicUIScaleEntries"
+            android:entryValues="@array/OnOff"
+            android:key="din_uiScale"
+            android:summary="%s"
+            android:title="Dinamic UI Scale" />
     </PreferenceCategory>
     <PreferenceCategory android:title="Inputs">
         <ListPreference
