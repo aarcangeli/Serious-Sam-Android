@@ -256,7 +256,11 @@ run_bison("${SE_CURRENT_GENERATED_DIR}/Base/Parser.cpp" "${SE_BASE}/Base/Parser.
 run_flex("${SE_CURRENT_GENERATED_DIR}/Ska/smcScan.cpp" "${SE_BASE}/Ska/smcScan.l" "${SE_BASE}/Ska/smcFlex.skl" "${SE_BASE}/Ska")
 run_bison("${SE_CURRENT_GENERATED_DIR}/Ska/smcPars.cpp" "${SE_BASE}/Ska/smcPars.y" "${SE_CURRENT_GENERATED_DIR}/Ska/smcPars.c" -psyy)
 
-add_library(Engine SHARED ${SE_ENGINE_SOURCES})
+if (STATIC_LINKING)
+  add_library(Engine STATIC ${SE_ENGINE_SOURCES})
+else ()
+  add_library(Engine SHARED ${SE_ENGINE_SOURCES})
+endif ()
 add_dependencies(Engine se-ecc)
 target_link_libraries(Engine android-adapters)
 target_link_libraries(Engine vorbis amp11lib)

@@ -19,7 +19,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "MainWindow.h"
 #include <Engine/CurrentVersion.h>
 #include <Engine/Templates/Stock_CSoundData.h>
-#include <GameMP/LCDDrawing.h>
+#include <SeriousSam/LCDDrawing.h>
 #include "MenuPrinting.h"
 #include "LevelInfo.h"
 #include "VarList.h"

@@ -1,4 +1,4 @@
-/* Copyright (c) 2002-2012 Croteam Ltd. 
+/* Copyright (c) 2002-2012 Croteam Ltd.
 This program is free software; you can redistribute it and/or modify
 it under the terms of version 2 of the GNU General Public License as published by
 the Free Software Foundation
@@ -18,6 +18,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #ifdef PRAGMA_ONCE
   #pragma once
 #endif
+
+#include <pthread.h>
+#include <stdio.h>
 
 // intra-process mutex (only used by thread of same process)
 // NOTE: mutex has no interface - it is locked using CTSingleLock
@@ -47,6 +50,25 @@ public:
   ENGINE_API void Unlock(void);
 };
 
+template <typename T>
+class CThreadLocal {
+  pthread_key_t key;
+
+public:
+  CThreadLocal() { pthread_key_create(&key, nullptr); }
+
+  T &get() {
+    T *ptr = (T *)pthread_getspecific(key);
+    if (!ptr) {
+      ptr = new T;
+      memset(ptr, 0, sizeof(T));
+      pthread_setspecific(key, ptr);
+    }
+    return *ptr;
+  }
+
+  T &operator*() { return get(); }
+};
 
 #endif  /* include-once check. */
 

@@ -27,4 +27,8 @@ set(SOURCE_FILES
     ampdec.h
     ampsynth.cpp)
 
-add_library(amp11lib SHARED ${SOURCE_FILES})
+if (STATIC_LINKING)
+  add_library(amp11lib STATIC ${SOURCE_FILES})
+else ()
+  add_library(amp11lib SHARED ${SOURCE_FILES})
+endif ()

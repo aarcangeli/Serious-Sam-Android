@@ -5,6 +5,7 @@
 #include <Engine/Base/Statistics_Internal.h>
 #include <Engine/Base/ErrorReporting.h>
 #include <vector>
+#include <Engine/Base/Shell.h>
 
 extern INDEX ogl_bExclusive;
 
@@ -113,7 +114,10 @@ void CViewPort::Resize(void) {
     FatalError("eglQuerySurface() returned error 0x%04X", eglGetError());
   }
 
-  vp_Raster.Resize(width, height);
+  if (width != vp_Raster.ra_Width || height != vp_Raster.ra_Height) {
+    vp_Raster.Resize(width, height);
+    _pShell->Execute("ViewportResized();");
+  }
 }
 
 void CViewPort::SwapBuffers(void) {

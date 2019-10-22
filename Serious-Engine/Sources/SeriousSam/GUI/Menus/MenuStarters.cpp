@@ -39,7 +39,11 @@ extern CTString _strModServerSelected;
 
 void StartVideoOptionsMenu(void)
 {
+#if 0
   ChangeToMenu(&_pGUIM->gmVideoOptionsMenu);
+#else
+  g_cb.openSettings();
+#endif
 }
 
 void StartAudioOptionsMenu(void)
@@ -169,7 +173,7 @@ void StartCustomizeAxisMenu(void)
 
 void StartOptionsMenu(void)
 {
-#if 0
+#if 1
   _pGUIM->gmOptionsMenu.gm_pgmParentMenu = pgmCurrentMenu;
   ChangeToMenu(&_pGUIM->gmOptionsMenu);
 #else
@@ -542,19 +546,10 @@ void StartCustomLoadMenu(void)
 
 void StartAddonsLoadMenu(void)
 {
-  CLoadSaveMenu &gmCurrent = _pGUIM->gmLoadSaveMenu;
+  CVarMenu &gmCurrent = _pGUIM->gmVarMenu;
 
-  gmCurrent.gm_mgTitle.mg_strText = TRANS("EXECUTE ADDON");
-  gmCurrent.gm_bAllowThumbnails = FALSE;
-  gmCurrent.gm_iSortType = LSSORT_NAMEUP;
-  gmCurrent.gm_bSave = FALSE;
-  gmCurrent.gm_bManage = FALSE;
-  gmCurrent.gm_fnmDirectory = CTString("Scripts\\Addons\\");
-  gmCurrent.gm_fnmSelected = CTString("");
-  gmCurrent.gm_fnmExt = CTString(".ini");
-  gmCurrent.gm_pAfterFileChosen = &LSLoadAddon;
-  gmCurrent.gm_mgNotes.mg_strText = "";
-
+  gmCurrent.gm_mgTitle.mg_strText = TRANS("RENDERING OPTIONS");
+  gmCurrent.gm_fnmMenuCFG = CTFILENAME("Scripts\\Menu\\RenderingOptions.cfg");
   gmCurrent.gm_pgmParentMenu = &_pGUIM->gmOptionsMenu;
   ChangeToMenu(&gmCurrent);
 }

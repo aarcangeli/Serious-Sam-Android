@@ -16,7 +16,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "StdH.h"
 #include <Engine/Base/KeyNames.h>
 #include <Engine/CurrentVersion.h>
-#include <GameMP/LCDDrawing.h>
+#include <SeriousSam/LCDDrawing.h>
 #include "VarList.h"
 #include "MGVarButton.h"
 
@@ -76,7 +76,7 @@ BOOL CMGVarButton::OnKeyDown(int iVKey)
   }
 
   if (iVKey == VK_RETURN) {
-    FlushVarSettings(TRUE);
+    varlist::FlushVarSettings(TRUE);
     void MenuGoToParent(void);
     MenuGoToParent();
     return TRUE;

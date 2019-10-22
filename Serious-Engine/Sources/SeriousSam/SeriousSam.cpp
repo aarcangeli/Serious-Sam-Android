@@ -31,6 +31,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "LCDDrawing.h"
 #include "CmdLine.h"
 #include "Credits.h"
+#include <config.h>
 
 #ifndef SSA_VERSION
 #define SSA_VERSION ""
@@ -39,7 +40,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 typedef CGame *(*GAME_Create_t)(void);
 void drawBannerFpsVersion(CDrawPort *pdp, int64_t deltaFrame, float fps);
 
+// _pGame reused from GameMP module
+#ifndef STATIC_LINKING
 extern CGame *_pGame = NULL;
+#endif
 
 // application state variables
 extern BOOL _bRunning = TRUE;
@@ -240,6 +244,11 @@ void TouchUp(void* pArgs) {
   }
 }
 
+void SaveOptions(void* pArgs) {
+  CTFileName fnmPersistentSymbols = CTString("Scripts\\PersistentSymbols.ini");
+  _pShell->StorePersistentSymbols(fnmPersistentSymbols);
+}
+
 void ExitConfirm(void);
 void GoMenuBack() {
   if (bMenuActive) {
@@ -272,6 +281,10 @@ void HideComputer() {
   if (_pGame->gm_csComputerState == CS_ON || _pGame->gm_csComputerState == CS_TURNINGON) {
     _pGame->gm_csComputerState = CS_TURNINGOFF;
   }
+}
+
+void ViewportResized() {
+  _tmDisplayModeChanged = _pTimer->GetRealTimeTick();
 }
 
 void MenuEvent(void* pArgs) {
@@ -491,10 +504,15 @@ void LoadAndForceTexture(CTextureObject &to, CTextureObject *&pto, const CTFileN
   }
 }
 
+#ifdef STATIC_LINKING
+extern "C" CGame *GAME_Create(void);
+#endif
+
 void InitializeGame(void)
 {
   try {
 
+#ifndef STATIC_LINKING
     void *libGameMP = dlopen("libGameMP.so", RTLD_NOW);
     if (!libGameMP) {
       FatalError("  Cannot load GameMP");
@@ -507,6 +525,7 @@ void InitializeGame(void)
     }
     CPrintF("  GAME_Create found\n");
     CPrintF("\n");
+#endif
 
     _pGame = GAME_Create();
 
@@ -586,12 +605,14 @@ BOOL Init()
   _pShell->DeclareSymbol("user void TouchMove(INDEX, INDEX);", (void *) &TouchMove);
   _pShell->DeclareSymbol("user void TouchDown(INDEX, INDEX);", (void *) &TouchDown);
   _pShell->DeclareSymbol("user void TouchUp(INDEX, INDEX);", (void *) &TouchUp);
+  _pShell->DeclareSymbol("user void SaveOptions();", (void *) &SaveOptions);
   _pShell->DeclareSymbol("user void MenuEvent(INDEX);", (void *) &MenuEvent);
   _pShell->DeclareSymbol("user void MenuChar(INDEX);", (void *) &MenuChar);
   _pShell->DeclareSymbol("user void GoMenuBack();", (void *) &GoMenuBack);
   _pShell->DeclareSymbol("user void ToggleConsole();", (void *) &ToggleConsole);
   _pShell->DeclareSymbol("user void HideConsole();", (void *) &HideConsole);
   _pShell->DeclareSymbol("user void HideComputer();", (void *) &HideComputer);
+  _pShell->DeclareSymbol("user void ViewportResized();", (void *) &ViewportResized);
   _pShell->DeclareSymbol("INDEX input_iIsShiftPressed;", (void *) &g_cb.isShiftPressed);
   _pShell->DeclareSymbol("FLOAT input_uiScale;", (void *) &g_cb.globalScale);
 
@@ -711,8 +732,6 @@ BOOL Init()
   } else {
     StartNextDemo();
   }
-# else
-  StartNextDemo();
 #endif
 
   return TRUE;
@@ -1226,7 +1245,8 @@ void setControls(PlayerControls &ctrls) {
   }
 }
 
-void seriousSubMain() {
+void seriousSamInitialize() {
+
   CTStream::EnableStreamHandling();
 
   if (FileExists(_modToLoadTxt)) {
@@ -1259,6 +1279,14 @@ void seriousSubMain() {
   _bQuitScreen = TRUE;
   _pGame->gm_csConsoleState  = CS_OFF;
   _pGame->gm_csComputerState = CS_OFF;
+
+}
+
+void seriousSubMain() {
+
+  seriousSamInitialize();
+
+  StartNextDemo();
 
   while(_bRunning && !_fnmModToLoad.Length()) {
     g_cb.syncSeriousThreads();
@@ -1335,6 +1363,11 @@ void seriousSubMain() {
 
 void drawBannerFpsVersion(CDrawPort *pdp, int64_t deltaFrame, float fps) {
   static int textWidthMax = 0;
+  static float lastGlobalScale = g_cb.globalScale;
+  if (lastGlobalScale != g_cb.globalScale) {
+    lastGlobalScale = g_cb.globalScale;
+    textWidthMax = 0;
+  }
   SLONG slDPWidth = pdp->GetWidth();
   SLONG slDPHeight = pdp->GetHeight();
   pdp->SetFont(_pfdDisplayFont);

@@ -44,9 +44,12 @@ public:
 
 extern CListHead _lhVarSettings;
 
+namespace varlist {
+
 void LoadVarSettings(const CTFileName &fnmCfg);
 void FlushVarSettings(BOOL bApply);
 
+} // namespace varlist
 
 #endif  /* include-once check. */
 

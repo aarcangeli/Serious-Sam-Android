@@ -18,6 +18,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #ifdef PRAGMA_ONCE
   #pragma once
 #endif
+#include <Engine/Base/Synchronization.h>
 
 typedef void (*err_callback_t)(CTString error);
 
@@ -30,16 +31,21 @@ extern void CPrintLog(CTString strBuffer);
 extern err_callback_t g_errorCalllback;
 extern void Breakpoint(void);
 
+// the thread's local buffer
+struct slThrowBufferText {
+    char text[1000];
+};
+extern CThreadLocal<slThrowBufferText> slThrowBuffer;
+
 /* Throw an exception of formatted string. */
 //ENGINE_API extern void ThrowF_t(char *strFormat, ...); // throws char *
 template<typename ... Types>
 void ThrowF_t(const char *strPattern, Types... t) {
-  const SLONG slBufferSize = 1024;
-  static thread_local char strBuffer[slBufferSize + 1];
   CTString result = stringFormatter::format(strPattern, t...);
   AndroidLogPrintE(result);
-  strncpy(strBuffer, result.str_String, slBufferSize);
-  throw strBuffer;
+  char *buffer = slThrowBuffer.get().text;
+  strncpy(buffer, result.str_String, sizeof(slThrowBufferText) - 1);
+  throw buffer;
 }
 
 /* Report error and terminate program. */

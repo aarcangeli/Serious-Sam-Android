@@ -1,3 +1,5 @@
+configure_file(config.h.in ${SE_GENERATED_DIR}/config.h @ONLY)
+
 add_compile_options("-I${CMAKE_CURRENT_SOURCE_DIR}")
 add_compile_options("-I${SE_GENERATED_DIR}")
 
