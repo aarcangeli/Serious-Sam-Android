@@ -152,7 +152,7 @@ void CInGameMenu::StartMenu(void)
         strHostName = strHost + " (" + strAddress + ")";
       }
 
-      gm_mgLabel1.mg_strText = TRANS("Address: ") + strHostName;
+//      gm_mgLabel1.mg_strText = TRANS("Address: ") + strHostName;
       gm_mgLabel2.mg_strText = "";
 
     } else {

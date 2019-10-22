@@ -40,6 +40,8 @@ public:
 
   int cci_hSocket;            // the socket handle itself
 
+  bool cci_bFirstByteReceived = false;
+
 public:
   // client
   void Client_OpenLocal(void);

@@ -59,6 +59,12 @@ void FatalError(const char *strPattern, Types... t) {
   while (1) sleep(100000);
 }
 
+/* Report error to the user. */
+template<typename ... Types>
+void ReportError(const char *strPattern, Types... t) {
+  if (g_errorCalllback) g_errorCalllback(stringFormatter::format(strPattern, t...));
+}
+
 void AssertFailed(const char *string);
 
 /* Report warning without terminating program (stops program until user responds). */

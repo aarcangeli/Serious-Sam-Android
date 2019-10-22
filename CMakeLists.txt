@@ -9,7 +9,7 @@ include(compilerFlags)
 
 # build options
 option(STATIC_LINKING "Buils a single .so file" OFF)
-option(ENABLE_NETWORK "Enable network multiplayer mode (beta)" OFF)
+option(ENABLE_NETWORK "Enable network multiplayer mode (beta)" ON)
 option(ENABLE_SPLITSCREEN "Enable splitscreen mode (not working)" OFF)
 option(DISABLE_NETSETTINGS "Will skip network settings option" ON)
 

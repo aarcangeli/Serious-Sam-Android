@@ -492,6 +492,7 @@ void CSessionState::WaitStream_t(CTMemoryStream &strmMessage, const CTString &st
       // no more client/server updates in the progres hook
       _bRunNetUpdates = FALSE;
       ThrowF_t(TRANS("Disconnected: %s\n"), strReason);
+      ReportError(TRANS("Disconnected: %s\n"), strReason);
 	  // otherwise
     } else {
       // no more client/server updates in the progres hook

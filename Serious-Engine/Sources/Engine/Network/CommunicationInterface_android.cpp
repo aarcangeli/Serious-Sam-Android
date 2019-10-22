@@ -215,6 +215,7 @@ void CCommunicationInterface::PrepareForUse(BOOL bUseNetwork, BOOL bClient) {
     }
 
     cci_bSocketOpen = TRUE;
+    cci_bFirstByteReceived = false;
     cm_bNetworkInitialized = true;
     cm_ciBroadcast.SetLocal(nullptr);
     CPrintF(TRANS("  opened socket: \n"));
@@ -230,6 +231,7 @@ void CCommunicationInterface::Unprepare(void) {
     cm_ciBroadcast.Clear();
     cci_bBound = FALSE;
     cci_bWinSockOpen = false;
+    cci_bFirstByteReceived = false;
   }
 };
 
@@ -952,7 +954,10 @@ void CCommunicationInterface::UpdateMasterBuffers() {
           CPrintF(TRANS("Socket error during UDP receive. %s (%i)\n"), std::strerror(errno), errno);
         }
       } else {
-        CPrintF("Received %i bytes\n", slSizeReceived);
+        if (!cci_bFirstByteReceived) {
+          cci_bFirstByteReceived = true;
+          CPrintF("Receiving data\n");
+        }
         // if there is not at least one byte more in the packet than the header size
         if (slSizeReceived <= MAX_HEADER_SIZE) {
           // the packet is in error
@@ -1006,7 +1011,6 @@ void CCommunicationInterface::UpdateMasterBuffers() {
       return;
       // if all sent ok
     } else {
-      CPrintF("Sent %i bytes\n", slSizeSent);
 
       if (net_bReportPackets == TRUE) {
         CPrintF("%lu: Sent sequence: %d to ID: %d, reliable flag: %d\n", (ULONG) tvNow.GetMilliseconds(), ppaNewPacket->pa_ulSequence, ppaNewPacket->pa_adrAddress.adr_uwID, ppaNewPacket->pa_ubReliable);
