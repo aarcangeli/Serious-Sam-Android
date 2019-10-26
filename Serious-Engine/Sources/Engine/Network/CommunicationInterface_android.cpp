@@ -214,6 +214,7 @@ void CCommunicationInterface::PrepareForUse(BOOL bUseNetwork, BOOL bClient) {
 
     }
 
+    cci_bBound = TRUE;
     cci_bSocketOpen = TRUE;
     cci_bFirstByteReceived = false;
     cm_bNetworkInitialized = true;
