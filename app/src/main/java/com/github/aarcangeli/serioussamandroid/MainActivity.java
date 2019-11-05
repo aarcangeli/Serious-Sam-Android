@@ -81,7 +81,6 @@ public class MainActivity extends AppCompatActivity {
 
     private SeriousSamSurface glSurfaceView;
     private File homeDir;
-    private File scriptsDir;
     private boolean isGameStarted = false;
     private SensorManager sensorManager;
     private SensorEventListener motionListener;
@@ -113,44 +112,23 @@ public class MainActivity extends AppCompatActivity {
 
     private void copyFolder(String name) throws IOException {
         AssetManager assetManager = getAssets();
-        String[] files = null;
-        String state = Environment.getExternalStorageState();
-
-        if (Environment.MEDIA_MOUNTED.equals(state)) {
-            try {
-                files = assetManager.list(name);
-            } catch (IOException e) {
-                Log.i(TAG, "Failed to get asset file list.\n" + e);
-            }
-            for (String filename : files) {
-                InputStream in = null;
-                OutputStream out = null;
-                File folder = new File(scriptsDir.getAbsolutePath() + "/" + name);
-                boolean success = true;
-                if (!folder.exists()) {
-                    success = folder.mkdir();
-                }
-                if (success) {
-                    try {
-                        in = assetManager.open(name + "/" + filename);
-                        out = new FileOutputStream(scriptsDir.getAbsolutePath() + "/" + name + "/" + filename);
-                        copyFile(in, out);
-                    } catch (IOException e) {
-                        Log.i(TAG, "Failed to copy asset file: " + filename + " " + e);
-                    } finally {
-                        in.close();
-                        out.close();
-                    }
-                }
-            }
+        String[] files = assetManager.list(name);
+        if (files == null) {
+            return;
         }
-    }
 
-    private void copyFile(InputStream in, OutputStream out) throws IOException {
-        byte[] buffer = new byte[1024];
-        int read;
-        while ((read = in.read(buffer)) != -1) {
-            out.write(buffer, 0, read);
+        File outputFilder = new File(homeDir, "Scripts/" + name);
+        outputFilder.mkdirs();
+
+        for (String filename : files) {
+            try (InputStream in = assetManager.open(name + "/" + filename);
+                 OutputStream out = new FileOutputStream(new File(outputFilder, filename))) {
+                byte[] buffer = new byte[1024];
+                int read;
+                while ((read = in.read(buffer)) != -1) {
+                    out.write(buffer, 0, read);
+                }
+            }
         }
     }
 
@@ -222,7 +200,6 @@ public class MainActivity extends AppCompatActivity {
         }, null);
 
         homeDir = getHomeDir();
-        scriptsDir = getScriptsDir();
         Log.i(TAG, "HomeDir: " + homeDir);
         Log.i(TAG, "LibDir: " + getLibDir(this));
 
@@ -248,11 +225,6 @@ public class MainActivity extends AppCompatActivity {
         if (!hasStoragePermission(this)) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_STORAGE);
         } else {
-            try {
-                copyFolder("Menu");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
             startGame();
         }
 
@@ -491,7 +463,6 @@ public class MainActivity extends AppCompatActivity {
     public static void tryPremain(Context context) {
         if (hasStoragePermission(context)) {
             File homeDir = getHomeDir();
-            File ScriptsDir = getScriptsDir();
             if (!homeDir.exists()) homeDir.mkdirs();
             SeriousSamSurface.initializeLibrary(homeDir.getAbsolutePath(), getLibDir(context));
         }
@@ -505,10 +476,6 @@ public class MainActivity extends AppCompatActivity {
     @NonNull
     private static File getHomeDir() {
         return new File(Environment.getExternalStorageDirectory(), "SeriousSam").getAbsoluteFile();
-    }
-
-    private static File getScriptsDir() {
-        return new File(getHomeDir(), "Scripts");
     }
 
     @Override
@@ -678,6 +645,12 @@ public class MainActivity extends AppCompatActivity {
 
     private void startGame() {
         if (!homeDir.exists()) homeDir.mkdirs();
+        try {
+            copyFolder("Menu");
+            copyFolder("NetSettings");
+        } catch (IOException e) {
+            Log.e(TAG, "Error while copying resources", e);
+        }
         SeriousSamSurface.initializeLibrary(homeDir.getAbsolutePath(), getLibDir(this));
         isGameStarted = true;
         glSurfaceView.start();
