@@ -11,7 +11,7 @@ include(compilerFlags)
 option(STATIC_LINKING "Buils a single .so file" OFF)
 option(ENABLE_NETWORK "Enable network multiplayer mode (beta)" ON)
 option(ENABLE_SPLITSCREEN "Enable splitscreen mode (not working)" OFF)
-option(DISABLE_NETSETTINGS "Will skip network settings option" ON)
+option(DISABLE_NETSETTINGS "Will skip network settings option" OFF)
 
 if (NOT ANDROID)
     file(READ "local.properties" local)
