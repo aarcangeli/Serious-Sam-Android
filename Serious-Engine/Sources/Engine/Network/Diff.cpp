@@ -230,6 +230,8 @@ void UnDiff_t(void)
 
   CRC_Start(_ulCRC);
 
+  CPrintF("slSizeOldStream: %li\n", slSizeOldStream);
+  CPrintF("_slSizeOld: %li\n", _slSizeOld);
   if (slSizeOldStream!=_slSizeOld) {
     ThrowF_t(TRANS("Invalid DIFF stream!"));
   }

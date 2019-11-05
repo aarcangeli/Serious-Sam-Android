@@ -38,7 +38,9 @@ public:
   CPacketBuffer cci_pbMasterOutput;					// master output buffer				 
   CPacketBuffer cci_pbMasterInput;					// master input buffer
 
-  SOCKET cci_hSocket;						// the socket handle itself
+  int cci_hSocket;            // the socket handle itself
+
+  bool cci_bFirstByteReceived = false;
 
 public:
   // client
@@ -55,8 +57,6 @@ public:
   void Init(void);
   void Close(void);
 
-  void InitWinsock(void);
-  void EndWinsock(void);
   void PrepareForUse(BOOL bUseNetwork, BOOL bClient);
   void Unprepare(void);
   BOOL IsNetworkEnabled(void);
