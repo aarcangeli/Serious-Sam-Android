@@ -94,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
     public float deadZone;
     private boolean enableTouchController;
     private String din_uiScale;
-	public float uiScale;
+    public float uiScale;
 
     private InputProcessor processor = new InputProcessor();
     private InputMethodManager inputMethodManager;
@@ -277,7 +277,7 @@ public class MainActivity extends AppCompatActivity {
         uiScale = Utils.convertDpToPixel(1.0f, this) * glSurfaceView.getScale();
         Log.i(TAG, "Dinamic UI Enabled");
         } else if ("Off".equalsIgnoreCase(din_uiScale)) {
-		uiScale = 1.0f;
+	uiScale = 1.0f;
         Log.i(TAG, "Dinamic UI Disabled");
         } else {
         uiScale = Utils.convertDpToPixel(1.0f, this) * glSurfaceView.getScale();
@@ -683,7 +683,7 @@ public class MainActivity extends AppCompatActivity {
         ctrlAimSensibility = preferences.getInt("ctrl_aimSensibility", 100) / 100.f;
         deadZone = preferences.getInt("ctrl_deadZone", 20) / 100.f;
         din_uiScale = preferences.getString("din_uiScale", "On");
-		DinamicUI();
+	DinamicUI();
         executeShell("hud_iStats=" + (preferences.getBoolean("hud_iStats", false) ? 2 : 0) + ";");
         executeShell("input_uiScale=" + uiScale + ";");
         Log.i(TAG, "uiScale: " + uiScale);
