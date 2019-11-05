@@ -51,6 +51,7 @@ set(
   "${SE_BASE}/Base/ShellTypes.cpp"
   #        "${SE_BASE}/Base/StackDump.cpp"
   "${SE_BASE}/Base/Statistics.cpp"
+  "${SE_BASE}/Base/iconvlite.cpp"
   "${SE_BASE}/Base/Stream.cpp"
   "${SE_BASE}/Base/Timer.cpp"
   "${SE_BASE}/Base/Translation.cpp"

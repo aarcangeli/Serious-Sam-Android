@@ -40,6 +40,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Templates/Stock_CModelData.h>
 #include <dirent.h>
 
+#include "iconvlite.h"
+
 // default size of page used for stream IO operations (4Kb)
 //ULONG _ulPageSize = 0;
 // maximum lenght of file that can be saved (default: 128Mb)
@@ -54,7 +56,7 @@ CThreadLocal<CListHead *> _plhOpenedStreams;
 ULONG _ulVirtuallyAllocatedSpace = 0;
 ULONG _ulVirtuallyAllocatedSpaceTotal = 0;
 
-// global string with application path
+// global string with application path (utf-8)
 CTFileName _fnmApplicationPath;
 // global string with filename of the started application
 CTFileName _fnmApplicationExe;
@@ -78,7 +80,12 @@ CDynamicStackArray <CTFileName> _afnmBaseBrowseExc;
 // list of paths or patterns that are not included when making CRCs for network connection
 // this is used to enable connection between different localized versions
 CDynamicStackArray <CTFileName> _afnmNoCRC;
-
+// used to convert filenames from ansi format (written inside text files) into utf-8 (
+CTFileName convertWindow1251ToUtf8(const CTFileName &from) {
+  static char outBuffer[10000];
+  cp2utf1(outBuffer, from.str_String, sizeof(outBuffer) - 10);
+  return (CTString) outBuffer;
+}
 
 // load a filelist
 static BOOL LoadFileList(CDynamicStackArray <CTFileName> &afnm, const CTFileName &fnmList) {
@@ -172,13 +179,7 @@ void InitStreams(void) {
   }
   // find eventual extension for the mod's dlls
   _strModExt = "MP"; // default Second Encounter
-  CTFileName tmp;
-  
-  if(ExpandFilePath(EFP_READ, CTString("ModEXT.txt"), tmp) != EFP_NONE) {
-    LoadStringVar(CTString("ModEXT.txt"), _strModExt);
-  } else {
-    LoadStringVar(CTString("ModExt.txt"), _strModExt);
-  }
+  LoadStringVar(CTString("ModExt.txt"), _strModExt);
 
   CPrintF(TRANS("Loading group files...\n"));
 
@@ -1456,7 +1457,7 @@ static BOOL SubstExt_internal(CTFileName &fnmFullFileName) {
 }
 
 
-static INDEX ExpandFilePath_read(ULONG ulType, const CTFileName &fnmFile, CTFileName &fnmExpanded) {
+static INDEX ExpandFilePath_read(ULONG ulType, CTFileName fnmFile, CTFileName &fnmExpanded) {
   // search for the file in zips
   INDEX iFileInZip = UNZIPGetFileIndex(fnmFile);
 
@@ -1465,7 +1466,7 @@ static INDEX ExpandFilePath_read(ULONG ulType, const CTFileName &fnmFile, CTFile
 
     // first try in the mod's dir
     if (!fil_bPreferZips) {
-      fnmExpanded = _fnmApplicationPath + _fnmMod + fnmFile;
+      fnmExpanded = _fnmApplicationPath + _fnmMod + convertWindow1251ToUtf8(fnmFile);
       if (IsFileReadable_internal(fnmExpanded)) {
         return EFP_FILE;
       }
@@ -1483,7 +1484,7 @@ static INDEX ExpandFilePath_read(ULONG ulType, const CTFileName &fnmFile, CTFile
 
     // try in the mod's dir after
     if (fil_bPreferZips) {
-      fnmExpanded = _fnmApplicationPath + _fnmMod + fnmFile;
+      fnmExpanded = _fnmApplicationPath + _fnmMod + convertWindow1251ToUtf8(fnmFile);
       if (IsFileReadable_internal(fnmExpanded)) {
         return EFP_FILE;
       }
@@ -1496,9 +1497,9 @@ static INDEX ExpandFilePath_read(ULONG ulType, const CTFileName &fnmFile, CTFile
     fnmAppPath.SetAbsolutePath();
 
     if (fnmFile.HasPrefix(fnmAppPath)) {
-      fnmExpanded = fnmFile;
+      fnmExpanded = convertWindow1251ToUtf8(fnmFile);
     } else {
-      fnmExpanded = _fnmApplicationPath + fnmFile;
+      fnmExpanded = _fnmApplicationPath + convertWindow1251ToUtf8(fnmFile);
     }
 
     if (IsFileReadable_internal(fnmExpanded)) {
@@ -1518,7 +1519,7 @@ static INDEX ExpandFilePath_read(ULONG ulType, const CTFileName &fnmFile, CTFile
 
   // try in the app's base dir
   if (fil_bPreferZips) {
-    fnmExpanded = _fnmApplicationPath + fnmFile;
+    fnmExpanded = _fnmApplicationPath + convertWindow1251ToUtf8(fnmFile);
     if (IsFileReadable_internal(fnmExpanded)) {
       return EFP_FILE;
     }
@@ -1530,13 +1531,13 @@ static INDEX ExpandFilePath_read(ULONG ulType, const CTFileName &fnmFile, CTFile
     // if a mod is active
     if (_fnmMod != "") {
       // first try in the mod's dir
-      fnmExpanded = _fnmCDPath + _fnmMod + fnmFile;
+      fnmExpanded = _fnmCDPath + _fnmMod + convertWindow1251ToUtf8(fnmFile);
       if (IsFileReadable_internal(fnmExpanded)) {
         return EFP_FILE;
       }
     }
 
-    fnmExpanded = _fnmCDPath + fnmFile;
+    fnmExpanded = _fnmCDPath + convertWindow1251ToUtf8(fnmFile);
     if (IsFileReadable_internal(fnmExpanded)) {
       return EFP_FILE;
     }
@@ -1555,13 +1556,13 @@ INDEX ExpandFilePath(ULONG ulType, const CTFileName &fnmFile, CTFileName &fnmExp
     if (_fnmMod != "" && (!FileMatchesList(_afnmBaseWriteInc, fnmFileAbsolute) ||
                           FileMatchesList(_afnmBaseWriteExc, fnmFileAbsolute))) {
       // do that
-      fnmExpanded = _fnmApplicationPath + _fnmMod + fnmFileAbsolute;
+      fnmExpanded = _fnmApplicationPath + _fnmMod + convertWindow1251ToUtf8(fnmFileAbsolute);
       fnmExpanded.SetAbsolutePath();
       return EFP_FILE;
       // if should not write to mod dir
     } else {
       // write to base dir
-      fnmExpanded = _fnmApplicationPath + fnmFileAbsolute;
+      fnmExpanded = _fnmApplicationPath + convertWindow1251ToUtf8(fnmFileAbsolute);
       fnmExpanded.SetAbsolutePath();
       return EFP_FILE;
     }
@@ -1589,12 +1590,12 @@ INDEX ExpandFilePath(ULONG ulType, const CTFileName &fnmFile, CTFileName &fnmExp
     // in other cases
   } else {
     ASSERT(FALSE);
-    fnmExpanded = _fnmApplicationPath + fnmFileAbsolute;
+    fnmExpanded = _fnmApplicationPath + convertWindow1251ToUtf8(fnmFileAbsolute);
     fnmExpanded.SetAbsolutePath();
     return EFP_FILE;
   }
 
-  fnmExpanded = _fnmApplicationPath + fnmFileAbsolute;
+  fnmExpanded = _fnmApplicationPath + convertWindow1251ToUtf8(fnmFileAbsolute);
   fnmExpanded.SetAbsolutePath();
   return EFP_NONE;
 }
