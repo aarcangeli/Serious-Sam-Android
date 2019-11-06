@@ -181,7 +181,44 @@ void CCommunicationInterface::PrepareForUse(BOOL bUseNetwork, BOOL bClient) {
     } else {
       CPrintF(TRANS("  opening as server\n"));
     }
+    cm_ulLocalHost = 0;
+    // if there is a desired local address
+    if (net_strLocalHost!="") {
+      CPrintF(TRANSV("  user forced local address: %s\n"), (const char*)net_strLocalHost);
+      // use that address
+      cm_strName = net_strLocalHost;
+      cm_ulLocalHost = StringToAddress(cm_strName);
+      // if invalid
+      if (cm_ulLocalHost==0 || cm_ulLocalHost==-1) {
+        cm_ulLocalHost=0;
+        // report it
+        CPrintF(TRANSV("  requested local address is invalid\n"));
+      }
+    }
 
+    // if no valid desired local address
+    CPrintF(TRANSV("  getting local addresses\n"));
+    // get default
+    char hostname[256];
+    gethostname(hostname, sizeof(hostname)-1);
+    cm_strName = hostname;
+    // lookup the host
+    HOSTENT *phe = gethostbyname(cm_strName);
+    // if succeeded
+    if (phe!=NULL) {
+      // get the addresses
+      cm_strAddress = "";
+      for(INDEX i=0; phe->h_addr_list[i]!=NULL; i++) {
+        if (i>0) {
+          cm_strAddress += ", ";
+        }
+        cm_strAddress += inet_ntoa(*(const in_addr *)phe->h_addr_list[i]);
+      }
+    }
+
+    CPrintF(TRANSV("  local addresses: %s (%s)\n"), (const char *) cm_strName, (const char *) cm_strAddress);
+    CPrintF(TRANSV("  port: %d\n"), net_iPort);
+	
 #ifdef  USE_TCP
     cci_hSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 #else
@@ -213,10 +250,10 @@ void CCommunicationInterface::PrepareForUse(BOOL bUseNetwork, BOOL bClient) {
       }
 
     }
-
-    cci_bBound = TRUE;
+	
+	cci_bBound = TRUE;
     cci_bSocketOpen = TRUE;
-    cci_bFirstByteReceived = false;
+	cci_bFirstByteReceived = false;
     cm_bNetworkInitialized = true;
     cm_ciBroadcast.SetLocal(nullptr);
     CPrintF(TRANS("  opened socket: \n"));
@@ -232,7 +269,7 @@ void CCommunicationInterface::Unprepare(void) {
     cm_ciBroadcast.Clear();
     cci_bBound = FALSE;
     cci_bWinSockOpen = false;
-    cci_bFirstByteReceived = false;
+	cci_bFirstByteReceived = false;
   }
 };
 

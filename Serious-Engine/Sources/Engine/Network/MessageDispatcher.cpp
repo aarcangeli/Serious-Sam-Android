@@ -48,7 +48,7 @@ public:
 };
 
 // the thread's local buffer
-CThreadLocal<CMessageBuffer> mbReceivedMessage;
+static thread_local CMessageBuffer mbReceivedMessage = { 0,0 };
 
 void CMessageBuffer::Allocate(void)
 {

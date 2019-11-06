@@ -1553,12 +1553,6 @@ void CServer::Handle(INDEX iClient, CNetworkMessage &nmMessage)
     ULONG ulCRC;
     INDEX iLastSequence;
     nmMessage>>ulCRC>>iLastSequence;
-    // if not same
-    if (_pNetwork->ga_ulCRC!=ulCRC) {
-      // disconnect the client
-      SendDisconnectMessage(iClient, TRANS("Wrong CRC check."));
-    // if same
-    } else {
       CPrintF(TRANS("Server: Client '%s', CRC check OK\n"), 
         (const char*)_cmiComm.Server_GetClientName(iClient));
       // use the piggybacked sequence number to initiate sending stream to it
@@ -1566,7 +1560,6 @@ void CServer::Handle(INDEX iClient, CNetworkMessage &nmMessage)
       sso.sso_bSendStream = TRUE;
       sso.sso_nsBuffer.RemoveOlderBlocksBySequence(iLastSequence);
       sso.sso_iLastSentSequence = iLastSequence;
-    }
    
   } break;
   // if a rcon request is received
