@@ -224,9 +224,6 @@ BOOL CTFileName::RemoveApplicationPath_t(void) // throws char *
 {
   CTFileName fnmFileName = fnmFileName_;
 
-  // write in windows mode
-  fnmFileName.convertSlashesIntoWindows();
-
   // if dictionary is enabled
   if (strmStream.strm_dmDictionaryMode == CTStream::DM_ENABLED) {
     // try to find the filename in dictionary
@@ -246,12 +243,17 @@ BOOL CTFileName::RemoveApplicationPath_t(void) // throws char *
     char strTag[] = "_FNM"; strTag[0] = 'D';  // must create tag at run-time!
     // write dependency catcher header
     strmStream.WriteID_t(strTag);     // data filename
+
+    // write in windows mode
+    fnmFileName.convertSlashesIntoWindows();
+
     // write the string
     strmStream<<(CTString &)fnmFileName;
+
+    // reconvert to linux mode
+    fnmFileName.convertSlashes();
   }
 
-  // reconvert to linux mode
-  fnmFileName.convertSlashes();
 
   return strmStream;
 }
