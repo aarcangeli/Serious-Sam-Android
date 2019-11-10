@@ -282,7 +282,7 @@ extern CFontData _fdBig;
 void SetFontBig(CDrawPort *pdp)
 {
   pdp->SetFont( &_fdBig);
-  pdp->SetTextScaling( 1.0f * pdp->GetWidth() /640 *pdp->dp_fWideAdjustment);
+  pdp->SetTextScaling( 1.0f * pdp->GetHeight() /640 * 1.4f);
   pdp->SetTextAspect(1.0f);
 }
 
