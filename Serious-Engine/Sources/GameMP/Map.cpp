@@ -427,85 +427,88 @@ PIX aPathDotsFE[][10][2] =
 BOOL ObtainMapData(void)
 {
   try {
-    // the second encounter
-    atoIconsSE[ 0].SetData_t(CTFILENAME("TexturesMP\\Computer\\Map\\Book.tex"));
-    atoIconsSE[ 1].SetData_t(CTFILENAME("TexturesMP\\Computer\\Map\\Level00.tex"));
-    atoIconsSE[ 2].SetData_t(CTFILENAME("TexturesMP\\Computer\\Map\\Level01.tex"));
-    atoIconsSE[ 3].SetData_t(CTFILENAME("TexturesMP\\Computer\\Map\\Level02.tex"));
-    atoIconsSE[ 4].SetData_t(CTFILENAME("TexturesMP\\Computer\\Map\\Level03.tex"));
-    atoIconsSE[ 5].SetData_t(CTFILENAME("TexturesMP\\Computer\\Map\\Level04.tex"));
-    atoIconsSE[ 6].SetData_t(CTFILENAME("TexturesMP\\Computer\\Map\\Level05.tex"));
-    atoIconsSE[ 7].SetData_t(CTFILENAME("TexturesMP\\Computer\\Map\\Level06.tex"));
-    atoIconsSE[ 8].SetData_t(CTFILENAME("TexturesMP\\Computer\\Map\\Level07.tex"));
-    atoIconsSE[ 9].SetData_t(CTFILENAME("TexturesMP\\Computer\\Map\\Level08.tex"));
-    atoIconsSE[10].SetData_t(CTFILENAME("TexturesMP\\Computer\\Map\\Level09.tex"));
-    atoIconsSE[11].SetData_t(CTFILENAME("TexturesMP\\Computer\\Map\\Level10.tex"));
-    atoIconsSE[12].SetData_t(CTFILENAME("TexturesMP\\Computer\\Map\\Level11.tex"));
-    _toPathDot    .SetData_t(CTFILENAME("TexturesMP\\Computer\\Map\\PathDot.tex"));
-    _toMapBcgLDSE .SetData_t(CTFILENAME("TexturesMP\\Computer\\Map\\MapBcgLD.tex"));
-    _toMapBcgLUSE .SetData_t(CTFILENAME("TexturesMP\\Computer\\Map\\MapBcgLU.tex"));
-    _toMapBcgRDSE .SetData_t(CTFILENAME("TexturesMP\\Computer\\Map\\MapBcgRD.tex"));
-    _toMapBcgRUSE .SetData_t(CTFILENAME("TexturesMP\\Computer\\Map\\MapBcgRU.tex"));
-    // force constant textures
-    ((CTextureData*)atoIconsSE[ 0].GetData())->Force(TEX_CONSTANT);
-    ((CTextureData*)atoIconsSE[ 1].GetData())->Force(TEX_CONSTANT);
-    ((CTextureData*)atoIconsSE[ 2].GetData())->Force(TEX_CONSTANT);
-    ((CTextureData*)atoIconsSE[ 3].GetData())->Force(TEX_CONSTANT);
-    ((CTextureData*)atoIconsSE[ 4].GetData())->Force(TEX_CONSTANT);
-    ((CTextureData*)atoIconsSE[ 5].GetData())->Force(TEX_CONSTANT);
-    ((CTextureData*)atoIconsSE[ 6].GetData())->Force(TEX_CONSTANT);
-    ((CTextureData*)atoIconsSE[ 7].GetData())->Force(TEX_CONSTANT);
-    ((CTextureData*)atoIconsSE[ 8].GetData())->Force(TEX_CONSTANT);
-    ((CTextureData*)atoIconsSE[ 9].GetData())->Force(TEX_CONSTANT);
-    ((CTextureData*)atoIconsSE[10].GetData())->Force(TEX_CONSTANT);
-    ((CTextureData*)atoIconsSE[11].GetData())->Force(TEX_CONSTANT);
-    ((CTextureData*)atoIconsSE[12].GetData())->Force(TEX_CONSTANT);
-    ((CTextureData*)_toPathDot    .GetData())->Force(TEX_CONSTANT);
-    ((CTextureData*)_toMapBcgLDSE .GetData())->Force(TEX_CONSTANT);
-    ((CTextureData*)_toMapBcgLUSE .GetData())->Force(TEX_CONSTANT);
-    ((CTextureData*)_toMapBcgRDSE .GetData())->Force(TEX_CONSTANT);
-    ((CTextureData*)_toMapBcgRUSE .GetData())->Force(TEX_CONSTANT);
+    if (!map_bIsFirstEncounter) {
+      // the second encounter
+      atoIconsSE[ 0].SetData_t(CTFILENAME("TexturesMP\\Computer\\Map\\Book.tex"));
+      atoIconsSE[ 1].SetData_t(CTFILENAME("TexturesMP\\Computer\\Map\\Level00.tex"));
+      atoIconsSE[ 2].SetData_t(CTFILENAME("TexturesMP\\Computer\\Map\\Level01.tex"));
+      atoIconsSE[ 3].SetData_t(CTFILENAME("TexturesMP\\Computer\\Map\\Level02.tex"));
+      atoIconsSE[ 4].SetData_t(CTFILENAME("TexturesMP\\Computer\\Map\\Level03.tex"));
+      atoIconsSE[ 5].SetData_t(CTFILENAME("TexturesMP\\Computer\\Map\\Level04.tex"));
+      atoIconsSE[ 6].SetData_t(CTFILENAME("TexturesMP\\Computer\\Map\\Level05.tex"));
+      atoIconsSE[ 7].SetData_t(CTFILENAME("TexturesMP\\Computer\\Map\\Level06.tex"));
+      atoIconsSE[ 8].SetData_t(CTFILENAME("TexturesMP\\Computer\\Map\\Level07.tex"));
+      atoIconsSE[ 9].SetData_t(CTFILENAME("TexturesMP\\Computer\\Map\\Level08.tex"));
+      atoIconsSE[10].SetData_t(CTFILENAME("TexturesMP\\Computer\\Map\\Level09.tex"));
+      atoIconsSE[11].SetData_t(CTFILENAME("TexturesMP\\Computer\\Map\\Level10.tex"));
+      atoIconsSE[12].SetData_t(CTFILENAME("TexturesMP\\Computer\\Map\\Level11.tex"));
+      _toPathDot    .SetData_t(CTFILENAME("TexturesMP\\Computer\\Map\\PathDot.tex"));
+      _toMapBcgLDSE .SetData_t(CTFILENAME("TexturesMP\\Computer\\Map\\MapBcgLD.tex"));
+      _toMapBcgLUSE .SetData_t(CTFILENAME("TexturesMP\\Computer\\Map\\MapBcgLU.tex"));
+      _toMapBcgRDSE .SetData_t(CTFILENAME("TexturesMP\\Computer\\Map\\MapBcgRD.tex"));
+      _toMapBcgRUSE .SetData_t(CTFILENAME("TexturesMP\\Computer\\Map\\MapBcgRU.tex"));
+      // force constant textures
+      ((CTextureData*)atoIconsSE[ 0].GetData())->Force(TEX_CONSTANT);
+      ((CTextureData*)atoIconsSE[ 1].GetData())->Force(TEX_CONSTANT);
+      ((CTextureData*)atoIconsSE[ 2].GetData())->Force(TEX_CONSTANT);
+      ((CTextureData*)atoIconsSE[ 3].GetData())->Force(TEX_CONSTANT);
+      ((CTextureData*)atoIconsSE[ 4].GetData())->Force(TEX_CONSTANT);
+      ((CTextureData*)atoIconsSE[ 5].GetData())->Force(TEX_CONSTANT);
+      ((CTextureData*)atoIconsSE[ 6].GetData())->Force(TEX_CONSTANT);
+      ((CTextureData*)atoIconsSE[ 7].GetData())->Force(TEX_CONSTANT);
+      ((CTextureData*)atoIconsSE[ 8].GetData())->Force(TEX_CONSTANT);
+      ((CTextureData*)atoIconsSE[ 9].GetData())->Force(TEX_CONSTANT);
+      ((CTextureData*)atoIconsSE[10].GetData())->Force(TEX_CONSTANT);
+      ((CTextureData*)atoIconsSE[11].GetData())->Force(TEX_CONSTANT);
+      ((CTextureData*)atoIconsSE[12].GetData())->Force(TEX_CONSTANT);
+      ((CTextureData*)_toPathDot    .GetData())->Force(TEX_CONSTANT);
+      ((CTextureData*)_toMapBcgLDSE .GetData())->Force(TEX_CONSTANT);
+      ((CTextureData*)_toMapBcgLUSE .GetData())->Force(TEX_CONSTANT);
+      ((CTextureData*)_toMapBcgRDSE .GetData())->Force(TEX_CONSTANT);
+      ((CTextureData*)_toMapBcgRUSE .GetData())->Force(TEX_CONSTANT);
 
-    // the first encounter
-    atoIconsFE[ 0].SetData_t(CTFILENAME("Textures\\Computer\\Map\\Level00.tex"));
-    atoIconsFE[ 1].SetData_t(CTFILENAME("Textures\\Computer\\Map\\Level01.tex"));
-    atoIconsFE[ 2].SetData_t(CTFILENAME("Textures\\Computer\\Map\\Level02.tex"));
-    atoIconsFE[ 3].SetData_t(CTFILENAME("Textures\\Computer\\Map\\Level03.tex"));
-    atoIconsFE[ 4].SetData_t(CTFILENAME("Textures\\Computer\\Map\\Level04.tex"));
-    atoIconsFE[ 5].SetData_t(CTFILENAME("Textures\\Computer\\Map\\Level05.tex"));
-    atoIconsFE[ 6].SetData_t(CTFILENAME("Textures\\Computer\\Map\\Level06.tex"));
-    atoIconsFE[ 7].SetData_t(CTFILENAME("Textures\\Computer\\Map\\Level07.tex"));
-    atoIconsFE[ 8].SetData_t(CTFILENAME("Textures\\Computer\\Map\\Level08.tex"));
-    atoIconsFE[ 9].SetData_t(CTFILENAME("Textures\\Computer\\Map\\Level09.tex"));
-    atoIconsFE[10].SetData_t(CTFILENAME("Textures\\Computer\\Map\\Level10.tex"));
-    atoIconsFE[11].SetData_t(CTFILENAME("Textures\\Computer\\Map\\Level11.tex"));
-    atoIconsFE[12].SetData_t(CTFILENAME("Textures\\Computer\\Map\\Level12.tex"));
-    atoIconsFE[13].SetData_t(CTFILENAME("Textures\\Computer\\Map\\Level13.tex"));
-    atoIconsFE[14].SetData_t(CTFILENAME("Textures\\Computer\\Map\\Level14.tex"));
-    _toMapBcgLDFE .SetData_t(CTFILENAME("Textures\\Computer\\Map\\MapBcgLD.tex"));
-    _toMapBcgLUFE .SetData_t(CTFILENAME("Textures\\Computer\\Map\\MapBcgLU.tex"));
-    _toMapBcgRDFE .SetData_t(CTFILENAME("Textures\\Computer\\Map\\MapBcgRD.tex"));
-    _toMapBcgRUFE .SetData_t(CTFILENAME("Textures\\Computer\\Map\\MapBcgRU.tex"));
-    // force constant textures
-    ((CTextureData*)atoIconsFE[ 0].GetData())->Force(TEX_CONSTANT);
-    ((CTextureData*)atoIconsFE[ 1].GetData())->Force(TEX_CONSTANT);
-    ((CTextureData*)atoIconsFE[ 2].GetData())->Force(TEX_CONSTANT);
-    ((CTextureData*)atoIconsFE[ 3].GetData())->Force(TEX_CONSTANT);
-    ((CTextureData*)atoIconsFE[ 4].GetData())->Force(TEX_CONSTANT);
-    ((CTextureData*)atoIconsFE[ 5].GetData())->Force(TEX_CONSTANT);
-    ((CTextureData*)atoIconsFE[ 6].GetData())->Force(TEX_CONSTANT);
-    ((CTextureData*)atoIconsFE[ 7].GetData())->Force(TEX_CONSTANT);
-    ((CTextureData*)atoIconsFE[ 8].GetData())->Force(TEX_CONSTANT);
-    ((CTextureData*)atoIconsFE[ 9].GetData())->Force(TEX_CONSTANT);
-    ((CTextureData*)atoIconsFE[10].GetData())->Force(TEX_CONSTANT);
-    ((CTextureData*)atoIconsFE[11].GetData())->Force(TEX_CONSTANT);
-    ((CTextureData*)atoIconsFE[12].GetData())->Force(TEX_CONSTANT);
-    ((CTextureData*)atoIconsFE[13].GetData())->Force(TEX_CONSTANT);
-    ((CTextureData*)atoIconsFE[14].GetData())->Force(TEX_CONSTANT);
-    ((CTextureData*)_toMapBcgLDFE .GetData())->Force(TEX_CONSTANT);
-    ((CTextureData*)_toMapBcgLUFE .GetData())->Force(TEX_CONSTANT);
-    ((CTextureData*)_toMapBcgRDFE .GetData())->Force(TEX_CONSTANT);
-    ((CTextureData*)_toMapBcgRUFE .GetData())->Force(TEX_CONSTANT);
+    } else {
+      // the first encounter
+      atoIconsFE[ 0].SetData_t(CTFILENAME("Textures\\Computer\\Map\\Level00.tex"));
+      atoIconsFE[ 1].SetData_t(CTFILENAME("Textures\\Computer\\Map\\Level01.tex"));
+      atoIconsFE[ 2].SetData_t(CTFILENAME("Textures\\Computer\\Map\\Level02.tex"));
+      atoIconsFE[ 3].SetData_t(CTFILENAME("Textures\\Computer\\Map\\Level03.tex"));
+      atoIconsFE[ 4].SetData_t(CTFILENAME("Textures\\Computer\\Map\\Level04.tex"));
+      atoIconsFE[ 5].SetData_t(CTFILENAME("Textures\\Computer\\Map\\Level05.tex"));
+      atoIconsFE[ 6].SetData_t(CTFILENAME("Textures\\Computer\\Map\\Level06.tex"));
+      atoIconsFE[ 7].SetData_t(CTFILENAME("Textures\\Computer\\Map\\Level07.tex"));
+      atoIconsFE[ 8].SetData_t(CTFILENAME("Textures\\Computer\\Map\\Level08.tex"));
+      atoIconsFE[ 9].SetData_t(CTFILENAME("Textures\\Computer\\Map\\Level09.tex"));
+      atoIconsFE[10].SetData_t(CTFILENAME("Textures\\Computer\\Map\\Level10.tex"));
+      atoIconsFE[11].SetData_t(CTFILENAME("Textures\\Computer\\Map\\Level11.tex"));
+      atoIconsFE[12].SetData_t(CTFILENAME("Textures\\Computer\\Map\\Level12.tex"));
+      atoIconsFE[13].SetData_t(CTFILENAME("Textures\\Computer\\Map\\Level13.tex"));
+      atoIconsFE[14].SetData_t(CTFILENAME("Textures\\Computer\\Map\\Level14.tex"));
+      _toMapBcgLDFE .SetData_t(CTFILENAME("Textures\\Computer\\Map\\MapBcgLD.tex"));
+      _toMapBcgLUFE .SetData_t(CTFILENAME("Textures\\Computer\\Map\\MapBcgLU.tex"));
+      _toMapBcgRDFE .SetData_t(CTFILENAME("Textures\\Computer\\Map\\MapBcgRD.tex"));
+      _toMapBcgRUFE .SetData_t(CTFILENAME("Textures\\Computer\\Map\\MapBcgRU.tex"));
+      // force constant textures
+      ((CTextureData*)atoIconsFE[ 0].GetData())->Force(TEX_CONSTANT);
+      ((CTextureData*)atoIconsFE[ 1].GetData())->Force(TEX_CONSTANT);
+      ((CTextureData*)atoIconsFE[ 2].GetData())->Force(TEX_CONSTANT);
+      ((CTextureData*)atoIconsFE[ 3].GetData())->Force(TEX_CONSTANT);
+      ((CTextureData*)atoIconsFE[ 4].GetData())->Force(TEX_CONSTANT);
+      ((CTextureData*)atoIconsFE[ 5].GetData())->Force(TEX_CONSTANT);
+      ((CTextureData*)atoIconsFE[ 6].GetData())->Force(TEX_CONSTANT);
+      ((CTextureData*)atoIconsFE[ 7].GetData())->Force(TEX_CONSTANT);
+      ((CTextureData*)atoIconsFE[ 8].GetData())->Force(TEX_CONSTANT);
+      ((CTextureData*)atoIconsFE[ 9].GetData())->Force(TEX_CONSTANT);
+      ((CTextureData*)atoIconsFE[10].GetData())->Force(TEX_CONSTANT);
+      ((CTextureData*)atoIconsFE[11].GetData())->Force(TEX_CONSTANT);
+      ((CTextureData*)atoIconsFE[12].GetData())->Force(TEX_CONSTANT);
+      ((CTextureData*)atoIconsFE[13].GetData())->Force(TEX_CONSTANT);
+      ((CTextureData*)atoIconsFE[14].GetData())->Force(TEX_CONSTANT);
+      ((CTextureData*)_toMapBcgLDFE .GetData())->Force(TEX_CONSTANT);
+      ((CTextureData*)_toMapBcgLUFE .GetData())->Force(TEX_CONSTANT);
+      ((CTextureData*)_toMapBcgRDFE .GetData())->Force(TEX_CONSTANT);
+      ((CTextureData*)_toMapBcgRUFE .GetData())->Force(TEX_CONSTANT);
+    }
   }
   catch ( const char *strError) {
     CPrintF("%s\n", strError);
