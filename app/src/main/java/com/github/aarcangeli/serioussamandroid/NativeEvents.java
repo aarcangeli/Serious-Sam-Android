@@ -4,8 +4,8 @@ import org.greenrobot.eventbus.EventBus;
 
 // invoked from native
 public class NativeEvents {
-    public static void reportFatalError(String message) {
-        EventBus.getDefault().postSticky(new FatalErrorEvent(message));
+    public static void reportError(boolean fatal, String message) {
+        EventBus.getDefault().postSticky(new ErrorEvent(fatal, message));
     }
 
     public static void reportStateChange(int state, int bombs) {
@@ -24,10 +24,12 @@ public class NativeEvents {
         EventBus.getDefault().post(new EditTextEvent(defaultText));
     }
 
-    public static class FatalErrorEvent {
+    public static class ErrorEvent {
+        public final boolean fatal;
         public final String message;
 
-        public FatalErrorEvent(String message) {
+        public ErrorEvent(boolean fatal, String message) {
+            this.fatal = fatal;
             this.message = message;
         }
     }

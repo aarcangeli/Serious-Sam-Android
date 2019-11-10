@@ -1,6 +1,5 @@
 const dgram = require('dgram');
 const server = dgram.createSocket('udp4');
-const client = dgram.createSocket('udp4');
 
 /**
  * To play in network with the emulator:
@@ -10,9 +9,11 @@ const client = dgram.createSocket('udp4');
  * exit
  * node bridge.js
  * join game to port 25601
+ *
+ * ip address of host is 10.0.2.2
  */
 
-let phone;
+let clients = [];
 
 server.on('error', (err) => {
     console.log(`server error:\n${err.stack}`);
@@ -20,14 +21,24 @@ server.on('error', (err) => {
 });
 
 server.on('message', (msg, rinfo) => {
-    phone = rinfo;
-    console.log(`server got: ${msg.length} bytes from ${rinfo.address}:${rinfo.port}`);
-    client.send(msg, 25600, 'localhost');
-});
+    let serverInfo = `${rinfo.address}:${rinfo.port}`;
+    let client = clients.find(it => it.serverInfo == serverInfo);
+    if (!client) {
+        console.log(`Got new client ${rinfo.address}:${rinfo.port}`)
 
-client.on('message', (msg, rinfo) => {
-    console.log(`client got: ${msg.length} bytes from ${rinfo.address}:${rinfo.port}`);
-    server.send(msg, phone.port, phone.address);
+        client = {serverInfo: serverInfo, udp: dgram.createSocket('udp4')};
+
+        client.udp.on('message', (cmsg, crinfo) => {
+            //console.log(`client got: ${msg.length} bytes from ${crinfo.address}:${crinfo.port}`);
+            server.send(cmsg, rinfo.port, rinfo.address);
+        });
+
+        clients.push(client);
+    }
+
+    //console.log(`server got: ${msg.length} bytes from ${rinfo.address}:${rinfo.port}`);
+    client.udp.send(msg, 25600, 'localhost');
+
 });
 
 server.on('listening', () => {

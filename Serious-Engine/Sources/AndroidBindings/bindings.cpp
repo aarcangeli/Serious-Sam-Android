@@ -293,9 +293,9 @@ JNIEXPORT void JNICALL Java_com_github_aarcangeli_serioussamandroid_SeriousSamSu
   pthread_mutex_unlock(&g_mySeriousMutex);
 }
 
-void androidReportError(CTString error) {
+void androidReportError(bool fatal, CTString error) {
   JNIEnv* env = getEnv();
-  jmethodID method = env->GetStaticMethodID(g_NativeEvents, "reportFatalError", "(Ljava/lang/String;)V");
+  jmethodID method = env->GetStaticMethodID(g_NativeEvents, "reportError", "(ZLjava/lang/String;)V");
   ASSERT(method);
-  env->CallStaticVoidMethod(g_NativeEvents, method, env->NewStringUTF(error.str_String));
+  env->CallStaticVoidMethod(g_NativeEvents, method, fatal, env->NewStringUTF(error.str_String));
 }

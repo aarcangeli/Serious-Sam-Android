@@ -1195,6 +1195,9 @@ BOOL CGame::JoinGame(const CNetworkSession &session)
     _pNetwork->StopProvider();
     // and display error
     CPrintF(TRANS("Cannot join game:\n%s\n"), strError);
+    if (strError != TRANS("User break!")) {
+      ReportError(TRANS("Cannot join game:\n%s\n"), strError);
+    }
     return FALSE;
   }
 

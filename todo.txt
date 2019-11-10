@@ -1,3 +1,33 @@
   - Customizable inputs
   - Multiplayer android and android
   - Multiplayer android and pc??
+
+generic infos:
+DIMP: Dictionary Import (list of id and filenames)
+WSTA: World State
+WLIF: world info
+NFID: write entity ID counter
+BGVW: background viewer
+
+
+ENT4: Entity (aka Unity Game Object)
+## header
+4 bytes: ENT4
+4 bytes: Entity ID
+4 bytes: Entity Size in Bytes (exluded this 12 bytes)
+## body
+4 bytes: en_RenderType (one of RT_BRUSH, RT_FIELDBRUSH, RT_TERRAIN, RT_MODEL, RT_EDITORMODEL, RT_SKAMODEL, RT_SKAEDITORMODEL, RT_VOID)
+4 bytes: en_ulPhysicsFlags
+4 bytes: en_ulCollisionFlags
+4 bytes: en_ulSpawnFlags
+4 bytes: en_ulFlags
+x bytes: en_mRotation (FLOATmatrix3D)
+
+ENOR: entity order
+4 bytes: ENOR
+4 bytes: count
+4 bytes * count: Entity ID
+
+ESL2: entity-sector links v2 (CBrushArchive::WriteEntitySectorLinks_t)
+TMRS: Timers
+MVRS: Movers

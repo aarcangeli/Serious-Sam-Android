@@ -54,7 +54,7 @@ import java.io.IOException;
 import java.util.Locale;
 
 import static com.github.aarcangeli.serioussamandroid.NativeEvents.EditTextEvent;
-import static com.github.aarcangeli.serioussamandroid.NativeEvents.FatalErrorEvent;
+import static com.github.aarcangeli.serioussamandroid.NativeEvents.ErrorEvent;
 import static com.github.aarcangeli.serioussamandroid.NativeEvents.GameState;
 import static com.github.aarcangeli.serioussamandroid.NativeEvents.OpenSettingsEvent;
 import static com.github.aarcangeli.serioussamandroid.NativeEvents.RestartEvent;
@@ -288,6 +288,7 @@ public class MainActivity extends AppCompatActivity {
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         if (gameState == GameState.MENU || gameState == GameState.CONSOLE) {
             getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN);
@@ -325,14 +326,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
-    public void onFatalError(FatalErrorEvent event) {
+    public void onFatalError(final ErrorEvent event) {
         AlertDialog.Builder dlgAlert = new AlertDialog.Builder(this);
         dlgAlert.setMessage(event.message);
         dlgAlert.setTitle("Fatal Error");
         dlgAlert.setPositiveButton("Close", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                System.exit(1);
+                if (event.fatal) {
+                    System.exit(1);
+                }
             }
         });
         dlgAlert.setCancelable(false);
