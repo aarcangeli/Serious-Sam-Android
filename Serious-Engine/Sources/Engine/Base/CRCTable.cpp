@@ -171,6 +171,7 @@ ULONG CRCT_MakeCRCForFiles_t(CTStream &strmFiles)  // throw char *
 {
   BOOL bOld = CRCT_bGatherCRCs;
   CRCT_bGatherCRCs = TRUE;
+  //CPrintF("CRC START\n");
 
   ULONG ulCRC;
   CRC_Start(ulCRC);
@@ -182,6 +183,10 @@ ULONG CRCT_MakeCRCForFiles_t(CTStream &strmFiles)  // throw char *
     // read the name
     CTString strName;
     strmFiles>>strName;
+    if (CTFileName(strName).FileExt() == ".so") {
+      // binary files may be different between x86 and arm
+      continue;
+    }
     // try to find it in table
     CCRCEntry *pce = _ntEntries.Find(strName);
     // if not there
@@ -192,9 +197,11 @@ ULONG CRCT_MakeCRCForFiles_t(CTStream &strmFiles)  // throw char *
     }
     // add the crc
     CRC_AddLONG(ulCRC, pce->ce_ulCRC);
+    //CPrintF("CRC: %s %ul\n", strName, pce->ce_ulCRC);
   }
   CRCT_bGatherCRCs = bOld;
   CRC_Finish(ulCRC);
+  //CPrintF("CRC END\n");
   return ulCRC;
 }
 
