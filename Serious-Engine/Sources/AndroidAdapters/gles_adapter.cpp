@@ -63,7 +63,7 @@ namespace gles_adapter {
   };
 
   // enable on emulator
-  bool USE_BUFFER_DATA = true;
+  bool USE_BUFFER_DATA = false;
   const bool enableDraws = true;
 
   GLuint INDEX_POSITION = 1;
