@@ -1,5 +1,40 @@
 apply plugin: 'com.android.application'
 
+def getReleaseVersionCode() {
+
+    def versionPropsFile = file('version.properties')
+    def version = 1040
+
+    Properties versionProps = new Properties()
+
+    def runTasks = gradle.startParameter.taskNames
+    if (versionPropsFile.canRead()) {
+        versionProps.load(new FileInputStream(versionPropsFile))
+        version = versionProps['VERSION_CODE'].toInteger()
+    }
+    if (':app:assembleRelease' in runTasks) {
+        version = version + 1
+        versionProps['VERSION_CODE'] = version.toString()
+        versionProps.store(versionPropsFile.newWriter(), null)
+    }
+    return version
+}
+
+def getReleaseVersion() {
+
+    def versionPropsFile = file('version.properties')
+    def ver = "1.04.0"
+
+    Properties versionProps = new Properties()
+
+    def runTasks = gradle.startParameter.taskNames
+    if (versionPropsFile.canRead()) {
+        versionProps.load(new FileInputStream(versionPropsFile))
+        ver = versionProps['VERSION'].toString()
+    }
+    return ver
+}
+
 def signing = null
 
 def propFile = file('../signing.properties')
@@ -26,13 +61,17 @@ if (propFile.canRead()) {
 }
 
 android {
+    def code = getReleaseVersionCode()
+    def ver = getReleaseVersion()
+
     compileSdkVersion 28
     defaultConfig {
         applicationId "com.github.aarcangeli.serioussamandroid"
         minSdkVersion 19
         targetSdkVersion 28
-        versionCode 1040
-        versionName "1.04.0"
+        versionCode code
+        versionName ver
+        setProperty("archivesBaseName", "SeriousSamAndroid-$versionName")
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
         externalNativeBuild {
