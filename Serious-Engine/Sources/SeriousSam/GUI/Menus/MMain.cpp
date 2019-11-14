@@ -118,6 +118,15 @@ void CMainMenu::Initialize_t(void)
   gm_mgQuit.mg_pmgUp = &gm_mgOptions;
   gm_mgQuit.mg_pmgDown = &gm_mgSingle;
   gm_mgQuit.mg_pActivatedFunction = NULL;
+
+  extern CTString sam_strBackLink;
+  gm_mgBacklink.mg_strText = sam_strBackLink;
+  gm_mgBacklink.mg_boxOnScreen = BoxBigRow(9.0f);
+  gm_mgBacklink.mg_bfsFontSize = BFS_MEDIUM;
+  gm_mgBacklink.mg_iCenterI = 0;
+  gm_mgBacklink.mg_bEnabled = FALSE;
+  gm_mgBacklink.mg_bLabel = TRUE;
+  gm_lhGadgets.AddTail(gm_mgBacklink.mg_lnNode);
 }
 
 void CMainMenu::StartMenu(void)

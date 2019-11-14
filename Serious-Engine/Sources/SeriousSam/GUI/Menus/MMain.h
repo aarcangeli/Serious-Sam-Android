@@ -35,6 +35,7 @@ public:
   CMGButton gm_mgHighScore;
   CMGButton gm_mgOptions;
   CMGButton gm_mgQuit;
+  CMGButton gm_mgBacklink;
 
   void Initialize_t(void);
   void StartMenu(void);

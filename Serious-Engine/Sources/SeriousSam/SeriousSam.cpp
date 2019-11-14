@@ -125,6 +125,7 @@ extern CTextureObject *_ptoLogoEAX = NULL;
 
 extern CTString sam_strVersion = SSA_VERSION;
 extern CTString sam_strModName = TRANS("-   A N D R O I D   P O R T   ( U N O F F I C I A L )   -");
+extern CTString sam_strBackLink = TRANS("https://github.com/aarcangeli/Serious-Sam-Android");
 
 extern CTFileName sam_strFirstLevel = CTString("Levels\\LevelsMP\\1_0_InTheLastEpisode.wld");
 extern CTFileName sam_strIntroLevel = CTString("Levels\\LevelsMP\\Intro.wld");
@@ -582,6 +583,7 @@ BOOL Init()
   _pShell->DeclareSymbol("user CTString sam_strVersion;", (void *)    &sam_strVersion);
   _pShell->DeclareSymbol("user CTString sam_strFirstLevel;", (void *) &sam_strFirstLevel);
   _pShell->DeclareSymbol("user CTString sam_strModName;", (void *) &sam_strModName);
+  _pShell->DeclareSymbol("user CTString sam_strBackLink;", (void *) &sam_strBackLink);
   _pShell->DeclareSymbol("persistent INDEX sam_bShowAllLevels;", (void *) &sam_bShowAllLevels);
   _pShell->DeclareSymbol("persistent INDEX sam_bMentalActivated;", (void *) &sam_bMentalActivated);
 
