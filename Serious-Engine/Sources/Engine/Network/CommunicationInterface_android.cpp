@@ -955,6 +955,7 @@ void CCommunicationInterface::UpdateMasterBuffers() {
           CPrintF(TRANS("Socket error during UDP receive. %s (%i)\n"), std::strerror(errno), errno);
         }
       } else {
+        //CPrintF("Received %i bytes\n", slSizeReceived);
         if (!cci_bFirstByteReceived) {
           cci_bFirstByteReceived = true;
           CPrintF("Receiving data\n");
@@ -1005,6 +1006,7 @@ void CCommunicationInterface::UpdateMasterBuffers() {
                         (int) ppaNewPacket->pa_slSize, 0, (const struct sockaddr *) &cliaddr, sizeof(cliaddr));
     cci_bBound = TRUE;   // UDP socket that did a send is considered bound
     tvNow = _pTimer->GetHighPrecisionTimer();
+    //CPrintF("Sent %i bytes\n", slSizeSent);
 
     // if some error
     if (slSizeSent < 0) {

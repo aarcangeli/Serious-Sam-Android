@@ -453,7 +453,7 @@ static void UpdateSize(CDrawPort *pdp)
 
   // remember font size
   CFontData *pfd = _pfdConsoleFont;
-  _pixCharSizeI = pfd->fd_pixCharWidth  + pfd->fd_pixCharSpacing;
+  _pixCharSizeI = pfd->fd_pixCharWidth  + pfd->fd_pixCharSpacing + 1;
   _pixCharSizeJ = pfd->fd_pixCharHeight + pfd->fd_pixLineSpacing;
   _pixCharSize2I = _pixCharSizeI*_fScaling2;
   _pixCharSize2J = _pixCharSizeJ*_fScaling2;

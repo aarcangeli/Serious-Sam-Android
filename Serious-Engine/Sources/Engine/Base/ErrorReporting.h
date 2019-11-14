@@ -20,7 +20,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #endif
 #include <Engine/Base/Synchronization.h>
 
-typedef void (*err_callback_t)(CTString error);
+typedef void (*err_callback_t)(bool fatal, CTString error);
 
 // LogCat
 extern void AndroidLogPrintI(CTString log);
@@ -53,7 +53,7 @@ void ThrowF_t(const char *strPattern, Types... t) {
 template<typename ... Types>
 void FatalError(const char *strPattern, Types... t) {
   CPrintLog(CTString("Fatal Error: ") + stringFormatter::format(strPattern, t...) + "\n");
-  if (g_errorCalllback) g_errorCalllback(stringFormatter::format(strPattern, t...));
+  if (g_errorCalllback) g_errorCalllback(true, stringFormatter::format(strPattern, t...));
   AndroidLogPrintE(stringFormatter::format(strPattern, t...));
   // block application
   while (1) sleep(100000);
@@ -62,7 +62,7 @@ void FatalError(const char *strPattern, Types... t) {
 /* Report error to the user. */
 template<typename ... Types>
 void ReportError(const char *strPattern, Types... t) {
-  if (g_errorCalllback) g_errorCalllback(stringFormatter::format(strPattern, t...));
+  if (g_errorCalllback) g_errorCalllback(false, stringFormatter::format(strPattern, t...));
 }
 
 void AssertFailed(const char *string);

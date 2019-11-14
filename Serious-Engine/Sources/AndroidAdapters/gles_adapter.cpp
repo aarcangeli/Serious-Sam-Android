@@ -62,6 +62,7 @@ namespace gles_adapter {
       const GLvoid *ptr;
   };
 
+  // enable on emulator
   bool USE_BUFFER_DATA = false;
   const bool enableDraws = true;
 
@@ -69,6 +70,14 @@ namespace gles_adapter {
   GLuint INDEX_NORMAL = 2;
   GLuint INDEX_COLOR = 3;
   GLuint INDEX_TEXTURE_COORD = 4;
+
+  const int BUFFER_POSITION = 0;
+  const int BUFFER_NORMAL = 1;
+  const int BUFFER_COLOR = 2;
+  const int BUFFER_TEXTURE_COORD = 3;
+  const int BUFFER_ELEMENTS = 4;
+  const int BUFFER_COUNT = 5;
+  GLuint buffers[BUFFER_COUNT];
 
   // used in glDrawArrays to convert GL_QUADS into GL_TRIANGLES
   GLuint INDEX_DUMMY_ELEMENT_BUFFER = 10;
@@ -236,15 +245,29 @@ namespace gles_adapter {
     if (error) {
       blockingError("Something wrong with OpenGL: ", error);
     }
+
+    glGenBuffers(BUFFER_COUNT, buffers);
+    glGenBuffers(1, &INDEX_DUMMY_ELEMENT_BUFFER);
+  }
+
+  int byterPer(GLenum type) {
+    switch (type) {
+      case GL_UNSIGNED_BYTE:
+        return 1;
+      case GL_FLOAT:
+        return sizeof(float);
+      default:
+        blockingError("byterPer(): unknown type");
+        return 0;
+      }
   }
 
   void syncBuffers(GLsizei vertices) {
     uint32_t totalSize;
     // upload vertex buffer
-    if (vp.type != GL_FLOAT) blockingError("unimplemented mode");
     if (USE_BUFFER_DATA) {
-      totalSize = (vp.stride ? vp.stride : vp.size * sizeof(float)) * vertices;
-      glBindBuffer(GL_ARRAY_BUFFER, INDEX_POSITION);
+      totalSize = (vp.stride ? vp.stride : vp.size * byterPer(vp.type)) * vertices;
+      glBindBuffer(GL_ARRAY_BUFFER, buffers[BUFFER_POSITION]);
       glBufferData(GL_ARRAY_BUFFER, totalSize, vp.ptr, GL_STREAM_DRAW);
       glVertexAttribPointer(INDEX_POSITION, vp.size, vp.type, GL_FALSE, vp.stride, 0);
       glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -255,10 +278,9 @@ namespace gles_adapter {
 
     // upload Texture buffer
     if (isGL_TEXTURE_COORD_ARRAY) {
-      if (tp.type != GL_FLOAT) blockingError("unimplemented mode");
       if (USE_BUFFER_DATA) {
-        totalSize = (tp.stride ? tp.stride : tp.size * sizeof(float)) * vertices;
-        glBindBuffer(GL_ARRAY_BUFFER, INDEX_TEXTURE_COORD);
+        totalSize = (tp.stride ? tp.stride : tp.size * byterPer(tp.type)) * vertices;
+        glBindBuffer(GL_ARRAY_BUFFER, buffers[BUFFER_TEXTURE_COORD]);
         glBufferData(GL_ARRAY_BUFFER, totalSize, tp.ptr, GL_STREAM_DRAW);
         glVertexAttribPointer(INDEX_TEXTURE_COORD, tp.size, tp.type, GL_FALSE, tp.stride, 0);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -271,9 +293,8 @@ namespace gles_adapter {
     // upload Color buffer
     if (isGL_COLOR_ARRAY) {
       if (USE_BUFFER_DATA) {
-        if (cp.type != GL_UNSIGNED_BYTE) blockingError("unimplemented mode");
-        totalSize = (cp.stride ? cp.stride : cp.size) * vertices;
-        glBindBuffer(GL_ARRAY_BUFFER, INDEX_COLOR);
+        totalSize = (cp.stride ? cp.stride : cp.size * byterPer(cp.type)) * vertices;
+        glBindBuffer(GL_ARRAY_BUFFER, buffers[BUFFER_COLOR]);
         glBufferData(GL_ARRAY_BUFFER, totalSize, cp.ptr, GL_STREAM_DRAW);
         glVertexAttribPointer(INDEX_COLOR, cp.size, cp.type, GL_TRUE, cp.stride, 0);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -634,7 +655,6 @@ namespace gles_adapter {
     syncBuffers(vertices);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, INDEX_DUMMY_ELEMENT_BUFFER);
     glDrawElements(GL_TRIANGLES, vertices, GL_UNSIGNED_SHORT, 0);
-//    glDrawElements(GL_LINE_STRIP, vertices, GL_UNSIGNED_SHORT, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     syncBuffersPost();
     setError(glGetError());
@@ -649,6 +669,7 @@ namespace gles_adapter {
     }
 
     uint32_t totalVertices = 0;
+    uint32_t bytePerElement = 0;
     if (type == GL_UNSIGNED_INT) {
       if (count > dummyIndexBuffer.size()) {
         dummyIndexBuffer.resize(count);
@@ -669,6 +690,7 @@ namespace gles_adapter {
       }
       indices = (void*) dummyIndexBuffer.data();
       type = GL_UNSIGNED_SHORT;
+      bytePerElement = 2;
     } else if (type == GL_UNSIGNED_SHORT) {
       uint16_t *bf = (uint16_t *) indices;
       if (USE_BUFFER_DATA) {
@@ -678,6 +700,7 @@ namespace gles_adapter {
           }
         }
       }
+      bytePerElement = 2;
     } else if (type == GL_UNSIGNED_BYTE) {
       uint8_t *bf = (uint8_t *) indices;
       if (USE_BUFFER_DATA) {
@@ -687,12 +710,20 @@ namespace gles_adapter {
           }
         }
       }
+      bytePerElement = 1;
     } else {
       blockingError("Invalid type in glDrawElements");
     }
 
     syncBuffers(totalVertices);
-    glDrawElements(mode, count, type, indices);
+    if (USE_BUFFER_DATA) {
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers[BUFFER_ELEMENTS]);
+      glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * bytePerElement, indices, GL_STREAM_DRAW);
+      glDrawElements(mode, count, type, 0);
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    } else {
+      glDrawElements(mode, count, type, indices);
+    }
     syncBuffersPost();
     setError(glGetError());
   }
