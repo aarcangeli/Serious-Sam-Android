@@ -90,7 +90,7 @@ functions:
       return;
     }
 
-    Particles_Spiral(this, 3.0f*0.5, 2.5f*0.5, PT_STAR04, 10);
+    Particles_Spiral(this, 3.0f*0.5f, 2.5f*0.5f, PT_STAR04, 10);
   }
 
   /* Fill in entity statistics - for AI purposes only */

@@ -883,7 +883,7 @@ functions:
       ESpawnEffect eSpawnEffect;
       eSpawnEffect.colMuliplier = C_WHITE|CT_OPAQUE;
       eSpawnEffect.betType = BET_CANNON;
-      eSpawnEffect.vStretch = FLOAT3D(m_fStretch*0.5, m_fStretch*0.5, m_fStretch*0.5);
+      eSpawnEffect.vStretch = FLOAT3D(m_fStretch*0.5f, m_fStretch*0.5f, m_fStretch*0.5f);
       CEntityPointer penExplosion = CreateEntity(CPlacement3D(m_vLeftLaserTarget,
         ANGLE3D(0.0f, 0.0f, 0.0f)), CLASS_BASIC_EFFECT);
       penExplosion->Initialize(eSpawnEffect);
@@ -908,7 +908,7 @@ functions:
       ESpawnEffect eSpawnEffect;
       eSpawnEffect.colMuliplier = C_WHITE|CT_OPAQUE;
       eSpawnEffect.betType = BET_CANNON;
-      eSpawnEffect.vStretch = FLOAT3D(m_fStretch*0.5, m_fStretch*0.5, m_fStretch*0.5);
+      eSpawnEffect.vStretch = FLOAT3D(m_fStretch*0.5f, m_fStretch*0.5f, m_fStretch*0.5f);
       CEntityPointer penExplosion = CreateEntity(CPlacement3D(m_vLeftLaserTarget,
         ANGLE3D(0.0f, 0.0f, 0.0f)), CLASS_BASIC_EFFECT);
       penExplosion->Initialize(eSpawnEffect);
@@ -1000,7 +1000,7 @@ procedures:
     ESpawnEffect eSpawnEffect;
     eSpawnEffect.colMuliplier = C_WHITE|CT_OPAQUE;
     eSpawnEffect.betType = BET_CANNON;
-    eSpawnEffect.vStretch = FLOAT3D(m_fStretch*0.5, m_fStretch*0.5, m_fStretch*0.5);
+    eSpawnEffect.vStretch = FLOAT3D(m_fStretch*0.5f, m_fStretch*0.5f, m_fStretch*0.5f);
     CEntityPointer penExplosion = CreateEntity(pl, CLASS_BASIC_EFFECT);
     penExplosion->Initialize(eSpawnEffect);
     autowait(FRnd()*0.25f+0.15f);
@@ -1023,7 +1023,7 @@ procedures:
     ESpawnEffect eSpawnEffect;
     eSpawnEffect.colMuliplier = C_WHITE|CT_OPAQUE;
     eSpawnEffect.betType = BET_CANNON;
-    eSpawnEffect.vStretch = FLOAT3D(m_fStretch*1.5,m_fStretch*1.5,m_fStretch*1.5);
+    eSpawnEffect.vStretch = FLOAT3D(m_fStretch*1.5f,m_fStretch*1.5f,m_fStretch*1.5f);
     CEntityPointer penExplosion = CreateEntity(pl, CLASS_BASIC_EFFECT);
     penExplosion->Initialize(eSpawnEffect);
     eSpawnEffect.betType = BET_ROCKET;
@@ -1063,7 +1063,7 @@ procedures:
       // randomize explosion position and size
       CPlacement3D plExplosion;
       plExplosion.pl_OrientationAngle = ANGLE3D(0.0f, 0.0f, 0.0f);
-      plExplosion.pl_PositionVector   = FLOAT3D(FRnd()*2.0-1.0f, FRnd()*3.0-1.5f+LARVA_HANDLE_TRANSLATE, FRnd()*2.0-1.0f)*m_fStretch + GetPlacement().pl_PositionVector;
+      plExplosion.pl_PositionVector   = FLOAT3D(FRnd()*2.0f-1.0f, FRnd()*3.0f-1.5f+LARVA_HANDLE_TRANSLATE, FRnd()*2.0f-1.0f)*m_fStretch + GetPlacement().pl_PositionVector;
       FLOAT vExpSize = (FRnd()*0.7f+0.7f)*m_fStretch;
 
       ESpawnEffect eSpawnEffect;
@@ -1289,7 +1289,7 @@ procedures:
                   m_bRechargedAtLeastOnce = TRUE;
                 }
                 SetHealth(ClampUp(GetHealth()+m_fRechargePerSecond, m_fMaxHealth*m_fMaxRechargedHealth));
-                if (GetHealth()>m_fMaxHealth*0.95) {
+                if (GetHealth()>m_fMaxHealth*0.95f) {
                   m_ltTarget = LT_ENEMY;
                   m_bRecharging = FALSE;
                   // deactivate beam

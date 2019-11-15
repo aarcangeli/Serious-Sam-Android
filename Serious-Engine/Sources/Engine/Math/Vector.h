@@ -232,7 +232,7 @@ template<class Type, int iDimensions>
 __forceinline Vector<Type, iDimensions> &Vector<Type, iDimensions>::SafeNormalize(void)
 {
   Type tLen = Length();
-  if (tLen<1E-6) {
+  if (tLen<1E-6f) {
     if (iDimensions==2) {
       *this = Vector(1,0);
     } else {

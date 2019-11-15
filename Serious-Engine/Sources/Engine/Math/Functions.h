@@ -444,8 +444,11 @@ inline SLONG FastMaxLog2( SLONG x)
 
 
 // square root (works with negative numbers)
+#ifdef __arm__
+inline FLOAT Sqrt( FLOAT x) { return sqrtf( ClampDn( x, 0.0f)); }
+#else
 inline FLOAT Sqrt( FLOAT x) { return (FLOAT)sqrt( ClampDn( x, 0.0f)); }
-
+#endif
 
 
 /*

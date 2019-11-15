@@ -1400,13 +1400,13 @@ FLOAT GetGameDamageMultiplier(void)
 {
   FLOAT fGameDamageMultiplier = 1.0f;
   FLOAT fExtraStrength = GetSP()->sp_fExtraEnemyStrength;
-  if (fExtraStrength>0) {
-    fGameDamageMultiplier*=1.0f/(1+fExtraStrength);
+  if (fExtraStrength>0.0f) {
+    fGameDamageMultiplier*=1.0f/(1.0f+fExtraStrength);
   }
   FLOAT fExtraStrengthPerPlayer = GetSP()->sp_fExtraEnemyStrengthPerPlayer;
-  if (fExtraStrengthPerPlayer>0) {
+  if (fExtraStrengthPerPlayer>0.0f) {
     INDEX ctPlayers = _pNetwork->ga_sesSessionState.GetPlayersCount();
-    fGameDamageMultiplier*=1.0f/(1+fExtraStrengthPerPlayer*ClampDn(ctPlayers-1.0f, 0.0f));
+    fGameDamageMultiplier*=1.0f/(1.0f+fExtraStrengthPerPlayer*ClampDn(ctPlayers-1.0f, 0.0f));
   }
   if (GetSP()->sp_gdGameDifficulty==CSessionProperties::GD_TOURIST) {
     fGameDamageMultiplier *= 2.0f;

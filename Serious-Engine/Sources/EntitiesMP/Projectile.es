@@ -1658,7 +1658,7 @@ void LavamanBombExplosion(void)
   {
     FLOAT fHeading = (FRnd()-0.5f)*180.0f;
     FLOAT fPitch = 10.0f+FRnd()*40.0f;
-    FLOAT fSpeed = 10.0+FRnd()*50.0f;
+    FLOAT fSpeed = 10.0f+FRnd()*50.0f;
 
     // launch
     CPlacement3D pl = GetPlacement();
@@ -1961,7 +1961,7 @@ void BeastProjectileExplosion(void)
   for( INDEX iDebris=0; iDebris<2; iDebris++)
   {
     FLOAT fPitch = 10.0f+FRnd()*10.0f;
-    FLOAT fSpeed = 5.0+FRnd()*20.0f;
+    FLOAT fSpeed = 5.0f+FRnd()*20.0f;
 
     // launch
     CPlacement3D pl = GetPlacement();
@@ -2019,7 +2019,7 @@ void BeastBigProjectileExplosion(void)
   {
     FLOAT fHeading = (FRnd()-0.5f)*180.0f;
     FLOAT fPitch = 10.0f+FRnd()*40.0f;
-    FLOAT fSpeed = 10.0+FRnd()*50.0f;
+    FLOAT fSpeed = 10.0f+FRnd()*50.0f;
 
     // launch
     CPlacement3D pl = GetPlacement();
@@ -2258,7 +2258,7 @@ void DevilGuidedProjectileExplosion(void)
   {
     FLOAT fHeading = (FRnd()-0.5f)*180.0f;
     FLOAT fPitch = 10.0f+FRnd()*40.0f;
-    FLOAT fSpeed = 10.0+FRnd()*50.0f;
+    FLOAT fSpeed = 10.0f+FRnd()*50.0f;
 
     // launch
     CPlacement3D pl = GetPlacement();
@@ -3371,7 +3371,7 @@ procedures:
             ((CProjectile*)&*etouch.penOther)->m_prtType==m_prtType));     
           bHit &= !IsOfClass(etouch.penOther, "Demon");
           FLOAT3D vTrans = en_vCurrentTranslationAbsolute;
-          bHit &= Abs(vTrans.Normalize() % FLOAT3D(etouch.plCollision)) > 0.35;
+          bHit &= Abs(vTrans.Normalize() % FLOAT3D(etouch.plCollision)) > 0.35f;
 
           if (bHit) {
             ProjectileTouch(etouch.penOther);

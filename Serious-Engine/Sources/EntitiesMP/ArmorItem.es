@@ -131,22 +131,22 @@ functions:
     }
     switch (m_EaitType) {
       case ARIT_SHARD:
-        Particles_Emanate(this, 0.75f*0.75, 0.75f*0.75, PT_STAR04, 8, 7.0f);
+        Particles_Emanate(this, 0.75f*0.75f, 0.75f*0.75f, PT_STAR04, 8, 7.0f);
         break;
       case ARIT_SMALL:
-        Particles_Emanate(this, 1.0f*0.75, 1.0f*0.75, PT_STAR04, 32, 7.0f);
+        Particles_Emanate(this, 1.0f*0.75f, 1.0f*0.75f, PT_STAR04, 32, 7.0f);
         break;                                      
       case ARIT_MEDIUM:
-        Particles_Emanate(this, 1.5f*0.75, 1.5f*0.75, PT_STAR04, 64, 7.0f);
+        Particles_Emanate(this, 1.5f*0.75f, 1.5f*0.75f, PT_STAR04, 64, 7.0f);
         break;
       case ARIT_STRONG:                              
-        Particles_Emanate(this, 2.0f*0.75, 1.25f*0.75, PT_STAR04, 96, 7.0f);
+        Particles_Emanate(this, 2.0f*0.75f, 1.25f*0.75f, PT_STAR04, 96, 7.0f);
         break;
       case ARIT_SUPER:
-        Particles_Emanate(this, 2.5f*0.75, 1.5f*0.75, PT_STAR04, 128, 7.0f);
+        Particles_Emanate(this, 2.5f*0.75f, 1.5f*0.75f, PT_STAR04, 128, 7.0f);
         break;
       case ARIT_HELM:
-        Particles_Emanate(this, 0.875f*0.75, 0.875f*0.75, PT_STAR04, 16, 7.0f);
+        Particles_Emanate(this, 0.875f*0.75f, 0.875f*0.75f, PT_STAR04, 16, 7.0f);
         break;      
     }
   }
@@ -162,8 +162,8 @@ functions:
         m_strDescription.PrintF("Shard - H:%g  T:%g", m_fValue, m_fRespawnTime);
         // set appearance
         AddItem(MODEL_1, TEXTURE_1, 0, TEX_SPEC_MEDIUM, 0);
-        AddFlare(MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.4f,0), FLOAT3D(1.0,1.0,0.3f) );
-        StretchItem(FLOAT3D(0.75f*0.75, 0.75f*0.75, 0.75f*0.75));
+        AddFlare(MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.4f,0), FLOAT3D(1.0f,1.0f,0.3f) );
+        StretchItem(FLOAT3D(0.75f*0.75f, 0.75f*0.75f, 0.75f*0.75f));
         m_iSoundComponent = SOUND_SHARD;
         break;
       case ARIT_SMALL:
@@ -223,8 +223,8 @@ functions:
         m_strDescription.PrintF("Helm - H:%g  T:%g", m_fValue, m_fRespawnTime);
         // set appearance
         AddItem(MODEL_5, TEXTURE_5, 0, TEX_SPEC_MEDIUM, 0);
-        AddFlare(MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.5f,0), FLOAT3D(1.5,1.5,0.4f) );
-        StretchItem(FLOAT3D(0.875f*0.75, 0.875f*0.75, 0.875f*0.75));
+        AddFlare(MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.5f,0), FLOAT3D(1.5f,1.5f,0.4f) );
+        StretchItem(FLOAT3D(0.875f*0.75f, 0.875f*0.75f, 0.875f*0.75f));
         m_iSoundComponent = SOUND_HELM;
         break;        
     }

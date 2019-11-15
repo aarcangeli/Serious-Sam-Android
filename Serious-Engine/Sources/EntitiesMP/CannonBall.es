@@ -225,7 +225,7 @@ functions:
     FLOAT fSpeedRatio = Min( en_vCurrentTranslationAbsolute.Length()/140.0f, 1.0f);
     INDEX ctFireParticles = INDEX( (Max( fSpeedRatio-0.5f, 0.0f)*2.0f)*128);
     //CPrintF("fSpeedRatio=%g, ctFireParticles=%d\n", fSpeedRatio, ctFireParticles);
-    if( _pTimer->GetLerpedCurrentTick()-m_fStartTime>0.075)
+    if( _pTimer->GetLerpedCurrentTick()-m_fStartTime>0.075f)
     {
       Particles_BeastBigProjectileTrail( this, 2.0f, 1.0f, 0.75f, ctFireParticles);
     }

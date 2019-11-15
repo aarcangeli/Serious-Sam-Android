@@ -650,14 +650,14 @@ functions:
     FLOAT fKickDamage = fNewDamage;
     if( (dmtType == DMT_EXPLOSION) || (dmtType == DMT_IMPACT) || (dmtType == DMT_CANNONBALL_EXPLOSION) )
     {
-      fKickDamage*=1.5;
+      fKickDamage*=1.5f;
     }
     if (dmtType==DMT_DROWNING || dmtType==DMT_CLOSERANGE || dmtType==DMT_CHAINSAW) {
-      fKickDamage /= 10;
+      fKickDamage /= 10.0f;
     }
     if (dmtType==DMT_BURNING)
     {
-      fKickDamage /= 100000;
+      fKickDamage /= 100000.0f;
       UBYTE ubR, ubG, ubB, ubA;
       FLOAT fColorFactor=fNewDamage/m_fMaxHealth*255.0f;
       ColorToRGBA(m_colBurning, ubR, ubG, ubB, ubA);

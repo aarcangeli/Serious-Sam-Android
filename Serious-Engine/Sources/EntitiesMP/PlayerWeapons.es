@@ -1813,7 +1813,7 @@ functions:
         FLOAT3D vToTarget = penClosest->GetPlacement().pl_PositionVector - m_penPlayer->GetPlacement().pl_PositionVector;
         FLOAT3D vTargetHeading = FLOAT3D(0.0, 0.0, -1.0f)*penClosest->GetRotationMatrix();
         vToTarget.Normalize(); vTargetHeading.Normalize();
-        if (vToTarget%vTargetHeading>0.64279) //CosFast(50.0f)
+        if (vToTarget%vTargetHeading>0.64279f) //CosFast(50.0f)
         {
           PrintCenterMessage(this, m_penPlayer, TRANS("Backstab!"), 4.0f, MSS_NONE);
           fDamage *= 4.0f;
@@ -4014,7 +4014,7 @@ procedures:
         }
       }
 
-      autowait(GetSP()->sp_bCooperative ? 0.5f : 0.375);
+      autowait(GetSP()->sp_bCooperative ? 0.5f : 0.375f);
       /* drop shell */
 
       /* add one empty bullet shell */

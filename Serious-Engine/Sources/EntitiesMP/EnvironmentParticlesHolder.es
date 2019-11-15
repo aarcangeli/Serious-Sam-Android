@@ -209,10 +209,10 @@ procedures:
     SetModel(MODEL_ENVIRONMENT_PARTICLES_HOLDER);
     SetModelMainTexture(TEXTURE_ENVIRONMENT_PARTICLES_HOLDER);
     
-    m_tmRainStart = 1e5-1.0f;
-    m_tmRainEnd = 1e5;
-    m_tmSnowStart = 1e5-1.0f;
-    m_tmSnowEnd = 1e5;
+    m_tmRainStart = 1e5f-1.0f;
+    m_tmRainEnd = 1e5f;
+    m_tmSnowStart = 1e5f-1.0f;
+    m_tmSnowEnd = 1e5f;
 
     switch(m_eptType) {
     case EPTH_GROWTH:

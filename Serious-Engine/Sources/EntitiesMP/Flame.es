@@ -277,7 +277,7 @@ procedures:
         }
 
         // if the plane is mostly horizontal
-        if (Abs(plPlane(2))>0.5) {
+        if (Abs(plPlane(2))>0.5f) {
           // use cross product of +x axis and plane normal as +s axis
           vU = FLOAT3D(1.0f, 0.0f, 0.0f)*m_vPlaneNormal;
         // if the plane is mostly vertical
