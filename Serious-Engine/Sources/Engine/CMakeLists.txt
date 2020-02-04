@@ -3,16 +3,6 @@ include(generatedFiles)
 set(SE_BASE "${SE_SOURCES}/Engine")
 set(SE_CURRENT_GENERATED_DIR "${SE_GENERATED_DIR}/Engine")
 
-set(
-  SE_GEN_SOURCES
-
-  # generated files
-  "${SE_CURRENT_GENERATED_DIR}/Base/Scanner.cpp"
-  "${SE_CURRENT_GENERATED_DIR}/Base/Parser.cpp"
-  "${SE_CURRENT_GENERATED_DIR}/Ska/smcScan.cpp"
-  "${SE_CURRENT_GENERATED_DIR}/Ska/smcPars.cpp"
-)
-
 # compile es files
 run_ecc(
   SE_GEN_SOURCES
@@ -41,6 +31,7 @@ set(
   "${SE_BASE}/Base/IFeel.cpp"
   "${SE_BASE}/Base/Lists.cpp"
   "${SE_BASE}/Base/Memory.cpp"
+  "${SE_BASE}/Base/Parser.cpp"
   "${SE_BASE}/Base/Profiling.cpp"
   "${SE_BASE}/Base/ProgressHook.cpp"
   "${SE_BASE}/Base/Protection.cpp"
@@ -49,6 +40,9 @@ set(
   "${SE_BASE}/Base/Serial.cpp"
   "${SE_BASE}/Base/Shell.cpp"
   "${SE_BASE}/Base/ShellTypes.cpp"
+  "${SE_BASE}/Base/Scanner.cpp"
+  "${SE_BASE}/Ska/smcScan.cpp"
+  "${SE_BASE}/Ska/smcPars.cpp"
   #        "${SE_BASE}/Base/StackDump.cpp"
   "${SE_BASE}/Base/Statistics.cpp"
   "${SE_BASE}/Base/iconvlite.cpp"
@@ -251,11 +245,6 @@ set(
   #"${SE_BASE}/Rendering/RenderModels.cpp"
   #"${SE_BASE}/Rendering/RendMisc.cpp"
 )
-
-run_flex("${SE_CURRENT_GENERATED_DIR}/Base/Scanner.cpp" "${SE_BASE}/Base/Scanner.l" "${SE_BASE}/Base/FLEX.skl" "${SE_BASE}/Base")
-run_bison("${SE_CURRENT_GENERATED_DIR}/Base/Parser.cpp" "${SE_BASE}/Base/Parser.y" "${SE_CURRENT_GENERATED_DIR}/Base/Parser.c" "")
-run_flex("${SE_CURRENT_GENERATED_DIR}/Ska/smcScan.cpp" "${SE_BASE}/Ska/smcScan.l" "${SE_BASE}/Ska/smcFlex.skl" "${SE_BASE}/Ska")
-run_bison("${SE_CURRENT_GENERATED_DIR}/Ska/smcPars.cpp" "${SE_BASE}/Ska/smcPars.y" "${SE_CURRENT_GENERATED_DIR}/Ska/smcPars.c" -psyy)
 
 if (STATIC_LINKING)
   add_library(Engine STATIC ${SE_ENGINE_SOURCES})
