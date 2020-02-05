@@ -22,10 +22,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "EntitiesMP/SoundHolder.h"
 %}
 
-uses "EntitiesMP\FogMarker";
-uses "EntitiesMP\HazeMarker";
-uses "EntitiesMP\MirrorMarker";
-uses "EntitiesMP\GradientMarker";
+uses "EntitiesMP/FogMarker";
+uses "EntitiesMP/HazeMarker";
+uses "EntitiesMP/MirrorMarker";
+uses "EntitiesMP/GradientMarker";
 
 %{
 

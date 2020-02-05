@@ -18,8 +18,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 349
 %{
 #include "StdH.h"
-#include "ModelsMP/Enemies/AirElemental/ShockwaveBase.h"
-#include "ModelsMP/Enemies/AirElemental/Shockwave.h"
+#include "ModelsMP/Enemies/AirElemental/ShockWaveBase.h"
+#include "ModelsMP/Enemies/AirElemental/ShockWave.h"
 %}
 
 uses "EntitiesMP/BasicEffects";

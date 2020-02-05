@@ -69,6 +69,8 @@ extern void JumpFromBouncer(CEntity *penToBounce, CEntity *penBouncer);
 
 %}
 
+uses "EntitiesMP/WorldLink";
+
 enum PlayerViewType {
   0 PVT_PLAYEREYES      "",
   1 PVT_PLAYERAUTOVIEW  "",
@@ -2900,14 +2902,14 @@ functions:
     FLOAT fKickDamage = fDamageAmmount;
     if( (dmtType == DMT_EXPLOSION) || (dmtType == DMT_IMPACT) || (dmtType == DMT_CANNONBALL_EXPLOSION) )
     {
-      fKickDamage*=1.5;
+      fKickDamage*=1.5f;
     }
     if (dmtType==DMT_DROWNING || dmtType==DMT_CLOSERANGE) {
-      fKickDamage /= 10;
+      fKickDamage /= 10.0f;
     }
     if (dmtType==DMT_CHAINSAW)
     {
-      fKickDamage /= 10;
+      fKickDamage /= 10.0f;
     }
 
     // get passed time since last damage
@@ -4710,7 +4712,7 @@ functions:
         mDesired = en_mRotation*(mDesired*!en_mRotation);
         FLOATmatrix3D mForced = !mDesired*mCurr*!mLast; // = aCurr-aLast-aDesired;
         ANGLE3D aForced; DecomposeRotationMatrixNoSnap(aForced, mForced);
-        if (aForced.MaxNorm()<1E-2) {
+        if (aForced.MaxNorm()<1E-2f) {
           aForced = ANGLE3D(0,0,0);
         }
         FLOATquat3D qForced; qForced.FromEuler(aForced);

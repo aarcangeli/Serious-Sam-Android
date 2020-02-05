@@ -411,6 +411,9 @@ typedef BSPCutter<FLOAT, 3>          FLOATbspcutter3D;
 template<class cType>
 inline void Clear(cType &t) { t.cType::Clear(); };
 
+template<class cType>
+inline void Clear(cType *t) { t->cType::Clear(); };
+
 // specific clearing functions for built-in types
 inline void Clear(signed long int sli) {};
 inline void Clear(unsigned long int uli) {};

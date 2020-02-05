@@ -18,7 +18,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/ListIterator.inl>
 #include <Engine/Math/Projection.h>
 #include <Engine/Math/FixInt.h>
-#include <Engine/Graphics/Drawport.h>
+#include <Engine/Graphics/DrawPort.h>
 #include <Engine/Graphics/ImageInfo.h>
 #include <Engine/Graphics/GfxLibrary.h>
 #include <Engine/Terrain/Terrain.h>

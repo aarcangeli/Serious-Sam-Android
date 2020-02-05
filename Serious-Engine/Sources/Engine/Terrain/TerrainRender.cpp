@@ -19,7 +19,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Terrain/TerrainEditing.h>
 #include <Engine/Math/Projection.h>
 #include <Engine/Math/OBBox.h>
-#include <Engine/Graphics/Drawport.h>
+#include <Engine/Graphics/DrawPort.h>
 #include <Engine/Graphics/Fog_internal.h>
 #include <Engine/Rendering/Render.h>
 #include <Engine/Entities/Entity.h>

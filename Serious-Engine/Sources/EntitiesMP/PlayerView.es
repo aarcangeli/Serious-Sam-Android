@@ -174,7 +174,7 @@ functions:
     if (bFollowCrossHair) {
       FLOAT3D vTarget = vBase-ppw->m_vRayHit;
       FLOAT fLen = vTarget.Length();
-      if (fLen>0.01) {
+      if (fLen>0.01f) {
         vTarget/=fLen;
       } else {
         vTarget = FLOAT3D(0,1,0);

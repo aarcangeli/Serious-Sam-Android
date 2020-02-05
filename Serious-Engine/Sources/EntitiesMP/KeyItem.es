@@ -48,8 +48,9 @@ event EKey {
 
 %{
 
-const char *GetKeyName(enum KeyItemType kit)
+const char *GetKeyName(int _kit)
 {
+  enum KeyItemType kit = (KeyItemType) _kit;
   switch(kit) {
   case KIT_BOOKOFWISDOM     :  return TRANS("Book of wisdom"); break;
   case KIT_CROSSWOODEN      :  return TRANS("Wooden cross"); break;

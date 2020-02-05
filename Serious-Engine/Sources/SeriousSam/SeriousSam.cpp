@@ -26,7 +26,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "resource.h"
 #include "SplashScreen.h"
 #include "MainWindow.h"
-#include "GlSettings.h"
+#include "GLSettings.h"
 #include "LevelInfo.h"
 #include "LCDDrawing.h"
 #include "CmdLine.h"

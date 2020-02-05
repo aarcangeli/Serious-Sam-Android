@@ -701,8 +701,8 @@ extern ULONG gfxGetColorMask(void)
 
 
 
-#include "GFX_wrapper_OpenGL.cpp"
-#include "GFX_wrapper_Direct3D.cpp"
+#include "Gfx_wrapper_OpenGL.cpp"
+#include "Gfx_wrapper_Direct3D.cpp"
 
 
 

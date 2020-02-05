@@ -19,7 +19,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/CTString.h>
 #include <Engine/Ska/StringTable.h>
 #include <Engine/Templates/StaticArray.cpp>
-#include <Engine/templates/DynamicContainer.cpp>
+#include <Engine/Templates/DynamicContainer.cpp>
 #include <Engine/Base/Stream.h>
 #include <Engine/Base/Console.h>
 #include <Engine/Math/Functions.h>

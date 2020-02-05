@@ -22,7 +22,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/Memory.h>
 #include <Engine/Network/CPacket.h>
 
-#include <Engine/Base/Listiterator.inl>
+#include <Engine/Base/ListIterator.inl>
 
 // should the packet transfers in/out of the buffer be reported to the console
 extern INDEX net_bReportPackets;

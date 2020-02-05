@@ -20,7 +20,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 uses "EntitiesMP/MovingBrushMarker";
 uses "EntitiesMP/SoundHolder";
-uses "EntitiesMP\MirrorMarker";
+uses "EntitiesMP/MirrorMarker";
 uses "EntitiesMP/Debris";
 
 event EHit {

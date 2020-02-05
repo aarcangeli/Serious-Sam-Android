@@ -16,7 +16,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 // Game.cpp : Defines the initialization routines for the DLL.
 //
 
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "Game.h"
 #include <dirent.h> // for _mkdir()
 #include <sys/stat.h>

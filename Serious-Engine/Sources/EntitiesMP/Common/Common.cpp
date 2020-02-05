@@ -13,8 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
-#include <Engine/Base/Shell.h>
+#include "EntitiesMP/StdH/StdH.h"
 #include "EntitiesMP/Reminder.h"
 #include "EntitiesMP/Flame.h"
 #include "EntitiesMP/Debris.h"
@@ -58,18 +57,18 @@ void CCompMessageID::NewMessage(const CTFileName &fnm)
   // decode type from filename
   CTString strName = fnm;
 
-  if (strName.Matches("*messages/information*")) {
+  if (strName.Matches("*messages\\information*")) {
     cmi_cmtType = CMT_INFORMATION;
-  } else if (strName.Matches("*messages/weapons*")) {
+  } else if (strName.Matches("*messages\\weapons*")) {
     cmi_cmtType = CMT_WEAPONS;
-  } else if (strName.Matches("*messages/enemies*")) {
+  } else if (strName.Matches("*messages\\enemies*")) {
     cmi_cmtType = CMT_ENEMIES;
-  } else if (strName.Matches("*messages/background*")) {
+  } else if (strName.Matches("*messages\\background*")) {
     cmi_cmtType = CMT_BACKGROUND;
-  } else if (strName.Matches("*messages/statistics*")) {
+  } else if (strName.Matches("*messages\\statistics*")) {
     cmi_cmtType = CMT_STATISTICS;
   } else {
-    CPrintF("Unknown message type: %s\n", (const CTString&) fnm);
+    CPrintF("Unknown message type: %s\n", (const char *) fnm);
     cmi_cmtType = CMT_INFORMATION;
   }
   // mark as unread
@@ -248,7 +247,7 @@ CEntityPointer SpawnReminder(CEntity *penOwner, FLOAT fWaitTime, INDEX iValue) {
   try {
     penReminder = penOwner->GetWorld()->CreateEntity_t
       (penOwner->GetPlacement(), CTFILENAME("Classes\\Reminder.ecl"));
-  } catch ( const char *strError) {
+  } catch (char *strError) {
     FatalError(TRANS("Cannot create reminder entity class: %s"), strError);
   }
   EReminderInit eri;
@@ -355,7 +354,7 @@ void SpawnHitTypeEffect(CEntity *pen, enum BulletHitType bhtType, BOOL bSound, F
         CEntityPointer penHit = pen->GetWorld()->CreateEntity_t(plHit , CTFILENAME("Classes\\BasicEffect.ecl"));
         penHit->Initialize(ese);
       }
-      catch ( const char *strError)
+      catch (char *strError)
       {
         FatalError(TRANS("Cannot create basic effect class: %s"), strError);
       }
@@ -386,8 +385,8 @@ void SpawnHitTypeEffect(CEntity *pen, enum BulletHitType bhtType, BOOL bSound, F
         {
           GetNormalComponent( vDistance/fDistance, vHitNormal, ese.vDirection);
           FLOAT fLength = ese.vDirection.Length();
-          fLength   = Clamp( fLength*3.0f, 1.0f, 3.0f);
-          fDistance = Clamp( (FLOAT)log10(fDistance), 0.5f, 2.0f);
+          fLength   = Clamp( fLength*3, 1.0f, 3.0f);
+          fDistance = Clamp( log10f(fDistance), 0.5f, 2.0f);
           ese.vStretch = FLOAT3D( fDistance, fLength*fDistance, 1.0f);
           try
           {
@@ -396,7 +395,7 @@ void SpawnHitTypeEffect(CEntity *pen, enum BulletHitType bhtType, BOOL bSound, F
             CEntityPointer penHit = pen->GetWorld()->CreateEntity_t(plHit , CTFILENAME("Classes\\BasicEffect.ecl"));
             penHit->Initialize(ese);
           }
-          catch ( const char *strError)
+          catch (char *strError)
           {
             FatalError(TRANS("Cannot create basic effect class: %s"), strError);
           }
@@ -438,7 +437,7 @@ CEntityPointer SpawnFlame(CEntity *penOwner, CEntity *penAttach, const FLOAT3D &
   try {
     CPlacement3D plFlame(vPos, ANGLE3D(0, 0, 0));
     penFlame = penAttach->GetWorld()->CreateEntity_t(plFlame, CTFILENAME("Classes\\Flame.ecl"));
-  } catch ( const char *strError) {
+  } catch (char *strError) {
     FatalError(TRANS("Cannot create flame entity class: %s"), strError);
   }
   penFlame->Initialize(ef);
@@ -915,9 +914,9 @@ BOOL SetPlayerAppearance_internal(CModelObject *pmo, const CTFileName &fnmAMC, C
     return TRUE;
 
   // if anything failed
-  } catch ( const char *strError) {
+  } catch (char *strError) {
     // report error
-    CPrintF(TRANS("Cannot load player model:\n%s (%d) : %s\n"), 
+    CPrintF(TRANSV("Cannot load player model:\n%s (%d) : %s\n"), 
       (const char*)_strFile, _ctLines, strError);
     return FALSE;
   }
@@ -998,8 +997,8 @@ COLOR _colDebris;
 // debris spawning
 void Debris_Begin(
   EntityInfoBodyType Eeibt, 
-  enum DebrisParticlesType dptParticles,
-  enum BasicEffectType  betStain,
+  int /*enum DebrisParticlesType*/ _dptParticles,
+  int /*enum BasicEffectType*/  _betStain,
   FLOAT fEntitySize,                  // entity size in meters
   const FLOAT3D &vSpeed,
   const FLOAT3D &vSpawnerSpeed,       // how fast was the entity moving
@@ -1008,6 +1007,9 @@ void Debris_Begin(
   const COLOR colDebris /*=C_WHITE*/  // multiply color
 )
 {
+  enum DebrisParticlesType dptParticles = (enum DebrisParticlesType) _dptParticles;
+  enum BasicEffectType betStain = (enum BasicEffectType) _betStain;
+
   _Eeibt          = Eeibt       ;
   _dptParticles   = dptParticles;
   _betStain       = betStain    ;
@@ -1142,8 +1144,8 @@ CEntityPointer Debris_Spawn_Independent(
 
 CEntityPointer Debris_Spawn_Template(
   EntityInfoBodyType eibt,
-  enum DebrisParticlesType dptParticles,
-  enum BasicEffectType betStain,
+  int /*enum DebrisParticlesType*/ _dptParticles,
+  int /*enum BasicEffectType*/ _betStain,
   CModelHolder2 *penmhDestroyed,
   CEntity *penComponents,
   CModelHolder2 *penmhTemplate,
@@ -1156,6 +1158,9 @@ CEntityPointer Debris_Spawn_Template(
   FLOAT fDustStretch,
   COLOR colBurning)
 {
+  enum DebrisParticlesType dptParticles = (enum DebrisParticlesType) _dptParticles;
+  enum BasicEffectType betStain = (enum BasicEffectType) _betStain;
+
   if(penmhTemplate==NULL || penmhTemplate->GetModelObject()==NULL)
   {
     return NULL;
@@ -1342,7 +1347,7 @@ CEntity *FixupCausedToPlayer(CEntity *penThis, CEntity *penCaused, BOOL bWarning
   }
 
   if (bWarning && (ent_bReportBrokenChains || GetSP()->sp_bQuickTest)) {
-    CPrintF(TRANS("WARNING: Triggering chain broken, entity: %s-%s(%s)\n"), 
+    CPrintF(TRANSV("WARNING: Triggering chain broken, entity: %s-%s(%s)\n"), 
       (const char*)penThis->GetName(),
       (const char*)penThis->GetDescription(),
       (const char*)penThis->GetClass()->GetName());
@@ -1384,7 +1389,7 @@ CPlacement3D LerpPlacementsPrecise(const CPlacement3D &pl0, const CPlacement3D &
   FLOAT3D v0 = pl0.pl_PositionVector;
   FLOAT3D v1 = pl1.pl_PositionVector;
 
-  FLOATquat3D q = Slerp<FLOAT>(fRatio, q0, q1);
+  FLOATquat3D q = Slerp(fRatio, q0, q1);
   FLOAT3D v = Lerp(v0, v1, fRatio);
 
   pl.pl_PositionVector = v;
@@ -1400,13 +1405,13 @@ FLOAT GetGameDamageMultiplier(void)
 {
   FLOAT fGameDamageMultiplier = 1.0f;
   FLOAT fExtraStrength = GetSP()->sp_fExtraEnemyStrength;
-  if (fExtraStrength>0) {
-    fGameDamageMultiplier*=1.0f/(1+fExtraStrength);
+  if (fExtraStrength>0.0f) {
+    fGameDamageMultiplier*=1.0f/(1.0f+fExtraStrength);
   }
   FLOAT fExtraStrengthPerPlayer = GetSP()->sp_fExtraEnemyStrengthPerPlayer;
-  if (fExtraStrengthPerPlayer>0) {
+  if (fExtraStrengthPerPlayer>0.0f) {
     INDEX ctPlayers = _pNetwork->ga_sesSessionState.GetPlayersCount();
-    fGameDamageMultiplier*=1.0f/(1+fExtraStrengthPerPlayer*ClampDn(ctPlayers-1.0f, 0.0f));
+    fGameDamageMultiplier*=1.0f/(1.0f+fExtraStrengthPerPlayer*ClampDn(((FLOAT) ctPlayers)-1.0f, 0.0f));
   }
   if (GetSP()->sp_gdGameDifficulty==CSessionProperties::GD_TOURIST) {
     fGameDamageMultiplier *= 2.0f;
@@ -1432,8 +1437,9 @@ class CWorldSettingsController *GetWSC(CEntity *pen)
   class CBackgroundViewer *penBcgViewer = (CBackgroundViewer *) pen->GetWorld()->GetBackgroundViewer();
   if( penBcgViewer != NULL) {
     // obtain world settings controller 
-    pwsc = (CWorldSettingsController *) penBcgViewer->m_penWorldSettingsController.ep_pen;
+    pwsc = (CWorldSettingsController *) &*penBcgViewer->m_penWorldSettingsController;
   }
   return pwsc;
 }
+
 

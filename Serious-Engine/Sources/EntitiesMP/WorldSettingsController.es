@@ -29,16 +29,16 @@ properties:
   3 FLOAT m_tmLightningStart = -1.0f,             // lightning start time
   4 FLOAT m_fLightningPower = 1.0f,               // lightning power
   5 FLOAT m_tmStormEnd = -1.0f,                   // storm end time
-  6 FLOAT m_tmPyramidPlatesStart = 1e6,           // time when pyramid plates blend started
-  7 FLOAT m_tmActivatedPlate1 = 1e6,              // time when plate 1 has been activated
-  8 FLOAT m_tmDeactivatedPlate1 = 1e6,            // time when plate 1 has been deactivated
-  9 FLOAT m_tmActivatedPlate2 = 1e6,              // time when plate 2 has been activated
- 10 FLOAT m_tmDeactivatedPlate2 = 1e6,            // time when plate 2 has been deactivated
- 11 FLOAT m_tmActivatedPlate3 = 1e6,              // time when plate 3 has been activated
- 12 FLOAT m_tmDeactivatedPlate3 = 1e6,            // time when plate 3 has been deactivated
- 13 FLOAT m_tmActivatedPlate4 = 1e6,              // time when plate 4 has been activated
- 14 FLOAT m_tmDeactivatedPlate4 = 1e6,            // time when plate 4 has been deactivated
- 15 FLOAT m_tmPyramidMorphRoomActivated = 1e6,    // time when pyramid morph room has been activated
+  6 FLOAT m_tmPyramidPlatesStart = 1e6f,          // time when pyramid plates blend started
+  7 FLOAT m_tmActivatedPlate1 = 1e6f,             // time when plate 1 has been activated
+  8 FLOAT m_tmDeactivatedPlate1 = 1e6f,           // time when plate 1 has been deactivated
+  9 FLOAT m_tmActivatedPlate2 = 1e6f,             // time when plate 2 has been activated
+ 10 FLOAT m_tmDeactivatedPlate2 = 1e6f,           // time when plate 2 has been deactivated
+ 11 FLOAT m_tmActivatedPlate3 = 1e6f,             // time when plate 3 has been activated
+ 12 FLOAT m_tmDeactivatedPlate3 = 1e6f,           // time when plate 3 has been deactivated
+ 13 FLOAT m_tmActivatedPlate4 = 1e6f,             // time when plate 4 has been activated
+ 14 FLOAT m_tmDeactivatedPlate4 = 1e6f,           // time when plate 4 has been deactivated
+ 15 FLOAT m_tmPyramidMorphRoomActivated = 1e6f,   // time when pyramid morph room has been activated
 
  20 FLOAT m_tmShakeStarted = -1.0f,       // time when shaking started
  21 FLOAT3D m_vShakePos = FLOAT3D(0,0,0), // shake position
@@ -207,8 +207,8 @@ procedures:
     SetModel(MODEL_WORLD_SETTINGS_CONTROLLER);
     SetModelMainTexture(TEXTURE_WORLD_SETTINGS_CONTROLLER);
     
-    m_tmStormStart = 1e5-1.0f;
-    m_tmStormEnd = 1e5;
+    m_tmStormStart = 1e5f-1.0f;
+    m_tmStormEnd = 1e5f;
 
     // do nothing
     return;

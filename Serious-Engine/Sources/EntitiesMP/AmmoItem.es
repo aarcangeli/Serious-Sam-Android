@@ -23,8 +23,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "Models/Weapons/RocketLauncher/Projectile/Rocket.h"
 #include "Models/Items/Ammo/Grenades/Grenades.h"
 #include "Models/Items/Ammo/Electricity/Electricity.h"
-#include "Models/Items/Ammo/Cannonball/Cannonball.h"
-#include "Models/Items/Ammo/Cannonball/CannonballQuad.h"
+#include "Models/Items/Ammo/CannonBall/CannonBall.h"
+#include "Models/Items/Ammo/CannonBall/CannonBallQuad.h"
 #include "ModelsMP/Items/Ammo/SniperBullets/SniperBullets.h"
 %}
 
@@ -146,37 +146,37 @@ functions:
     }
     switch (m_EaitType) {
       case AIT_SHELLS:
-        Particles_Spiral(this, 1.0f*0.75, 1.0f*0.75, PT_STAR04, 4);
+        Particles_Spiral(this, 1.0f*0.75f, 1.0f*0.75f, PT_STAR04, 4);
         break;
       case AIT_BULLETS:
-        Particles_Spiral(this, 1.5f*0.75, 1.0f*0.75, PT_STAR04, 6);
+        Particles_Spiral(this, 1.5f*0.75f, 1.0f*0.75f, PT_STAR04, 6);
         break;
       case AIT_ROCKETS:
-        Particles_Spiral(this, 1.5f*0.75, 1.25f*0.75, PT_STAR04, 6);
+        Particles_Spiral(this, 1.5f*0.75f, 1.25f*0.75f, PT_STAR04, 6);
         break;
       case AIT_GRENADES:
-        Particles_Spiral(this, 2.0f*0.75, 1.25f*0.75, PT_STAR04, 6);
+        Particles_Spiral(this, 2.0f*0.75f, 1.25f*0.75f, PT_STAR04, 6);
         break;
       case AIT_ELECTRICITY:
-        Particles_Spiral(this, 1.5f*0.75, 1.125f*0.75, PT_STAR04, 6);
+        Particles_Spiral(this, 1.5f*0.75f, 1.125f*0.75f, PT_STAR04, 6);
         break;
       case AIT_NUKEBALL:
-        Particles_Spiral(this, 1.25f*0.75, 1.0f*0.75, PT_STAR04, 4);
+        Particles_Spiral(this, 1.25f*0.75f, 1.0f*0.75f, PT_STAR04, 4);
         break;
       case AIT_IRONBALLS:
-        Particles_Spiral(this, 2.0f*0.75, 1.25f*0.75, PT_STAR04, 8);
+        Particles_Spiral(this, 2.0f*0.75f, 1.25f*0.75f, PT_STAR04, 8);
         break;
       case AIT_BACKPACK:
-        Particles_Spiral(this, 3.0f*0.5, 2.5f*0.5, PT_STAR04, 10);
+        Particles_Spiral(this, 3.0f*0.5f, 2.5f*0.5f, PT_STAR04, 10);
         break;
        case AIT_SERIOUSPACK:
-        Particles_Spiral(this, 3.0f*0.5, 2.5f*0.5, PT_STAR04, 10);
+        Particles_Spiral(this, 3.0f*0.5f, 2.5f*0.5f, PT_STAR04, 10);
         break;
        case AIT_NAPALM:
-        Particles_Spiral(this, 3.0f*0.5, 2.5f*0.5, PT_STAR04, 10);
+        Particles_Spiral(this, 3.0f*0.5f, 2.5f*0.5f, PT_STAR04, 10);
         break;
        case AIT_SNIPERBULLETS:
-        Particles_Spiral(this, 1.5f*0.75, 1.25f*0.75, PT_STAR04, 6);
+        Particles_Spiral(this, 1.5f*0.75f, 1.25f*0.75f, PT_STAR04, 6);
         break;
     }
   }

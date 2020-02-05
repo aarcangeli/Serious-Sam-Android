@@ -278,7 +278,7 @@ procedures:
     // possible random wait
     if (m_fRndBeginWait>0.0f)
     {
-      FLOAT fRndWait = FRnd()*m_fRndBeginWait+0.05;
+      FLOAT fRndWait = FRnd()*m_fRndBeginWait+0.05f;
       autowait(fRndWait);
     }
 

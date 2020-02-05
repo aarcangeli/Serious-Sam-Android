@@ -18,7 +18,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
  *  Copyright (c) 1997-1999, CroTeam. 
  */
 
-#include "stdafx.h"
+#include "StdAfx.h"
 
 extern CGame *_pGame;
 

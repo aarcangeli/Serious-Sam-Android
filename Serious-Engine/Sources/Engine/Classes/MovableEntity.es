@@ -50,7 +50,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 %{
 
 #define ANYEXCEPTION  ...
-template CStaticStackArray<CBrushPolygon*>;
+template class CStaticStackArray<CBrushPolygon*>;
 
 #define MAXCOLLISIONRETRIES 4*4
 extern FLOAT phy_fCollisionCacheAhead;

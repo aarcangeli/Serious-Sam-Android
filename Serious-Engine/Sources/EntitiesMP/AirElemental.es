@@ -528,7 +528,7 @@ procedures:
                         m_fWindBlastFirePosEnd*m_fAttSizeCurrent,
                        (FLOAT)m_iWind*0.25f);
         ShootProjectile(PRT_AIRELEMENTAL_WIND, vFirePos,
-                        ANGLE3D(30.0f-m_iWind*10.0, 0.0f, 0.0f));
+                        ANGLE3D(30.0f-m_iWind*10.0f, 0.0f, 0.0f));
         m_iWind++;
         autowait(0.1f);
       }

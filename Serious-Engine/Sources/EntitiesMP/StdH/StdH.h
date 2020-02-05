@@ -14,7 +14,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
 #include <Engine/StdH.h>
-#include <Engine\Engine.h>
+#include <Engine/Engine.h>
 #include <GameMP/SessionProperties.h>
 #include <GameMP/PlayerSettings.h>
 
@@ -27,9 +27,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #define DECL_DLL 
 #endif
 
-#include "..\Global.h"
-#include "..\Common\Flags.h"
-#include "..\Common\Common.h"
-#include "..\Common\Particles.h"
-#include "..\Common\EmanatingParticles.h"
-#include "..\Common\GameInterface.h"
+#include "../Global.h"
+#include "../Common/Flags.h"
+#include "../Common/Common.h"
+#include "../Common/Particles.h"
+#include "../Common/EmanatingParticles.h"
+#include "../Common/GameInterface.h"
