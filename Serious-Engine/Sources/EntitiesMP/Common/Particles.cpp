@@ -1219,9 +1219,9 @@ void Particles_ExplosionDebris1(CEntity *pen, FLOAT tmStart, FLOAT3D vStretch, C
     vRel(3)*=vStretch(3);
     FLOAT3D vPos=vCenter+vRel;
     
-    UBYTE ubR = 255;
-    UBYTE ubG = 240+afStarsPositions[iRnd][1]*32;
-    UBYTE ubB = 240+afStarsPositions[iRnd][2]*32;
+    UBYTE ubR = (UBYTE) (255);
+    UBYTE ubG = (UBYTE) (240+afStarsPositions[iRnd][1]*32);
+    UBYTE ubB = (UBYTE) (240+afStarsPositions[iRnd][2]*32);
     COLOR colAlpha = pTD->GetTexel(PIX(ClampUp(fRatio*1024.0f, 1023.0f)), 0);
     COLOR col= RGBToColor( ubR, ubG, ubB) | (colAlpha&0x000000FF);
     col=MulColors(col, colMultiply);
@@ -1317,9 +1317,9 @@ void Particles_ExplosionDebris3(CEntity *pen, FLOAT tmStart, FLOAT3D vStretch, C
     FLOAT3D vOldPos=vCenter+vRelOld;
     if( (vPos - vOldPos).Length() == 0.0f) {continue;}
     
-    UBYTE ubR = 255;
-    UBYTE ubG = 200+afStarsPositions[iRnd][1]*32;
-    UBYTE ubB = 150+afStarsPositions[iRnd][2]*32;
+    UBYTE ubR = (UBYTE) (255);
+    UBYTE ubG = (UBYTE) (200+afStarsPositions[iRnd][1]*32);
+    UBYTE ubB = (UBYTE) (150+afStarsPositions[iRnd][2]*32);
     COLOR colAlpha = pTD->GetTexel(PIX(ClampUp(fRatio*1024.0f, 1023.0f)), 0);
     COLOR col= RGBToColor( ubR, ubG, ubB) | (colAlpha&0x000000FF);
     col=MulColors(col, colMultiply);
@@ -2193,9 +2193,9 @@ void Particles_RunningDust(CEntity *pen)
     vPos(3) += fRndAppearZ; 
 
     FLOAT fRndBlend = 8.0f+(afStarsPositions[iRnd*2][1]+0.5f)*64.0f;
-    UBYTE ubRndH = UBYTE( (afStarsPositions[iRnd][0]+0.5f)*64);
-    UBYTE ubRndS = UBYTE( (afStarsPositions[iRnd][1]+0.5f)*32);
-    UBYTE ubRndV = UBYTE( 128+afStarsPositions[iRnd][0]*64.0f);
+    UBYTE ubRndH = (UBYTE)((afStarsPositions[iRnd][0]+0.5f)*64);
+    UBYTE ubRndS = (UBYTE)((afStarsPositions[iRnd][1]+0.5f)*32);
+    UBYTE ubRndV = (UBYTE)(128+afStarsPositions[iRnd][0]*64.0f);
     COLOR col = HSVToColor(ubRndH,ubRndS,ubRndV)|UBYTE(fRndBlend*fRatio);
     //col=C_RED|CT_OPAQUE;
     FLOAT fRotation = afStarsPositions[iRnd+5][0]*360+fT*50.0f*afStarsPositions[iRnd+3][0];
@@ -2247,9 +2247,9 @@ void Particles_DustFall(CEntity *pen, FLOAT tmStarted, FLOAT3D vStretch)
     FLOAT fRiseTime=Max(fRatio-0.5f,0.0f);
     FLOAT3D vPos=vCenter+vRndDir*fSpeed*3*fStretch+vY*fRiseTime*0.25f;
     FLOAT fRndBlend = 8.0f+(afStarsPositions[iRnd][2]+0.5f)*64.0f;
-    UBYTE ubRndH = UBYTE( (afStarsPositions[iRnd][0]+0.5f)*64);
-    UBYTE ubRndS = UBYTE( (afStarsPositions[iRnd][1]+0.5f)*32);
-    UBYTE ubRndV = UBYTE( 128+afStarsPositions[iRnd][2]*64.0f);
+    UBYTE ubRndH = (UBYTE)((afStarsPositions[iRnd][0]+0.5f)*64);
+    UBYTE ubRndS = (UBYTE)((afStarsPositions[iRnd][1]+0.5f)*32);
+    UBYTE ubRndV = (UBYTE)(128+afStarsPositions[iRnd][2]*64.0f);
     COLOR col = HSVToColor(ubRndH,ubRndS,ubRndV)|UBYTE(fRndBlend*fPower);
     FLOAT fRotation = afStarsPositions[iRnd][0]*360.0f+fT*360.0f*afStarsPositions[iRnd][0]*fSpeed;
     FLOAT fSize = 
@@ -2281,9 +2281,9 @@ void Particles_MetalParts( CEntity *pen, FLOAT tmStarted, FLOATaabbox3D boxOwner
     vPos(2) += afStarsPositions[iRnd][1]*fT*15.0f-fGA/2.0f*fT*fT+boxOwner.Size()(2)*0.25f; 
     vPos(3) += afStarsPositions[iRnd][2]*fT*15.0f;
 
-    UBYTE ubRndH = UBYTE( 180+afStarsPositions[ int(iPart+tmStarted*10)%CT_MAX_PARTICLES_TABLE][0]*16);
-    UBYTE ubRndS = UBYTE( 12+(afStarsPositions[ int(iPart+tmStarted*10)%CT_MAX_PARTICLES_TABLE][1])*8);
-    UBYTE ubRndV = UBYTE( 192+(afStarsPositions[ int(iPart+tmStarted*10)%CT_MAX_PARTICLES_TABLE][2])*64);
+    UBYTE ubRndH = (UBYTE)(180+afStarsPositions[ int(iPart+tmStarted*10)%CT_MAX_PARTICLES_TABLE][0]*16);
+    UBYTE ubRndS = (UBYTE)(12+(afStarsPositions[ int(iPart+tmStarted*10)%CT_MAX_PARTICLES_TABLE][1])*8);
+    UBYTE ubRndV = (UBYTE)(192+(afStarsPositions[ int(iPart+tmStarted*10)%CT_MAX_PARTICLES_TABLE][2])*64);
     //ubRndS = 0;
     ubRndV = 255;
     COLOR col = HSVToColor(ubRndH, ubRndS, ubRndV)|UBYTE(255.0f*fRatio);
@@ -2339,9 +2339,9 @@ void Particles_ElectricitySparks( CEntity *pen, FLOAT fTimeAppear, FLOAT fSize, 
     FLOAT3D vPosOld = SPARK_CURVE( fTold);
     FLOAT3D vPosNew = SPARK_CURVE( fT);
   
-    UBYTE ubR = 224+(afStarsPositions[iSpark][2]+0.5f)*32;
-    UBYTE ubG = 224+(afStarsPositions[iSpark][2]+0.5f)*32;
-    UBYTE ubB = 160;
+    UBYTE ubR = (UBYTE) (224+(afStarsPositions[iSpark][2]+0.5f)*32);
+    UBYTE ubG = (UBYTE) (224+(afStarsPositions[iSpark][2]+0.5f)*32);
+    UBYTE ubB = (UBYTE) (160);
     UBYTE ubA = FloatToInt( 255 * fFade);
     COLOR colStar = RGBToColor( ubR, ubG, ubB) | ubA;
     Particle_RenderLine( vPosOld, vPosNew, 0.075f, colStar);
@@ -2917,7 +2917,7 @@ void Particles_Rain(CEntity *pen, FLOAT fGridSize, INDEX ctGrids, FLOAT fFactor,
       fZ+=afStarsPositions[iRnd2][2];
       // stretch to falling time
       FLOAT fY = vPos(2)+RAIN_SOURCE_HEIGHT*(1.0f-fRatio);
-      UBYTE ubR = 64+afStarsPositions[(INDEX)fT0*CT_MAX_PARTICLES_TABLE][2]*64;
+      UBYTE ubR = (UBYTE) (64+afStarsPositions[(INDEX)fT0*CT_MAX_PARTICLES_TABLE][2]*64);
       COLOR colDrop = RGBToColor(ubR, ubR, ubR)|(UBYTE(fFactor*255.0f));
       FLOAT3D vRender = FLOAT3D( fX, fY, fZ);
       FLOAT fSize = 1.75f+afStarsPositions[(INDEX)fT0*CT_MAX_PARTICLES_TABLE][1];
