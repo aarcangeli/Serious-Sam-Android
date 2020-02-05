@@ -175,7 +175,7 @@ functions:
     static const CTString strMarkerUnused("Marker not set");
     if (iGradient==1)
     {
-      CGradientMarker *pgm = (CGradientMarker *)&*m_penGradient;
+      CGradientMarker *pgm = (CGradientMarker *) m_penGradient.ep_pen;
       if (pgm != NULL) {
         return pgm->GetGradientName();
       } else {
@@ -187,7 +187,7 @@ functions:
   /* Uncache shadows for given gradient */
   void UncacheShadowsForGradient(class CGradientMarker *penDiscard)
   {
-    CGradientMarker *pgm = (CGradientMarker *)&*m_penGradient;
+    CGradientMarker *pgm = (CGradientMarker *) m_penGradient.ep_pen;
     if(pgm == penDiscard)
     {
       CEntity::UncacheShadowsForGradient(1);
@@ -199,7 +199,7 @@ functions:
   {
     if ( iGradient==1)
     {
-      CGradientMarker *pgm = (CGradientMarker *)&*m_penGradient;
+      CGradientMarker *pgm = (CGradientMarker *) m_penGradient.ep_pen;
       if (pgm != NULL) {
         return pgm->GetGradient(0, fpGradient);
       }
