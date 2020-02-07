@@ -541,7 +541,7 @@ public:
   /* Default constructor. */
   CBrushSector(void);
   ~CBrushSector(void);
-  DECLARE_NOCOPYING(CBrushSector);
+  DECLARE_NOCOPYING(CBrushSector)
 
   /* Clear the object. */
   void Clear(void);

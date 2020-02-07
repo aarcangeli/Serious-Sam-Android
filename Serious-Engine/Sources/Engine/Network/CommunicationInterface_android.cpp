@@ -29,6 +29,7 @@
 #define HOSTENT hostent
 #define INVALID_SOCKET  (-1)
 #define SOCKET_ERROR            (-1)
+#define SLASHSLASH  0x2F2F   // looks like "//" in ASCII.
 
 // modified version of Engine/Network/CommunicationInterface.cpp with network disabled
 
@@ -332,12 +333,12 @@ void CCommunicationInterface::Broadcast_Update_t() {
           cm_aciClients[iClient].ci_adrAddress.adr_uwPort = ppaConnectionRequest->pa_adrAddress.adr_uwPort;
           // generate the ID
           UWORD uwID = _pTimer->GetHighPrecisionTimer().tv_llValue & 0x0FFF;
-          if (uwID == 0 || uwID == '//') {
+          if (uwID == 0 || uwID == SLASHSLASH) {
             uwID += 1;
           }
           cm_aciClients[iClient].ci_adrAddress.adr_uwID = (uwID << 4) + iClient;
           // form the connection response packet
-          ppaConnectionRequest->pa_adrAddress.adr_uwID = '//';
+          ppaConnectionRequest->pa_adrAddress.adr_uwID = SLASHSLASH;
           ppaConnectionRequest->pa_ubReliable =
             UDP_PACKET_RELIABLE | UDP_PACKET_RELIABLE_HEAD | UDP_PACKET_RELIABLE_TAIL |
             UDP_PACKET_CONNECT_RESPONSE;
@@ -564,7 +565,7 @@ BOOL CCommunicationInterface::Server_Update() {
       BOOL bClientFound;
       ppaPacket = cci_pbMasterInput.GetFirstPacket();
       bClientFound = FALSE;
-      if (ppaPacket->pa_adrAddress.adr_uwID == '//' || ppaPacket->pa_adrAddress.adr_uwID == 0) {
+      if (ppaPacket->pa_adrAddress.adr_uwID == SLASHSLASH || ppaPacket->pa_adrAddress.adr_uwID == 0) {
         cm_ciBroadcast.ci_pbInputBuffer.AppendPacket(*ppaPacket, FALSE);
         bClientFound = TRUE;
       } else {
@@ -729,7 +730,7 @@ void CCommunicationInterface::Client_OpenNet_t(ULONG ulServerAddress) {
   ppaInfoPacket->pa_adrAddress.adr_ulAddress = ulServerAddress;
   ppaInfoPacket->pa_adrAddress.adr_uwPort = net_iPort;
   ppaInfoPacket->pa_ubRetryNumber = 0;
-  ppaInfoPacket->WriteToPacket(&ubDummy, 1, ubReliable, cm_ciLocalClient.ci_ulSequence++, '//', 1);
+  ppaInfoPacket->WriteToPacket(&ubDummy, 1, ubReliable, cm_ciLocalClient.ci_ulSequence++, SLASHSLASH, 1);
 
   cm_ciLocalClient.ci_pbOutputBuffer.AppendPacket(*ppaInfoPacket, TRUE);
 
@@ -892,13 +893,13 @@ BOOL CCommunicationInterface::Client_Update(void) {
       bClientFound = FALSE;
 
       // if the packet address is broadcast and it's an unreliable transfer, put it in the broadcast buffer
-      if ((ppaPacket->pa_adrAddress.adr_uwID == '//' || ppaPacket->pa_adrAddress.adr_uwID == 0) &&
+      if ((ppaPacket->pa_adrAddress.adr_uwID == SLASHSLASH || ppaPacket->pa_adrAddress.adr_uwID == 0) &&
           ppaPacket->pa_ubReliable == UDP_PACKET_UNRELIABLE) {
         cm_ciBroadcast.ci_pbInputBuffer.AppendPacket(*ppaPacket, FALSE);
         bClientFound = TRUE;
         // if the packet is for this client, accept it
       } else if ((ppaPacket->pa_adrAddress.adr_uwID == cm_ciLocalClient.ci_adrAddress.adr_uwID) ||
-                 ppaPacket->pa_adrAddress.adr_uwID == '//' ||
+                 ppaPacket->pa_adrAddress.adr_uwID == SLASHSLASH ||
                  ppaPacket->pa_adrAddress.adr_uwID == 0) {
         cm_ciLocalClient.ci_pbInputBuffer.AppendPacket(*ppaPacket, FALSE);
         bClientFound = TRUE;

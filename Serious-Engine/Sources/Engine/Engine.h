@@ -26,7 +26,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #endif
 
 #include <stdlib.h>
-#include <malloc.h>
+//#include <malloc.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
@@ -109,8 +109,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Brushes/BrushArchive.h>
 
 
-#pragma message(">> Uncomment include to terrain.h")
-//#include <Engine/Terrain/Terrain.h>
+#include <Engine/Terrain/Terrain.h>
 
 #include <Engine/World/World.h>
 #include <Engine/World/WorldEditingProfile.h>

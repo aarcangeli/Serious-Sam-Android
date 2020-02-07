@@ -124,7 +124,7 @@ public:
 public:
 	CModelData();
 	~CModelData();
-  DECLARE_NOCOPYING(CModelData);
+  DECLARE_NOCOPYING(CModelData)
 
   // reference counting (override from CAnimData)
   void RemReference_internal(void);

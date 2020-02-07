@@ -191,7 +191,7 @@ public:
   CWorld(void);
   /* Destructor. */
   ~CWorld(void);
-  DECLARE_NOCOPYING(CWorld);
+  DECLARE_NOCOPYING(CWorld)
   /* Clear all arrays. */
   void Clear(void);
 

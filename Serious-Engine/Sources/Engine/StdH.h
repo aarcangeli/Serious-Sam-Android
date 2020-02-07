@@ -19,7 +19,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #define PLATFORM_UNIX 1
 
 #include <stdlib.h>
-#include <malloc.h>
+//#include <malloc.h>
 #include <stdarg.h>
 #include <stdio.h>
 //#include <conio.h>

@@ -714,7 +714,7 @@ void CEditModel::Read_t( CTStream *pFile) // throw char *
       AddTexture_t( fnFileName, edm_md.md_Width, edm_md.md_Height);
     }
     // This is here because we want to load model even if its texture is not valid
-    catch ( const char *err_str){ (char *) err_str;}
+    catch ( const char *strError) { (void) strError; }
   }
 
   // skip patches saved in old format (patches do not exist inside EditModel any more)

@@ -25,6 +25,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/ErrorTable.h>
 
 #include <Engine/Base/ListIterator.inl>
+#define SLASHSLASH  0x2F2F   // looks like "//" in ASCII.
 
 // define this to randomly drop messages (for debugging of packet-loss recovery)
 //#define LOSEPACKETS_THRESHOLD (RAND_MAX/10)
@@ -440,7 +441,7 @@ void CMessageDispatcher::SendBroadcast(const CNetworkMessage &nmMessage, ULONG u
   CAddress adrDestination;
   adrDestination.adr_ulAddress = ulAddr;
   adrDestination.adr_uwPort = uwPort;
-  adrDestination.adr_uwID = '//';
+  adrDestination.adr_uwID = SLASHSLASH;
   // send the message
   _cmiComm.Broadcast_Send((void*)nmMessage.nm_pubMessage, nmMessage.nm_slSize,adrDestination);
 

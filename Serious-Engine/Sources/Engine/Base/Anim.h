@@ -23,10 +23,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <Engine/Base/Lists.h>
 
-#define NAME_SIZE 32
-typedef char NAME[NAME_SIZE];
-#define PATH_MAX 260
-typedef char FILE_NAME[PATH_MAX];
+typedef char NAME[32];
+typedef char FILE_NAME[260];
 
 /*
  * An object used for obtaining animation's information
