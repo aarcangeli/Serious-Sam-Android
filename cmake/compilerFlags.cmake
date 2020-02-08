@@ -1,5 +1,4 @@
 if (ANDROID)
-	add_compile_options("-mfpu=neon")
 	add_compile_options("-Wno-return-type")
 	add_compile_options("-Wno-format")
 	add_compile_options("-Wno-missing-declarations")
