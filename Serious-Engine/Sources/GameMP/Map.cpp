@@ -15,6 +15,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "StdAfx.h"
 #include "LCDDrawing.h"
+#include <AndroidAdapters/binding-callbacks.h>
 
 extern BOOL map_bIsFirstEncounter;
 
@@ -565,7 +566,7 @@ void RenderMap( CDrawPort *pdp, ULONG ulLevelMask, CProgressHookInfo *pphi)
     ReleaseMapData();
     return;
   }
-
+  float uiScale = g_cb.globalScale;
   PIX(*aIconCoords)[2]           = map_bIsFirstEncounter ? aIconCoordsFE         : aIconCoordsSE;
   CTextureObject* atoIcons       = map_bIsFirstEncounter ? atoIconsFE            : atoIconsSE;
   INDEX(*aPathPrevNextLevels)[2] = map_bIsFirstEncounter ? aPathPrevNextLevelsFE : aPathPrevNextLevelsSE;
@@ -589,17 +590,17 @@ void RenderMap( CDrawPort *pdp, ULONG ulLevelMask, CProgressHookInfo *pphi)
   PIX pixdph = pdp->GetHeight();
   PIX imgw = 512;
   PIX imgh = 480;
-  FLOAT fStretch = 0.25f;
+  FLOAT fStretch = 1.5f;
 
   // determine max available picture stretch
   if( pixdpw>=imgw*2 && pixdph>=imgh*2) {
-    fStretch = 2.0f;
+    fStretch = 1.5f * uiScale;
   } else if(pixdpw>=imgw && pixdph>=imgh) {
-    fStretch = 1.0f;
+    fStretch = 1.5f;
   } else if(pixdpw>=imgw/2 && pixdph>=imgh/2) {
-    fStretch = 0.5f;
+    fStretch = 0.75f * uiScale;
   }
-
+  
   // calculate LU offset so picture would be centerd in dp
   PIX pixSX = (pixdpw-imgw*fStretch)/2;
   PIX pixSY = Max( PIX((pixdph-imgh*fStretch)/2), PIX(0));
