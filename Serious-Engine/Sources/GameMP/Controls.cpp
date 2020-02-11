@@ -103,7 +103,7 @@ void CControls::SwitchAxesToDefaults(void)
 
   ctrl_fSensitivity = 50;
   ctrl_bInvertLook = FALSE;
-  ctrl_bSmoothAxes = TRUE;
+  ctrl_bSmoothAxes = FALSE;
 }
 
 void CControls::SwitchToDefaults(void)
