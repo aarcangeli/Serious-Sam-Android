@@ -367,6 +367,10 @@ static void Key_Return(void)
 
     } else if (strEditingLine=="refresh") {
       DoCheat(strEditingLine, "cht_bRefresh");
+
+    } else if (strEditingLine=="ammo") {
+      DoCheat(strEditingLine, "cht_bAmmo");
+
     } else {
       CPrintF("sorry?\n");
     }
