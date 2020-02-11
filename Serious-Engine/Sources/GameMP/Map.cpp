@@ -15,7 +15,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "StdAfx.h"
 #include "LCDDrawing.h"
-#include <AndroidAdapters/binding-callbacks.h>
 
 extern BOOL map_bIsFirstEncounter;
 
@@ -428,7 +427,6 @@ PIX aPathDotsFE[][10][2] =
 BOOL ObtainMapData(void)
 {
   try {
-    if (!map_bIsFirstEncounter) {
       // the second encounter
       atoIconsSE[ 0].SetData_t(CTFILENAME("TexturesMP\\Computer\\Map\\Book.tex"));
       atoIconsSE[ 1].SetData_t(CTFILENAME("TexturesMP\\Computer\\Map\\Level00.tex"));
@@ -468,7 +466,6 @@ BOOL ObtainMapData(void)
       ((CTextureData*)_toMapBcgRDSE .GetData())->Force(TEX_CONSTANT);
       ((CTextureData*)_toMapBcgRUSE .GetData())->Force(TEX_CONSTANT);
 
-    } else {
       // the first encounter
       atoIconsFE[ 0].SetData_t(CTFILENAME("Textures\\Computer\\Map\\Level00.tex"));
       atoIconsFE[ 1].SetData_t(CTFILENAME("Textures\\Computer\\Map\\Level01.tex"));
@@ -509,7 +506,6 @@ BOOL ObtainMapData(void)
       ((CTextureData*)_toMapBcgLUFE .GetData())->Force(TEX_CONSTANT);
       ((CTextureData*)_toMapBcgRDFE .GetData())->Force(TEX_CONSTANT);
       ((CTextureData*)_toMapBcgRUFE .GetData())->Force(TEX_CONSTANT);
-    }
   }
   catch ( const char *strError) {
     CPrintF("%s\n", strError);
@@ -566,7 +562,7 @@ void RenderMap( CDrawPort *pdp, ULONG ulLevelMask, CProgressHookInfo *pphi)
     ReleaseMapData();
     return;
   }
-  float uiScale = g_cb.globalScale;
+
   PIX(*aIconCoords)[2]           = map_bIsFirstEncounter ? aIconCoordsFE         : aIconCoordsSE;
   CTextureObject* atoIcons       = map_bIsFirstEncounter ? atoIconsFE            : atoIconsSE;
   INDEX(*aPathPrevNextLevels)[2] = map_bIsFirstEncounter ? aPathPrevNextLevelsFE : aPathPrevNextLevelsSE;
@@ -590,17 +586,17 @@ void RenderMap( CDrawPort *pdp, ULONG ulLevelMask, CProgressHookInfo *pphi)
   PIX pixdph = pdp->GetHeight();
   PIX imgw = 512;
   PIX imgh = 480;
-  FLOAT fStretch = 1.5f;
+  FLOAT fStretch = 0.25f;
 
   // determine max available picture stretch
   if( pixdpw>=imgw*2 && pixdph>=imgh*2) {
-    fStretch = 1.5f * uiScale;
+    fStretch = 2.0f;
   } else if(pixdpw>=imgw && pixdph>=imgh) {
-    fStretch = 1.5f;
+    fStretch = 1.0f;
   } else if(pixdpw>=imgw/2 && pixdph>=imgh/2) {
-    fStretch = 0.75f * uiScale;
+    fStretch = 0.5f;
   }
-  
+
   // calculate LU offset so picture would be centerd in dp
   PIX pixSX = (pixdpw-imgw*fStretch)/2;
   PIX pixSY = Max( PIX((pixdph-imgh*fStretch)/2), PIX(0));
