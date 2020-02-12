@@ -275,25 +275,25 @@ public:
     COLOR bpt_colColor;               // defines constant color and alpha of polygon
   } s;
     UBYTE bpt_auProperties[8];
-  };
+  } bpt;
 
   CBrushPolygonTexture(void)
     {
-        s.bpt_ubScroll = 0;
-        s.bpt_ubBlend = 0;
-        s.bpt_ubFlags = BPTF_DISCARDABLE;
-        s.bpt_ubDummy = 0;
-        s.bpt_colColor = 0xFFFFFFFF;
+        bpt.s.bpt_ubScroll = 0;
+        bpt.s.bpt_ubBlend = 0;
+        bpt.s.bpt_ubFlags = BPTF_DISCARDABLE;
+        bpt.s.bpt_ubDummy = 0;
+        bpt.s.bpt_colColor = 0xFFFFFFFF;
     }
 
   /* Copy polygon properties */
   CBrushPolygonTexture &CopyTextureProperties(CBrushPolygonTexture &bptOther, BOOL bCopyMapping) {
     bpt_toTexture.SetData( bptOther.bpt_toTexture.GetData());
-    s.bpt_ubScroll = bptOther.s.bpt_ubScroll;
-    s.bpt_ubBlend = bptOther.s.bpt_ubBlend;
-    s.bpt_ubFlags = bptOther.s.bpt_ubFlags;
-    s.bpt_ubDummy = bptOther.s.bpt_ubDummy;
-    s.bpt_colColor = bptOther.s.bpt_colColor;
+    bpt.s.bpt_ubScroll = bptOther.bpt.s.bpt_ubScroll;
+    bpt.s.bpt_ubBlend = bptOther.bpt.s.bpt_ubBlend;
+    bpt.s.bpt_ubFlags = bptOther.bpt.s.bpt_ubFlags;
+    bpt.s.bpt_ubDummy = bptOther.bpt.s.bpt_ubDummy;
+    bpt.s.bpt_colColor = bptOther.bpt.s.bpt_colColor;
     if( bCopyMapping) bpt_mdMapping = bptOther.bpt_mdMapping;
     return *this;
   };

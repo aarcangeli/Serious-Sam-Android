@@ -308,7 +308,7 @@ void CBrushMip::RemoveDummyPortals(BOOL bClearPortalFlags)
         {
           bpo.bpo_ulFlags &= ~(BPOF_PASSABLE|BPOF_PORTAL);
         }
-        bpo.bpo_abptTextures[0].s.bpt_ubBlend = BPT_BLEND_OPAQUE;
+        bpo.bpo_abptTextures[0].bpt.s.bpt_ubBlend = BPT_BLEND_OPAQUE;
         bpo.bpo_bppProperties.bpp_ubShadowBlend = BPT_BLEND_SHADE;
 
         // remove all of its links
