@@ -190,7 +190,7 @@ void InitGameTypes(void)
   // if none
   if (pss == NULL) {
     // error
-    astrGameTypeRadioTexts[0] = "<???>";
+    astrGameTypeRadioTexts[0] = "<\?\?\?>";
     ctGameTypeRadioTexts = 1;
     return;
   }
