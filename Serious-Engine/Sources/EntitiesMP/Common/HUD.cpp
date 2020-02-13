@@ -40,6 +40,7 @@ extern INDEX cht_bGod;
 extern INDEX cht_bFly;
 extern INDEX cht_bGhost;
 extern INDEX cht_bInvisible;
+extern INDEX cht_bAmmo;
 extern FLOAT cht_fTranslationMultiplier;
 
 // interface control
@@ -1359,6 +1360,7 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
     if( cht_bGhost)     { _pDP->PutTextR( "ghost",     _pixDPWidth-1, _pixDPHeight-pixFontHeight*iLine, colCheat|ulAlpha); iLine++; }
     if( cht_bFly)       { _pDP->PutTextR( "fly",       _pixDPWidth-1, _pixDPHeight-pixFontHeight*iLine, colCheat|ulAlpha); iLine++; }
     if( cht_bGod)       { _pDP->PutTextR( "god",       _pixDPWidth-1, _pixDPHeight-pixFontHeight*iLine, colCheat|ulAlpha); iLine++; }
+    if( cht_bAmmo)       { _pDP->PutTextR( "ammo",       _pixDPWidth-1, _pixDPHeight-pixFontHeight*iLine, colCheat|ulAlpha); iLine++; }
   }
 
   // in the end, remember the current time so it can be used in the next frame

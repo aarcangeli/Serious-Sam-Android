@@ -70,7 +70,7 @@ void CPlayerProfileMenu::Initialize_t(void)
   gm_lhGadgets.AddTail(gm_mgNameLabel.mg_lnNode);
 
   // setup of player name button is done on start menu
-  gm_mgNameField.mg_strText = "<???>";
+  gm_mgNameField.mg_strText = "<\?\?\?>";
   gm_mgNameField.mg_ctMaxStringLen = 25;
   gm_mgNameField.mg_boxOnScreen = BoxPlayerEdit(1.25);
   gm_mgNameField.mg_bfsFontSize = BFS_MEDIUM;
@@ -88,7 +88,7 @@ void CPlayerProfileMenu::Initialize_t(void)
   gm_lhGadgets.AddTail(gm_mgTeamLabel.mg_lnNode);
 
   // setup of player name button is done on start menu
-  gm_mgTeam.mg_strText = "<???>";
+  gm_mgTeam.mg_strText = "<\?\?\?>";
   gm_mgTeam.mg_ctMaxStringLen = 25;
   gm_mgTeam.mg_boxOnScreen = BoxPlayerEdit(2.25f);
   gm_mgTeam.mg_bfsFontSize = BFS_MEDIUM;

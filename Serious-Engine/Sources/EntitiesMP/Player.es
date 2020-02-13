@@ -297,6 +297,7 @@ extern INDEX cht_bGod        = FALSE;
 extern INDEX cht_bFly        = FALSE;
 extern INDEX cht_bGhost      = FALSE;
 extern INDEX cht_bInvisible  = FALSE;
+extern INDEX cht_bAmmo       = FALSE;
 extern FLOAT cht_fTranslationMultiplier = 1.0f;
 extern INDEX cht_bEnable     = 0;   
 
@@ -737,6 +738,7 @@ void CPlayer_OnInitClass(void)
   _pShell->DeclareSymbol("user INDEX cht_bGiveAll;",   &cht_bGiveAll);
   _pShell->DeclareSymbol("user INDEX cht_bKillAll;",   &cht_bKillAll);
   _pShell->DeclareSymbol("user INDEX cht_bOpen;",      &cht_bOpen);
+  _pShell->DeclareSymbol("user INDEX cht_bAmmo;",       &cht_bAmmo);
   _pShell->DeclareSymbol("user INDEX cht_bAllMessages;", &cht_bAllMessages);
   _pShell->DeclareSymbol("user FLOAT cht_fTranslationMultiplier ;", &cht_fTranslationMultiplier);
   _pShell->DeclareSymbol("user INDEX cht_bRefresh;", &cht_bRefresh);
@@ -4654,6 +4656,13 @@ functions:
       cht_bRefresh = FALSE;
       SetHealth(TopHealth());
     }
+    
+   if (cht_bAmmo) {
+   ((CSessionProperties*)GetSP())->sp_bInfiniteAmmo = TRUE;
+    } else {
+   ((CSessionProperties*)GetSP())->sp_bInfiniteAmmo = FALSE;
+    }
+    
   };
 
 

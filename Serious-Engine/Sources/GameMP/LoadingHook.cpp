@@ -156,8 +156,8 @@ static void LoadingHook_t(CProgressHookInfo *pphi)
   }
 
   // get sizes
-  PIX pixSizeI = dpHook.GetWidth();
-  PIX pixSizeJ = dpHook.GetHeight();
+  PIX pixSizeI = pdp->GetWidth();
+  PIX pixSizeJ = pdp->GetHeight();
   CFontData *pfd = _pfdConsoleFont;
   PIX pixCharSizeI = (PIX)((pfd->fd_pixCharWidth  + pfd->fd_pixCharSpacing) * uiScale);
   PIX pixCharSizeJ = (PIX)((pfd->fd_pixCharHeight + pfd->fd_pixLineSpacing) * uiScale);
