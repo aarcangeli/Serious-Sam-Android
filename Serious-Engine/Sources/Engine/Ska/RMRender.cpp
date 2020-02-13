@@ -251,9 +251,9 @@ static void GetFogMapInVertex( GFXVertex4 &vtx, GFXTexCoord &tex)
 {
   const FLOAT fD = vtx.x*_vZDirView(1) + vtx.y*_vZDirView(2) + vtx.z*_vZDirView(3);
   const FLOAT fH = vtx.x*_vHDirView(1) + vtx.y*_vHDirView(2) + vtx.z*_vHDirView(3);
-  tex.s = (fD+_fFogAddZ) * _fog_fMulZ;
-//  tex.s = (vtx.z) * _fog_fMulZ;
-  tex.t = (fH+_fFogAddH) * _fog_fMulH;
+  tex.gfxtc.st.s = (fD+_fFogAddZ) * _fog_fMulZ;
+//  tex.gfxtc.st.s = (vtx.z) * _fog_fMulZ;
+  tex.gfxtc.st.t = (fH+_fFogAddH) * _fog_fMulH;
 }
 
 // check vertex against haze
@@ -268,14 +268,14 @@ static BOOL IsModelInFog( FLOAT3D &vMin, FLOAT3D &vMax)
 {
   GFXTexCoord tex;
   GFXVertex4  vtx;
-  vtx.x=vMin(1); vtx.y=vMin(2); vtx.z=vMin(3); GetFogMapInVertex(vtx,tex); if(InFog(tex.t)) return TRUE;
-  vtx.x=vMin(1); vtx.y=vMin(2); vtx.z=vMax(3); GetFogMapInVertex(vtx,tex); if(InFog(tex.t)) return TRUE;
-  vtx.x=vMin(1); vtx.y=vMax(2); vtx.z=vMin(3); GetFogMapInVertex(vtx,tex); if(InFog(tex.t)) return TRUE;
-  vtx.x=vMin(1); vtx.y=vMax(2); vtx.z=vMax(3); GetFogMapInVertex(vtx,tex); if(InFog(tex.t)) return TRUE;
-  vtx.x=vMax(1); vtx.y=vMin(2); vtx.z=vMin(3); GetFogMapInVertex(vtx,tex); if(InFog(tex.t)) return TRUE;
-  vtx.x=vMax(1); vtx.y=vMin(2); vtx.z=vMax(3); GetFogMapInVertex(vtx,tex); if(InFog(tex.t)) return TRUE;
-  vtx.x=vMax(1); vtx.y=vMax(2); vtx.z=vMin(3); GetFogMapInVertex(vtx,tex); if(InFog(tex.t)) return TRUE;
-  vtx.x=vMax(1); vtx.y=vMax(2); vtx.z=vMax(3); GetFogMapInVertex(vtx,tex); if(InFog(tex.t)) return TRUE;
+  vtx.x=vMin(1); vtx.y=vMin(2); vtx.z=vMin(3); GetFogMapInVertex(vtx,tex); if(InFog(tex.gfxtc.st.t)) return TRUE;
+  vtx.x=vMin(1); vtx.y=vMin(2); vtx.z=vMax(3); GetFogMapInVertex(vtx,tex); if(InFog(tex.gfxtc.st.t)) return TRUE;
+  vtx.x=vMin(1); vtx.y=vMax(2); vtx.z=vMin(3); GetFogMapInVertex(vtx,tex); if(InFog(tex.gfxtc.st.t)) return TRUE;
+  vtx.x=vMin(1); vtx.y=vMax(2); vtx.z=vMax(3); GetFogMapInVertex(vtx,tex); if(InFog(tex.gfxtc.st.t)) return TRUE;
+  vtx.x=vMax(1); vtx.y=vMin(2); vtx.z=vMin(3); GetFogMapInVertex(vtx,tex); if(InFog(tex.gfxtc.st.t)) return TRUE;
+  vtx.x=vMax(1); vtx.y=vMin(2); vtx.z=vMax(3); GetFogMapInVertex(vtx,tex); if(InFog(tex.gfxtc.st.t)) return TRUE;
+  vtx.x=vMax(1); vtx.y=vMax(2); vtx.z=vMin(3); GetFogMapInVertex(vtx,tex); if(InFog(tex.gfxtc.st.t)) return TRUE;
+  vtx.x=vMax(1); vtx.y=vMax(2); vtx.z=vMax(3); GetFogMapInVertex(vtx,tex); if(InFog(tex.gfxtc.st.t)) return TRUE;
   return FALSE;
 }
 
@@ -382,8 +382,8 @@ void RM_DoFogAndHaze(BOOL bOpaqueSurface)
 
       // setup haze tex coords and color
       for( INDEX ivtx=0; ivtx<ctVertices; ivtx++) {
-        GetHazeMapInVertex( paVertices[ivtx], _aTexMipHazey[ivtx].s);
-        _aTexMipHazey[ivtx].t = 0.0f;
+        GetHazeMapInVertex( paVertices[ivtx], _aTexMipHazey[ivtx].gfxtc.st.s);
+        _aTexMipHazey[ivtx].gfxtc.st.t = 0.0f;
         paHazeColors[ivtx] = colHaze;
       }
       shaSetHazeUVMap(&_aTexMipHazey[0]);
@@ -698,15 +698,15 @@ void RM_AddSimpleShadow_View(CModelInstance &mi, const FLOAT fIntensity, const F
     pvtx[3].x = v10(1);  pvtx[3].y = v10(2);  pvtx[3].z = v10(3);
   }
   // texture coords
-  ptex[0].s = 0;  ptex[0].t = 0;
-  ptex[1].s = 0;  ptex[1].t = 1;
-  ptex[2].s = 1;  ptex[2].t = 1;
-  ptex[3].s = 1;  ptex[3].t = 0;
+  ptex[0].gfxtc.st.s = 0;  ptex[0].gfxtc.st.t = 0;
+  ptex[1].gfxtc.st.s = 0;  ptex[1].gfxtc.st.t = 1;
+  ptex[2].gfxtc.st.s = 1;  ptex[2].gfxtc.st.t = 1;
+  ptex[3].gfxtc.st.s = 1;  ptex[3].gfxtc.st.t = 0;
   // colors
-  pcol[0].abgr = ulAAAA;
-  pcol[1].abgr = ulAAAA;
-  pcol[2].abgr = ulAAAA;
-  pcol[3].abgr = ulAAAA;
+  pcol[0].gfxcol.ul.abgr = ulAAAA;
+  pcol[1].gfxcol.ul.abgr = ulAAAA;
+  pcol[2].gfxcol.ul.abgr = ulAAAA;
+  pcol[3].gfxcol.ul.abgr = ulAAAA;
 
   // if this model has fog
   if( _ulRenFlags & SRMF_FOG)
@@ -716,8 +716,8 @@ void RM_AddSimpleShadow_View(CModelInstance &mi, const FLOAT fIntensity, const F
       GFXVertex &vtx = pvtx[i];
       // get distance along viewer axis and fog axis and map to texture and attenuate shadow color
       const FLOAT fH = vtx.x*_fog_vHDirView(1) + vtx.y*_fog_vHDirView(2) + vtx.z*_fog_vHDirView(3);
-      tex.s = -vtx.z *_fog_fMulZ;
-      tex.t = (fH+_fog_fAddH) *_fog_fMulH;
+      tex.gfxtc.st.s = -vtx.z *_fog_fMulZ;
+      tex.gfxtc.st.t = (fH+_fog_fAddH) *_fog_fMulH;
       pcol[i].AttenuateRGB(GetFogAlpha(tex)^255);
     }
   }
@@ -773,10 +773,10 @@ void RM_RenderGround(CTextureObject &to)
   vBoxVtxs[2].x = -vVtx(1); vBoxVtxs[2].y =  vVtx(2); vBoxVtxs[2].z =  vVtx(3);
   vBoxVtxs[3].x =  vVtx(1); vBoxVtxs[3].y =  vVtx(2); vBoxVtxs[3].z =  vVtx(3);
   // set ground texcoords
-  tcBoxTex[0].u =  vVtx(1); tcBoxTex[0].v =  0;
-  tcBoxTex[1].u =        0; tcBoxTex[1].v =  0;
-  tcBoxTex[2].u =        0; tcBoxTex[2].v =  vVtx(3);
-  tcBoxTex[3].u =  vVtx(1); tcBoxTex[3].v =  vVtx(3);
+  tcBoxTex[0].gfxtc.uv.u =  vVtx(1); tcBoxTex[0].gfxtc.uv.v =  0;
+  tcBoxTex[1].gfxtc.uv.u =        0; tcBoxTex[1].gfxtc.uv.v =  0;
+  tcBoxTex[2].gfxtc.uv.u =        0; tcBoxTex[2].gfxtc.uv.v =  vVtx(3);
+  tcBoxTex[3].gfxtc.uv.u =  vVtx(1); tcBoxTex[3].gfxtc.uv.v =  vVtx(3);
 
   for(INDEX ivx=0;ivx<4;ivx++) {
     TransformVertex(vBoxVtxs[ivx],_mAbsToViewer);
@@ -1043,7 +1043,7 @@ void RM_RenderBone(CModelInstance &mi,INDEX iBoneID)
 
       // all vertices by default are not visible ( have alpha set to 0 )
       for(INDEX ivx=0;ivx<ctVertices;ivx++) {
-        _aMeshColors[ivx].a = 0;
+        _aMeshColors[ivx].gfxcol.ub.a = 0;
       }
     
       INDEX ctwm = rmsh.rmsh_iFirstWeight+rmsh.rmsh_ctWeights;
@@ -1058,10 +1058,10 @@ void RM_RenderBone(CModelInstance &mi,INDEX iBoneID)
           // modify color and alpha value of this vertex 
           MeshVertexWeight &vw = rw.rw_pwmWeightMap->mwm_aVertexWeight[ivw];
           INDEX ivx = vw.mww_iVertex;
-          _aMeshColors[ivx].r = 255;
-          _aMeshColors[ivx].g = 127;
-          _aMeshColors[ivx].b = 0;
-          _aMeshColors[ivx].a += vw.mww_fWeight*255; // _aMeshColors[ivx].a = 255;
+          _aMeshColors[ivx].gfxcol.ub.r = 255;
+          _aMeshColors[ivx].gfxcol.ub.g = 127;
+          _aMeshColors[ivx].gfxcol.ub.b = 0;
+          _aMeshColors[ivx].gfxcol.ub.a += vw.mww_fWeight*255; // _aMeshColors[ivx].gfxcol.ub.a = 255;
         }
       }
 

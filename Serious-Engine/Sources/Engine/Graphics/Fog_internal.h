@@ -74,10 +74,10 @@ extern void StopHaze(void);
 __forceinline ULONG GetFogAlpha( const GFXTexCoord &tex)
 {
   // point sampling of height
-  PIX pixT = FloatToInt( tex.t * _fog_pixSizeH);
+  PIX pixT = FloatToInt( tex.gfxtc.st.t * _fog_pixSizeH);
       pixT = Clamp( pixT, 0L, _fog_pixSizeH-1L) * _fog_pixSizeL;
   // linear interpolation of depth
-  const PIX pixSF = FloatToInt( tex.s*(FLOAT)_fog_pixSizeL*255.499f);
+  const PIX pixSF = FloatToInt( tex.gfxtc.st.s*(FLOAT)_fog_pixSizeL*255.499f);
   const PIX pixS1 = Clamp( (PIX)((pixSF>>8)+0), 0L, _fog_pixSizeL-1L);
   const PIX pixS2 = Clamp( (PIX)((pixSF>>8)+1), 0L, _fog_pixSizeL-1L);
   const ULONG ulF  = pixSF & 255;

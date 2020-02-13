@@ -859,16 +859,16 @@ static FLOAT   _fHazeAdd;
 static void GetHazeMapInVertex( GFXVertex4 &vtx, GFXTexCoord &txHaze)
 {
   const FLOAT fD = vtx.x*_vViewerObj(1) + vtx.y*_vViewerObj(2) + vtx.z*_vViewerObj(3);
-  txHaze.u = (fD+_fHazeAdd) * _haze_fMul;
-  txHaze.v = 0.0f;
+  txHaze.gfxtc.uv.u = (fD+_fHazeAdd) * _haze_fMul;
+  txHaze.gfxtc.uv.v = 0.0f;
 }
 
 static void GetFogMapInVertex( GFXVertex4 &vtx, GFXTexCoord &tex)
 {
   const FLOAT fD = vtx.x*_vFViewerObj(1) + vtx.y*_vFViewerObj(2) + vtx.z*_vFViewerObj(3);
   const FLOAT fH = vtx.x*_vHDirObj(1)    + vtx.y*_vHDirObj(2)    + vtx.z*_vHDirObj(3);
-  tex.u = (fD+_fFogAddZ) * _fog_fMulZ;
-  tex.v = (fH+_fFogAddH) * _fog_fMulH;
+  tex.gfxtc.uv.u = (fD+_fFogAddZ) * _fog_fMulZ;
+  tex.gfxtc.uv.v = (fH+_fFogAddH) * _fog_fMulH;
 }
 
 static CStaticStackArray<GFXTexCoord> _atcHaze;
@@ -1371,7 +1371,7 @@ void DrawSelectedVertices(GFXVertex *pavVertices, GFXColor *pacolColors, INDEX c
     GFXVertex &vtx = pavVertices[ivx];
     GFXColor  &col = pacolColors[ivx];
     // draw vertex
-    _pdp->DrawPoint3D(FLOAT3D(vtx.x,vtx.y,vtx.z),ByteSwap(col.abgr),3);
+    _pdp->DrawPoint3D(FLOAT3D(vtx.x,vtx.y,vtx.z),ByteSwap(col.gfxcol.ul.abgr),3);
   }
   gfxDisableDepthBias();
 }

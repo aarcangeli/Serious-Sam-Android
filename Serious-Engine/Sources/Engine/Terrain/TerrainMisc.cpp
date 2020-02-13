@@ -749,17 +749,17 @@ static void CalcPointLight(CPlacement3D &plLight, CLightSource *plsLight, Rect &
       }
       ULONG ulIntensity = NormFloatToByte(fIntensity);
       ulIntensity = (ulIntensity<<CT_RSHIFT)|(ulIntensity<<CT_GSHIFT)|(ulIntensity<<CT_BSHIFT);
-      colLight = MulColors(ByteSwap(colLight.abgr), ulIntensity);
+      colLight = MulColors(ByteSwap(colLight.gfxcol.ul.abgr), ulIntensity);
 
 
       FLOAT fDot = vNormal%vLightNormal;
       fDot = Clamp(fDot,0.0f,1.0f);
       SLONG slDot = NormFloatToByte(fDot);
 
-      pacolData->r = ClampUp(pacolData->r + ((colLight.r*slDot)>>8),255L);
-      pacolData->g = ClampUp(pacolData->g + ((colLight.g*slDot)>>8),255L);
-      pacolData->b = ClampUp(pacolData->b + ((colLight.b*slDot)>>8),255L);
-      pacolData->a = 255;
+      pacolData->gfxcol.ub.r = ClampUp(pacolData->gfxcol.ub.r + ((colLight.gfxcol.ub.r*slDot)>>8),255L);
+      pacolData->gfxcol.ub.g = ClampUp(pacolData->gfxcol.ub.g + ((colLight.gfxcol.ub.g*slDot)>>8),255L);
+      pacolData->gfxcol.ub.b = ClampUp(pacolData->gfxcol.ub.b + ((colLight.gfxcol.ub.b*slDot)>>8),255L);
+      pacolData->gfxcol.ub.a = 255;
       pacolData++;
     }
     pacolData+=pixStepX;
@@ -787,9 +787,9 @@ static void CalcDirectionalLight(CPlacement3D &plLight, CLightSource *plsLight, 
   GFXColor colAmbient = plsLight->GetLightAmbient();
 
   UBYTE ubColShift = 8;
-  SLONG slar = colAmbient.r;
-  SLONG slag = colAmbient.g;
-  SLONG slab = colAmbient.b;
+  SLONG slar = colAmbient.gfxcol.ub.r;
+  SLONG slag = colAmbient.gfxcol.ub.g;
+  SLONG slab = colAmbient.gfxcol.ub.b;
 
   extern INDEX mdl_bAllowOverbright;
   BOOL bOverBrightning = mdl_bAllowOverbright && _pGfx->gl_ctTextureUnits>1;
@@ -824,10 +824,10 @@ static void CalcDirectionalLight(CPlacement3D &plLight, CLightSource *plsLight, 
       fDot = Clamp(fDot,0.0f,1.0f);
       SLONG slDot = NormFloatToByte(fDot);
 
-      pacolData->r = ClampUp(pacolData->r + slar + ((colLight.r*slDot)>>ubColShift),255L);
-      pacolData->g = ClampUp(pacolData->g + slag + ((colLight.g*slDot)>>ubColShift),255L);
-      pacolData->b = ClampUp(pacolData->b + slab + ((colLight.b*slDot)>>ubColShift),255L);
-      pacolData->a = 255;
+      pacolData->gfxcol.ub.r = ClampUp(pacolData->gfxcol.ub.r + slar + ((colLight.gfxcol.ub.r*slDot)>>ubColShift),255L);
+      pacolData->gfxcol.ub.g = ClampUp(pacolData->gfxcol.ub.g + slag + ((colLight.gfxcol.ub.g*slDot)>>ubColShift),255L);
+      pacolData->gfxcol.ub.b = ClampUp(pacolData->gfxcol.ub.b + slab + ((colLight.gfxcol.ub.b*slDot)>>ubColShift),255L);
+      pacolData->gfxcol.ub.a = 255;
       pacolData++;
     }
     pacolData+=pixStepX;

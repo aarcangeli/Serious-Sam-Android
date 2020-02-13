@@ -191,7 +191,7 @@ void shaCalculateLight(void)
       colAmbient = 0xFFFFFFFF;
     }
     colConstant.MultiplyRGBA(colLight,colAmbient);
-    shaSetConstantColor(ByteSwap(colConstant.abgr));
+    shaSetConstantColor(ByteSwap(colConstant.gfxcol.ul.abgr));
     // no vertex colors
     return;
   }
@@ -208,9 +208,9 @@ void shaCalculateLight(void)
   colModel.MultiplyRGBA(colModel,colSurface);
 
   UBYTE ubColShift = 8;
-  SLONG slar = colAmbient.r;
-  SLONG slag = colAmbient.g;
-  SLONG slab = colAmbient.b;
+  SLONG slar = colAmbient.gfxcol.ub.r;
+  SLONG slag = colAmbient.gfxcol.ub.g;
+  SLONG slab = colAmbient.gfxcol.ub.b;
 
   if(shaOverBrightningEnabled()) {
     slar = ClampUp(slar,127L);
@@ -232,10 +232,10 @@ void shaCalculateLight(void)
     fDot = Clamp(fDot,0.0f,1.0f);
     SLONG slDot = NormFloatToByte(fDot);
 
-    _acolVtxColors[ivx].r = ClampUp(colModel.r * (slar + ((colLight.r * slDot)>>ubColShift))>>8,255L);
-    _acolVtxColors[ivx].g = ClampUp(colModel.g * (slag + ((colLight.g * slDot)>>ubColShift))>>8,255L);
-    _acolVtxColors[ivx].b = ClampUp(colModel.b * (slab + ((colLight.b * slDot)>>ubColShift))>>8,255L);
-    _acolVtxColors[ivx].a = colModel.a;//slDot;
+    _acolVtxColors[ivx].gfxcol.ub.r = ClampUp(colModel.gfxcol.ub.r * (slar + ((colLight.gfxcol.ub.r * slDot)>>ubColShift))>>8,255L);
+    _acolVtxColors[ivx].gfxcol.ub.g = ClampUp(colModel.gfxcol.ub.g * (slag + ((colLight.gfxcol.ub.g * slDot)>>ubColShift))>>8,255L);
+    _acolVtxColors[ivx].gfxcol.ub.b = ClampUp(colModel.gfxcol.ub.b * (slab + ((colLight.gfxcol.ub.b * slDot)>>ubColShift))>>8,255L);
+    _acolVtxColors[ivx].gfxcol.ub.a = colModel.gfxcol.ub.a;//slDot;
   }
   // Set current vertex color array 
   _pcolVtxColors = &_acolVtxColors[0];
@@ -253,13 +253,13 @@ void shaCalculateLightForSpecular(void)
   const GFXColor &colLight   = (GFXColor)_colLight;   // Light color
   const GFXColor &colSurface = (GFXColor)_colConstant; // shader color
 
-  // colModel = MulColors(colModel.r,colSurface.abgr);
+  // colModel = MulColors(colModel.gfxcol.ub.r,colSurface.gfxcol.ul.abgr);
   colModel.MultiplyRGBA(colModel,colSurface);
 
   UBYTE ubColShift = 8;
-  SLONG slar = colAmbient.r;
-  SLONG slag = colAmbient.g;
-  SLONG slab = colAmbient.b;
+  SLONG slar = colAmbient.gfxcol.ub.r;
+  SLONG slag = colAmbient.gfxcol.ub.g;
+  SLONG slab = colAmbient.gfxcol.ub.b;
 
   if(shaOverBrightningEnabled()) {
     slar = ClampUp(slar,127L);
@@ -281,10 +281,10 @@ void shaCalculateLightForSpecular(void)
     fDot = Clamp(fDot,0.0f,1.0f);
     SLONG slDot = NormFloatToByte(fDot);
 
-    _acolVtxColors[ivx].r = ClampUp(colModel.r * (slar + ((colLight.r * slDot)>>ubColShift))>>8,255L);
-    _acolVtxColors[ivx].g = ClampUp(colModel.g * (slag + ((colLight.g * slDot)>>ubColShift))>>8,255L);
-    _acolVtxColors[ivx].b = ClampUp(colModel.b * (slab + ((colLight.b * slDot)>>ubColShift))>>8,255L);
-    _acolVtxColors[ivx].a = slDot;//colModel.a;//slDot;
+    _acolVtxColors[ivx].gfxcol.ub.r = ClampUp(colModel.gfxcol.ub.r * (slar + ((colLight.gfxcol.ub.r * slDot)>>ubColShift))>>8,255L);
+    _acolVtxColors[ivx].gfxcol.ub.g = ClampUp(colModel.gfxcol.ub.g * (slag + ((colLight.gfxcol.ub.g * slDot)>>ubColShift))>>8,255L);
+    _acolVtxColors[ivx].gfxcol.ub.b = ClampUp(colModel.gfxcol.ub.b * (slab + ((colLight.gfxcol.ub.b * slDot)>>ubColShift))>>8,255L);
+    _acolVtxColors[ivx].gfxcol.ub.a = slDot;//colModel.gfxcol.ub.a;//slDot;
   }
   // Set current wertex array 
   _pcolVtxColors = &_acolVtxColors[0];
@@ -554,13 +554,13 @@ FLOAT3D &shaGetLightDirection(void)
 // Get current light color
 COLOR &shaGetLightColor(void)
 {
-  return _colLight.abgr;
+  return _colLight.gfxcol.ul.abgr;
 }
 
 // Get current ambient volor
 COLOR &shaGetAmbientColor(void)
 {
-  return _colAmbient.abgr;
+  return _colAmbient.gfxcol.ul.abgr;
 }
 
 // Get current set color

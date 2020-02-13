@@ -63,10 +63,10 @@ CTextureData *CTerrainLayer::GetThumbnail(INDEX iWidth, INDEX iHeight)
 
   for(INDEX iy=0;iy<iHeight;iy++) {
     for(INDEX ix=0;ix<iWidth;ix++) {
-      pcolTexture->r = *paubMask;
-      pcolTexture->g = *paubMask;
-      pcolTexture->b = *paubMask;
-      pcolTexture->a = 0xFF;
+      pcolTexture->gfxcol.ub.r = *paubMask;
+      pcolTexture->gfxcol.ub.g = *paubMask;
+      pcolTexture->gfxcol.ub.b = *paubMask;
+      pcolTexture->gfxcol.ub.a = 0xFF;
       pcolTexture++;
       paubMask+=iStepX;
     }
@@ -185,8 +185,8 @@ void CTerrainLayer::ExportLayerMask_t(CTFileName fnLayerMask)
   GFXColor *pacolImage = (GFXColor*)&iiHeightMap.ii_Picture[0];
   UBYTE    *pubMask    = &tl_aubColors[0];
   for(INDEX ipix=0;ipix<iSize;ipix++) {
-    pacolImage->abgr = 0x00000000;
-    pacolImage->r = *pubMask;
+    pacolImage->gfxcol.ul.abgr = 0x00000000;
+    pacolImage->gfxcol.ub.r = *pubMask;
     pacolImage++;
     pubMask++;
   }
