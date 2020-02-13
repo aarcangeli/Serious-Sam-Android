@@ -145,8 +145,8 @@ static __forceinline void AddElements( ScenePolygon *pspo)
     mov     eax,D [pspo]
     mov     ecx,D [ctElems]
     mov     edi,D [piDst]
-    mov     esi,D [eax]ScenePolygon.gfxtc.st.spo_piElements
-    mov     ebx,D [eax]ScenePolygon.gfxtc.st.spo_iVtx0Pass
+    mov     esi,D [eax]ScenePolygon.spo_piElements
+    mov     ebx,D [eax]ScenePolygon.spo_iVtx0Pass
     movd    mm1,ebx
     movq    mm0,mm1
     psllq   mm1,32
@@ -775,9 +775,9 @@ static void RSSetTextureCoords( ScenePolygon *pspoGroup, INDEX iLayer, INDEX iUn
     __asm {
       mov     esi,D [pspo]
       mov     edi,D [iMappingOffset]
-      lea     eax,[esi].gfxtc.st.spo_amvMapping[edi].mv_vO
-      lea     ebx,[esi].gfxtc.st.spo_amvMapping[edi].mv_vU
-      lea     ecx,[esi].gfxtc.st.spo_amvMapping[edi].mv_vV
+      lea     eax,[esi].spo_amvMapping[edi].mv_vO
+      lea     ebx,[esi].spo_amvMapping[edi].mv_vU
+      lea     ecx,[esi].spo_amvMapping[edi].mv_vV
       mov     edx,D [esi].gfxtc.st.spo_ctVtx
       mov     esi,D [pvtx]
       mov     edi,D [ptex]
