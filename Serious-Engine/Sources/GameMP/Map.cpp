@@ -465,7 +465,7 @@ BOOL ObtainMapData(void)
       ((CTextureData*)_toMapBcgLUSE .GetData())->Force(TEX_CONSTANT);
       ((CTextureData*)_toMapBcgRDSE .GetData())->Force(TEX_CONSTANT);
       ((CTextureData*)_toMapBcgRUSE .GetData())->Force(TEX_CONSTANT);
-
+if (map_bIsFirstEncounter) {
       // the first encounter
       atoIconsFE[ 0].SetData_t(CTFILENAME("Textures\\Computer\\Map\\Level00.tex"));
       atoIconsFE[ 1].SetData_t(CTFILENAME("Textures\\Computer\\Map\\Level01.tex"));
@@ -506,6 +506,7 @@ BOOL ObtainMapData(void)
       ((CTextureData*)_toMapBcgLUFE .GetData())->Force(TEX_CONSTANT);
       ((CTextureData*)_toMapBcgRDFE .GetData())->Force(TEX_CONSTANT);
       ((CTextureData*)_toMapBcgRUFE .GetData())->Force(TEX_CONSTANT);
+}
   }
   catch ( const char *strError) {
     CPrintF("%s\n", strError);
