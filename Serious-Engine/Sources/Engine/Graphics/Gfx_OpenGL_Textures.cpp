@@ -133,8 +133,10 @@ extern void UploadTexture_OGL( ULONG *pulTexture, PIX pixSizeU, PIX pixSizeV,
   PIX pixOffset=0;
   while( pixSizeU>0 && pixSizeV>0)
   { 
+    #if 0  // trust me, you'll know if it's not readable.  :)  This assert will read one past the start of the array if U or V is zero, so turning it off.  --ryan.
     // check that memory is readable
     ASSERT( pulTexture[pixOffset +pixSizeU*pixSizeV -1] != 0xDEADBEEF);
+    #endif
     // upload mipmap as fast as possible
     if( bUseSubImage) {
       pglTexSubImage2D( GL_TEXTURE_2D, iMip, 0, 0, pixSizeU, pixSizeV,
@@ -186,18 +188,17 @@ extern void UploadTexture_OGL( ULONG *pulTexture, PIX pixSizeU, PIX pixSizeV,
 //        emms
 //      }
       // translated to c++
-      uint64_t mm0 = 0;
-      ULONG *esi = pulSrc;
-      ULONG *edi = pulDst;
-      for (PIX ecx = pixSize; ecx; ecx--) {
-        uint8_t *pix1 = (uint8_t*) &esi[0];
-        uint8_t *pix2 = (uint8_t*) &esi[1];
-        uint8_t *dest = (uint8_t * ) & edi[0];
-        for (int i = 0; i < 4; i++) {
-          dest[i] = (uint8_t)(((uint32_t) pix1[i] + (uint32_t) pix2[i]) / 2);
+      UBYTE *dptr = (UBYTE *) pulDst;
+      UBYTE *sptr = (UBYTE *) pulSrc;
+      for (PIX i = 0; i < pixSize; i++)
+      {
+        for (PIX j = 0; j < 4; j++)
+        {
+          *dptr = (UBYTE) ( (((UWORD) sptr[0]) + ((UWORD) sptr[4])) >> 1 );
+          dptr++;
+          sptr++;
         }
-        edi += 1;
-        esi += 2;
+        sptr += 4;
       }
       // upload mipmap
       if( bUseSubImage) {
