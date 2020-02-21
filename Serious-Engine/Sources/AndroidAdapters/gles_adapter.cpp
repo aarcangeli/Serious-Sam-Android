@@ -3,6 +3,7 @@ typedef double GLclampd;
 
 #include <GLES2/gl2.h>
 #include <AndroidAdapters/gles_adapter.h>
+#include <Engine/Base/Base.h>
 #include <stdlib.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -53,7 +54,11 @@ void blockingError(const char *func, GLenum error);
 #define GL_ALPHA_TEST 0x0BC0
 #define GL_TEXTURE_MAX_ANISOTROPY_EXT 0x84FE
 #define GL_CLIP_PLANE0 0x3000
-
+#if defined(__arm__)
+#define GL_IND uint16_t
+#else
+#define GL_IND uint32_t
+#endif
 namespace gles_adapter {
   struct GenericBuffer {
       GLint size;
@@ -81,10 +86,10 @@ namespace gles_adapter {
 
   // used in glDrawArrays to convert GL_QUADS into GL_TRIANGLES
   GLuint INDEX_DUMMY_ELEMENT_BUFFER = 10;
-  std::vector<uint16_t> dummyElementBuffer;
+  std::vector<GL_IND> dummyElementBuffer;
 
   // Used to convert GL_UNSIGNED_INT into GL_UNSIGNED_SHORT in glDrawElements
-  std::vector<uint16_t> dummyIndexBuffer;
+  std::vector<GL_IND> dummyIndexBuffer;
 
   GLuint program;
   GLenum lastError = 0;
@@ -263,7 +268,7 @@ namespace gles_adapter {
   }
 
   void syncBuffers(GLsizei vertices) {
-    uint32_t totalSize;
+    GL_IND totalSize;
     // upload vertex buffer
     if (USE_BUFFER_DATA) {
       totalSize = (vp.stride ? vp.stride : vp.size * byterPer(vp.type)) * vertices;
@@ -630,13 +635,13 @@ namespace gles_adapter {
     }
 
     // index buffer
-    std::vector<uint16_t> &buffer = dummyElementBuffer;
+    std::vector<GL_IND> &buffer = dummyElementBuffer;
 
     GLsizei vertices = count / 4 * 6;
     if (vertices > buffer.size()) {
-      uint32_t i = buffer.size();
+      GL_IND i = buffer.size();
       buffer.resize(vertices);
-      uint32_t faceNumber = i / 6;
+      GL_IND faceNumber = i / 6;
       while (i < vertices) {
         buffer[i++] = faceNumber * 4 + 0;
         buffer[i++] = faceNumber * 4 + 1;
@@ -654,7 +659,7 @@ namespace gles_adapter {
 
     syncBuffers(vertices);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, INDEX_DUMMY_ELEMENT_BUFFER);
-    glDrawElements(GL_TRIANGLES, vertices, GL_UNSIGNED_SHORT, 0);
+    glDrawElements(GL_TRIANGLES, vertices, INDEX_GL, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     syncBuffersPost();
     setError(glGetError());
@@ -668,33 +673,33 @@ namespace gles_adapter {
       blockingError("unimplemented mode");
     }
 
-    uint32_t totalVertices = 0;
-    uint32_t bytePerElement = 0;
-    if (type == GL_UNSIGNED_INT) {
+    GL_IND totalVertices = 0;
+    GL_IND bytePerElement = 0;
+    if (type == INDEX_GL) {
       if (count > dummyIndexBuffer.size()) {
         dummyIndexBuffer.resize(count);
       }
-      uint32_t *bf = (uint32_t *) indices;
-      for (uint32_t i = 0; i < count; i++) {
-        dummyIndexBuffer[i] = (uint16_t) bf[i];
+      GL_IND *bf = (GL_IND *) indices;
+      for (GL_IND i = 0; i < count; i++) {
+        dummyIndexBuffer[i] = (GL_IND) bf[i];
         if (dummyIndexBuffer[i] != bf[i]) {
           blockingError("Panic!: uint16_t overflow");
         }
       }
       if (USE_BUFFER_DATA) {
-        for (uint32_t i = 0; i < count; i++) {
+        for (GL_IND i = 0; i < count; i++) {
           if (dummyIndexBuffer[i] >= totalVertices) {
             totalVertices = bf[i] + 1;
           }
         }
       }
       indices = (void*) dummyIndexBuffer.data();
-      type = GL_UNSIGNED_SHORT;
+      type = INDEX_GL;
       bytePerElement = 2;
-    } else if (type == GL_UNSIGNED_SHORT) {
-      uint16_t *bf = (uint16_t *) indices;
+    } else if (type == INDEX_GL) {
+      GL_IND *bf = (GL_IND *) indices;
       if (USE_BUFFER_DATA) {
-        for (uint32_t i = 0; i < count; i++) {
+        for (GL_IND i = 0; i < count; i++) {
           if (bf[i] >= totalVertices) {
             totalVertices = bf[i] + 1;
           }
@@ -704,7 +709,7 @@ namespace gles_adapter {
     } else if (type == GL_UNSIGNED_BYTE) {
       uint8_t *bf = (uint8_t *) indices;
       if (USE_BUFFER_DATA) {
-        for (uint32_t i = 0; i < count; i++) {
+        for (GL_IND i = 0; i < count; i++) {
           if (bf[i] >= totalVertices) {
             totalVertices = bf[i] + 1;
           }
@@ -754,8 +759,8 @@ namespace gles_adapter {
       }
 
       // GL_RGBA/GL_UNSIGNED_BYTE is always accepted
-      uint32_t size = width * height;
-      std::vector<uint32_t> data;
+      GL_IND size = width * height;
+      std::vector<GL_IND> data;
       data.resize(size);
       glReadPixels(x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data.data());
       GLenum error = glGetError();
@@ -878,7 +883,7 @@ namespace gles_adapter {
       float s, t;
   };
   ImmediateVertex current {};
-  uint32_t offset;
+  GL_IND offset;
   GLenum mode;
   std::vector<ImmediateVertex> immediateVertices(10);
 
