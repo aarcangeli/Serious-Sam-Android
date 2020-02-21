@@ -22,13 +22,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/Base.h>
 #include <Engine/Graphics/gl_types.h>
 
-typedef signed long long int    SLLONG;
 typedef signed long  int    SLONG;
 typedef signed short int    SWORD;
 typedef signed char	        SBYTE;
 typedef signed int          SINT;
 
-typedef unsigned long long int  ULLONG;
 typedef unsigned long  int  ULONG;
 typedef unsigned short int  UWORD;
 typedef unsigned char       UBYTE;
@@ -66,6 +64,10 @@ typedef unsigned int        UINT;
     } RECT;
 #endif
 
+inline ULONG _rotl(ULONG ul, int bits)
+{
+   return (ul<<bits) | (ul>>(-bits&31));
+}
 
 #define MAX_SLONG ((SLONG)0x7FFFFFFFL)
 #define MAX_SWORD ((UWORD)0x7FFF)
