@@ -62,9 +62,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #define INDEX_T unsigned short
 // test feature
 #define FASTMATH __attribute__((pcs("aapcs-vfp")))
-#define INDEX_GL GL_UNSIGNED_SHORT
 #else
 #define INDEX_T INDEX
 #define FASTMATH
-#define INDEX_GL GL_UNSIGNED_INT
 #endif
