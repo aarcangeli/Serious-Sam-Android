@@ -128,7 +128,7 @@ extern void (*gfxSetVertexArray)( GFXVertex4 *pvtx, INDEX ctVtx) = NULL;
 extern void (*gfxSetNormalArray)( GFXNormal *pnor) = NULL;
 extern void (*gfxSetTexCoordArray)( GFXTexCoord *ptex, BOOL b4) = NULL;
 extern void (*gfxSetColorArray)( GFXColor *pcol) = NULL;
-extern void (*gfxDrawElements)( INDEX ctElem, INDEX *pidx) = NULL;
+extern void (*gfxDrawElements)( INDEX ctElem, INDEX_T *pidx) = NULL;
 extern void (*gfxSetConstantColor)(COLOR col) = NULL;
 extern void (*gfxEnableColorArray)(void) = NULL;
 extern void (*gfxDisableColorArray)(void) = NULL;
@@ -588,7 +588,7 @@ extern void gfxUnlockArrays(void)
 extern void AddQuadElements( const INDEX ctQuads)
 {
   const INDEX iStart = _aiCommonQuads.Count() /6*4;
-  INDEX *piQuads = _aiCommonQuads.Push(ctQuads*6); 
+  INDEX_T *piQuads = _aiCommonQuads.Push(ctQuads*6); 
   for( INDEX i=0; i<ctQuads; i++) {
     piQuads[i*6 +0] = iStart+ i*4 +0;
     piQuads[i*6 +1] = iStart+ i*4 +1;
@@ -601,7 +601,7 @@ extern void AddQuadElements( const INDEX ctQuads)
 
 
 // helper function for flushers
-static void FlushArrays( INDEX *piElements, INDEX ctElements)
+static void FlushArrays( INDEX_T *piElements, INDEX ctElements)
 {
   // check
   const INDEX ctVertices = _avtxCommon.Count();
@@ -723,7 +723,7 @@ static void none_SetVertexArray( GFXVertex4 *pvtx, INDEX ctVtx) { NOTHING; };
 static void none_SetNormalArray( GFXNormal *pnor) { NOTHING; };
 static void none_SetTexCoordArray( GFXTexCoord *ptex, BOOL b4) { NOTHING; };
 static void none_SetColorArray( GFXColor *pcol) { NOTHING; };
-static void none_DrawElements( INDEX ctElem, INDEX *pidx) { NOTHING; };
+static void none_DrawElements( INDEX ctElem, INDEX_T *pidx) { NOTHING; };
 static void none_SetConstantColor( COLOR col) { NOTHING; };
 static void none_SetColorMask( ULONG ulColorMask) { NOTHING; };
 
@@ -941,7 +941,7 @@ void gfxVertexAttribPointer(ULONG attribPointer, ULONG size, ULONG stride, ULONG
   gles_adapter::syncError();
 }
 
-void gfxDrawElementArrayBuffer(INDEX iCount, INDEX *pidx) {
+void gfxDrawElementArrayBuffer(INDEX iCount, INDEX_T *pidx) {
   ASSERT(_pGfx->gl_eCurrentAPI == (INDEX) GAT_OGL);
   static std::vector<uint16_t> dummyIndexBuffer;
 

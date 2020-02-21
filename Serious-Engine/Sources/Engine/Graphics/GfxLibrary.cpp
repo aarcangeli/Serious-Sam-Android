@@ -56,8 +56,8 @@ extern BOOL CVA_bModels = FALSE;
 CStaticStackArray<GFXVertex>   _avtxCommon;      
 CStaticStackArray<GFXTexCoord> _atexCommon;   
 CStaticStackArray<GFXColor>    _acolCommon;      
-CStaticStackArray<INDEX>       _aiCommonElements;
-CStaticStackArray<INDEX>       _aiCommonQuads;   // predefined array for rendering quads thru triangles in glDrawElements()
+CStaticStackArray<INDEX_T>     _aiCommonElements;
+CStaticStackArray<INDEX_T>     _aiCommonQuads;   // predefined array for rendering quads thru triangles in glDrawElements()
 
 // global texture parameters
 CTexParams _tpGlobal[GFX_MAXTEXUNITS];  
