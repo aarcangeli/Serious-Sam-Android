@@ -349,8 +349,8 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
 //  sys_iRAMSwap = ms.dwTotalPageFile/MB;
   struct sysinfo info;
   sysinfo(&info);
-  sys_iRAMPhys = info.totalram;
-  sys_iRAMSwap = info.totalswap;
+  sys_iRAMPhys = 256;
+  sys_iRAMSwap = 1;
 
   // initialize zip semaphore
   zip_csLock.cs_iIndex = -1;  // not checked for locking order
@@ -636,77 +636,7 @@ static BOOL TouchBlock(UBYTE *pubMemoryBlock, INDEX ctBlockSize)
 extern BOOL _bNeedPretouch = FALSE;
 ENGINE_API extern void SE_PretouchIfNeeded(void)
 {
-//  // only if pretouching is needed?
-//  extern INDEX gam_bPretouch;
-//  if( !_bNeedPretouch || !gam_bPretouch) return;
-//  _bNeedPretouch = FALSE;
-//
-//  // set progress bar
-//  SetProgressDescription( TRANS("pretouching"));
-//  CallProgressHook_t(0.0f);
-//
-//  // need to do this two times - 1st for numerations, and 2nd for real (progress bar and that shit)
-//  BOOL bPretouched = TRUE;
-//  INDEX ctFails, ctBytes, ctBlocks;
-//  INDEX ctPassBytes, ctTotalBlocks;
-//  for( INDEX iPass=1; iPass<=2; iPass++)
-//  {
-//    // flush variables
-//    ctFails=0; ctBytes=0; ctBlocks=0; ctTotalBlocks=0;
-//    void *pvNextBlock = NULL;
-//    MEMORY_BASIC_INFORMATION mbi;
-//    // lets walk thru memory blocks
-//    while( VirtualQuery( pvNextBlock, &mbi, sizeof(mbi)))
-//    {
-//      // don't mess with kernel's memory and zero-sized blocks
-//      if( ((ULONG)pvNextBlock)>0x7FFF0000UL || mbi.RegionSize<1) break;
-//
-//      // if this region of memory belongs to our process
-//      BOOL bCanAccess = (mbi.Protect==PAGE_READWRITE); // || (mbi.Protect==PAGE_EXECUTE_READWRITE);
-//      if( mbi.State==MEM_COMMIT && bCanAccess && mbi.Type==MEM_PRIVATE) // && !IsBadReadPtr( mbi.BaseAddress, 1)
-//      {
-//        // increase counters
-//        ctBlocks++;
-//        ctBytes += mbi.RegionSize;
-//        // in first pass we only count
-//        if( iPass==1) goto nextRegion;
-//        // update progress bar
-//        CallProgressHook_t( (FLOAT)ctBytes/ctPassBytes);
-//        // pretouch
-//        ASSERT( mbi.RegionSize>0);
-//        BOOL bOK = TouchBlock((UBYTE *)mbi.BaseAddress, mbi.RegionSize);
-//        if( !bOK) {
-//          // whoops!
-//          ctFails++;
-//        }
-//        // for easier debugging (didn't help much, though)
-//        //Sleep(5);
-//      }
-//nextRegion:
-//      // advance to next region
-//      pvNextBlock = ((UBYTE*)mbi.BaseAddress) + mbi.RegionSize;
-//      ctTotalBlocks++;
-//    }
-//    // done with one pass
-//    ctPassBytes = ctBytes;
-//    if( (ctPassBytes/1024/1024)>sys_iRAMPhys) {
-//      // not enough RAM, sorry :(
-//      bPretouched = FALSE;
-//      break;
-//    }
-//  }
-//
-//  // report
-//  if( bPretouched) {
-//    // success
-//    CPrintF( TRANS("Pretouched %d KB of memory in %d blocks.\n"), ctBytes/1024, ctBlocks); //, ctTotalBlocks);
-//  } else {
-//    // fail
-//    CPrintF( TRANS("Cannot pretouch due to lack of physical memory (%d KB of overflow).\n"), ctPassBytes/1024-sys_iRAMPhys*1024);
-//  }
-//  // some blocks failed?
-//  if( ctFails>1) CPrintF( TRANS("(%d blocks were skipped)\n"), ctFails);
-//  //_pShell->Execute("StockDump();");
+  _bNeedPretouch = FALSE;
 }
 
 

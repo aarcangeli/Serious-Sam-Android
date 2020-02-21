@@ -116,14 +116,14 @@ extern const FLOAT *pfCosTable = afSinTable +256+64;
 // texture/shadow control
 extern INDEX tex_iNormalQuality    = 00;      // 0=optimal, 1=16bit, 2=32bit, 3=compressed (1st num=opaque tex, 2nd=alpha tex)
 extern INDEX tex_iAnimationQuality = 11;      // 0=optimal, 1=16bit, 2=32bit, 3=compressed (1st num=opaque tex, 2nd=alpha tex)
-extern INDEX tex_iNormalSize     = 9;         // log2 of texture area /2 for max texture size allowed
-extern INDEX tex_iAnimationSize  = 7; 
-extern INDEX tex_iEffectSize     = 7; 
+extern INDEX tex_iNormalSize     = 7;         // log2 of texture area /2 for max texture size allowed
+extern INDEX tex_iAnimationSize  = 5; 
+extern INDEX tex_iEffectSize     = 6; 
 extern INDEX tex_bDynamicMipmaps = FALSE;     // how many mipmaps will be bilineary filtered (0-15)
 extern INDEX tex_iDithering      = 3;         // 0=none, 1-3=low, 4-7=medium, 8-10=high
 extern INDEX tex_bFineEffect = FALSE;         // 32bit effect? (works only if base texture hasn't been dithered)
-extern INDEX tex_bFineFog = TRUE;             // should fog be 8/32bit? (or just plain 4/16bit)
-extern INDEX tex_iFogSize = 7;                // limit fog texture size 
+extern INDEX tex_bFineFog = FALSE;             // should fog be 8/32bit? (or just plain 4/16bit)
+extern INDEX tex_iFogSize = 5;                // limit fog texture size 
 extern INDEX tex_iFiltering = 0;              // -6 - +6; negative = sharpen, positive = blur, 0 = none
 extern INDEX tex_iEffectFiltering = +4;       // filtering of fire effect textures
 extern INDEX tex_bProgressiveFilter = FALSE;  // filter mipmaps in creation time (not afterwards)
@@ -131,15 +131,15 @@ extern INDEX tex_bColorizeMipmaps   = FALSE;  // DEBUG: colorize texture's mipma
 extern INDEX tex_bCompressAlphaChannel = FALSE;  // for compressed textures, compress alpha channel too   
 extern INDEX tex_bAlternateCompression = FALSE;  // basically, this is fix for GFs (compress opaque texture as translucent)
 
-extern INDEX shd_iStaticSize  = 8;    
-extern INDEX shd_iDynamicSize = 8;    
+extern INDEX shd_iStaticSize  = 6;    
+extern INDEX shd_iDynamicSize = 6;    
 extern INDEX shd_bFineQuality = FALSE; 
 extern INDEX shd_iFiltering = 3;     // >0 = blurring, 0 = no filtering
 extern INDEX shd_iDithering = 1;     // 0=none, 1,2=low, 3,4=medium, 5=high
 extern INDEX shd_iAllowDynamic = 1;    // 0=disallow, 1=allow on polys w/o 'NoDynamicLights' flag, 2=allow unconditionally
 extern INDEX shd_bDynamicMipmaps = TRUE;
-extern FLOAT shd_tmFlushDelay = 30.0f; // in seconds
-extern FLOAT shd_fCacheSize   = 8.0f;  // in megabytes
+extern FLOAT shd_tmFlushDelay = 10.0f; // in seconds
+extern FLOAT shd_fCacheSize   = 4.0f;  // in megabytes
 extern INDEX shd_bCacheAll    = FALSE; // cache all shadowmap at the level loading time (careful - memory eater!)
 extern INDEX shd_bAllowFlats = TRUE;   // allow optimization of single-color shadowmaps
 extern INDEX shd_iForceFlats = 0;      // force all shadowmaps to be flat (internal!) - 0=don't, 1=w/o overbrighting, 2=w/ overbrighting
@@ -198,7 +198,7 @@ extern INDEX mdl_bRenderSpecular   = TRUE;
 extern INDEX mdl_bRenderReflection = TRUE;
 extern INDEX mdl_bRenderBump       = TRUE;
 extern INDEX mdl_bAllowOverbright  = TRUE;
-extern INDEX mdl_bFineQuality      = TRUE;
+extern INDEX mdl_bFineQuality      = FALSE;
 extern INDEX mdl_iShadowQuality    = 1;
 extern FLOAT mdl_fLODMul           = 1.0f;
 extern FLOAT mdl_fLODAdd           = 0.0f;
@@ -240,7 +240,7 @@ extern INDEX gfx_iLensFlareQuality = 3;   // 0=none, 1=corona only, 2=corona and
 
 extern INDEX gfx_bDecoratedText   = TRUE;
 extern INDEX gfx_bClearScreen = FALSE;
-extern FLOAT gfx_tmProbeDecay = 30.0f;   // seconds
+extern FLOAT gfx_tmProbeDecay = 50.0f;   // seconds
 extern INDEX gfx_iProbeSize   = 256;     // in KBs
 
 extern INDEX gfx_ctMonitors = 0;
