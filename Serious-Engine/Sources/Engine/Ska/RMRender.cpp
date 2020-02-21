@@ -1990,9 +1990,9 @@ static void MatchAnims(RenModel &rm)
             }
             
             // calculate rotation for bone beetwen current and next frame in animation
-            qRot = Slerp<FLOAT>(fSlerpFactor,*pqRotCurrent,*pqRotNext);
+            qRot = Slerp(fSlerpFactor,*pqRotCurrent,*pqRotNext);
             // and currently playing animation 
-            rb.rb_arRot.ar_qRot = Slerp<FLOAT>(fFadeFactor*pa.pa_Strength,rb.rb_arRot.ar_qRot,qRot);
+            rb.rb_arRot.ar_qRot = Slerp(fFadeFactor*pa.pa_Strength,rb.rb_arRot.ar_qRot,qRot);
 
             AnimPos *apFirst = &be.be_apPos[0];
             INDEX ctfn = be.be_apPos.Count();

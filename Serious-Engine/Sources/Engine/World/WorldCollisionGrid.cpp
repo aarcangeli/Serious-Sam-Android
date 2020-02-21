@@ -48,15 +48,23 @@ static inline void BoxToGrid(
   FLOAT fMinZ = boxEntity.Min()(3);
   FLOAT fMaxX = boxEntity.Max()(1);
   FLOAT fMaxZ = boxEntity.Max()(3);
-  iMinX = std::isinf(fMinX) ? GRID_MIN : INDEX(floor(fMinX/GRID_CELLSIZE));
-  iMinZ = std::isinf(fMinZ) ? GRID_MIN : INDEX(floor(fMinZ/GRID_CELLSIZE));
-  iMaxX = std::isinf(fMaxX) ? GRID_MIN : INDEX(ceil(fMaxX/GRID_CELLSIZE));
-  iMaxZ = std::isinf(fMaxZ) ? GRID_MIN : INDEX(ceil(fMaxZ/GRID_CELLSIZE));
+#ifdef __arm__
+  #define Isinf(a) (((*(unsigned int*)&a)&0x7fffffff)==0x7f800000)
+  iMinX = (Isinf(fMinX))?INDEX(GRID_MIN):Clamp(INDEX(floor(fMinX/GRID_CELLSIZE)), (INDEX)GRID_MIN, (INDEX)GRID_MAX);
+  iMinZ = (Isinf(fMinZ))?INDEX(GRID_MIN):Clamp(INDEX(floor(fMinZ/GRID_CELLSIZE)), (INDEX)GRID_MIN, (INDEX)GRID_MAX);
+  iMaxX = (Isinf(fMaxX))?INDEX(GRID_MIN):Clamp(INDEX(ceil(fMaxX/GRID_CELLSIZE)), (INDEX)GRID_MIN, (INDEX)GRID_MAX);
+  iMaxZ = (Isinf(fMaxZ))?INDEX(GRID_MIN):Clamp(INDEX(ceil(fMaxZ/GRID_CELLSIZE)), (INDEX)GRID_MIN, (INDEX)GRID_MAX);
+#else
+  iMinX = INDEX(floor(fMinX/GRID_CELLSIZE));
+  iMinZ = INDEX(floor(fMinZ/GRID_CELLSIZE));
+  iMaxX = INDEX(ceil(fMaxX/GRID_CELLSIZE));
+  iMaxZ = INDEX(ceil(fMaxZ/GRID_CELLSIZE));
 
   iMinX = Clamp(iMinX, (INDEX)GRID_MIN, (INDEX)GRID_MAX);
   iMinZ = Clamp(iMinZ, (INDEX)GRID_MIN, (INDEX)GRID_MAX);
   iMaxX = Clamp(iMaxX, (INDEX)GRID_MIN, (INDEX)GRID_MAX);
   iMaxZ = Clamp(iMaxZ, (INDEX)GRID_MIN, (INDEX)GRID_MAX);
+#endif
 }
 
 // key calculations
