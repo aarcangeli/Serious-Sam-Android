@@ -19,11 +19,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
   #pragma once
 #endif
 
-FLOAT FASTMATH TestRayCastHit(CTerrain *ptrTerrain, const FLOATmatrix3D &mRotation, const FLOAT3D &vPosition, 
+FLOAT TestRayCastHit(CTerrain *ptrTerrain, const FLOATmatrix3D &mRotation, const FLOAT3D &vPosition, 
                      const FLOAT3D &vOrigin, const FLOAT3D &vTarget,const FLOAT fOldDistance, 
                      const BOOL bHitInvisibleTris);
 
-FLOAT FASTMATH TestRayCastHit(CTerrain *ptrTerrain, const FLOATmatrix3D &mRotation, const FLOAT3D &vPosition, 
+FLOAT TestRayCastHit(CTerrain *ptrTerrain, const FLOATmatrix3D &mRotation, const FLOAT3D &vPosition, 
                      const FLOAT3D &vOrigin, const FLOAT3D &vTarget,const FLOAT fOldDistance, 
                      const BOOL bHitInvisibleTris, FLOATplane3D &plHitPlane, FLOAT3D &vHitPoint);
 #endif

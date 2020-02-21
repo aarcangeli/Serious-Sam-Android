@@ -84,7 +84,7 @@ struct ENGINE_API MeshSurface
 
 struct ENGINE_API MeshTriangle
 {
-  INDEX_T iVertex[3];  
+  INDEX iVertex[3];  
 };
 
 struct ENGINE_API MeshWeightMap

@@ -58,7 +58,7 @@ public:
   CStaticStackArray<GFXTexCoord>  &GetTexCoords();
   CStaticStackArray<GFXTexCoord>  &GetShadowMapTC();
   CStaticStackArray<GFXTexCoord>  &GetDetailTC();
-  CStaticStackArray<INDEX_T>      &GetIndices();
+  CStaticStackArray<INDEX>        &GetIndices();
   CStaticStackArray<TileLayer>    &GetTileLayers();
   CTextureData                    *GetTopMap();
 

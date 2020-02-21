@@ -63,6 +63,7 @@ set(
   "${SE_BASE}/Math/Geometry_DOUBLE.cpp"
   "${SE_BASE}/Math/Object3D.cpp"
   "${SE_BASE}/Math/Object3D_CSG.cpp"
+  "${SE_BASE}/Math/Object3D_IO.cpp"
   "${SE_BASE}/Math/ObjectSector.cpp"
   "${SE_BASE}/Math/Placement.cpp"
   "${SE_BASE}/Math/Projection.cpp"
@@ -105,6 +106,7 @@ set(
   "${SE_BASE}/Sound/SoundObject.cpp"
   "${SE_BASE}/Sound/SoundProfile.cpp"
   "${SE_BASE}/Sound/Wave.cpp"
+  "${SE_BASE}/Models/EditModel.cpp"
   "${SE_BASE}/Models/MipMaker.cpp"
   "${SE_BASE}/Models/Model.cpp"
   "${SE_BASE}/Models/ModelProfile.cpp"
@@ -229,8 +231,6 @@ set(
   ${SE_BASE}/_android/GameAgent.cpp
 
   # excluded sources
-  #"${SE_BASE}/Models/EditModel.cpp"
-  #"${SE_BASE}/Math/Object3D_IO.cpp"
   #"${SE_BASE}/Graphics/Gfx_wrapper_Direct3D.cpp"
   #"${SE_BASE}/Graphics/Gfx_wrapper_OpenGL.cpp"
   #"${SE_BASE}/Templates/AllocationArray.cpp"

@@ -36,7 +36,7 @@ extern CTerrain *_ptrTerrain; // Current terrain
 static FLOAT3D _vHitLocation = FLOAT3D(-100,-100,-100);
 
 CStaticStackArray<GFXVertex4> _avExtVertices;
-CStaticStackArray<INDEX_T>    _aiExtIndices;
+CStaticStackArray<INDEX>      _aiExtIndices;
 CStaticStackArray<GFXColor>   _aiExtColors;
 CStaticStackArray<INDEX>      _aiHitTiles;
 
@@ -210,7 +210,7 @@ FLOAT GetExactHitLocation(INDEX iTileIndex, FLOAT3D &vOrigin, FLOAT3D &vTarget, 
   QuadTreeNode &qtn = _ptrTerrain->tr_aqtnQuadTreeNodes[iTileIndex];
 
   GFXVertex *pavVertices;
-  INDEX_T    *paiIndices;
+  INDEX     *paiIndices;
   INDEX      ctVertices;
   INDEX      ctIndices;
 
@@ -222,7 +222,7 @@ FLOAT GetExactHitLocation(INDEX iTileIndex, FLOAT3D &vOrigin, FLOAT3D &vTarget, 
 
   // for each triangle
   for(INDEX iTri=0;iTri<ctIndices;iTri+=3) {
-    INDEX_T *pind = &paiIndices[iTri];
+    INDEX *pind = &paiIndices[iTri];
     GFXVertex &v0 = pavVertices[pind[0]];
     GFXVertex &v1 = pavVertices[pind[1]];
     GFXVertex &v2 = pavVertices[pind[2]];
@@ -291,7 +291,7 @@ FLOAT3D _vHitExact; // TEMP
 #pragma message(">> Remove Rect from ExtractPolygonsInBox")
 // Extract polygons in given box and returns clipped rectangle
 Rect ExtractPolygonsInBox(CTerrain *ptrTerrain, const FLOATaabbox3D &bboxExtract, GFXVertex4 **pavVtx, 
-                          INDEX_T **paiInd, INDEX &ctVtx,INDEX &ctInd,BOOL bFixSize/*=FALSE*/)
+                          INDEX **paiInd, INDEX &ctVtx,INDEX &ctInd,BOOL bFixSize/*=FALSE*/)
 {
   ASSERT(ptrTerrain!=NULL);
 
@@ -364,7 +364,7 @@ Rect ExtractPolygonsInBox(CTerrain *ptrTerrain, const FLOATaabbox3D &bboxExtract
   _aiExtIndices.Push(ctIndices);
 
   GFXVertex4 *pavVertices = &_avExtVertices[0];
-  INDEX_T *pauiIndices = &_aiExtIndices[0];
+  INDEX *pauiIndices = &_aiExtIndices[0];
 
   // for each row
   INDEX iy, ix;
@@ -452,7 +452,7 @@ Rect ExtractPolygonsInBox(CTerrain *ptrTerrain, const FLOATaabbox3D &bboxExtract
 }
 
 void ExtractVerticesInRect(CTerrain *ptrTerrain, Rect &rc, GFXVertex4 **pavVtx, 
-                          INDEX_T **paiInd, INDEX &ctVtx,INDEX &ctInd)
+                          INDEX **paiInd, INDEX &ctVtx,INDEX &ctInd)
 {
   _avExtVertices.PopAll();
   _aiExtIndices.PopAll();
@@ -493,7 +493,7 @@ void ExtractVerticesInRect(CTerrain *ptrTerrain, Rect &rc, GFXVertex4 **pavVtx,
     puwHeight+=iStepY;
   }
 
-  INDEX_T *pauiIndices = &_aiExtIndices[0];
+  INDEX *pauiIndices = &_aiExtIndices[0];
   INDEX ivx=0;
   //INDEX ind=0;
   INDEX iFacing=iFirstHeight;

@@ -895,7 +895,7 @@ void CClipMove::ClipToTerrain(CEntity *pen)
   
   CTerrain &tr = *pen->en_ptrTerrain;
   GFXVertex4 *pavVertices;
-  INDEX_T      *paiIndices;
+  INDEX      *paiIndices;
   INDEX ctVertices,ctIndices;
 
   FLOAT3D vMin = cm_boxMovementPath.Min();
@@ -922,9 +922,9 @@ void CClipMove::ClipToTerrain(CEntity *pen)
   
   // for each triangle
   for(INDEX iTri=0;iTri<ctIndices;iTri+=3) {
-    INDEX_T &iind1 = paiIndices[iTri+0];
-    INDEX_T &iind2 = paiIndices[iTri+1];
-    INDEX_T &iind3 = paiIndices[iTri+2];
+    INDEX &iind1 = paiIndices[iTri+0];
+    INDEX &iind2 = paiIndices[iTri+1];
+    INDEX &iind3 = paiIndices[iTri+2];
     FLOAT3D v0(pavVertices[iind1].x,pavVertices[iind1].y,pavVertices[iind1].z);
     FLOAT3D v1(pavVertices[iind2].x,pavVertices[iind2].y,pavVertices[iind2].z);
     FLOAT3D v2(pavVertices[iind3].x,pavVertices[iind3].y,pavVertices[iind3].z);

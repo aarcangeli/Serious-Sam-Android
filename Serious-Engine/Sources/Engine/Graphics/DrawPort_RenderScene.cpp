@@ -64,7 +64,7 @@ static GfxAPIType eAPI;
 static CStaticStackArray<GFXVertex>   _avtxPass;   
 static CStaticStackArray<GFXTexCoord> _atexPass[MAXTEXUNITS];
 static CStaticStackArray<GFXColor>    _acolPass;   
-static CStaticStackArray<INDEX_T>     _aiElements;
+static CStaticStackArray<INDEX>       _aiElements;
 // general coordinate stack referenced by the scene polygons
 CStaticStackArray<GFXVertex3> _avtxScene;
 
@@ -139,7 +139,7 @@ static void FlushElements(void)
 static __forceinline void AddElements( ScenePolygon *pspo) 
 {
   const INDEX ctElems = pspo->spo_ctElements;
-  INDEX_T *piDst = _aiElements.Push(ctElems);
+  INDEX *piDst = _aiElements.Push(ctElems);
 #if ASMOPT == 1
   __asm {
     mov     eax,D [pspo]

@@ -58,11 +58,3 @@ with this program; if not, write to the Free Software Foundation, Inc.,
   #define ENGINE_API
 #endif
 
-#if defined(__arm__)
-#define INDEX_T unsigned short
-// test feature
-#define FASTMATH __attribute__((pcs("aapcs-vfp")))
-#else
-#define INDEX_T INDEX
-#define FASTMATH
-#endif
