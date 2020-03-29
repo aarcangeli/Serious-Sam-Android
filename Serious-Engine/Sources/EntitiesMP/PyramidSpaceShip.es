@@ -15,7 +15,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 609
 %{
-#include "StdH.h"
+#include "EntitiesMP/StdH/StdH.h"
 #include "Models/CutSequences/SpaceShip/SpaceShip.h"
 #include "Models/CutSequences/SpaceShip/Door.h"
 #include "Models/CutSequences/SpaceShip/LightBeam.h"

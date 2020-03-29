@@ -15,7 +15,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 504
 %{
-#include "StdH.h"
+#include "EntitiesMP/StdH/StdH.h"
 #define TM_APPLY_DAMAGE_QUANTUM 0.25f
 #define TM_APPLY_WHOLE_DAMAGE 7.5f
 #define DAMAGE_AMMOUNT 30.0f

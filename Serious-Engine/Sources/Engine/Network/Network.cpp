@@ -118,8 +118,8 @@ extern INDEX ser_bInverseBanning = FALSE;
 extern CTString ser_strMOTD = "";
 
 extern INDEX cli_bEmulateDesync  = FALSE;
-extern INDEX cli_bDumpSync       = FALSE;
-extern INDEX cli_bDumpSyncEachTick = FALSE;
+extern INDEX cli_bDumpSync       = TRUE;
+extern INDEX cli_bDumpSyncEachTick = TRUE;
 extern INDEX cli_bAutoAdjustSettings = FALSE;
 extern FLOAT cli_tmAutoAdjustThreshold = 2.0f;
 extern INDEX cli_bPrediction = FALSE;
@@ -163,7 +163,7 @@ extern INDEX net_iMaxClients = 0;
 extern FLOAT net_tmConnectionTimeout = 30.0f;
 extern FLOAT net_tmProblemsTimeout = 5.0f;
 extern FLOAT net_tmDisconnectTimeout = 300.0f;  // must be higher for level changing
-extern INDEX net_bReportCRC = FALSE;
+extern INDEX net_bReportCRC = TRUE;
 extern FLOAT net_fDropPackets = 0.0f;
 extern FLOAT net_tmLatency = 0.0f;
 

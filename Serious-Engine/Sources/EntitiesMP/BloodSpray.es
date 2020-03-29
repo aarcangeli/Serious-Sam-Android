@@ -15,7 +15,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 603
 %{
-#include "StdH.h"
+#include "EntitiesMP/StdH/StdH.h"
 %}
 
 // input parameter for spawning a blood spray

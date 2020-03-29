@@ -15,7 +15,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 501
 %{
-#include "StdH.h"
+#include "EntitiesMP/StdH/StdH.h"
 #include "Models/Weapons/Laser/Projectile/LaserProjectile.h"
 #include "EntitiesMP/EnemyBase.h"
 //#include "EntitiesMP/Dragonman.h"

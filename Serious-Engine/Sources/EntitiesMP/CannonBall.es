@@ -15,7 +15,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 506
 %{
-#include "StdH.h"
+#include "EntitiesMP/StdH/StdH.h"
 #include "Models/Weapons/Cannon/Projectile/CannonBall.h"
 #include "EntitiesMP/MovingBrush.h"
 #include "EntitiesMP/DestroyableArchitecture.h"

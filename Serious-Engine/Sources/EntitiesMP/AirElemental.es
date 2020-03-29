@@ -15,7 +15,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 347
 %{
-#include "StdH.h"
+#include "EntitiesMP/StdH/StdH.h"
 #include "ModelsMP/Enemies/AirElemental/AirElemental.h"
 #include "ModelsMP/Enemies/AirElemental/Elemental.h"
 #include "Models/Enemies/Elementals/Twister.h"

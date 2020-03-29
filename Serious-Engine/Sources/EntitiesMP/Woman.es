@@ -15,7 +15,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 320
 %{
-#include "StdH.h"
+#include "EntitiesMP/StdH/StdH.h"
 #include "ModelsMP/Enemies/Woman/Woman.h"
 #include "Models/Enemies/Headman/Headman.h"
 #include "EntitiesMP/Headman.h"

@@ -15,7 +15,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 310
 %{
-#include "StdH.h"
+#include "EntitiesMP/StdH/StdH.h"
 #include "EntitiesMP/Common/PathFinding.h"
 #include "EntitiesMP/NavigationMarker.h"
 #include "EntitiesMP/TacticsHolder.h"

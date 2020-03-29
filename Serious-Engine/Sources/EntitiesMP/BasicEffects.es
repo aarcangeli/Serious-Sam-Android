@@ -15,7 +15,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 601
 %{
-#include "StdH.h"
+#include "EntitiesMP/StdH/StdH.h"
 #include "Models/Effects/Teleport01/Teleport.h"
 #include "Models/Effects/ExplosionGrenade/ExplosionGrenade.h"
 #include "Models/Effects/ShockWave01/ShockWave.h"

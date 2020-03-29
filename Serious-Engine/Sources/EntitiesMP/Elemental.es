@@ -15,7 +15,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 322
 %{
-#include "StdH.h"
+#include "EntitiesMP/StdH/StdH.h"
 #include "Models/Enemies/Elementals/StoneMan.h"
 #include "Models/Enemies/Elementals/Projectile/LavaStone.h"
 
