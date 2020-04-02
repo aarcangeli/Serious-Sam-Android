@@ -29,6 +29,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Entities/EntityEvent.h>
 #include <Engine/Entities/EntityPointer.h>
 #include <Engine/Ska/ModelInstance.h>
+#include <Engine/Base/ErrorReporting.h>
 
 
 #define DUMPVECTOR(v) \

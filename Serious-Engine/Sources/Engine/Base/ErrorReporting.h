@@ -19,6 +19,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
   #pragma once
 #endif
 #include <Engine/Base/Synchronization.h>
+#include <AndroidAdapters/stringFormatter.h>
 
 typedef void (*err_callback_t)(bool fatal, CTString error);
 
