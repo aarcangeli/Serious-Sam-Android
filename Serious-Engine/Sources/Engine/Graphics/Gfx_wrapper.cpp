@@ -427,7 +427,7 @@ extern void gfxUploadTexture( ULONG *pulTexture, PIX pixWidth, PIX pixHeight, UL
 extern SLONG gfxGetTextureSize( ULONG ulTexObject, BOOL bHasMipmaps/*=TRUE*/)
 {
   // nothing used if nothing uploaded
-  if( ulTexObject==NULL) return 0;
+  if( ulTexObject==0) return 0;
 
   // determine API
   const GfxAPIType eAPI = _pGfx->gl_eCurrentAPI;

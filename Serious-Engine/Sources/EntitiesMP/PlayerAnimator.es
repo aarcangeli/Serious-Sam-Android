@@ -1172,7 +1172,7 @@ functions:
 
     // moving view change
     // translating -> change banking
-    if (m_bReference != NULL && vDesiredTranslation.Length()>1.0f && vCurrentTranslation.Length()>1.0f) {
+    if (m_bReference != FALSE && vDesiredTranslation.Length()>1.0f && vCurrentTranslation.Length()>1.0f) {
       m_bMoving = TRUE;
       // sidestep banking
       FLOAT vSidestepSpeedDesired = vDesiredTranslation(1);

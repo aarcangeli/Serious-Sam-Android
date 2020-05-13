@@ -52,7 +52,7 @@ static COLOR       _colModel   = 0x000000FF;     // Model color
 static GFXColor    _colLight   = 0x000000FF;     // Light color
 static FLOAT3D     _vLightDir  = FLOAT3D(0,0,0); // Light direction
 
-static COLOR       _colConstant   = NULL; // current set color
+static COLOR       _colConstant   = 0; // current set color
 static COLOR       *_paColors    = NULL;  // array of colors to chose from
 static FLOAT       *_paFloats    = NULL;  // array of floats to chose from
 static ULONG       _ulFlags      = 0;

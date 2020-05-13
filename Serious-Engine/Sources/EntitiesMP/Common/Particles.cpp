@@ -4572,7 +4572,7 @@ void Particles_AfterBurner(CEntity *pen, FLOAT tmSpawn, FLOAT fStretch, INDEX iG
     // smoke
     FLOAT3D vPosS = *pvPos1;
     Particle_SetTexturePart( 512, 512, 1, 0);
-    FLOAT fAngleS = afStarsPositions[iRnd][1]*360.0f+fT*120.0f*afStarsPositions[iRnd][3];
+    FLOAT fAngleS = afStarsPositions[iRnd][1]*360.0f+fT*120.0f*afStarsPositions[iRnd][2];
     FLOAT fSizeS = (0.5f+aSmoke_sol[iIndex]*2.5f)*fStretch;
     FLOAT3D vVelocityS=FLOAT3D(afStarsPositions[iRnd][1], 
                                afStarsPositions[iRnd][2],
@@ -5768,7 +5768,7 @@ void Particles_RunAfterBurner(CEntity *pen, FLOAT tmEnd, FLOAT fStretch, INDEX i
     // smoke
     FLOAT3D vPosS = *pvPos1;
     Particle_SetTexturePart( 512, 512, 1, 0);
-    FLOAT fAngleS = afStarsPositions[iRnd][1]*360.0f+fT*120.0f*afStarsPositions[iRnd][3];
+    FLOAT fAngleS = afStarsPositions[iRnd][1]*360.0f+fT*120.0f*afStarsPositions[iRnd][2];
     FLOAT fSizeS = (0.5f+aSmoke_sol[iIndex]*2.5f)*fStretch;
     FLOAT3D vVelocityS=FLOAT3D(afStarsPositions[iRnd][1], 
                                afStarsPositions[iRnd][2],

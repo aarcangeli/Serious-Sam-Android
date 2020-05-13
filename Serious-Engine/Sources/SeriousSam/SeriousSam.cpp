@@ -386,7 +386,7 @@ void UpdatePauseState(void)
 // limit current frame rate if neeeded
 void LimitFrameRate(void)
 {
-  // measure passed time for each loop
+ /* // measure passed time for each loop
   static CTimerValue tvLast(-1.0f);
   CTimerValue tvNow   = _pTimer->GetHighPrecisionTimer();
   TIME tmCurrentDelta = (tvNow-tvLast).GetSeconds();
@@ -402,7 +402,7 @@ void LimitFrameRate(void)
   if( tmCurrentDelta<tmWantedDelta) Sleep( (tmWantedDelta-tmCurrentDelta)*1000.0f);
   
   // remember new time
-  tvLast = _pTimer->GetHighPrecisionTimer();
+  tvLast = _pTimer->GetHighPrecisionTimer(); */
 }
 
 // load first demo
