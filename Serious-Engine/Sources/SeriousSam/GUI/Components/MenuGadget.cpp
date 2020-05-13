@@ -23,9 +23,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 extern CSoundData *_psdSelect;
 
-extern BOOL _bDefiningKey = FALSE;
-extern BOOL _bEditingString = FALSE;
-extern CMenuGadget *_pmgLastActivatedGadget = NULL;
+BOOL _bDefiningKey = FALSE;
+BOOL _bEditingString = FALSE;
+CMenuGadget *_pmgLastActivatedGadget = NULL;
 
 
 CMenuGadget::CMenuGadget(void)

@@ -34,8 +34,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 //#include <Engine/Graphics/ImageInfo.h>
 //#include <Engine/Base/ErrorReporting.h>
 
-extern INDEX _ctShadowLayers=0;
-extern INDEX _ctShadowClusters=0;
+INDEX _ctShadowLayers=0;
+INDEX _ctShadowClusters=0;
 
 
 // class used for making shadow layers (used only locally)

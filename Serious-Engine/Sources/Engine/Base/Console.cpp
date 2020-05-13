@@ -27,11 +27,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <Engine/Math/Functions.h>
 
-extern CConsole *_pConsole = NULL;
+CConsole *_pConsole = NULL;
 
 extern INDEX con_iLastLines;
-extern BOOL con_bCapture = FALSE;
-extern CTString con_strCapture = "";
+BOOL con_bCapture = FALSE;
+CTString con_strCapture = "";
 
 
 // Constructor.

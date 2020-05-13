@@ -92,7 +92,7 @@ static TIME  _tmLast = -1.0f;
 static CFontData _fdNumbersFont;
 
 // array for pointers of all players
-extern CPlayer *_apenPlayers[NET_MAXGAMEPLAYERS] = {0};
+CPlayer *_apenPlayers[NET_MAXGAMEPLAYERS] = {0};
 
 // status bar textures
 static CTextureObject _toHealth;

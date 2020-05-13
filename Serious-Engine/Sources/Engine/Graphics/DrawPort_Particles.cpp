@@ -31,11 +31,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 extern const FLOAT *pfSinTable;
 extern const FLOAT *pfCosTable;
 
-extern CEntity *_Particle_penCurrentViewer = NULL;
-extern INDEX _Particle_iCurrentDrawPort = 0;
-extern FLOAT _Particle_fCurrentMip = 0.0f;
-extern BOOL  _Particle_bHasFog  = FALSE;
-extern BOOL  _Particle_bHasHaze = FALSE;
+CEntity *_Particle_penCurrentViewer = NULL;
+INDEX _Particle_iCurrentDrawPort = 0;
+FLOAT _Particle_fCurrentMip = 0.0f;
+BOOL  _Particle_bHasFog  = FALSE;
+BOOL  _Particle_bHasHaze = FALSE;
 
 // variables used for rendering particles
 static CProjection3D *_pprProjection;

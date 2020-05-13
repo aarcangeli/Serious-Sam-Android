@@ -37,7 +37,7 @@ public:
   // convert value of an enum to its name
   ENGINE_API const char *NameForValue(INDEX iValue);
 };
-#define EP_ENUMBEG(typename) extern CEntityPropertyEnumValue typename##_values[] = {
+#define EP_ENUMBEG(typename) CEntityPropertyEnumValue typename##_values[] = {
 #define EP_ENUMVALUE(value, name) {value, name}
 #define EP_ENUMEND(typename) }; CEntityPropertyEnumType typename##_enum = { \
   typename##_values, sizeof(typename##_values)/sizeof(CEntityPropertyEnumValue ) }

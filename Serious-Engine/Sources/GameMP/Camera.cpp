@@ -34,7 +34,7 @@ CCameraPos _cp1;
 CCameraPos _cp;
 
 // camera control
-extern INDEX cam_bRecord           = FALSE;
+INDEX cam_bRecord           = FALSE;
 static INDEX cam_bMoveForward      = FALSE;
 static INDEX cam_bMoveBackward     = FALSE;
 static INDEX cam_bMoveLeft         = FALSE;

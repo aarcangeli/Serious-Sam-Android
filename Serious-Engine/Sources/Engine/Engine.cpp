@@ -56,8 +56,8 @@ ENGINE_API BOOL _bWorldEditorApp  = FALSE;
 ENGINE_API CTString _strLogFile = "";
 
 // global handle for application window
-extern HWND _hwndMain = NULL;
-extern BOOL _bFullScreen = FALSE;
+HWND _hwndMain = NULL;
+BOOL _bFullScreen = FALSE;
 
 // critical section for access to zlib functions
 CTCriticalSection zip_csLock; 
@@ -98,7 +98,7 @@ static CTString sys_strModName = "";
 static CTString sys_strModExt  = "";
 
 // enables paranoia checks for allocation array
-extern BOOL _bAllocationArrayParanoiaCheck = FALSE;
+BOOL _bAllocationArrayParanoiaCheck = FALSE;
 
 BOOL APIENTRY DllMain( HANDLE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved)
 {
@@ -633,7 +633,7 @@ static BOOL TouchBlock(UBYTE *pubMemoryBlock, INDEX ctBlockSize)
 
 
 // pretouch all memory commited by process
-extern BOOL _bNeedPretouch = FALSE;
+BOOL _bNeedPretouch = FALSE;
 ENGINE_API extern void SE_PretouchIfNeeded(void)
 {
   _bNeedPretouch = FALSE;

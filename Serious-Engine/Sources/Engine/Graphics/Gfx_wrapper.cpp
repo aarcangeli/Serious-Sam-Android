@@ -38,40 +38,40 @@ extern INDEX gap_iDithering;
                 
             
 // cached states
-extern BOOL GFX_bDepthTest  = FALSE;
-extern BOOL GFX_bDepthWrite = FALSE;
-extern BOOL GFX_bAlphaTest  = FALSE;
-extern BOOL GFX_bDithering  = TRUE;
-extern BOOL GFX_bBlending   = TRUE;
-extern BOOL GFX_bClipping   = TRUE;
-extern BOOL GFX_bClipPlane  = FALSE;
-extern BOOL GFX_bColorArray = FALSE;
-extern BOOL GFX_bTruform    = FALSE;
-extern BOOL GFX_bFrontFace  = TRUE;
-extern BOOL GFX_bViewMatrix = TRUE;
-extern INDEX GFX_iActiveTexUnit = 0;
-extern FLOAT GFX_fMinDepthRange = 0.0f;
-extern FLOAT GFX_fMaxDepthRange = 0.0f;
+BOOL GFX_bDepthTest  = FALSE;
+BOOL GFX_bDepthWrite = FALSE;
+BOOL GFX_bAlphaTest  = FALSE;
+BOOL GFX_bDithering  = TRUE;
+BOOL GFX_bBlending   = TRUE;
+BOOL GFX_bClipping   = TRUE;
+BOOL GFX_bClipPlane  = FALSE;
+BOOL GFX_bColorArray = FALSE;
+BOOL GFX_bTruform    = FALSE;
+BOOL GFX_bFrontFace  = TRUE;
+BOOL GFX_bViewMatrix = TRUE;
+INDEX GFX_iActiveTexUnit = 0;
+FLOAT GFX_fMinDepthRange = 0.0f;
+FLOAT GFX_fMaxDepthRange = 0.0f;
 
-extern GfxBlend GFX_eBlendSrc  = GFX_ONE;
-extern GfxBlend GFX_eBlendDst  = GFX_ZERO;
-extern GfxComp  GFX_eDepthFunc = GFX_LESS_EQUAL;
-extern GfxFace  GFX_eCullFace  = GFX_NONE;
-extern BOOL       GFX_abTexture[GFX_MAXTEXUNITS] = { FALSE, FALSE, FALSE, FALSE };
-extern INDEX GFX_iTexModulation[GFX_MAXTEXUNITS] = { 0, 0, 0, 0 };
-extern UINT GFX_uiElementBufObject = 0;
-extern UINT GFX_uiArrayBufObject = 0;
+GfxBlend GFX_eBlendSrc  = GFX_ONE;
+GfxBlend GFX_eBlendDst  = GFX_ZERO;
+GfxComp  GFX_eDepthFunc = GFX_LESS_EQUAL;
+GfxFace  GFX_eCullFace  = GFX_NONE;
+BOOL       GFX_abTexture[GFX_MAXTEXUNITS] = { FALSE, FALSE, FALSE, FALSE };
+INDEX GFX_iTexModulation[GFX_MAXTEXUNITS] = { 0, 0, 0, 0 };
+UINT GFX_uiElementBufObject = 0;
+UINT GFX_uiArrayBufObject = 0;
 
 // last ortho/frustum values (frustum has negative sign, because of orgho-frustum switching!)
-extern FLOAT GFX_fLastL = 0;
-extern FLOAT GFX_fLastR = 0;
-extern FLOAT GFX_fLastT = 0;
-extern FLOAT GFX_fLastB = 0;
-extern FLOAT GFX_fLastN = 0;
-extern FLOAT GFX_fLastF = 0;
+FLOAT GFX_fLastL = 0;
+FLOAT GFX_fLastR = 0;
+FLOAT GFX_fLastT = 0;
+FLOAT GFX_fLastB = 0;
+FLOAT GFX_fLastN = 0;
+FLOAT GFX_fLastF = 0;
 
 // number of vertices currently in buffer
-extern INDEX GFX_ctVertices = 0;
+INDEX GFX_ctVertices = 0;
 
 // for D3D: mark need for clipping (when wants to be disable but cannot be because of user clip plane)
 static BOOL _bWantsClipping = TRUE;
@@ -81,62 +81,62 @@ static ULONG _ulCurrentColorMask = (CT_RMASK|CT_GMASK|CT_BMASK|CT_AMASK);
 static BOOL _bCVAReallyLocked = FALSE;
 
 // clip plane and last view matrix for D3D
-extern FLOAT D3D_afClipPlane[4]    = {0,0,0,0};
-extern FLOAT D3D_afViewMatrix[16]  = {0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0};
+FLOAT D3D_afClipPlane[4]    = {0,0,0,0};
+FLOAT D3D_afViewMatrix[16]  = {0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0};
 static FLOAT _afActiveClipPlane[4] = {0,0,0,0};
 
 // Truform/N-Patches
-extern INDEX truform_iLevel  = -1;
-extern BOOL  truform_bLinear = FALSE;
+INDEX truform_iLevel  = -1;
+BOOL  truform_bLinear = FALSE;
 
 
 // functions' pointers
-extern void (*gfxEnableDepthWrite)(void) = NULL;
-extern void (*gfxEnableDepthBias)(void) = NULL;
-extern void (*gfxEnableDepthTest)(void) = NULL;
-extern void (*gfxEnableAlphaTest)(void) = NULL;
-extern void (*gfxEnableBlend)(void) = NULL;
-extern void (*gfxEnableDither)(void) = NULL;
-extern void (*gfxEnableTexture)(void) = NULL;
-extern void (*gfxEnableClipping)(void) = NULL;
-extern void (*gfxEnableClipPlane)(void) = NULL;
-extern void (*gfxDisableDepthWrite)(void) = NULL;
-extern void (*gfxDisableDepthBias)(void) = NULL;
-extern void (*gfxDisableDepthTest)(void) = NULL;
-extern void (*gfxDisableAlphaTest)(void) = NULL;
-extern void (*gfxDisableBlend)(void) = NULL;
-extern void (*gfxDisableDither)(void) = NULL;
-extern void (*gfxDisableTexture)(void) = NULL;
-extern void (*gfxDisableClipping)(void) = NULL;
-extern void (*gfxDisableClipPlane)(void) = NULL;
-extern void (*gfxBlendFunc)( GfxBlend eSrc, GfxBlend eDst) = NULL;
-extern void (*gfxDepthFunc)( GfxComp eFunc) = NULL;
-extern void (*gfxDepthRange)( FLOAT fMin, FLOAT fMax) = NULL;
-extern void (*gfxCullFace)(  GfxFace eFace) = NULL;
-extern void (*gfxFrontFace)( GfxFace eFace) = NULL;
-extern void (*gfxClipPlane)( const DOUBLE *pdPlane) = NULL;
-extern void (*gfxSetOrtho)( const FLOAT fLeft, const FLOAT fRight, const FLOAT fTop,  const FLOAT fBottom, const FLOAT fNear, const FLOAT fFar, const BOOL bSubPixelAdjust) = NULL;
-extern void (*gfxSetFrustum)( const FLOAT fLeft, const FLOAT fRight, const FLOAT fTop,  const FLOAT fBottom, const FLOAT fNear, const FLOAT fFar) = NULL;
-extern void (*gfxSetTextureMatrix)( const FLOAT *pfMatrix) = NULL;
-extern void (*gfxSetViewMatrix)( const FLOAT *pfMatrix) = NULL;
-extern void (*gfxPolygonMode)( GfxPolyMode ePolyMode) = NULL;
-extern void (*gfxSetTextureWrapping)( enum GfxWrap eWrapU, enum GfxWrap eWrapV) = NULL;
-extern void (*gfxSetTextureModulation)( INDEX iScale) = NULL;
-extern void (*gfxGenerateTexture)( ULONG &ulTexObject) = NULL;
-extern void (*gfxDeleteTexture)( ULONG &ulTexObject) = NULL;
-extern void (*gfxSetVertexArray)( GFXVertex4 *pvtx, INDEX ctVtx) = NULL;
-extern void (*gfxSetNormalArray)( GFXNormal *pnor) = NULL;
-extern void (*gfxSetTexCoordArray)( GFXTexCoord *ptex, BOOL b4) = NULL;
-extern void (*gfxSetColorArray)( GFXColor *pcol) = NULL;
-extern void (*gfxDrawElements)( INDEX ctElem, INDEX *pidx) = NULL;
-extern void (*gfxSetConstantColor)(COLOR col) = NULL;
-extern void (*gfxEnableColorArray)(void) = NULL;
-extern void (*gfxDisableColorArray)(void) = NULL;
-extern void (*gfxFinish)(void) = NULL;
-extern void (*gfxLockArrays)(void) = NULL;
-extern void (*gfxEnableTruform)( void) = NULL;
-extern void (*gfxDisableTruform)(void) = NULL;
-extern void (*gfxSetColorMask)( ULONG ulColorMask) = NULL; 
+void (*gfxEnableDepthWrite)(void) = NULL;
+void (*gfxEnableDepthBias)(void) = NULL;
+void (*gfxEnableDepthTest)(void) = NULL;
+void (*gfxEnableAlphaTest)(void) = NULL;
+void (*gfxEnableBlend)(void) = NULL;
+void (*gfxEnableDither)(void) = NULL;
+void (*gfxEnableTexture)(void) = NULL;
+void (*gfxEnableClipping)(void) = NULL;
+void (*gfxEnableClipPlane)(void) = NULL;
+void (*gfxDisableDepthWrite)(void) = NULL;
+void (*gfxDisableDepthBias)(void) = NULL;
+void (*gfxDisableDepthTest)(void) = NULL;
+void (*gfxDisableAlphaTest)(void) = NULL;
+void (*gfxDisableBlend)(void) = NULL;
+void (*gfxDisableDither)(void) = NULL;
+void (*gfxDisableTexture)(void) = NULL;
+void (*gfxDisableClipping)(void) = NULL;
+void (*gfxDisableClipPlane)(void) = NULL;
+void (*gfxBlendFunc)( GfxBlend eSrc, GfxBlend eDst) = NULL;
+void (*gfxDepthFunc)( GfxComp eFunc) = NULL;
+void (*gfxDepthRange)( FLOAT fMin, FLOAT fMax) = NULL;
+void (*gfxCullFace)(  GfxFace eFace) = NULL;
+void (*gfxFrontFace)( GfxFace eFace) = NULL;
+void (*gfxClipPlane)( const DOUBLE *pdPlane) = NULL;
+void (*gfxSetOrtho)( const FLOAT fLeft, const FLOAT fRight, const FLOAT fTop,  const FLOAT fBottom, const FLOAT fNear, const FLOAT fFar, const BOOL bSubPixelAdjust) = NULL;
+void (*gfxSetFrustum)( const FLOAT fLeft, const FLOAT fRight, const FLOAT fTop,  const FLOAT fBottom, const FLOAT fNear, const FLOAT fFar) = NULL;
+void (*gfxSetTextureMatrix)( const FLOAT *pfMatrix) = NULL;
+void (*gfxSetViewMatrix)( const FLOAT *pfMatrix) = NULL;
+void (*gfxPolygonMode)( GfxPolyMode ePolyMode) = NULL;
+void (*gfxSetTextureWrapping)( enum GfxWrap eWrapU, enum GfxWrap eWrapV) = NULL;
+void (*gfxSetTextureModulation)( INDEX iScale) = NULL;
+void (*gfxGenerateTexture)( ULONG &ulTexObject) = NULL;
+void (*gfxDeleteTexture)( ULONG &ulTexObject) = NULL;
+void (*gfxSetVertexArray)( GFXVertex4 *pvtx, INDEX ctVtx) = NULL;
+void (*gfxSetNormalArray)( GFXNormal *pnor) = NULL;
+void (*gfxSetTexCoordArray)( GFXTexCoord *ptex, BOOL b4) = NULL;
+void (*gfxSetColorArray)( GFXColor *pcol) = NULL;
+void (*gfxDrawElements)( INDEX ctElem, INDEX *pidx) = NULL;
+void (*gfxSetConstantColor)(COLOR col) = NULL;
+void (*gfxEnableColorArray)(void) = NULL;
+void (*gfxDisableColorArray)(void) = NULL;
+void (*gfxFinish)(void) = NULL;
+void (*gfxLockArrays)(void) = NULL;
+void (*gfxEnableTruform)( void) = NULL;
+void (*gfxDisableTruform)(void) = NULL;
+void (*gfxSetColorMask)( ULONG ulColorMask) = NULL; 
 
 
 
@@ -190,7 +190,7 @@ extern void  UploadTexture_D3D( LPDIRECT3DTEXTURE8 *ppd3dTexture, ULONG *pulText
 #endif // SE1_D3D
 
 // update texture LOD bias
-extern FLOAT _fCurrentLODBias = 0;  // LOD bias adjuster
+FLOAT _fCurrentLODBias = 0;  // LOD bias adjuster
 extern void UpdateLODBias( const FLOAT fLODBias)
 { 
   // check API
@@ -530,8 +530,8 @@ extern INDEX gfxGetFormatPixRatio( ULONG ulTextureFormat)
 // PATTERN TEXTURE FOR LINES
 
 CTexParams _tpPattern;
-extern ULONG _ulPatternTexture = NONE;
-extern ULONG _ulLastUploadedPattern = 0;
+ULONG _ulPatternTexture = NONE;
+ULONG _ulLastUploadedPattern = 0;
 
 // upload pattern to accelerator memory
 extern void gfxSetPattern( ULONG ulPattern)

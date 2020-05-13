@@ -40,7 +40,7 @@ extern CTextureObject *_ptoLogoODI;
 extern CTextureObject *_ptoLogoEAX;
 
 INDEX _iLocalPlayer = -1;
-extern BOOL  _bPlayerMenuFromSinglePlayer = FALSE;
+BOOL  _bPlayerMenuFromSinglePlayer = FALSE;
 
 GameMode _gmMenuGameMode = GM_NONE;
 GameMode _gmRunningGameMode = GM_NONE;
@@ -53,7 +53,7 @@ TIME _tmMenuLastTickDone = -1;
 // all possible menu entities
 CListHead lhMenuEntities;
 
-extern CTString _strLastPlayerAppearance = "";
+CTString _strLastPlayerAppearance = "";
 extern CTString sam_strNetworkSettings;
 
 // function to activate when level is chosen
@@ -64,12 +64,12 @@ void (*_pAfterLevelChosen)(void);
 void FixupBackButton(CGameMenu *pgm);
 
 // mouse cursor position
-extern PIX _pixCursorPosI = 0;
-extern PIX _pixCursorPosJ = 0;
-extern PIX _pixCursorExternPosI = 0;
-extern PIX _pixCursorExternPosJ = 0;
-extern BOOL _bMouseUsedLast = FALSE;
-extern CMenuGadget *_pmgUnderCursor =  NULL;
+PIX _pixCursorPosI = 0;
+PIX _pixCursorPosJ = 0;
+PIX _pixCursorExternPosI = 0;
+PIX _pixCursorExternPosJ = 0;
+BOOL _bMouseUsedLast = FALSE;
+CMenuGadget *_pmgUnderCursor =  NULL;
 extern BOOL _bDefiningKey;
 extern BOOL _bEditingString;
 
@@ -109,7 +109,7 @@ CGameMenu *pgmCurrentMenu = NULL;
 CMGButton mgBack;
 
 // -------- console variable adjustment menu
-extern BOOL _bVarChanged = FALSE;
+BOOL _bVarChanged = FALSE;
 
 extern void PlayMenuSound(CSoundData *psd)
 {

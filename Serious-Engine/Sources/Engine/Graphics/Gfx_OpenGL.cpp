@@ -78,7 +78,7 @@ extern GfxBlend GFX_eBlendDst;
 extern GfxComp  GFX_eDepthFunc;
 extern GfxFace  GFX_eCullFace;
 extern INDEX GFX_iTexModulation[GFX_MAXTEXUNITS];
-extern BOOL  glbUsingVARs = FALSE;   // vertex_array_range
+BOOL  glbUsingVARs = FALSE;   // vertex_array_range
 
 
 // define gl function pointers

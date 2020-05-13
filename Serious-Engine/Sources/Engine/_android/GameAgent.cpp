@@ -27,8 +27,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <GameMP/SessionProperties.h>
 #include <Engine/GameAgent/GameAgent.h>
 
-extern CTString ga_strServer = "master1.42amsterdam.net";
-extern CTString ga_strMSLegacy = "42amsterdam.net";
+CTString ga_strServer = "master1.42amsterdam.net";
+CTString ga_strMSLegacy = "42amsterdam.net";
 BOOL ga_bMSLegacy = TRUE;
 
 const CSessionProperties *_getSP() {}

@@ -30,14 +30,14 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 template CDynamicArray<CShellSymbol>;
 
 // shell type used for undeclared symbols
-extern INDEX _shell_istUndeclared = -1;
+INDEX _shell_istUndeclared = -1;
 
 // pointer to global shell object
 CShell *_pShell = NULL;
 void *_pvNextToDeclare=NULL; // != NULL if declaring external symbol defined in exe code
 
 // define console variable for number of last console lines
-extern INDEX con_iLastLines    = 5;
+INDEX con_iLastLines    = 5;
 
 extern void yy_switch_to_buffer(YY_BUFFER_STATE);
 
@@ -112,10 +112,10 @@ CDynamicStackArray<FLOAT> _shell_afExtFloats;
 
 static const char *strCommandLine = "";
 
-ENGINE_API extern FLOAT tmp_af[10] = { 0 };
-ENGINE_API extern INDEX tmp_ai[10] = { 0 };
-ENGINE_API extern INDEX tmp_fAdd   = 0.0f;
-ENGINE_API extern INDEX tmp_i      = 0;
+ENGINE_API FLOAT tmp_af[10] = { 0 };
+ENGINE_API INDEX tmp_ai[10] = { 0 };
+ENGINE_API INDEX tmp_fAdd   = 0.0f;
+ENGINE_API INDEX tmp_i      = 0;
 
 void CShellSymbol::Clear(void)
 {
@@ -188,7 +188,7 @@ void MakeAccessViolation(void* pArgs)
   *p=1;
 }
 
-extern int _a=123;
+int _a=123;
 void MakeStackOverflow(void* pArgs)
 {
   INDEX bDont = NEXTARGUMENT(INDEX);

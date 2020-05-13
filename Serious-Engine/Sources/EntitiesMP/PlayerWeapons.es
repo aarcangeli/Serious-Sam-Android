@@ -218,7 +218,7 @@ static FLOAT hud_fCrosshairRatio    = 0.5f;  // max distance size ratio
 static INDEX hud_bShowPlayerName = TRUE;
 static INDEX hud_bShowCoords     = FALSE;
 static FLOAT plr_tmSnoopingDelay = 1.0f; // seconds 
-extern FLOAT plr_tmSnoopingTime  = 1.0f; // seconds 
+FLOAT plr_tmSnoopingTime  = 1.0f; // seconds 
 
 // some static vars
 static INDEX _iLastCrosshairType=-1;

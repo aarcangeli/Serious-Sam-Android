@@ -21,7 +21,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/ErrorReporting.h>
 #include <new>
 
-extern FLOAT _bCheckAllAllocations = FALSE;
+FLOAT _bCheckAllAllocations = FALSE;
 
 /*
  * Declarations for setting up the 'new_handler'.
