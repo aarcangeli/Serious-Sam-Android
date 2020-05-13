@@ -64,7 +64,7 @@ android {
         externalNativeBuild {
             cmake {
                 cppFlags "-fexceptions"
-                abiFilters "x86", "armeabi-v7a"
+                abiFilters "armeabi-v7a"
                 arguments "-DSSA_VERSION=" + versionName
             }
         }

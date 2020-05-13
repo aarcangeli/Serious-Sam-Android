@@ -18,6 +18,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #ifdef PRAGMA_ONCE
   #pragma once
 #endif
+#include "Color.h"
 
 
 struct GFXVertex3
@@ -56,24 +57,8 @@ struct GFXColor
 
   GFXColor() {};
 
-  GFXColor( COLOR col) {
-    // little endian to big endian
-    ULONG temp = 0;
-    temp |= (col & 0xff) << 24;
-    temp |= (col >> 8 & 0xff) << 16;
-    temp |= (col >> 16 & 0xff) << 8;
-    temp |= (col >> 24 & 0xff);
-    gfxcol.ul.abgr = temp;
-  }
-
-  __forceinline void Set( COLOR col) {
-    ULONG temp = 0;
-    temp |= (col & 0xff) << 24;
-    temp |= (col >> 8 & 0xff) << 16;
-    temp |= (col >> 16 & 0xff) << 8;
-    temp |= (col >> 24 & 0xff);
-    gfxcol.ul.abgr = temp;
-  }
+  GFXColor( COLOR col) { gfxcol.ul.abgr = ByteSwap(col); }
+  __forceinline void Set( COLOR col) { gfxcol.ul.abgr = ByteSwap(col); }
 
   void MultiplyRGBA( const GFXColor &col1, const GFXColor &col2) {
     gfxcol.ub.r = (ULONG(col1.gfxcol.ub.r)*col2.gfxcol.ub.r)>>8;
@@ -112,12 +97,12 @@ struct GFXVertex4
 {
   GFXVertex4()
   {
+  struct GFXColor col;
   }
   FLOAT x,y,z;
-  union {
-    struct { struct GFXColor col; };
-    struct { SLONG shade; };
-  };
+  void Clear(void) {};
+  SLONG shade;
+
 };
 
 
