@@ -528,4 +528,5 @@ ULONG CSoundLibrary::getFramesPerSec() {
       ASSERTALWAYS("Unknown Sound format");
       break;
   }
+  return 0;
 };

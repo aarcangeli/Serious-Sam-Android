@@ -31,7 +31,9 @@ CTString ga_strServer = "master1.42amsterdam.net";
 CTString ga_strMSLegacy = "42amsterdam.net";
 BOOL ga_bMSLegacy = TRUE;
 
-const CSessionProperties *_getSP() {}
+const CSessionProperties *_getSP() {
+return 0;
+}
 
 CServerRequest::CServerRequest(void) {}
 

@@ -881,7 +881,7 @@ void CShell::StorePersistentSymbols(const CTFileName &fnScript)
         } else if (stBase.st_sttType==STT_STRING) {
           // dump all members
           for(INDEX i=0; i<st.st_ctArraySize; i++) {
-            fScript.FPrintF_t("%s[%d]=\"%s\";\n", ss.ss_strName, i, (const char*)(ScriptEsc(*(CTString*)ss.ss_pvValue)[i]) );
+            fScript.FPrintF_t("%s[%d]=\"%s\";\n", ss.ss_strName, i, (char*)(ScriptEsc(*(CTString*)ss.ss_pvValue)[i]) );
           }
         // otherwise
         } else {

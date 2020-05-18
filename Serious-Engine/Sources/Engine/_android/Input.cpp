@@ -99,7 +99,9 @@ void CInput::SetJoyPolling(BOOL bPoll) {}
 void CInput::SetKeyNames(void) {}
 
 // check if a joystick exists
-BOOL CInput::CheckJoystick(INDEX iJoy) {}
+BOOL CInput::CheckJoystick(INDEX iJoy) {
+return 0;
+}
 
 // adds axis and buttons for given joystick
 void CInput::AddJoystickAbbilities(INDEX iJoy) {}
@@ -136,11 +138,13 @@ void CInput::GetInput(BOOL bPreScan) {}
 void CInput::ClearInput(void) {}
 
 const CTString &CInput::GetAxisTransName(INDEX iAxisNo) const {
-  return "GetAxisTransName";
+  return inp_astrAxisTran[iAxisNo];
 }
 
 
 /*
  * Scans axis and buttons for given joystick
  */
-BOOL CInput::ScanJoystick(INDEX iJoy, BOOL bPreScan) {}
+BOOL CInput::ScanJoystick(INDEX iJoy, BOOL bPreScan) {
+return 0;
+}

@@ -1385,6 +1385,7 @@ SLONG GetFileTimeStamp_t(const CTFileName &fnm) {
   if (ierr == 0) {
     return st.st_mtime;
   }
+    return 0;
 }
 
 // Get CRC32 of a file

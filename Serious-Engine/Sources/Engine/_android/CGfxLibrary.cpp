@@ -72,6 +72,7 @@ void CGfxLibrary::InitAPIs(void) {
 
 CListHead &CDS_GetModes(void) {
   WarningMessage("CDS_GetModes");
+  return _lhCDSModes;
 }
 
 
