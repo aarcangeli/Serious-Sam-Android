@@ -40,7 +40,7 @@ struct PackedFrameVertex {
     FLOAT3D pfv_avBumpU;
     FLOAT3D pfv_avBumpV;
 };
-static_assert(sizeof(PackedFrameVertex) == sizeof(FLOAT) * (3 + 3 + 2 + 3 + 3));
+static_assert(sizeof(PackedFrameVertex) == sizeof(FLOAT) * (3 + 3 + 2 + 3 + 3), "");
 
 class ENGINE_API CModelPatch {
 public:
