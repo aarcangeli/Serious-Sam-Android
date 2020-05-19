@@ -18,8 +18,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/Profiling.h>
 
 #include <Engine/Templates/StaticArray.cpp>
-template CStaticArray<CProfileCounter>;
-template CStaticArray<CProfileTimer>;
+template class CStaticArray<CProfileCounter>;
+template class CStaticArray<CProfileTimer>;
 
 
 static inline __int64 ReadTSC_profile(void)

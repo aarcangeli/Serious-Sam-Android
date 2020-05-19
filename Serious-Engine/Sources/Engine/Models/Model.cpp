@@ -32,12 +32,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <Engine/Templates/Stock_CModelData.h>
 
-template CStaticArray<MappingSurface>;
-template CStaticArray<ModelPolygon>;
-template CStaticArray<ModelPolygonVertex>;
-template CStaticArray<ModelTextureVertex>;
-template CStaticArray<PolygonsPerPatch>;
-template CDynamicArray<CAttachedModelPosition>;
+template class CStaticArray<MappingSurface>;
+template class CStaticArray<ModelPolygon>;
+template class CStaticArray<ModelPolygonVertex>;
+template class CStaticArray<ModelTextureVertex>;
+template class CStaticArray<PolygonsPerPatch>;
+template class CDynamicArray<CAttachedModelPosition>;
 
 
 extern UBYTE aubGouraudConv[16384];

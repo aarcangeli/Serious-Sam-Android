@@ -26,9 +26,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Entities/Entity.h>
 #include <Engine/Templates/Selection.cpp>
 
-template CStaticArray<CBrushPolygonEdge>;
-template CStaticArray<CBrushPolygon>;
-template CStaticArray<long>;
+template class CStaticArray<CBrushPolygonEdge>;
+template class CStaticArray<CBrushPolygon>;
+template class CStaticArray<long>;
 
 // set new absolute position for the vertex
 void CBrushVertex::SetAbsolutePosition(const DOUBLE3D &vAbsolute)
