@@ -657,7 +657,8 @@ extern void FreeUnusedStock(void)
  */
 void CNetworkTimerHandler::HandleTimer(void)
 {
-  if (this==NULL || _bTempNetwork) {
+  ASSERT(this!=NULL);
+  if (_bTempNetwork) {
     return; // this can happen during NET_MakeDefaultState_t()!
   }
   // enable stream handling during timer
@@ -899,7 +900,8 @@ void CNetworkLibrary::Init(const CTString &strGameID)
  */
 void CNetworkLibrary::AddTimerHandler(void)
 {
-  if (this==NULL || _bTempNetwork) {
+  ASSERT(this!=NULL);
+  if (_bTempNetwork) {
     return; // this can happen during NET_MakeDefaultState_t()!
   }
   _pTimer->AddHandler(&ga_thTimerHandler);
@@ -909,7 +911,8 @@ void CNetworkLibrary::AddTimerHandler(void)
  */
 void CNetworkLibrary::RemoveTimerHandler(void)
 {
-  if (this==NULL || _bTempNetwork) {
+  ASSERT(this!=NULL);
+  if (_bTempNetwork) {
     return; // this can happen during NET_MakeDefaultState_t()!
   }
   _pTimer->RemHandler(&ga_thTimerHandler);
@@ -1387,7 +1390,8 @@ void CNetworkLibrary::TogglePause(void)
 // test if game is paused
 BOOL CNetworkLibrary::IsPaused(void)
 {
-  if (this==NULL || _bTempNetwork) {
+  ASSERT(this!=NULL);
+  if (_bTempNetwork) {
     return TRUE; // this can happen during NET_MakeDefaultState_t()!
   }
   return ga_sesSessionState.ses_bPause;
@@ -1424,7 +1428,8 @@ void CNetworkLibrary::SetLocalPause(BOOL bPause)
 
 BOOL CNetworkLibrary::GetLocalPause(void)
 {
-  if (this==NULL || _bTempNetwork) {
+  ASSERT(this!=NULL);
+  if (_bTempNetwork) {
     return TRUE; // this can happen during NET_MakeDefaultState_t()!
   }
   return ga_bLocalPause;
@@ -2030,7 +2035,8 @@ void CNetworkLibrary::SendActionsToServer(void)
  */
 void CNetworkLibrary::TimerLoop(void)
 {
-  if (this==NULL || _bTempNetwork) {
+  ASSERT(this!=NULL);
+  if (_bTempNetwork) {
     return; // this can happen during NET_MakeDefaultState_t()!
   }
   _pfNetworkProfile.StartTimer(CNetworkProfile::PTI_TIMERLOOP);

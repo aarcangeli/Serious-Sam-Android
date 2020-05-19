@@ -171,14 +171,12 @@ BOOL CAnimData::IsAutoFreed(void)
 /////////////////////////////////////////////////////////////////////
 // Reference counting functions
 void CAnimData::AddReference(void) {
-  if (this!=NULL) {
+    ASSERT(this!=NULL);
     MarkUsed();
-  }
 };
 void CAnimData::RemReference(void) {
-  if (this!=NULL) {
+    ASSERT(this!=NULL);
     RemReference_internal();
-  }
 };
 void CAnimData::RemReference_internal(void) {
   _pAnimStock->Release(this);
