@@ -593,7 +593,7 @@ CAnimObject::CAnimObject(void)
 /* Destructor. */
 CAnimObject::~CAnimObject(void)
 {
-  ao_AnimData->RemReference();
+  if(ao_AnimData != NULL) ao_AnimData->RemReference();
 };
 
 // copy from another object of same class
@@ -788,9 +788,9 @@ BOOL CAnimObject::IsUpToDate(const CUpdateable &ud) const
  */
 void CAnimObject::SetData(CAnimData *pAD) {
   // mark new data as referenced once more
-  pAD->AddReference();
+  if(pAD != NULL) pAD->AddReference();
   // mark old data as referenced once less
-  ao_AnimData->RemReference();
+  if(ao_AnimData != NULL) ao_AnimData->RemReference();
   // remember new data
   ao_AnimData = pAD;
   if( pAD != NULL) StartAnim( 0);

@@ -781,7 +781,7 @@ extern BOOL ProbeMode( CTimerValue tvLast)
 extern void UncacheShadows(void)
 {
   // mute all sounds
-  _pSound->Mute();
+  if(_pSound != NULL) _pSound->Mute();
   // prepare new saturation factors for shadowmaps
   gfx_fSaturation  = ClampDn( gfx_fSaturation, 0.0f); 
   shd_fSaturation  = ClampDn( shd_fSaturation, 0.0f); 

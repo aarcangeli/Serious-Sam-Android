@@ -187,7 +187,7 @@ CEntity::~CEntity(void)
   }
   // clear entity type
   en_RenderType = RT_NONE;
-  en_pecClass->RemReference();
+  if(en_pecClass != NULL) en_pecClass->RemReference();
   en_pecClass = NULL;
 
   en_fSpatialClassificationRadius = -1.0f;
