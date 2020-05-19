@@ -820,7 +820,7 @@ bug:
 
 skipbug:;
 #endif //NDEBUG
-#endif 0
+#endif
 }
 
 /*

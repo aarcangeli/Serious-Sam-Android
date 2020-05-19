@@ -890,7 +890,7 @@ void CDrawPort::Fill( COLOR col) const
     HRESULT hr = _pGfx->gl_pd3dDevice->Clear( 0, NULL, D3DCLEAR_TARGET, d3dColor,0,0);
     D3D_CHECKERROR(hr);
   }
-#endif SE1_D3D
+#endif
 }
 
 
@@ -931,7 +931,7 @@ void CDrawPort::FillZBuffer( PIX pixI, PIX pixJ, PIX pixWidth, PIX pixHeight, FL
     HRESULT hr = _pGfx->gl_pd3dDevice->Clear( 1, &d3dRect, D3DCLEAR_ZBUFFER, 0,zval,0);
     D3D_CHECKERROR(hr);
   }
-#endif SE1_D3D
+#endif
 }
 
 
@@ -962,7 +962,7 @@ void CDrawPort::FillZBuffer( FLOAT zval) const
     HRESULT hr = _pGfx->gl_pd3dDevice->Clear( 0, NULL, D3DCLEAR_ZBUFFER, 0,zval,0);
     D3D_CHECKERROR(hr);
   }
-#endif SE1_D3D
+#endif
 }
 
 

@@ -1035,7 +1035,7 @@ void ampegdecoder::jointstereo(grsistruct &si, float (*xr)[576], int *scalefacl)
       if (sfb>3)
         sfbhigh=0;
       int v=7;
-      for (sfb=sfb; sfb<13; sfb++)
+      for (sfb; sfb<13; sfb++)
       {
         v=(sfb==12)?v:scalefacs[sfb*3+j];
         for (i=bis[sfb]+j; i<bis[sfb+1]; i+=3)
@@ -1050,7 +1050,7 @@ void ampegdecoder::jointstereo(grsistruct &si, float (*xr)[576], int *scalefacl)
     if (i<bil[sfb])
       break;
   int v=7;
-  for (sfb=sfb; sfb<sfbhigh; sfb++)
+  for (sfb; sfb<sfbhigh; sfb++)
   {
     v=(sfb==21)?v:scalefacl[sfb];
     for (i=bil[sfb]; i<bil[sfb+1]; i++)

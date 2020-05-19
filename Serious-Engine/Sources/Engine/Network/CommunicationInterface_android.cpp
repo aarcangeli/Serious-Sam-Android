@@ -750,7 +750,7 @@ void CCommunicationInterface::Client_OpenNet_t(ULONG ulServerAddress) {
       ppaReadPacket = cm_ciLocalClient.ci_pbReliableInputBuffer.GetFirstPacket();
       CPrintF("Received packet\n");
       // and it is a connection confirmation
-      if (ppaReadPacket->pa_ubReliable && UDP_PACKET_CONNECT_RESPONSE) {
+      if (ppaReadPacket->pa_ubReliable & UDP_PACKET_CONNECT_RESPONSE) {
         // the client has succedeed to connect, so read the uwID from the packet
         cm_ciLocalClient.ci_adrAddress.adr_ulAddress = ulServerAddress;
         cm_ciLocalClient.ci_adrAddress.adr_uwPort = net_iPort;

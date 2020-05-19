@@ -375,7 +375,28 @@ inline FLOAT Log2( FLOAT f) {
 // returns accurate values only for integers that are power of 2
 inline SLONG FastLog2( SLONG x)
 {
-#if (defined USE_PORTABLE_C)
+#if (defined __MSVC_INLINE__)
+  SLONG slRet;
+  __asm {
+    bsr   eax,D [x]
+    mov   D [slRet],eax
+  }
+  return slRet;
+
+#elif (defined __GNU_INLINE_X86_32__)
+  SLONG slRet;
+  __asm__ __volatile__ (
+    "bsrl   %%ecx, %%eax      \n\t"
+        : "=a" (slRet)
+        : "c" (x)
+        : "memory"
+  );
+  return(slRet);
+#elif (defined __GNUC__)
+  if(x == 0) return 0; // __builtin_clz() is undefined for 0
+  int numLeadingZeros  = __builtin_clz(x);
+  return 31 - numLeadingZeros;
+#else
   register SLONG val = x;
   register SLONG retval = 31;
   while (retval > 0)
@@ -386,27 +407,6 @@ inline SLONG FastLog2( SLONG x)
   }
 
   return 0;
-
-#elif (defined _MSC_VER)
-  SLONG slRet;
-  __asm {
-    bsr   eax,D [x]
-    mov   D [slRet],eax
-  }
-  return slRet;
-
-#elif (defined __GNUC__)
-  SLONG slRet;
-  __asm__ __volatile__ (
-    "bsrl  (%%ebx), %%eax     \n\t"
-    "movl   %%eax, (%%esi)    \n\t"
-        :
-        : "b" (&x), "S" (&slRet)
-        : "memory"
-  );
-  return(slRet);
-#else
-  #error Fill this in for your platform.
 #endif
 }
 
