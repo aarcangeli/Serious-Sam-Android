@@ -349,8 +349,8 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
 //  sys_iRAMSwap = ms.dwTotalPageFile/MB;
   struct sysinfo info;
   sysinfo(&info);
-  sys_iRAMPhys = 256;
-  sys_iRAMSwap = 1;
+  sys_iRAMPhys = info.totalram;
+  sys_iRAMSwap = info.totalswap;
 
   // initialize zip semaphore
   zip_csLock.cs_iIndex = -1;  // not checked for locking order
