@@ -397,8 +397,8 @@ inline SLONG FastLog2( SLONG x)
   int numLeadingZeros  = __builtin_clz(x);
   return 31 - numLeadingZeros;
 #else
-  register SLONG val = x;
-  register SLONG retval = 31;
+  SLONG val = x;
+  SLONG retval = 31;
   while (retval > 0)
   {
     if (val & (1 << retval))

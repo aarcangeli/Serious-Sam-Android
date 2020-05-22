@@ -59,7 +59,7 @@ static BOOL HitBoundingBox(FLOAT3D &vOrigin, FLOAT3D &vDir, FLOAT3D &vHit, FLOAT
 {
 	BOOL bInside = TRUE;
 	BOOL quadrant[NUMDIM];
-	register int i;
+	int i;
 	int whichPlane;
 
   double maxT[NUMDIM];
@@ -141,7 +141,7 @@ static BOOL RayHitsAABBox(FLOAT3D &vOrigin, FLOAT3D &vDir, FLOAT3D &vHit, FLOATa
 
 	char inside = TRUE;
 	char quadrant[3];
-	register int i;
+	int i;
 	int whichPlane;
 	FLOAT maxT[3];
 	FLOAT candidatePlane[3];
