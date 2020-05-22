@@ -230,5 +230,6 @@ void CAM_Render(CEntity *pen, CDrawPort *pdp)
   // set up viewer position
   prProjection->ViewerPlacementL() = plCamera;
   // render the view
-  RenderView(*pen->en_pwoWorld, *(CEntity*)NULL, prProjection, *pdp);
+  int* test = NULL;
+  RenderView(*pen->en_pwoWorld, *(CEntity*)test, prProjection, *pdp);
 }

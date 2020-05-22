@@ -731,7 +731,8 @@ ULONG CLayerMaker::MakeOneShadowMaskMip(INDEX iMip)
     apr = prProjection;
     ULONG ulFlagsBefore = lm_pbpoPolygon->bpo_ulFlags;
     lm_pbpoPolygon->bpo_ulFlags |= BPOF_INVISIBLE;
-    ulLighted&=RenderShadows(*lm_pwoWorld, *(CEntity*)NULL, apr,
+    int* test = NULL;
+    ulLighted&=RenderShadows(*lm_pwoWorld, *(CEntity*)test, apr,
       lm_pbpoPolygon->bpo_boxBoundingBox, pubLayer, pixLayerSizeU, pixLayerSizeV,
       lm_plsLight->ls_ubPolygonalMask);
     lm_pbpoPolygon->bpo_ulFlags = ulFlagsBefore;
@@ -789,7 +790,8 @@ ULONG CLayerMaker::MakeOneShadowMaskMip(INDEX iMip)
       // add entire box around target polygon and light position to rendering
       FLOATaabbox3D box = lm_pbpoPolygon->bpo_boxBoundingBox;
       box|=lm_plsLight->ls_penEntity->GetPlacement().pl_PositionVector;
-      ulLighted&=RenderShadows(*lm_pwoWorld, *(CEntity*)NULL, apr, box,
+      int* test1 = NULL;
+      ulLighted&=RenderShadows(*lm_pwoWorld, *(CEntity*)test1, apr, box,
         pubLayer, pixLayerSizeU, pixLayerSizeV,
         lm_plsLight->ls_ubPolygonalMask);
     }
