@@ -18,16 +18,6 @@
         <item>Never</item>
     </string-array>
 
-    <string-array name="ResolutionScaleFactorEntries">
-        <item>Normal resolution</item>
-        <item>Half resolution (improve performance)</item>
-    </string-array>
-	
-	 <string-array name="FullHalf">
-        <item>Full</item>
-        <item>Half</item>
-    </string-array>
-
     <string-array name="DinamicUIScaleEntries">
         <item>On</item>
         <item>Off (use if UI is so large)</item>

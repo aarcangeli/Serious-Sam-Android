@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <PreferenceCategory android:title="Graphics">
-        <ListPreference
-            android:defaultValue="Full"
-            android:entries="@array/ResolutionScaleFactorEntries"
-            android:entryValues="@array/FullHalf"
+        <com.github.aarcangeli.serioussamandroid.preferences.SeekBarPreference
+            android:defaultValue="100"
             android:key="scale_FactorSet"
-            android:summary="%s"
+            android:max="200"
+            android:summary="%s%%"
+            android:text="%"
             android:title="Screen resolution" />
         <ListPreference
             android:defaultValue="On"

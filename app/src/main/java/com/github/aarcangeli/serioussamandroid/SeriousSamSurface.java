@@ -15,7 +15,7 @@ public class SeriousSamSurface extends SurfaceView implements GestureDetector.On
     private final GestureDetector gestureDetector;
     private MainActivity activity;
     public float scale;
-    private String scale_FactorSet;
+    private float scale_FactorSet;
 	
     public SeriousSamSurface(Context context) {
         this(context, null);
@@ -23,19 +23,13 @@ public class SeriousSamSurface extends SurfaceView implements GestureDetector.On
 
     public void syncOptions() {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this.activity);
-        scale_FactorSet = preferences.getString("scale_FactorSet", "Full");
-		scaleFactorSet();
+        scale_FactorSet = preferences.getInt("scale_FactorSet", 100) / 100.f;
+	if (scale_FactorSet != 0f) {
+	scale = scale_FactorSet;
+	} else {
+	scale = 1.0f;
+	}
         requestLayout();
-    }
-
-    public void scaleFactorSet() {
-        if ("Full".equalsIgnoreCase(scale_FactorSet)) {
-            scale = 1.0f;
-        } else if ("Half".equalsIgnoreCase(scale_FactorSet)) {
-            scale = 0.5f;
-        } else {
-            scale = 1.0f;
-        }
     }
 
     public SeriousSamSurface(Context context, AttributeSet attrs) {
