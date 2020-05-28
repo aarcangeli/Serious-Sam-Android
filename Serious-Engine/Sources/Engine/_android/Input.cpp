@@ -138,7 +138,7 @@ void CInput::GetInput(BOOL bPreScan) {}
 void CInput::ClearInput(void) {}
 
 const CTString &CInput::GetAxisTransName(INDEX iAxisNo) const {
-  return "GetAxisTransName";
+  return inp_astrAxisTran[iAxisNo];
 }
 
 
