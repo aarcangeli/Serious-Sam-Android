@@ -125,7 +125,7 @@ CTextureObject *_ptoLogoEAX = NULL;
 
 CTString sam_strVersion = SSA_VERSION;
 CTString sam_strModName = TRANS("-   A N D R O I D   P O R T   ( U N O F F I C I A L )   -");
-CTString sam_strBackLink = TRANS("https://github.com/aarcangeli/Serious-Sam-Android");
+CTString sam_strBackLink = TRANS("https://github.com/Skyrimus/Serious-Sam-Android");
 
 CTFileName sam_strFirstLevel = CTString("Levels\\LevelsMP\\1_0_InTheLastEpisode.wld");
 CTFileName sam_strIntroLevel = CTString("Levels\\LevelsMP\\Intro.wld");

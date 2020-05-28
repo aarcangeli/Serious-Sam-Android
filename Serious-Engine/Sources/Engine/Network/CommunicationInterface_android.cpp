@@ -929,9 +929,9 @@ void CCommunicationInterface::UpdateMasterBuffers() {
   UBYTE aub[MAX_PACKET_SIZE];
   CAddress adrIncomingAddress;
   sockaddr_in cliaddr;
-  int size = sizeof(cliaddr);
+  socklen_t size = sizeof(cliaddr);
   SLONG slSizeReceived;
-  ssize_t slSizeSent;
+  SLONG slSizeSent;
   BOOL bSomethingDone;
   CPacket *ppaNewPacket;
   CTimerValue tvNow;
