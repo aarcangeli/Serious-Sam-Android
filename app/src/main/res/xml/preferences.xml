@@ -30,7 +30,7 @@
             android:summary="Tilts the device to move the view."
             android:title="Use Gyroscope" />
         <com.github.aarcangeli.serioussamandroid.preferences.SeekBarPreference
-            android:defaultValue="50"
+            android:defaultValue="100"
             android:key="gyro_sensibility"
             android:max="200"
             android:summary="%s%%"
