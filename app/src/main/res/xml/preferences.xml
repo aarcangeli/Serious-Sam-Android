@@ -25,12 +25,12 @@
             android:summary="%s"
             android:title="Show touch controller" />
         <CheckBoxPreference
-            android:defaultValue="true"
+            android:defaultValue="false"
             android:key="use_gyroscope"
             android:summary="Tilts the device to move the view."
             android:title="Use Gyroscope" />
         <com.github.aarcangeli.serioussamandroid.preferences.SeekBarPreference
-            android:defaultValue="100"
+            android:defaultValue="50"
             android:key="gyro_sensibility"
             android:max="200"
             android:summary="%s%%"
