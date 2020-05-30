@@ -87,8 +87,6 @@ BOOL _bTempNetwork = FALSE;  // set while using temporary second network object
 extern BOOL con_bCapture;
 extern CTString con_strCapture;
 
-static CWorld *_pwoCurrentWorld = NULL;
-
 static FLOAT _bStartDemoRecordingNextTime = FALSE;
 static FLOAT _bStopDemoRecordingNextTime = FALSE;
 static INDEX dem_iRecordedNumber = 0;
@@ -254,7 +252,7 @@ extern void CacheShadows(void)
 {
   // mute all sounds
   _pSound->Mute();
-  CWorld *pwo = (CWorld*)_pShell->GetINDEX("pwoCurrentWorld");
+  CWorld *pwo = _pShell->GetCurrentWorld();
   if( pwo!=NULL) {
     pwo->wo_baBrushes.CacheAllShadowmaps();
     CPrintF( TRANS("All shadows recached"));
@@ -522,7 +520,7 @@ static void StockInfo(void)
   INDEX ctEntities=0, ctShadowLayers=0, ctPolys=0,    ctPlanes=0,   ctEdges=0,    ctVertices=0, ctSectors=0;
   SLONG slEntBytes=0, slLyrBytes=0,     slPlyBytes=0, slPlnBytes=0, slEdgBytes=0, slVtxBytes=0, slSecBytes=0;
   SLONG slCgrBytes=0;
-  CWorld *pwo = (CWorld*)_pShell->GetINDEX("pwoCurrentWorld");
+  CWorld *pwo = _pShell->GetCurrentWorld();
 
   if( pwo!=NULL)
   {
@@ -892,7 +890,6 @@ void CNetworkLibrary::Init(const CTString &strGameID)
   _pShell->DeclareSymbol("persistent user CTString ga_strMSLegacy;", &ga_strMSLegacy);
   _pShell->DeclareSymbol("persistent user INDEX ga_bMSLegacy;", &ga_bMSLegacy);
 
-  _pShell->DeclareSymbol("INDEX pwoCurrentWorld;", &_pwoCurrentWorld);
 }
 
 /*
@@ -1036,7 +1033,7 @@ void CNetworkLibrary::StartPeerToPeer_t(const CTString &strSessionName,
     throw;
   }
   // remember the world pointer
-  _pShell->SetINDEX("pwoCurrentWorld", (INDEX)&ga_World);
+  _pShell->SetCurrentWorld(&ga_World);
 
   SetProgressDescription(TRANS("starting server"));
   CallProgressHook_t(0.0f);
@@ -1273,7 +1270,7 @@ void CNetworkLibrary::JoinSession_t(const CNetworkSession &nsSesssion, INDEX ctL
   }
 
   // remember the world pointer
-  _pShell->SetINDEX("pwoCurrentWorld", (INDEX)&ga_World);
+  _pShell->SetCurrentWorld(&ga_World);
 
   // eventually cache all shadowmaps in world (memory eater!)
   if( shd_bCacheAll) ga_World.wo_baBrushes.CacheAllShadowmaps();
@@ -1345,7 +1342,7 @@ void CNetworkLibrary::StartDemoPlay_t(const CTFileName &fnDemo)  // throw char *
   _bNeedPretouch = TRUE;
 
   // remember the world pointer
-  _pShell->SetINDEX("pwoCurrentWorld", (INDEX)&ga_World);
+  _pShell->SetCurrentWorld(&ga_World);
 
   // demo synchronization starts at the beginning initially
   ga_fDemoTimer = 0.0f;
@@ -1556,7 +1553,7 @@ void CNetworkLibrary::StopGame(void)
   ga_aplsPlayers.Clear();
   ga_aplsPlayers.New(NET_MAXLOCALPLAYERS);
   // remember the world pointer
-  _pShell->SetINDEX("pwoCurrentWorld", (INDEX)NULL);
+  _pShell->SetCurrentWorld(NULL);
 
   // rewind the timer
   _pTimer->SetCurrentTick(0.0f);
@@ -1680,7 +1677,7 @@ void CNetworkLibrary::ChangeLevel_internal(void)
     // remember the world filename
     ga_fnmWorld = ga_fnmNextLevel;
     // remember the world pointer
-    _pShell->SetINDEX("pwoCurrentWorld", (INDEX)&ga_World);
+    _pShell->SetCurrentWorld(&ga_World);
   // if there is remembered level
   } else {
     // restore it
@@ -2386,7 +2383,7 @@ extern void NET_MakeDefaultState_t(
     _pNetwork->ga_fnmWorld = fnmWorld;
     _pNetwork->ga_fnmNextLevel = CTString("");
     // remember the world pointer
-    _pShell->SetINDEX("pwoCurrentWorld", (INDEX)&_pNetwork->ga_World);
+    _pShell->SetCurrentWorld(&_pNetwork->ga_World);
 
     // reset random number generator
     _pNetwork->ga_sesSessionState.ResetRND();

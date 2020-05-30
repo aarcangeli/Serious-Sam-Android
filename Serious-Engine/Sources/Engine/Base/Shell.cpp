@@ -148,6 +148,7 @@ CShell::CShell(void)
 {
   // allocate undefined symbol
   _shell_istUndeclared = _shell_ast.Allocate();
+  pwoCurrentWorld = NULL;
 };
 CShell::~CShell(void)
 {

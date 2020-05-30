@@ -47,7 +47,7 @@ EntityStats *FindStats(const CTString &strName)
 static void MakeWorldStatistics(void)
 {
   // get the world pointer
-  CWorld *pwo = (CWorld *)_pShell->GetINDEX("pwoCurrentWorld");
+  CWorld *pwo = _pShell->GetCurrentWorld();
   // if there is no current world
   if (pwo==NULL) {
     CPrintF("No current world.\n");
@@ -113,7 +113,7 @@ static void MakeWorldStatistics(void)
 static void ReoptimizeAllBrushes(void)
 {
   // get the world pointer
-  CWorld *pwo = (CWorld *)_pShell->GetINDEX("pwoCurrentWorld");
+  CWorld *pwo = _pShell->GetCurrentWorld();
   // if there is no current world
   if (pwo==NULL) {
     CPrintF("No current world.\n");
@@ -140,7 +140,7 @@ static void DoLevelSafetyChecks()
   CPrintF("\n****  BEGIN Level safety checking  ****\n\n");
   
   // get the world pointer
-  CWorld *pwo = (CWorld *)_pShell->GetINDEX("pwoCurrentWorld");
+  CWorld *pwo = _pShell->GetCurrentWorld();
   // if there is no current world
   if (pwo==NULL) {
     CPrintF("Error - no current world.\n");
