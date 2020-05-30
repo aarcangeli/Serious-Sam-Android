@@ -230,7 +230,7 @@ void ReadZIPDirectory_t(CTFileName *pfnmZip)
   }
   // start at the end of file, minus expected minimum overhead
   fseek(f, 0, SEEK_END);
-  int iPos = ftell(f)-sizeof(long)-sizeof(EndOfDir)+2;
+  int iPos = ftell(f)-sizeof(SLONG)-sizeof(EndOfDir)+2;
   // do not search more than 128k (should be around 65k at most)
   int iMinPos = iPos-128*1024;
   if (iMinPos<0) {
