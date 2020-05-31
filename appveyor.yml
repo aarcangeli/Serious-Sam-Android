@@ -1,4 +1,5 @@
 version: nightly-{build}-{branch}
+skip_tags: true
 
 environment:
   ANDROID_HOME: C:\android-sdk-windows
@@ -12,8 +13,10 @@ environment:
 
 install:
   - cmd: |
-      set SSA_VERSION=nightly-%APPVEYOR_REPO_COMMIT:~0,7%
-      echo Building Serious Sam Version %SSA_VERSION%
+      rem read VERSION from version.properties
+      FOR /F "tokens=1* delims==" %%A IN (version.properties) DO (IF "%%A"=="VERSION" set VERSION=%%B)
+      set SSA_VERSION=%VERSION%-nightly-%APPVEYOR_REPO_COMMIT:~0,7%
+      echo Building SeriousSamAndroid version %SSA_VERSION%
 
       rem Download SDK and NDK
       appveyor DownloadFile %ANDROID_TOOLS_URL% -FileName android-tools.zip
@@ -38,7 +41,6 @@ build_script:
 
 after_build:
   - cmd: |
-      echo Packing %SSA_VERSION%
       move app\build\outputs\apk\release\*.apk .
       move app\build\intermediates\cmake\release\obj SeriousSamAndroid-V%SSA_VERSION%-symbols
       7z a SeriousSamAndroid-V%SSA_VERSION%-symbols.zip SeriousSamAndroid-V%SSA_VERSION%-symbols
