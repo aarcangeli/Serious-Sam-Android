@@ -1,6 +1,7 @@
 apply plugin: 'com.android.application'
 
 def getReleaseVersion() {
+    def SSA_VERSION = System.getenv('SSA_VERSION')
 
     def versionPropsFile = file('../version.properties')
     if (!versionPropsFile.isFile()) {
@@ -13,7 +14,7 @@ def getReleaseVersion() {
     is.close()
 
     return [
-            version: versionProps['VERSION'].toString(),
+            version: SSA_VERSION ? SSA_VERSION : versionProps['VERSION'].toString(),
             versionCode: versionProps['VERSION_CODE'].toInteger(),
     ]
 }

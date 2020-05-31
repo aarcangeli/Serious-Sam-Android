@@ -31,11 +31,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "LCDDrawing.h"
 #include "CmdLine.h"
 #include "Credits.h"
-#include <config.h>
-
-#ifndef SSA_VERSION
-#define SSA_VERSION ""
-#endif
+#include "config.h"
 
 typedef CGame *(*GAME_Create_t)(void);
 void drawBannerFpsVersion(CDrawPort *pdp, int64_t deltaFrame, float fps);

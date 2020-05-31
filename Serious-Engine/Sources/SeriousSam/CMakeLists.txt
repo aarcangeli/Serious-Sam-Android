@@ -68,5 +68,3 @@ target_compile_options(SeriousSam PRIVATE "-I${CMAKE_CURRENT_SOURCE_DIR}")
 target_compile_options(SeriousSam PRIVATE "-I${CMAKE_CURRENT_SOURCE_DIR}/GUI/Menus")
 target_link_libraries(SeriousSam Engine)
 add_dependencies(SeriousSam EntitiesMP)
-
-set_property(SOURCE SeriousSam.cpp PROPERTY COMPILE_DEFINITIONS SSA_VERSION="${SSA_VERSION}")
