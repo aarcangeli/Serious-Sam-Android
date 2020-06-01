@@ -52,7 +52,7 @@ void CMainMenu::Initialize_t(void)
   gm_mgSingle.mg_boxOnScreen = BoxBigRow(0.0f);
   gm_mgSingle.mg_strTip = TRANS("single player game menus");
   gm_lhGadgets.AddTail(gm_mgSingle.mg_lnNode);
-  gm_mgSingle.mg_pmgUp = &gm_mgQuit;
+  gm_mgSingle.mg_pmgUp = &gm_mgBacklink;
   gm_mgSingle.mg_pmgDown = &gm_mgNetwork;
   gm_mgSingle.mg_pActivatedFunction = NULL;
 
@@ -116,17 +116,19 @@ void CMainMenu::Initialize_t(void)
   gm_mgQuit.mg_strTip = TRANS("exit game immediately");
   gm_lhGadgets.AddTail(gm_mgQuit.mg_lnNode);
   gm_mgQuit.mg_pmgUp = &gm_mgOptions;
-  gm_mgQuit.mg_pmgDown = &gm_mgSingle;
+  gm_mgQuit.mg_pmgDown = &gm_mgBacklink;
   gm_mgQuit.mg_pActivatedFunction = NULL;
 
   extern CTString sam_strBackLink;
   gm_mgBacklink.mg_strText = sam_strBackLink;
+  gm_mgBacklink.mg_strTip = TRANS("open in browser");
   gm_mgBacklink.mg_boxOnScreen = BoxBigRow(9.0f);
   gm_mgBacklink.mg_bfsFontSize = BFS_MEDIUM;
   gm_mgBacklink.mg_iCenterI = 0;
-  gm_mgBacklink.mg_bEnabled = FALSE;
-  gm_mgBacklink.mg_bLabel = TRUE;
   gm_lhGadgets.AddTail(gm_mgBacklink.mg_lnNode);
+  gm_mgBacklink.mg_pmgUp = &gm_mgQuit;
+  gm_mgBacklink.mg_pmgDown = &gm_mgSingle;
+  gm_mgBacklink.mg_pActivatedFunction = NULL;
 }
 
 void CMainMenu::StartMenu(void)

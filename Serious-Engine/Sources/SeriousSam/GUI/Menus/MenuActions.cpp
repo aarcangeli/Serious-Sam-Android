@@ -22,6 +22,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "GUI/Components/MenuGadget.h"
 #include "LevelInfo.h"
 #include "VarList.h"
+#include <AndroidBindings/bindings.h>
 
 ENGINE_API extern INDEX snd_iFormat;
 extern BOOL _bMouseUsedLast;
@@ -120,6 +121,12 @@ void ExitConfirm(void)
   gmCurrent.gm_pgmParentMenu = pgmCurrentMenu;
   gmCurrent.BeLarge();
   ChangeToMenu(&gmCurrent);
+}
+
+void OpenBackLink(void)
+{
+  extern CTString sam_strBackLink;
+  g_cb.openInBrowser(sam_strBackLink.str_String);
 }
 
 static void StopCurrentGame(void)
@@ -287,6 +294,7 @@ void InitActionsForMainMenu() {
   gmCurrent.gm_mgHighScore.mg_pActivatedFunction = &StartHighScoreMenu;
   gmCurrent.gm_mgOptions.mg_pActivatedFunction = &StartOptionsMenu;
   gmCurrent.gm_mgQuit.mg_pActivatedFunction = &ExitConfirm;
+  gmCurrent.gm_mgBacklink.mg_pActivatedFunction = &OpenBackLink;
 }
 
 // ------------------------ CInGameMenu implementation

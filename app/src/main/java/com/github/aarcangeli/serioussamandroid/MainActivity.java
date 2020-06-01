@@ -19,6 +19,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.hardware.input.InputManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -37,6 +38,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.github.aarcangeli.serioussamandroid.NativeEvents.OpenInBrowser;
 import com.github.aarcangeli.serioussamandroid.input.InputProcessor;
 import com.github.aarcangeli.serioussamandroid.views.JoystickView;
 import com.hold1.keyboardheightprovider.KeyboardHeightProvider;
@@ -379,6 +381,12 @@ public class MainActivity extends AppCompatActivity {
         });
 
         builder.show();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void openInBrowser(final OpenInBrowser event) {
+        Intent myIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(event.link));
+        startActivity(myIntent);
     }
 
     @Override

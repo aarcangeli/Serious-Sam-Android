@@ -23,6 +23,7 @@ struct BindingCallbacks {
     void (*editText)(const CTString &string, void (*onOk)(CTString str), void (*onCancel)());
     void (*restart)();
     void (*setSeriousBombCount)(int bombs);
+    void (*openInBrowser)(const char *link);
 
     GameState gameState;
     int seriousBombCount = 0;

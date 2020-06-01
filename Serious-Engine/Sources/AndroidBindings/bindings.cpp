@@ -157,6 +157,13 @@ void setSeriousBombCount(int bombs) {
   }
 }
 
+void openInBrowser(const char * link) {
+  JNIEnv* env = getEnv();
+  jmethodID method = env->GetStaticMethodID(g_NativeEvents, "openInBrowser", "(Ljava/lang/String;)V");
+  ASSERT(method);
+  env->CallStaticVoidMethod(g_NativeEvents, method, env->NewStringUTF(link));
+}
+
 void syncSeriousThreads() {
   while (true) {
     // get parameters with mutex
@@ -250,6 +257,7 @@ void *seriousMain(void *unused) {
   g_cb.editText = &editText;
   g_cb.restart = &requestRestard;
   g_cb.setSeriousBombCount = &setSeriousBombCount;
+  g_cb.openInBrowser = &openInBrowser;
 
   // run all
   try {

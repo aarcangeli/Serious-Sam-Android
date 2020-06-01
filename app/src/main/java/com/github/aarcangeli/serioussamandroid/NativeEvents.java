@@ -24,6 +24,10 @@ public class NativeEvents {
         EventBus.getDefault().post(new EditTextEvent(defaultText));
     }
 
+    public static void openInBrowser(String link) {
+        EventBus.getDefault().post(new OpenInBrowser(link));
+    }
+
     public static class ErrorEvent {
         public final boolean fatal;
         public final String message;
@@ -55,6 +59,14 @@ public class NativeEvents {
 
         public EditTextEvent(String defaultText) {
             this.defaultText = defaultText;
+        }
+    }
+
+    public static class OpenInBrowser {
+        public final String link;
+
+        public OpenInBrowser(String link) {
+            this.link = link;
         }
     }
 
