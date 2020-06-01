@@ -935,7 +935,9 @@ void CWorld::TriangularizeForVertices( CBrushVertexSelection &selVertex)
 void CEntity::AddToPrediction(void)
 {
   // this function may be called even for NULLs - so ignore it
-  ASSERT(this!=NULL);
+  if (this==NULL) {
+    return;
+  }
   // if already added
   if (en_ulFlags&ENF_WILLBEPREDICTED) {
     // do nothing

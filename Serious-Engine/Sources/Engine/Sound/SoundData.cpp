@@ -253,14 +253,16 @@ SLONG CSoundData::GetUsedMemory(void)
 // Add one reference
 void CSoundData::AddReference(void)
 {
-    ASSERT(this!=NULL);
+  if (this!=NULL) {
     MarkUsed();
+ }
 }
 
 
 // Remove one reference
 void CSoundData::RemReference(void)
 {
-    ASSERT(this!=NULL);
+  if (this!=NULL) {
     _pSoundStock->Release(this);
+ }
 }

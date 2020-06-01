@@ -50,9 +50,8 @@ CPathNode::~CPathNode(void)
 // get name of this node
 const CTString &CPathNode::GetName(void)
 {
-  ASSERT(this!=NULL);
   static CTString strNone="<none>";
-  if (pn_pnmMarker==NULL) {
+  if (this==NULL || pn_pnmMarker==NULL) {
     return strNone;
   } else {
     return pn_pnmMarker->GetName();
@@ -62,7 +61,10 @@ const CTString &CPathNode::GetName(void)
 // get link with given index or null if no more (for iteration along the graph)
 CPathNode *CPathNode::GetLink(INDEX i)
 {
-  ASSERT(this!=NULL && pn_pnmMarker!=NULL);
+  if (this==NULL || pn_pnmMarker==NULL) {
+    ASSERT(FALSE);
+    return NULL;
+  }
   CNavigationMarker *pnm = pn_pnmMarker->GetLink(i);
   if (pnm==NULL) {
     return NULL;

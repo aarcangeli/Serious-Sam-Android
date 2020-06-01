@@ -172,15 +172,15 @@ void CWorld::DoCSGOperation(
   AssureFPT_53();
 
   // get relevant brush mips in each brush
-  CBrushMip *pbmThis  = GetBrushMip(enThis);
-  CBrushMip *pbmOther = GetBrushMip(enOther);
-  if (pbmThis==NULL || pbmOther==NULL) {
+  CBrushMip &bmThis  = *GetBrushMip(enThis);
+  CBrushMip &bmOther = *GetBrushMip(enOther);
+  if (&bmThis==NULL || &bmOther==NULL) {
     return;
   }
 
   // get open sector of the other brush to object
   CBrushSectorSelectionForCSG selbscOtherOpen;
-  pbmOther->SelectOpenSector(selbscOtherOpen);
+  bmOther.SelectOpenSector(selbscOtherOpen);
   CObject3D obOtherOpen;
   DOUBLEaabbox3D boxOtherOpen;
   woOther.CopySourceBrushSectorsToObject(enOther, selbscOtherOpen, plOther,
@@ -193,7 +193,7 @@ void CWorld::DoCSGOperation(
     obOtherOpen.TurnPortalsToWalls();
 
     // if there are any sectors in this brush
-    if (pbmThis->bm_abscSectors.Count()>0) {
+    if (bmThis.bm_abscSectors.Count()>0) {
       // move affected part of this brush to an object3d object
       CObject3D obThis;
       MoveTargetBrushPartToObject(enThis, boxOtherOpen, obThis);
@@ -213,7 +213,7 @@ void CWorld::DoCSGOperation(
 
   // get closed sectors of the other brush to object
   CBrushSectorSelectionForCSG selbscOtherClosed;
-  pbmOther->SelectClosedSectors(selbscOtherClosed);
+  bmOther.SelectClosedSectors(selbscOtherClosed);
   CObject3D obOtherClosed;
   DOUBLEaabbox3D boxOtherClosed;
   woOther.CopySourceBrushSectorsToObject(enOther, selbscOtherClosed, plOther,
@@ -224,7 +224,7 @@ void CWorld::DoCSGOperation(
     CObject3D obResult;
 
     // if there are any sectors in this brush
-    if (pbmThis->bm_abscSectors.Count()>0) {
+    if (bmThis.bm_abscSectors.Count()>0) {
       // move affected part of this brush to an object3d object
       CObject3D obThis;
       MoveTargetBrushPartToObject(enThis, boxOtherClosed, obThis);
@@ -304,16 +304,16 @@ void CWorld::CSGRemove(CEntity &enThis, CWorld &woOther, CEntity &enOther,
   AssureFPT_53();
 
   // get relevant brush mip in other brush
-  CBrushMip *pbmOther = GetBrushMip(enOther);
-  if (pbmOther==NULL) {
+  CBrushMip &bmOther = *GetBrushMip(enOther);
+  if (&bmOther==NULL) {
     return;
   }
 
   // if other brush has more than one sector
-  if (pbmOther->bm_abscSectors.Count()>1) {
+  if (bmOther.bm_abscSectors.Count()>1) {
     // join all sectors of the other brush together
     CBrushSectorSelection selbscOtherAll;
-    pbmOther->SelectAllSectors(selbscOtherAll);
+    bmOther.SelectAllSectors(selbscOtherAll);
     woOther.JoinSectors(selbscOtherAll);
   }
 
@@ -380,15 +380,15 @@ void CWorld::SplitSectors(CEntity &enThis, CBrushSectorSelection &selbscSectorsT
   AssureFPT_53();
 
   // get relevant brush mip in this brush
-  CBrushMip *pbmThis = GetBrushMip(enThis);
-  if (pbmThis==NULL) {
+  CBrushMip &bmThis = *GetBrushMip(enThis);
+  if (&bmThis==NULL) {
     _pfWorldEditingProfile.StopTimer(CWorldEditingProfile::PTI_CSGTOTAL);
     return;
   }
 
   // get relevant brush mip in other brush
-  CBrushMip *pbmOther = GetBrushMip(enOther);
-  if (pbmOther==NULL) {
+  CBrushMip &bmOther = *GetBrushMip(enOther);
+  if (&bmOther==NULL) {
     _pfWorldEditingProfile.StopTimer(CWorldEditingProfile::PTI_CSGTOTAL);
     return;
   }
@@ -396,10 +396,10 @@ void CWorld::SplitSectors(CEntity &enThis, CBrushSectorSelection &selbscSectorsT
   /* Assure that the other brush has only one sector. */
 
   // if other brush has more than one sector
-  if (pbmOther->bm_abscSectors.Count()>1) {
+  if (bmOther.bm_abscSectors.Count()>1) {
     // join all sectors of the other brush together
     CBrushSectorSelection selbscOtherAll;
-    pbmOther->SelectAllSectors(selbscOtherAll);
+    bmOther.SelectAllSectors(selbscOtherAll);
     woOther.JoinSectors(selbscOtherAll);
   }
 
@@ -407,7 +407,7 @@ void CWorld::SplitSectors(CEntity &enThis, CBrushSectorSelection &selbscSectorsT
 
   // get the sector of the other brush to object
   CBrushSectorSelectionForCSG selbscOther;
-  pbmOther->SelectAllSectors(selbscOther);
+  bmOther.SelectAllSectors(selbscOther);
   CObject3D obOther;
   DOUBLEaabbox3D boxOther;
   woOther.CopySourceBrushSectorsToObject(enOther, selbscOther, plOther,
@@ -416,7 +416,7 @@ void CWorld::SplitSectors(CEntity &enThis, CBrushSectorSelection &selbscSectorsT
   // if the selection is empty
   if (selbscSectorsToSplit.Count()==0) {
     // select all sectors near the splitting tool
-    pbmThis->SelectSectorsInRange(selbscSectorsToSplit, DOUBLEtoFLOAT(boxOther));
+    bmThis.SelectSectorsInRange(selbscSectorsToSplit, DOUBLEtoFLOAT(boxOther));
   }
   // for all sectors in the selection
   FOREACHINDYNAMICCONTAINER(selbscSectorsToSplit, CBrushSector, itbsc) {
@@ -426,7 +426,7 @@ void CWorld::SplitSectors(CEntity &enThis, CBrushSectorSelection &selbscSectorsT
   }
 
   // update the bounding boxes of this brush
-  pbmThis->bm_pbrBrush->CalculateBoundingBoxes();
+  bmThis.bm_pbrBrush->CalculateBoundingBoxes();
   // find possible shadow layers near affected area
   FindShadowLayers(DOUBLEtoFLOAT(boxOther));
 
@@ -574,8 +574,8 @@ void CWorld::SplitPolygons(CEntity &enThis, CBrushPolygonSelection &selbpoPolygo
   _pfWorldEditingProfile.IncrementAveragingCounter();
 
   // get relevant brush mip in other brush
-  CBrushMip *pbmOther = GetBrushMip(enOther);
-  if (pbmOther==NULL) {
+  CBrushMip &bmOther = *GetBrushMip(enOther);
+  if (&bmOther==NULL) {
     _pfWorldEditingProfile.StopTimer(CWorldEditingProfile::PTI_CSGTOTAL);
     return;
   }
@@ -596,7 +596,7 @@ void CWorld::SplitPolygons(CEntity &enThis, CBrushPolygonSelection &selbpoPolygo
 
   // get the sector of the other brush to object
   CBrushSectorSelectionForCSG selbscOther;
-  pbmOther->SelectAllSectors(selbscOther);
+  bmOther.SelectAllSectors(selbscOther);
   CObject3D obOther;
   DOUBLEaabbox3D boxOther;
   woOther.CopySourceBrushSectorsToObject(enOther, selbscOther, plOther,
