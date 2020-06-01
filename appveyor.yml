@@ -30,11 +30,20 @@ install:
       yes | C:\android-sdk-windows\tools\bin\sdkmanager.bat --licenses > nul
       %ANDROID_HOME%\tools\bin\sdkmanager.bat "cmake;3.10.2.4988404" "platform-tools" "platforms;android-28"
 
-      rem decrypt key
-      echo KEY_ALIAS=alessandro arcangeli>signing.properties
-      echo STORE_FILE=..\\serious-sam.jks>>signing.properties
-      echo STORE_PASSWORD=%STORE_PASSWORD%>>signing.properties
+  # generate key
+  - if defined STORE_PASSWORD (
+      echo KEY_ALIAS=alessandro arcangeli>signing.properties &&
+      echo STORE_FILE=..\\serious-sam.jks>>signing.properties &&
+      echo STORE_PASSWORD=%STORE_PASSWORD%>>signing.properties &&
       echo KEY_PASSWORD=%KEY_PASSWORD%>>signing.properties
+    ) else (
+      echo In pull requests, generates a random key &&
+      keytool -genkey -v -keystore C:\my-random-key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias appveyor-ci -noprompt -dname "CN=Serious-Sam-Android-appveyor-build" -storepass VerySecurePassword -keypass VerySecurePassword &&
+      echo KEY_ALIAS=appveyor-ci>signing.properties &&
+      echo STORE_FILE=C:\\my-random-key.jks>>signing.properties &&
+      echo STORE_PASSWORD=VerySecurePassword>>signing.properties &&
+      echo KEY_PASSWORD=VerySecurePassword>>signing.properties
+    )
 
 build_script:
   - cmd: gradlew.bat assembleRelease --no-daemon
