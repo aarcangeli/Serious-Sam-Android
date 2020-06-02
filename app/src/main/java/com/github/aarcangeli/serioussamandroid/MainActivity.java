@@ -605,7 +605,7 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == REQUEST_WRITE_STORAGE) {
             if (grantResults.length > 0) {
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-		Log.d(TAG,"Permission is granted");
+                Log.d(TAG,"Permission is granted");
                     startGame();
                 } else {
                     finish();
