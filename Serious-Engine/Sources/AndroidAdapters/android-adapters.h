@@ -10,21 +10,7 @@
 #define PLATFORM_UNIX 1
 #define USE_PORTABLE_C 1
 
-#if defined(__aarch64__)
-
-  #define PLATFORM_64BIT 1
-static_assert(sizeof(void *) == 8, "");
-
-#elif defined(__i386) || defined(__arm__)
-
-  #define PLATFORM_32BIT 1
-static_assert(sizeof(void *) == 4, "");
-
-#else
-  #error "Unknown CPU-Architecture, adapt this code to detect 32/64bitness of your system!"
-#endif
-
-static_assert(sizeof(size_t *) == sizeof(void *), "");
+static_assert(sizeof(void *) == 4, "Serious engine require 32 bit address space");
 
 int64_t getTimeNsec();
 
