@@ -17,7 +17,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 %{
 
 #include <EntitiesMP/Common/playerCommons.h>
-#include "StdH.h"
+#include "EntitiesMP/StdH/StdH.h"
 #include "GameMP/SEColors.h"
 
 #include <Engine/Build.h>
@@ -69,6 +69,8 @@ extern void JumpFromBouncer(CEntity *penToBounce, CEntity *penBouncer);
 
 %}
 
+uses "EntitiesMP/WorldLink";
+
 enum PlayerViewType {
   0 PVT_PLAYEREYES      "",
   1 PVT_PLAYERAUTOVIEW  "",
@@ -116,7 +118,7 @@ extern void EndHUD(void);
 static CTimerValue _tvProbingLast;
 
 // used to render certain entities only for certain players (like picked items, etc.)
-extern ULONG _ulPlayerRenderingMask = 0;
+ULONG _ulPlayerRenderingMask = 0;
 
 // temporary BOOL used to discard calculating of 3rd view when calculating absolute view placement
 BOOL _bDiscard3rdView=FALSE;
@@ -291,42 +293,43 @@ static INDEX cht_bGiveAll    = FALSE;
 static INDEX cht_bOpen       = FALSE;
 static INDEX cht_bAllMessages= FALSE;
 static INDEX cht_bRefresh    = FALSE;
-extern INDEX cht_bGod        = FALSE;
-extern INDEX cht_bFly        = FALSE;
-extern INDEX cht_bGhost      = FALSE;
-extern INDEX cht_bInvisible  = FALSE;
-extern FLOAT cht_fTranslationMultiplier = 1.0f;
-extern INDEX cht_bEnable     = 0;   
+INDEX cht_bGod        = FALSE;
+INDEX cht_bFly        = FALSE;
+INDEX cht_bGhost      = FALSE;
+INDEX cht_bInvisible  = FALSE;
+INDEX cht_bAmmo       = FALSE;
+FLOAT cht_fTranslationMultiplier = 1.0f;
+INDEX cht_bEnable     = 0;   
 
 // interface control
 static INDEX hud_bShowAll	    = TRUE; // used internaly in menu/console
-extern INDEX hud_bShowWeapon  = TRUE;
-extern INDEX hud_bShowMessages = TRUE;
-extern INDEX hud_bShowInfo    = TRUE;
-extern INDEX hud_bShowLatency = FALSE;
-extern INDEX hud_iShowPlayers = -1;   // auto
-extern INDEX hud_iSortPlayers = -1;   // auto
-extern FLOAT hud_fOpacity     = 0.9f;
-extern FLOAT hud_fScaling     = 1.0f;
-extern FLOAT hud_tmWeaponsOnScreen = 3.0f;
-extern FLOAT hud_tmLatencySnapshot = 1.0f;
-extern INDEX hud_bShowMatchInfo = TRUE;
+INDEX hud_bShowWeapon  = TRUE;
+INDEX hud_bShowMessages = TRUE;
+INDEX hud_bShowInfo    = TRUE;
+INDEX hud_bShowLatency = FALSE;
+INDEX hud_iShowPlayers = -1;   // auto
+INDEX hud_iSortPlayers = -1;   // auto
+FLOAT hud_fOpacity     = 0.9f;
+FLOAT hud_fScaling     = 1.0f;
+FLOAT hud_tmWeaponsOnScreen = 3.0f;
+FLOAT hud_tmLatencySnapshot = 1.0f;
+INDEX hud_bShowMatchInfo = TRUE;
 
-extern FLOAT plr_fBreathingStrength = 0.0f;
+FLOAT plr_fBreathingStrength = 0.0f;
 extern FLOAT plr_tmSnoopingTime;
-extern INDEX cht_bKillFinalBoss = FALSE;
+INDEX cht_bKillFinalBoss = FALSE;
 INDEX cht_bDebugFinalBoss = FALSE;
 INDEX cht_bDumpFinalBossData = FALSE;
 INDEX cht_bDebugFinalBossAnimations = FALSE;
 INDEX cht_bDumpPlayerShading = FALSE;
 
-extern FLOAT wpn_fRecoilSpeed[17]   = {0};
-extern FLOAT wpn_fRecoilLimit[17]   = {0};
-extern FLOAT wpn_fRecoilDampUp[17]  = {0};
-extern FLOAT wpn_fRecoilDampDn[17]  = {0};
-extern FLOAT wpn_fRecoilOffset[17]  = {0};
-extern FLOAT wpn_fRecoilFactorP[17] = {0};
-extern FLOAT wpn_fRecoilFactorZ[17] = {0};
+FLOAT wpn_fRecoilSpeed[17]   = {0};
+FLOAT wpn_fRecoilLimit[17]   = {0};
+FLOAT wpn_fRecoilDampUp[17]  = {0};
+FLOAT wpn_fRecoilDampDn[17]  = {0};
+FLOAT wpn_fRecoilOffset[17]  = {0};
+FLOAT wpn_fRecoilFactorP[17] = {0};
+FLOAT wpn_fRecoilFactorZ[17] = {0};
 
 // misc
 static FLOAT plr_fAcceleration  = 100.0f;
@@ -339,30 +342,30 @@ static FLOAT plr_fViewHeightStand  = 1.9f;
 static FLOAT plr_fViewHeightCrouch = 0.7f;
 static FLOAT plr_fViewHeightSwim   = 0.4f;
 static FLOAT plr_fViewHeightDive   = 0.0f;
-extern FLOAT plr_fViewDampFactor        = 0.4f;
-extern FLOAT plr_fViewDampLimitGroundUp = 0.1f;
-extern FLOAT plr_fViewDampLimitGroundDn = 0.4f;
-extern FLOAT plr_fViewDampLimitWater    = 0.1f;
+FLOAT plr_fViewDampFactor        = 0.4f;
+FLOAT plr_fViewDampLimitGroundUp = 0.1f;
+FLOAT plr_fViewDampLimitGroundDn = 0.4f;
+FLOAT plr_fViewDampLimitWater    = 0.1f;
 static FLOAT plr_fFrontClipDistance = 0.25f;
 static FLOAT plr_fFOV = 90.0f;
 static FLOAT net_tmLatencyAvg;
-extern INDEX plr_bRenderPicked = FALSE;
-extern INDEX plr_bRenderPickedParticles = FALSE;
-extern INDEX plr_bOnlySam = FALSE;
-extern INDEX ent_bReportBrokenChains = FALSE;
-extern FLOAT ent_tmMentalIn   = 0.5f;
-extern FLOAT ent_tmMentalOut  = 0.75f;
-extern FLOAT ent_tmMentalFade = 0.5f;
+INDEX plr_bRenderPicked = FALSE;
+INDEX plr_bRenderPickedParticles = FALSE;
+INDEX plr_bOnlySam = FALSE;
+INDEX ent_bReportBrokenChains = FALSE;
+FLOAT ent_tmMentalIn   = 0.5f;
+FLOAT ent_tmMentalOut  = 0.75f;
+FLOAT ent_tmMentalFade = 0.5f;
 
-extern FLOAT gfx_fEnvParticlesDensity = 1.0f;
-extern FLOAT gfx_fEnvParticlesRange = 1.0f;
+FLOAT gfx_fEnvParticlesDensity = 1.0f;
+FLOAT gfx_fEnvParticlesRange = 1.0f;
 
 // prediction control vars
-extern FLOAT cli_fPredictPlayersRange = 0.0f;
-extern FLOAT cli_fPredictItemsRange = 3.0f;
-extern FLOAT cli_tmPredictFoe = 10.0f;
-extern FLOAT cli_tmPredictAlly = 10.0f;
-extern FLOAT cli_tmPredictEnemy  = 10.0f;
+FLOAT cli_fPredictPlayersRange = 0.0f;
+FLOAT cli_fPredictItemsRange = 3.0f;
+FLOAT cli_tmPredictFoe = 10.0f;
+FLOAT cli_tmPredictAlly = 10.0f;
+FLOAT cli_tmPredictEnemy  = 10.0f;
 
 static FLOAT plr_fSwimSoundDelay = 0.8f;
 static FLOAT plr_fDiveSoundDelay = 1.6f;
@@ -380,19 +383,19 @@ static FLOAT ctl_fButtonRotationSpeedB = 150.0f;
 static FLOAT ctl_fAxisStrafingModifier = 1.0f;
 
 // !=NULL if some player wants to call computer
-DECL_DLL extern class CPlayer *cmp_ppenPlayer = NULL;
+DECL_DLL class CPlayer *cmp_ppenPlayer = NULL;
 // !=NULL for rendering computer on secondary display in dualhead
-DECL_DLL extern class CPlayer *cmp_ppenDHPlayer = NULL;
+DECL_DLL class CPlayer *cmp_ppenDHPlayer = NULL;
 // set to update current message in background mode (for dualhead)
-DECL_DLL extern BOOL cmp_bUpdateInBackground = FALSE;
+DECL_DLL BOOL cmp_bUpdateInBackground = FALSE;
 // set for initial calling computer without rendering game
-DECL_DLL extern BOOL cmp_bInitialStart = FALSE;
+DECL_DLL BOOL cmp_bInitialStart = FALSE;
 
 // game sets this for player hud and statistics and hiscore sound playing
-DECL_DLL extern INDEX plr_iHiScore = 0.0f;
+DECL_DLL INDEX plr_iHiScore = 0.0f;
 
 // these define address and size of player controls structure
-DECL_DLL extern void *ctl_pvPlayerControls = &pctlCurrent;
+DECL_DLL void *ctl_pvPlayerControls = &pctlCurrent;
 DECL_DLL extern const SLONG ctl_slPlayerControlsSize = sizeof(pctlCurrent);
 
 // called to compose action packet from current controls
@@ -735,6 +738,7 @@ void CPlayer_OnInitClass(void)
   _pShell->DeclareSymbol("user INDEX cht_bGiveAll;",   &cht_bGiveAll);
   _pShell->DeclareSymbol("user INDEX cht_bKillAll;",   &cht_bKillAll);
   _pShell->DeclareSymbol("user INDEX cht_bOpen;",      &cht_bOpen);
+  _pShell->DeclareSymbol("user INDEX cht_bAmmo;",       &cht_bAmmo);
   _pShell->DeclareSymbol("user INDEX cht_bAllMessages;", &cht_bAllMessages);
   _pShell->DeclareSymbol("user FLOAT cht_fTranslationMultiplier ;", &cht_fTranslationMultiplier);
   _pShell->DeclareSymbol("user INDEX cht_bRefresh;", &cht_bRefresh);
@@ -2900,14 +2904,14 @@ functions:
     FLOAT fKickDamage = fDamageAmmount;
     if( (dmtType == DMT_EXPLOSION) || (dmtType == DMT_IMPACT) || (dmtType == DMT_CANNONBALL_EXPLOSION) )
     {
-      fKickDamage*=1.5;
+      fKickDamage*=1.5f;
     }
     if (dmtType==DMT_DROWNING || dmtType==DMT_CLOSERANGE) {
-      fKickDamage /= 10;
+      fKickDamage /= 10.0f;
     }
     if (dmtType==DMT_CHAINSAW)
     {
-      fKickDamage /= 10;
+      fKickDamage /= 10.0f;
     }
 
     // get passed time since last damage
@@ -4652,6 +4656,13 @@ functions:
       cht_bRefresh = FALSE;
       SetHealth(TopHealth());
     }
+    
+   if (cht_bAmmo) {
+   ((CSessionProperties*)GetSP())->sp_bInfiniteAmmo = TRUE;
+    } else {
+   ((CSessionProperties*)GetSP())->sp_bInfiniteAmmo = FALSE;
+    }
+    
   };
 
 
@@ -4710,7 +4721,7 @@ functions:
         mDesired = en_mRotation*(mDesired*!en_mRotation);
         FLOATmatrix3D mForced = !mDesired*mCurr*!mLast; // = aCurr-aLast-aDesired;
         ANGLE3D aForced; DecomposeRotationMatrixNoSnap(aForced, mForced);
-        if (aForced.MaxNorm()<1E-2) {
+        if (aForced.MaxNorm()<1E-2f) {
           aForced = ANGLE3D(0,0,0);
         }
         FLOATquat3D qForced; qForced.FromEuler(aForced);

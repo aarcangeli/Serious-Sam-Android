@@ -18,7 +18,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
  *  Copyright (c) 1997-1999, CroTeam. 
  */
 
-#include "stdafx.h"
+#include "StdAfx.h"
 
 extern CGame *_pGame;
 
@@ -103,7 +103,7 @@ void CControls::SwitchAxesToDefaults(void)
 
   ctrl_fSensitivity = 50;
   ctrl_bInvertLook = FALSE;
-  ctrl_bSmoothAxes = TRUE;
+  ctrl_bSmoothAxes = FALSE;
 }
 
 void CControls::SwitchToDefaults(void)
@@ -180,7 +180,7 @@ void CControls::Load_t( CTFileName fnFile)
   char achrLine[ 1024];
   char achrName[ 1024];
   char achrID[ 1024];
-  char achrActionName[ 1024];
+  char achrActionName[ 1025];
   
   // open script file for reading
   CTFileStream strmFile;
@@ -216,13 +216,13 @@ void CControls::Load_t( CTFileName fnFile)
 
     // if this is axis action
     } else if( CTString( achrID) == "Axis") {
-      char achrAxis[ 1024];
+      char achrAxis[ 1025];
       achrAxis[ 0] = 0;
-      char achrIfInverted[ 1024];
+      char achrIfInverted[ 1025];
       achrIfInverted[ 0] = 0;
-      char achrIfRelative[ 1024];
+      char achrIfRelative[ 1025];
       achrIfRelative[ 0] = 0;
-      char achrIfSmooth[ 1024];
+      char achrIfSmooth[ 1025];
       achrIfSmooth[ 0] = 0;
       achrActionName[ 0] = 0;
       FLOAT fSensitivity = 50;

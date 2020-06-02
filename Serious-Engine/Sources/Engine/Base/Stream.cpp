@@ -46,7 +46,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 //ULONG _ulPageSize = 0;
 // maximum lenght of file that can be saved (default: 128Mb)
 ULONG _ulMaxLenghtOfSavingFile = (1UL << 20) * 128;
-extern INDEX fil_bPreferZips = FALSE;
+INDEX fil_bPreferZips = FALSE;
 
 // set if current thread has currently enabled stream handling
 CThreadLocal<BOOL> _bThreadCanHandleStreams;
@@ -1385,6 +1385,7 @@ SLONG GetFileTimeStamp_t(const CTFileName &fnm) {
   if (ierr == 0) {
     return st.st_mtime;
   }
+    return 0;
 }
 
 // Get CRC32 of a file

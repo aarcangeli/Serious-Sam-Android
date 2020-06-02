@@ -77,7 +77,7 @@ public:
     struct {  // used in splitting collinear edges
       class CEdgeEx *oed_pedxLine;          // pointer to line information
     } colinear2;
-  };
+  } edg;
 
   CObjectVertex *oed_Vertex0;     // start vertex
   CObjectVertex *oed_Vertex1;     // end vertex

@@ -32,7 +32,7 @@ public:
 // implementation:
   CTCriticalSection sh_csShell; // critical section for access to shell data
   CDynamicArray<CShellSymbol> sh_assSymbols;  // all defined symbols
-
+  CWorld* pwoCurrentWorld;
   // Get a shell symbol by its name.
   CShellSymbol *GetSymbol(const CTString &strName, BOOL bDeclaredOnly);
   // Report error in shell script processing.
@@ -64,6 +64,14 @@ public:
 
   CTString GetValue(const CTString &strName);
   void SetValue(const CTString &strName, const CTString &strValue);
+  void SetCurrentWorld(CWorld* pwo)
+  {
+  pwoCurrentWorld = pwo;
+  }
+  CWorld* GetCurrentWorld(void)
+  {
+  return pwoCurrentWorld;
+  }
 };
 
 // pointer to global shell object

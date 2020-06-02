@@ -226,13 +226,9 @@ extern INDEX gfxGetFormatPixRatio(  ULONG ulTextureFormat);
 // VERTEX ARRAYS
 
 // prepare arrays for API
-[[deprecated("Replace with buffers")]]
 extern void (*gfxSetVertexArray)( GFXVertex4 *pvtx, INDEX ctVtx);
-[[deprecated("Replace with buffers")]]
 extern void (*gfxSetNormalArray)( GFXNormal *pnor);
-[[deprecated("Replace with buffers")]]
 extern void (*gfxSetTexCoordArray)( GFXTexCoord *ptex, BOOL b4); // b4 = projective mapping (4 FLOATS)
-[[deprecated("Replace with buffers")]]
 extern void (*gfxSetColorArray)( GFXColor *pcol);
 
 

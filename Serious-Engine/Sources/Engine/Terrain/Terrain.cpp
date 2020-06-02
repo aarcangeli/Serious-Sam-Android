@@ -18,7 +18,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/ListIterator.inl>
 #include <Engine/Math/Projection.h>
 #include <Engine/Math/FixInt.h>
-#include <Engine/Graphics/Drawport.h>
+#include <Engine/Graphics/DrawPort.h>
 #include <Engine/Graphics/ImageInfo.h>
 #include <Engine/Graphics/GfxLibrary.h>
 #include <Engine/Terrain/Terrain.h>
@@ -836,10 +836,10 @@ void CopyPixel(COLOR *pubSrc,COLOR *pubDst,FLOAT fMaskStrength)
 {
   GFXColor *pcolSrc = (GFXColor*)pubSrc;
   GFXColor *pcolDst = (GFXColor*)pubDst;
-  pcolSrc->r = Lerp(pcolSrc->r,pcolDst->r,fMaskStrength);
-  pcolSrc->g = Lerp(pcolSrc->g,pcolDst->g,fMaskStrength);
-  pcolSrc->b = Lerp(pcolSrc->b,pcolDst->b,fMaskStrength);
-  pcolSrc->a = 255;
+  pcolSrc->gfxcol.ub.r = Lerp(pcolSrc->gfxcol.ub.r,pcolDst->gfxcol.ub.r,fMaskStrength);
+  pcolSrc->gfxcol.ub.g = Lerp(pcolSrc->gfxcol.ub.g,pcolDst->gfxcol.ub.g,fMaskStrength);
+  pcolSrc->gfxcol.ub.b = Lerp(pcolSrc->gfxcol.ub.b,pcolDst->gfxcol.ub.b,fMaskStrength);
+  pcolSrc->gfxcol.ub.a = 255;
 }
 
 static INDEX _ctSavedTopMaps=0;
@@ -1121,10 +1121,10 @@ void CTerrain::UpdateTopMap(INDEX iTileIndex, Rect *prcDest/*=NULL*/)
         
         GFXColor *pcolSrc = (GFXColor*)pulTexDst;
         GFXColor *pcolDst = (GFXColor*)ulSrc;
-        pcolSrc->r = (BYTE)( (ULONG)pcolSrc->r + ((((ULONG)pcolDst->r - (ULONG)pcolSrc->r) * xStrength)>>16));
-        pcolSrc->g = (BYTE)( (ULONG)pcolSrc->g + ((((ULONG)pcolDst->g - (ULONG)pcolSrc->g) * xStrength)>>16));
-        pcolSrc->b = (BYTE)( (ULONG)pcolSrc->b + ((((ULONG)pcolDst->b - (ULONG)pcolSrc->b) * xStrength)>>16));
-        pcolSrc->a = pubEdgeMaskRow[iMask];
+        pcolSrc->gfxcol.ub.r = (BYTE)( (ULONG)pcolSrc->gfxcol.ub.r + ((((ULONG)pcolDst->gfxcol.ub.r - (ULONG)pcolSrc->gfxcol.ub.r) * xStrength)>>16));
+        pcolSrc->gfxcol.ub.g = (BYTE)( (ULONG)pcolSrc->gfxcol.ub.g + ((((ULONG)pcolDst->gfxcol.ub.g - (ULONG)pcolSrc->gfxcol.ub.g) * xStrength)>>16));
+        pcolSrc->gfxcol.ub.b = (BYTE)( (ULONG)pcolSrc->gfxcol.ub.b + ((((ULONG)pcolDst->gfxcol.ub.b - (ULONG)pcolSrc->gfxcol.ub.b) * xStrength)>>16));
+        pcolSrc->gfxcol.ub.a = pubEdgeMaskRow[iMask];
         
         pulTexDst++;
         xMaskHPos += xHMaskStep;
@@ -1393,10 +1393,10 @@ void CTerrain::GenerateTopMap(INDEX iTileIndex)
         
         GFXColor *pcolSrc = (GFXColor*)pulTexDst;
         GFXColor *pcolDst = (GFXColor*)ulSrc;
-        pcolSrc->r = (BYTE)( (ULONG)pcolSrc->r + ((((ULONG)pcolDst->r - (ULONG)pcolSrc->r) * xStrength)>>16));
-        pcolSrc->g = (BYTE)( (ULONG)pcolSrc->g + ((((ULONG)pcolDst->g - (ULONG)pcolSrc->g) * xStrength)>>16));
-        pcolSrc->b = (BYTE)( (ULONG)pcolSrc->b + ((((ULONG)pcolDst->b - (ULONG)pcolSrc->b) * xStrength)>>16));
-        pcolSrc->a = 255;
+        pcolSrc->gfxcol.ub.r = (BYTE)( (ULONG)pcolSrc->gfxcol.ub.r + ((((ULONG)pcolDst->gfxcol.ub.r - (ULONG)pcolSrc->gfxcol.ub.r) * xStrength)>>16));
+        pcolSrc->gfxcol.ub.g = (BYTE)( (ULONG)pcolSrc->gfxcol.ub.g + ((((ULONG)pcolDst->gfxcol.ub.g - (ULONG)pcolSrc->gfxcol.ub.g) * xStrength)>>16));
+        pcolSrc->gfxcol.ub.b = (BYTE)( (ULONG)pcolSrc->gfxcol.ub.b + ((((ULONG)pcolDst->gfxcol.ub.b - (ULONG)pcolSrc->gfxcol.ub.b) * xStrength)>>16));
+        pcolSrc->gfxcol.ub.a = 255;
         
         pulTexDst++;
         xMaskHPos += xHMaskStep;

@@ -14,7 +14,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
  
-#include "StdH.h"
+#include "EntitiesMP/StdH/StdH.h"
 #include "GameMP/SEColors.h"
 
 #include <Engine/Graphics/DrawPort.h>
@@ -40,6 +40,7 @@ extern INDEX cht_bGod;
 extern INDEX cht_bFly;
 extern INDEX cht_bGhost;
 extern INDEX cht_bInvisible;
+extern INDEX cht_bAmmo;
 extern FLOAT cht_fTranslationMultiplier;
 
 // interface control
@@ -91,7 +92,7 @@ static TIME  _tmLast = -1.0f;
 static CFontData _fdNumbersFont;
 
 // array for pointers of all players
-extern CPlayer *_apenPlayers[NET_MAXGAMEPLAYERS] = {0};
+CPlayer *_apenPlayers[NET_MAXGAMEPLAYERS] = {0};
 
 // status bar textures
 static CTextureObject _toHealth;
@@ -519,18 +520,18 @@ static void HUD_DrawBar( FLOAT fCenterX, FLOAT fCenterY, PIX pixSizeX, PIX pixSi
   // determine bar position and inner size
   switch( eBarOrientation) {
   case BO_UP:
-    pixSizeJ *= fNormValue;
+    pixSizeJ = (pixSizeJ*fNormValue);
     break;
   case BO_DOWN:
     pixUpper  = pixUpper + (PIX)ceil(pixSizeJ * (1.0f-fNormValue));
-    pixSizeJ *= fNormValue;
+    pixSizeJ = (pixSizeJ*fNormValue);
     break;
   case BO_LEFT:
-    pixSizeI *= fNormValue;
+    pixSizeI = (pixSizeI*fNormValue);
     break;
   case BO_RIGHT:
     pixLeft   = pixLeft + (PIX)ceil(pixSizeI * (1.0f-fNormValue));
-    pixSizeI *= fNormValue;
+    pixSizeI = (pixSizeI*fNormValue);
     break;
   }
   // done
@@ -562,7 +563,7 @@ static void DrawAspectCorrectTextureCentered( class CTextureObject *_pTO, FLOAT 
   CTextureData *ptd = (CTextureData*)_pTO->GetData();
   FLOAT fTexSizeI = ptd->GetPixWidth();
   FLOAT fTexSizeJ = ptd->GetPixHeight();
-  FLOAT fHeight = fWidth*fTexSizeJ/fTexSizeJ;
+  FLOAT fHeight = fWidth*fTexSizeJ/fTexSizeI;
   
   _pDP->InitTexture( _pTO);
   _pDP->AddTexture( fX-fWidth*0.5f, fY-fHeight*0.5f, fX+fWidth*0.5f, fY+fHeight*0.5f, 0, 0, 1, 1, col);
@@ -1359,6 +1360,7 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
     if( cht_bGhost)     { _pDP->PutTextR( "ghost",     _pixDPWidth-1, _pixDPHeight-pixFontHeight*iLine, colCheat|ulAlpha); iLine++; }
     if( cht_bFly)       { _pDP->PutTextR( "fly",       _pixDPWidth-1, _pixDPHeight-pixFontHeight*iLine, colCheat|ulAlpha); iLine++; }
     if( cht_bGod)       { _pDP->PutTextR( "god",       _pixDPWidth-1, _pixDPHeight-pixFontHeight*iLine, colCheat|ulAlpha); iLine++; }
+    if( cht_bAmmo)       { _pDP->PutTextR( "ammo",       _pixDPWidth-1, _pixDPHeight-pixFontHeight*iLine, colCheat|ulAlpha); iLine++; }
   }
 
   // in the end, remember the current time so it can be used in the next frame

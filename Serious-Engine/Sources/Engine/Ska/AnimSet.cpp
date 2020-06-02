@@ -19,7 +19,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/CTString.h>
 #include <Engine/Ska/StringTable.h>
 #include <Engine/Templates/StaticArray.cpp>
-#include <Engine/templates/DynamicContainer.cpp>
+#include <Engine/Templates/DynamicContainer.cpp>
 #include <Engine/Base/Stream.h>
 #include <Engine/Base/Console.h>
 #include <Engine/Math/Functions.h>
@@ -84,7 +84,7 @@ BOOL RemoveRotFrame(AnimRot &ar1,AnimRot &ar2,AnimRot &ar3,FLOAT fTreshold)
   // calculate slerp factor for ar2'
   FLOAT fSlerpFactor = (FLOAT)(ar2.ar_iFrameNum - ar1.ar_iFrameNum)/(FLOAT)(ar3.ar_iFrameNum - ar1.ar_iFrameNum);
   // calculate ar2'
-  FLOATquat3D q2i = Slerp<FLOAT>(fSlerpFactor,ar1.ar_qRot,ar3.ar_qRot);
+  FLOATquat3D q2i = Slerp(fSlerpFactor,ar1.ar_qRot,ar3.ar_qRot);
   // read precalculated values
   ang1 = aangAngles[ar1.ar_iFrameNum];
   ang2 = aangAngles[ar2.ar_iFrameNum];

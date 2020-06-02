@@ -65,6 +65,7 @@
             android:layout_height="70dp"
             android:layout_marginTop="24dp"
             android:layout_marginEnd="8dp"
+            app:btnBitmap="@drawable/ic_use"
             app:layout_constraintEnd_toStartOf="@id/input_crunch"
             app:layout_constraintTop_toTopOf="@id/input_crunch" />
 
@@ -83,6 +84,7 @@
             android:layout_width="70dp"
             android:layout_height="70dp"
             android:layout_marginTop="8dp"
+            app:btnBitmap="@drawable/ic_jump"
             app:layout_constraintEnd_toEndOf="@id/input_crunch"
             app:layout_constraintTop_toBottomOf="@id/input_crunch" />
 
@@ -92,6 +94,7 @@
             android:layout_height="70dp"
             android:layout_marginEnd="12dp"
             android:layout_marginBottom="180dp"
+            app:btnBitmap="@drawable/ic_crunch"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 

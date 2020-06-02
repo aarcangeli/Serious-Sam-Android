@@ -49,7 +49,7 @@ static struct ErrorCode ErrorCodes[] = {
   ERRORCODE(MSG_GAMESTREAMBLOCKS, "MSG_GAMESTREAMBLOCKS"), 
   ERRORCODE(MSG_REQUESTGAMESTREAMRESEND, "MSG_REQUESTGAMESTREAMRESEND"),
 };
-extern struct ErrorTable MessageTypes = ERRORTABLE(ErrorCodes);
+struct ErrorTable MessageTypes = ERRORTABLE(ErrorCodes);
 
 /////////////////////////////////////////////////////////////////////
 // CNetworkMessage

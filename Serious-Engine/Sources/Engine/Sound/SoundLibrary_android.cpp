@@ -45,9 +45,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 CSoundLibrary *_pSound = NULL;
 
 // console variables
-extern FLOAT snd_tmMixAhead = 0.2f; // mix-ahead in seconds
-extern FLOAT snd_fSoundVolume = 1.0f;   // master volume for sound playing [0..1]
-extern FLOAT snd_fMusicVolume = 1.0f;   // master volume for music playing [0..1]
+FLOAT snd_tmMixAhead = 0.2f; // mix-ahead in seconds
+FLOAT snd_fSoundVolume = 1.0f;   // master volume for sound playing [0..1]
+FLOAT snd_fMusicVolume = 1.0f;   // master volume for music playing [0..1]
 // NOTES: 
 // - these 3d sound parameters have been set carefully, take extreme if changing !
 // - ears distance of 20cm causes phase shift of up to 0.6ms which is very noticable
@@ -55,17 +55,17 @@ extern FLOAT snd_fMusicVolume = 1.0f;   // master volume for music playing [0..1
 // - pan strength needs not to be very strong, since lrfilter has panning-like influence also
 // - if down filter is too large, it makes too much influence even on small elevation changes
 //   and messes the situation completely
-extern FLOAT snd_fDelaySoundSpeed = 1E10;   // sound speed used for delay [m/s]
-extern FLOAT snd_fDopplerSoundSpeed = 330.0f; // sound speed used for doppler [m/s]
-extern FLOAT snd_fEarsDistance = 0.2f;   // distance between listener's ears
-extern FLOAT snd_fPanStrength = 0.1f;   // panning modifier (0=none, 1= full)
-extern FLOAT snd_fLRFilter = 3.0f;   // filter for left-right
-extern FLOAT snd_fBFilter = 5.0f;   // filter for back
-extern FLOAT snd_fUFilter = 1.0f;   // filter for up
-extern FLOAT snd_fDFilter = 3.0f;   // filter for down
+FLOAT snd_fDelaySoundSpeed = 1E10;   // sound speed used for delay [m/s]
+FLOAT snd_fDopplerSoundSpeed = 330.0f; // sound speed used for doppler [m/s]
+FLOAT snd_fEarsDistance = 0.2f;   // distance between listener's ears
+FLOAT snd_fPanStrength = 0.1f;   // panning modifier (0=none, 1= full)
+FLOAT snd_fLRFilter = 3.0f;   // filter for left-right
+FLOAT snd_fBFilter = 5.0f;   // filter for back
+FLOAT snd_fUFilter = 1.0f;   // filter for up
+FLOAT snd_fDFilter = 3.0f;   // filter for down
 
-ENGINE_API extern INDEX snd_iFormat = 3;
-extern INDEX snd_bMono = FALSE;
+ENGINE_API INDEX snd_iFormat = 3;
+INDEX snd_bMono = FALSE;
 static INDEX snd_iDevice = -1;
 static INDEX snd_iInterface = 2;   // 0=WaveOut, 1=DirectSound, 2=EAX
 static INDEX snd_iMaxOpenRetries = 3;
@@ -528,4 +528,5 @@ ULONG CSoundLibrary::getFramesPerSec() {
       ASSERTALWAYS("Unknown Sound format");
       break;
   }
+  return 0;
 };

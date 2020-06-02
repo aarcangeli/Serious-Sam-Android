@@ -15,7 +15,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 607
 %{
-#include "StdH.h"
+#include "EntitiesMP/StdH/StdH.h"
 #include "EntitiesMP/BackgroundViewer.h"
 #include "EntitiesMP/WorldSettingsController.h"
 #include "EntitiesMP/Light.h"

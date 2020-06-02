@@ -127,7 +127,7 @@ public:
   PIX sed_pixTopJ;            // top and bottom J coordinates of the edge
   PIX sed_pixBottomJ;
 
-  ALIGNED_NEW_AND_DELETE(32);
+  ALIGNED_NEW_AND_DELETE(32)
   /* Clear the object. */
   inline void Clear(void) {};
 };
@@ -143,7 +143,7 @@ public:
   CScreenEdge *ace_psedEdge;  // the edge
   ULONG ace_ulDummy;  // alignment to 16 bytes
 
-  ALIGNED_NEW_AND_DELETE(32);
+  ALIGNED_NEW_AND_DELETE(32)
 
   inline CActiveEdge(void) {};
   inline CActiveEdge(CScreenEdge *psed)
@@ -163,7 +163,7 @@ public:
   CListNode ade_lnInAdd;        // node in add list
   CScreenEdge *ade_psedEdge;  // the edge
 
-  ALIGNED_NEW_AND_DELETE(32);
+  ALIGNED_NEW_AND_DELETE(32)
 
   inline CAddEdge(void) {};
   inline CAddEdge(CScreenEdge *psed)

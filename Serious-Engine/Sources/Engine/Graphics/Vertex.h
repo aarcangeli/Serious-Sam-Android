@@ -18,6 +18,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #ifdef PRAGMA_ONCE
   #pragma once
 #endif
+#include "Color.h"
 
 
 struct GFXVertex3
@@ -35,9 +36,9 @@ struct GFXNormal3
 struct GFXTexCoord
 {
   union {
-    struct { FLOAT u,v; };
-    struct { FLOAT s,t; };
-  };
+    struct { FLOAT u,v; } uv;
+    struct { FLOAT s,t; } st;
+  } gfxtc;
 };
 
 
@@ -50,59 +51,43 @@ struct GFXTexCoord4
 struct GFXColor
 {
   union {
-    struct { UBYTE r,g,b,a; };
-    struct { ULONG abgr;    };  // reverse order - use ByteSwap()!
-  };
+    struct { UBYTE r,g,b,a; } ub;
+    struct { ULONG abgr;    } ul;  // reverse order - use ByteSwap()!
+  } gfxcol;
 
   GFXColor() {};
 
-  GFXColor( COLOR col) {
-    // little endian to big endian
-    ULONG temp = 0;
-    temp |= (col & 0xff) << 24;
-    temp |= (col >> 8 & 0xff) << 16;
-    temp |= (col >> 16 & 0xff) << 8;
-    temp |= (col >> 24 & 0xff);
-    abgr = temp;
-  }
-
-  __forceinline void Set( COLOR col) {
-    ULONG temp = 0;
-    temp |= (col & 0xff) << 24;
-    temp |= (col >> 8 & 0xff) << 16;
-    temp |= (col >> 16 & 0xff) << 8;
-    temp |= (col >> 24 & 0xff);
-    abgr = temp;
-  }
+  GFXColor( COLOR col) { gfxcol.ul.abgr = ByteSwap(col); }
+  __forceinline void Set( COLOR col) { gfxcol.ul.abgr = ByteSwap(col); }
 
   void MultiplyRGBA( const GFXColor &col1, const GFXColor &col2) {
-    r = (ULONG(col1.r)*col2.r)>>8;
-    g = (ULONG(col1.g)*col2.g)>>8;
-    b = (ULONG(col1.b)*col2.b)>>8;
-    a = (ULONG(col1.a)*col2.a)>>8;
+    gfxcol.ub.r = (ULONG(col1.gfxcol.ub.r)*col2.gfxcol.ub.r)>>8;
+    gfxcol.ub.g = (ULONG(col1.gfxcol.ub.g)*col2.gfxcol.ub.g)>>8;
+    gfxcol.ub.b = (ULONG(col1.gfxcol.ub.b)*col2.gfxcol.ub.b)>>8;
+    gfxcol.ub.a = (ULONG(col1.gfxcol.ub.a)*col2.gfxcol.ub.a)>>8;
   }
 
   void MultiplyRGB( const GFXColor &col1, const GFXColor &col2) {
-    r = (ULONG(col1.r)*col2.r)>>8;
-    g = (ULONG(col1.g)*col2.g)>>8;
-    b = (ULONG(col1.b)*col2.b)>>8;
+    gfxcol.ub.r = (ULONG(col1.gfxcol.ub.r)*col2.gfxcol.ub.r)>>8;
+    gfxcol.ub.g = (ULONG(col1.gfxcol.ub.g)*col2.gfxcol.ub.g)>>8;
+    gfxcol.ub.b = (ULONG(col1.gfxcol.ub.b)*col2.gfxcol.ub.b)>>8;
   }
 
   void MultiplyRGBCopyA1( const GFXColor &col1, const GFXColor &col2) {
-    r = (ULONG(col1.r)*col2.r)>>8;
-    g = (ULONG(col1.g)*col2.g)>>8;
-    b = (ULONG(col1.b)*col2.b)>>8;
-    a = col1.a;
+    gfxcol.ub.r = (ULONG(col1.gfxcol.ub.r)*col2.gfxcol.ub.r)>>8;
+    gfxcol.ub.g = (ULONG(col1.gfxcol.ub.g)*col2.gfxcol.ub.g)>>8;
+    gfxcol.ub.b = (ULONG(col1.gfxcol.ub.b)*col2.gfxcol.ub.b)>>8;
+    gfxcol.ub.a = col1.gfxcol.ub.a;
   }
 
   void AttenuateRGB( ULONG ulA) {
-    r = (ULONG(r)*ulA)>>8;
-    g = (ULONG(g)*ulA)>>8;
-    b = (ULONG(b)*ulA)>>8;
+    gfxcol.ub.r = (ULONG(gfxcol.ub.r)*ulA)>>8;
+    gfxcol.ub.g = (ULONG(gfxcol.ub.g)*ulA)>>8;
+    gfxcol.ub.b = (ULONG(gfxcol.ub.b)*ulA)>>8;
   }
 
   void AttenuateA( ULONG ulA) {
-    a = (ULONG(a)*ulA)>>8;
+    gfxcol.ub.a = (ULONG(gfxcol.ub.a)*ulA)>>8;
   }
 };
 
@@ -112,12 +97,12 @@ struct GFXVertex4
 {
   GFXVertex4()
   {
+  struct GFXColor col;
   }
   FLOAT x,y,z;
-  union {
-    struct { struct GFXColor col; };
-    struct { SLONG shade; };
-  };
+  void Clear(void) {};
+  SLONG shade;
+
 };
 
 

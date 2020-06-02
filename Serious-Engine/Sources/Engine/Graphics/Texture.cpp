@@ -27,7 +27,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <Engine/Templates/DynamicArray.h>
 #include <Engine/Templates/DynamicArray.cpp>
-#include <Engine/Templates/Stock_CtextureData.h>
+#include <Engine/Templates/Stock_CTextureData.h>
 #include <Engine/Templates/StaticArray.cpp>
 
 #include <Engine/Base/Statistics_Internal.h>

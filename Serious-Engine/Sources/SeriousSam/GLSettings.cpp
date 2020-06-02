@@ -32,8 +32,8 @@ public:
 
 // last valid settings info
 static CTString _strLastRenderer;
-extern CTString _strPreferencesDescription = "";
-extern INDEX    _iLastPreferences = 1;
+CTString _strPreferencesDescription = "";
+INDEX    _iLastPreferences = 1;
 
 
 // check if this entry matches given info

@@ -14,7 +14,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
 
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "LCDDrawing.h"
 #include <locale.h>
 #include <AndroidAdapters/binding-callbacks.h>
@@ -156,8 +156,8 @@ static void LoadingHook_t(CProgressHookInfo *pphi)
   }
 
   // get sizes
-  PIX pixSizeI = dpHook.GetWidth();
-  PIX pixSizeJ = dpHook.GetHeight();
+  PIX pixSizeI = pdp->GetWidth();
+  PIX pixSizeJ = pdp->GetHeight();
   CFontData *pfd = _pfdConsoleFont;
   PIX pixCharSizeI = (PIX)((pfd->fd_pixCharWidth  + pfd->fd_pixCharSpacing) * uiScale);
   PIX pixCharSizeJ = (PIX)((pfd->fd_pixCharHeight + pfd->fd_pixLineSpacing) * uiScale);

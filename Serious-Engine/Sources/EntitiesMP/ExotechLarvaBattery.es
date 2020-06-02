@@ -15,7 +15,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 351
 %{
-#include "StdH.h"
+#include "EntitiesMP/StdH/StdH.h"
 #include "ModelsMP/Enemies/ExotechLarva/Charger/WallCharger.h"
 %}
 
@@ -125,7 +125,7 @@ functions:
       RemoveAttachment(WALLCHARGER_ATTACHMENT_LIGHT);
       GetModelObject()->PlayAnim(WALLCHARGER_ANIM_DAMAGE01, AOF_SMOOTHCHANGE|AOF_NORESTART);
       SpawnExplosions();
-    } else if (fNewHealth<=0.33*m_fMaxHealth && fLastHealth>0.33*m_fMaxHealth) {
+    } else if (fNewHealth<=0.33f*m_fMaxHealth && fLastHealth>0.33f*m_fMaxHealth) {
       RemoveAttachment(WALLCHARGER_ATTACHMENT_PLASMA);
       GetModelObject()->PlayAnim(WALLCHARGER_ANIM_DAMAGE02, AOF_SMOOTHCHANGE|AOF_NORESTART);
       SpawnExplosions();

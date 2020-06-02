@@ -51,9 +51,11 @@ typedef UINT_PTR SOCKET;
 typedef wchar_t WCHAR;
 typedef WCHAR *LPWSTR;
 
-#define WINAPI __stdcall
-#define APIENTRY __stdcall
-#define CALLBACK __stdcall
+#define WINAPI
+#define APIENTRY
+#define CALLBACK
+#define __stdcall
+#define __cdecl
 
 typedef LRESULT (CALLBACK *WNDPROC)(HWND, UINT, WPARAM, LPARAM);
 

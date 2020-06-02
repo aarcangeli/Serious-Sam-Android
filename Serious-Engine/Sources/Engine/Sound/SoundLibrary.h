@@ -131,7 +131,7 @@ public:
   CSoundLibrary(void);
   /* Destructor */
   ~CSoundLibrary(void);
-  DECLARE_NOCOPYING(CSoundLibrary);
+  DECLARE_NOCOPYING(CSoundLibrary)
 
   /* Initialization */
   void Init(void);

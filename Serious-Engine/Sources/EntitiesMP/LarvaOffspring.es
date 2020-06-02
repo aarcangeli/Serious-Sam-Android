@@ -15,7 +15,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 353
 %{
-#include "StdH.h"
+#include "EntitiesMP/StdH/StdH.h"
 
 #include "EntitiesMP/EnemyBase.h"
 #include "ModelsMP/Enemies/ExotechLarva/Projectile/TailProjectile.h"

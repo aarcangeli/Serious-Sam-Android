@@ -15,7 +15,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 345
 %{
-#include "StdH.h"
+#include "EntitiesMP/StdH/StdH.h"
 %}
 
 uses "EntitiesMP/ModelHolder2";
@@ -278,7 +278,7 @@ procedures:
     // possible random wait
     if (m_fRndBeginWait>0.0f)
     {
-      FLOAT fRndWait = FRnd()*m_fRndBeginWait+0.05;
+      FLOAT fRndWait = FRnd()*m_fRndBeginWait+0.05f;
       autowait(fRndWait);
     }
 

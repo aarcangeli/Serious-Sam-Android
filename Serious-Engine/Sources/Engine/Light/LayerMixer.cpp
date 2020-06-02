@@ -54,7 +54,6 @@ extern INDEX shd_iDithering;
 extern const UBYTE *pubClipByte;
 extern UBYTE aubSqrt[  SQRTTABLESIZE];
 extern UWORD auw1oSqrt[SQRTTABLESIZE];
-extern UWORD auw1oSqrt[SQRTTABLESIZE];
 // static FLOAT3D _v00;
 
 #if WITH_BOUND_CHECK
@@ -354,6 +353,7 @@ skipPixel:
 #else
 
   // for each pixel in the shadow map
+  UBYTE* pubLayer = (UBYTE*)_pulLayer;
   for( PIX pixV=0; pixV<_iRowCt; pixV++)
   {
     SLONG slL2Point = _slL2Row;
@@ -365,17 +365,17 @@ skipPixel:
         SLONG sl1oL = (slL2Point>>SHIFTX)&(SQRTTABLESIZE-1);  // and is just for degenerate cases
         sl1oL = aubSqrt[sl1oL];
         SLONG slIntensity = _slLightMax;
-        if( sl1oL>_slHotSpot) slIntensity = ((255-sl1oL)*_slLightStep)>>8;
+        if( sl1oL>_slHotSpot) slIntensity = ((255-sl1oL)*_slLightStep);
         // add the intensity to the pixel
-        AddToCluster( (UBYTE*)_pulLayer, slIntensity/255.0f);
+        AddToCluster( pubLayer, (slIntensity>>8)/255.0f);
       }
       // advance to next pixel
-      _pulLayer++;
+      pubLayer+=4;
       slL2Point +=  slDL2oDU;
       slDL2oDU  += _slDDL2oDU;
     }
     // advance to next row
-    _pulLayer    += _slModulo/BYTES_PER_TEXEL;
+    pubLayer     += _slModulo;
     _slL2Row     += _slDL2oDV;
     _slDL2oDV    += _slDDL2oDV;
     _slDL2oDURow += _slDDL2oDUoDV;
@@ -479,6 +479,7 @@ skipPixel:
 #else
 
   // for each pixel in the shadow map
+  UBYTE* pubLayer = (UBYTE*)_pulLayer;
   for( PIX pixV=0; pixV<_iRowCt; pixV++)
   {
     SLONG slL2Point = _slL2Row;
@@ -490,12 +491,12 @@ skipPixel:
         SLONG sl1oL = (slL2Point>>SHIFTX)&(SQRTTABLESIZE-1);  // and is just for degenerate cases
         sl1oL = aubSqrt[sl1oL];
         SLONG slIntensity = _slLightMax;
-        if( sl1oL>_slHotSpot) slIntensity = ((255-sl1oL)*_slLightStep)>>8;
+        if( sl1oL>_slHotSpot) slIntensity = ((255-sl1oL)*_slLightStep);
         // add the intensity to the pixel
-        AddToCluster( (UBYTE*)_pulLayer, slIntensity/255.0f);
+        AddToCluster( pubLayer, (slIntensity>>8)/255.0f);
       }
       // advance to next pixel
-      _pulLayer++;
+      pubLayer+=4;
       slL2Point +=  slDL2oDU;
       slDL2oDU  += _slDDL2oDU;
       ubMask<<=1;
@@ -505,7 +506,7 @@ skipPixel:
       }
     }
     // advance to next row
-    _pulLayer    += _slModulo/BYTES_PER_TEXEL;
+    pubLayer     += _slModulo;
     _slL2Row     += _slDL2oDV;
     _slDL2oDV    += _slDDL2oDV;
     _slDL2oDURow += _slDDL2oDUoDV;
@@ -606,6 +607,7 @@ skipPixel:
 #else
 
   // for each pixel in the shadow map
+  UBYTE* pubLayer = (UBYTE*)_pulLayer;
   for( PIX pixV=0; pixV<_iRowCt; pixV++)
   {
     SLONG slL2Point = _slL2Row;
@@ -617,17 +619,18 @@ skipPixel:
         SLONG sl1oL = (slL2Point>>SHIFTX)&(SQRTTABLESIZE-1);  // and is just for degenerate cases
         sl1oL = auw1oSqrt[sl1oL];
         SLONG slIntensity = _slLightMax;
-        if( sl1oL<slMax1oL) slIntensity = ((sl1oL-256)*_slLightStep)>>8;
+		if( sl1oL<256) slIntensity = 0;
+        else if( sl1oL<slMax1oL) slIntensity = ((sl1oL-256)*_slLightStep);
         // add the intensity to the pixel
-        AddToCluster( (UBYTE*)_pulLayer, slIntensity/255.0f);
+        AddToCluster( pubLayer, (slIntensity>>8)/255.0f);
       }
       // advance to next pixel
-      _pulLayer++;
+      pubLayer+=4;
       slL2Point +=  slDL2oDU;
       slDL2oDU  += _slDDL2oDU;
     }
     // advance to next row
-    _pulLayer    += _slModulo/BYTES_PER_TEXEL;
+    pubLayer     += _slModulo;
     _slL2Row     += _slDL2oDV;
     _slDL2oDV    += _slDDL2oDV;
     _slDL2oDURow += _slDDL2oDUoDV;
@@ -735,6 +738,7 @@ skipPixel:
 
 
   // for each pixel in the shadow map
+  UBYTE* pubLayer = (UBYTE*)_pulLayer;
   for( PIX pixV=0; pixV<_iRowCt; pixV++)
   {
     SLONG slL2Point = _slL2Row;
@@ -746,12 +750,13 @@ skipPixel:
         SLONG sl1oL = (slL2Point>>SHIFTX)&(SQRTTABLESIZE-1);  // and is just for degenerate cases
         sl1oL = auw1oSqrt[sl1oL];
         SLONG slIntensity = _slLightMax;
-        if( sl1oL<slMax1oL) slIntensity = ((sl1oL-256)*_slLightStep)>>8;
+		if( sl1oL<256) slIntensity = 0;
+        else if( sl1oL<slMax1oL) slIntensity = ((sl1oL-256)*_slLightStep);
         // add the intensity to the pixel
-        AddToCluster( (UBYTE*)_pulLayer, slIntensity/255.0f);
+        AddToCluster( pubLayer, (slIntensity>>8)/255.0f);
       } 
       // advance to next pixel
-      _pulLayer++;
+      pubLayer+=4;
       slL2Point +=  slDL2oDU;
       slDL2oDU  += _slDDL2oDU;
       ubMask<<=1;
@@ -761,7 +766,7 @@ skipPixel:
       }
     }
     // advance to next row
-    _pulLayer    += _slModulo/BYTES_PER_TEXEL;
+    pubLayer     += _slModulo;
     _slL2Row     += _slDL2oDV;
     _slDL2oDV    += _slDDL2oDV;
     _slDL2oDURow += _slDDL2oDUoDV;
@@ -1190,13 +1195,14 @@ rowNext:
 #else
 
   // for each pixel in the shadow map
+  UBYTE* pubLayer = (UBYTE*)_pulLayer;
   for( PIX pixV=0; pixV<_iRowCt; pixV++) {
     for( PIX pixU=0; pixU<_iPixCt; pixU++) {
       // add the intensity to the pixel
-      AddToCluster( (UBYTE*)_pulLayer);
-      _pulLayer++; // go to the next pixel
+      AddToCluster( pubLayer);
+      pubLayer+=4; // go to the next pixel
     } // go to the next row
-    _pulLayer += _slModulo/BYTES_PER_TEXEL;
+    pubLayer += _slModulo;
   }
 
 #endif
@@ -1244,21 +1250,22 @@ skipLight:
 #else
 
   // for each pixel in the shadow map
+  UBYTE* pubLayer = (UBYTE*)_pulLayer;
   for( PIX pixV=0; pixV<_iRowCt; pixV++) {
     for( PIX pixU=0; pixU<_iPixCt; pixU++) {
       // if the point is not masked
       if( *pubMask&ubMask) {
         // add the intensity to the pixel
-        AddToCluster( (UBYTE*)_pulLayer);
+        AddToCluster( pubLayer);
       } // go to the next pixel
-      _pulLayer++;
+      pubLayer+=4;
       ubMask<<=1;
       if( ubMask==0) {
         pubMask ++;
         ubMask = 1;
       }
     } // go to the next row
-    _pulLayer += _slModulo/BYTES_PER_TEXEL;
+    pubLayer += _slModulo;
   }
 
 #endif
@@ -1366,8 +1373,9 @@ void CLayerMixer::MixOneMipmap(CBrushShadowMap *pbsm, INDEX iMipmap)
     if( lm_pbpoPolygon->bpo_ulFlags&BPOF_HASDIRECTIONALAMBIENT) {
       {FOREACHINLIST( CBrushShadowLayer, bsl_lnInShadowMap, lm_pbsmShadowMap->bsm_lhLayers, itbsl) {
         CBrushShadowLayer &bsl = *itbsl;
+        ASSERT( bsl.bsl_plsLightSource!=NULL);
+        if( bsl.bsl_plsLightSource==NULL) continue; // safety check
         CLightSource &ls = *bsl.bsl_plsLightSource;
-        ASSERT( &ls!=NULL); if( &ls==NULL) continue; // safety check
         if( !(ls.ls_ulFlags&LSF_DIRECTIONAL)) continue;  // skip non-directional layers
         COLOR col = AdjustColor( ls.GetLightAmbient(), _slShdHueShift, _slShdSaturation);
         colAmbient = AddColors( colAmbient, col);
@@ -1410,8 +1418,9 @@ void CLayerMixer::MixOneMipmap(CBrushShadowMap *pbsm, INDEX iMipmap)
   {FORDELETELIST( CBrushShadowLayer, bsl_lnInShadowMap, lm_pbsmShadowMap->bsm_lhLayers, itbsl)
   {
     CBrushShadowLayer &bsl = *itbsl;
+    ASSERT( bsl.bsl_plsLightSource!=NULL);
+    if( bsl.bsl_plsLightSource==NULL) continue; // safety check
     CLightSource &ls = *bsl.bsl_plsLightSource;
-    ASSERT( &ls!=NULL); if( &ls==NULL) continue; // safety check
 
     // skip if should not be applied
     if( (bDynamicOnly && !(ls.ls_ulFlags&LSF_NONPERSISTENT)) || ls.ls_ulFlags&LSF_DYNAMIC) continue;

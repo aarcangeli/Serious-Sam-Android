@@ -13,9 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
-
-#include <vector>
+#include "Engine/StdH.h"
 
 #include <Engine/Base/Statistics_Internal.h>
 #include <Engine/Graphics/GfxLibrary.h>
@@ -23,8 +21,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Graphics/Color.h>
 #include <Engine/Graphics/Texture.h>
 #include <Engine/Graphics/GfxProfile.h>
-#include <Engine/Base/ErrorReporting.h>
-#include <Engine/Base/LargeColor.h>
+
+#if USE_MMX_INTRINSICS
+#include <mmintrin.h>
+#endif
 
 // asm shortcuts
 #define O offset
@@ -191,127 +191,306 @@ void FlipBitmap( UBYTE *pubSrc, UBYTE *pubDst, PIX pixWidth, PIX pixHeight, INDE
 
 
 // makes one level lower mipmap (bilinear or nearest-neighbour with border preservance)
-static __int64 mmRounder = 0x0002000200020002;
+#if (defined __GNUC__)
+__int64 mmRounder = 0x0002000200020002ll;
+#else
+__int64 mmRounder = 0x0002000200020002;
+#endif
+
 static void MakeOneMipmap( ULONG *pulSrcMipmap, ULONG *pulDstMipmap, PIX pixWidth, PIX pixHeight, BOOL bBilinear)
 {
   // some safety checks
-  ASSERT(pixWidth > 1 && pixHeight > 1);
-  ASSERT(pixWidth == 1L << FastLog2(pixWidth));
-  ASSERT(pixHeight == 1L << FastLog2(pixHeight));
+  ASSERT( pixWidth>1 && pixHeight>1);
+  ASSERT( pixWidth  == 1L<<FastLog2(pixWidth));
+  ASSERT( pixHeight == 1L<<FastLog2(pixHeight));
+  pixWidth >>=1;
+  pixHeight>>=1;
 
-  PIX pixDestWidth = pixWidth >> 1;
-  PIX pixDestHeight = pixHeight >> 1;
+  if( bBilinear) // type of filtering?
+  { // BILINEAR
 
-  for (PIX y = 0; y < pixDestHeight; y++) {
-    for (PIX x = 0; x < pixDestWidth; x++) {
-      PIX ys = y * 2;
-      PIX xs = x * 2;
-      ULONG dest;
-      if (bBilinear) {
-        auto sum = LC(pulSrcMipmap[0]) +
-                   LC(pulSrcMipmap[1]) +
-                   LC(pulSrcMipmap[pixWidth]) +
-                   LC(pulSrcMipmap[pixWidth + 1]);
-        dest = (sum / 4).pack();
-      } else {
-        dest = pulSrcMipmap[0];
-      }
-      *pulDstMipmap = dest;
-      // advance dest
-      pulDstMipmap++;
-      // advance src 2 pixels
-      pulSrcMipmap += 2;
+   #if (defined __MSVC_INLINE__)
+    __asm {
+      pxor    mm0,mm0
+      mov     ebx,D [pixWidth]
+      mov     esi,D [pulSrcMipmap]
+      mov     edi,D [pulDstMipmap]
+      mov     edx,D [pixHeight]
+rowLoop:
+      mov     ecx,D [pixWidth]
+pixLoopN:           
+      movd    mm1,D [esi+ 0]        // up-left
+      movd    mm2,D [esi+ 4]        // up-right
+      movd    mm3,D [esi+ ebx*8 +0] // down-left
+      movd    mm4,D [esi+ ebx*8 +4] // down-right
+      punpcklbw mm1,mm0
+      punpcklbw mm2,mm0
+      punpcklbw mm3,mm0
+      punpcklbw mm4,mm0
+      paddw   mm1,mm2
+      paddw   mm1,mm3
+      paddw   mm1,mm4
+      paddw   mm1,Q [mmRounder]
+      psrlw   mm1,2
+      packuswb mm1,mm0
+      movd    D [edi],mm1
+      // advance to next pixel
+      add     esi,4*2
+      add     edi,4
+      dec     ecx
+      jnz     pixLoopN
+      // advance to next row
+      lea     esi,[esi+ ebx*8] // skip one row in source mip-map
+      dec     edx
+      jnz     rowLoop
+      emms
     }
-    // advance src one line
-    pulSrcMipmap += pixWidth;
-  }
 
-//  if( bBilinear) // type of filtering?
-//  { // BILINEAR
-//    __asm {
-//      pxor    mm0,mm0
-//      mov     ebx,D [pixWidth]
-//      mov     esi,D [pulSrcMipmap]
-//      mov     edi,D [pulDstMipmap]
-//      mov     edx,D [pixHeight]
-//rowLoop:
-//      mov     ecx,D [pixWidth]
-//pixLoopN:
-//      movd    mm1,D [esi+ 0]        // up-left
-//      movd    mm2,D [esi+ 4]        // up-right
-//      movd    mm3,D [esi+ ebx*8 +0] // down-left
-//      movd    mm4,D [esi+ ebx*8 +4] // down-right
-//      punpcklbw mm1,mm0
-//      punpcklbw mm2,mm0
-//      punpcklbw mm3,mm0
-//      punpcklbw mm4,mm0
-//      paddw   mm1,mm2
-//      paddw   mm1,mm3
-//      paddw   mm1,mm4
-//      paddw   mm1,Q [mmRounder]
-//      psrlw   mm1,2
-//      packuswb mm1,mm0
-//      movd    D [edi],mm1
-//      // advance to next pixel
-//      add     esi,4*2
-//      add     edi,4
-//      dec     ecx
-//      jnz     pixLoopN
-//      // advance to next row
-//      lea     esi,[esi+ ebx*8] // skip one row in source mip-map
-//      dec     edx
-//      jnz     rowLoop
-//      emms
-//    }
-//  }
-//  else
-//  { // NEAREST-NEIGHBOUR but with border preserving
-//    ULONG ulRowModulo = pixWidth*2 *BYTES_PER_TEXEL;
-//    __asm {
-//      xor     ebx,ebx
-//      mov     esi,D [pulSrcMipmap]
-//      mov     edi,D [pulDstMipmap]
-//      // setup upper half
-//      mov     edx,D [pixHeight]
-//      shr     edx,1
-//halfLoop:
-//      mov     ecx,D [pixWidth]
-//      shr     ecx,1
-//leftLoop:
-//      mov     eax,D [esi+ ebx*8+ 0] // upper-left (or lower-left)
-//      mov     D [edi],eax
-//      // advance to next pixel
-//      add     esi,4*2
-//      add     edi,4
-//      sub     ecx,1
-//      jg      leftLoop
-//      // do right row half
-//      mov     ecx,D [pixWidth]
-//      shr     ecx,1
-//      jz      halfEnd
-//rightLoop:
-//      mov     eax,D [esi+ ebx*8+ 4] // upper-right (or lower-right)
-//      mov     D [edi],eax
-//      // advance to next pixel
-//      add     esi,4*2
-//      add     edi,4
-//      sub     ecx,1
-//      jg      rightLoop
-//halfEnd:
-//      // advance to next row
-//      add     esi,D [ulRowModulo]  // skip one row in source mip-map
-//      sub     edx,1
-//      jg      halfLoop
-//      // do eventual lower half loop (if not yet done)
-//      mov     edx,D [pixHeight]
-//      shr     edx,1
-//      jz      fullEnd
-//      cmp     ebx,D [pixWidth]
-//      mov     ebx,D [pixWidth]
-//      jne     halfLoop
-//fullEnd:
-//    }
-//  }
+   #elif (defined __GNU_INLINE_X86_32__)
+    __asm__ __volatile__ (
+      "pxor    %%mm0, %%mm0                 \n\t"
+      "movl    %[pulSrcMipmap], %%esi       \n\t"
+      "movl    %[pulDstMipmap], %%edi       \n\t"
+      "movl    %[pixHeight], %%edx          \n\t"
+
+      "0:                                   \n\t"  // rowLoop
+      "movl    %[pixWidth], %%ecx           \n\t"
+
+      "1:                                   \n\t"  // pixLoopN
+      "movd      0(%%esi), %%mm1            \n\t"  // up-left
+      "movd      4(%%esi), %%mm2            \n\t"  // up-right
+      "movd      0(%%esi, %[pixWidth], 8), %%mm3 \n\t" // down-left
+      "movd      4(%%esi, %[pixWidth], 8), %%mm4 \n\t" // down-right
+      "punpcklbw %%mm0, %%mm1               \n\t"
+      "punpcklbw %%mm0, %%mm2               \n\t"
+      "punpcklbw %%mm0, %%mm3               \n\t"
+      "punpcklbw %%mm0, %%mm4               \n\t"
+      "paddw     %%mm2, %%mm1               \n\t"
+      "paddw     %%mm3, %%mm1               \n\t"
+      "paddw     %%mm4, %%mm1               \n\t"
+      "paddw     (" ASMSYM(mmRounder) "), %%mm1 \n\t"
+      "psrlw     $2, %%mm1                  \n\t"
+      "packuswb  %%mm0, %%mm1               \n\t"
+      "movd      %%mm1, (%%edi)             \n\t"
+
+      // advance to next pixel
+      "addl     $8, %%esi                   \n\t"
+      "addl     $4, %%edi                   \n\t"
+      "decl     %%ecx                       \n\t"
+      "jnz      1b                          \n\t"  // pixLoopN
+
+      // advance to next row
+      // skip one row in source mip-map
+      "leal     0(%%esi, %[pixWidth], 8), %%esi \n\t"
+      "decl     %%edx                       \n\t"
+      "jnz      0b                          \n\t"  // rowLoop
+      "emms                                 \n\t"
+          : // no outputs.
+          : [pixWidth] "r" (pixWidth),
+            [pulSrcMipmap] "g" (pulSrcMipmap),
+            [pulDstMipmap] "g" (pulDstMipmap),
+            [pixHeight] "g" (pixHeight)
+          : FPU_REGS, MMX_REGS, "ecx", "edx", "esi", "edi",
+            "cc", "memory"
+    );
+
+   #else
+	UBYTE *src = (UBYTE *) pulSrcMipmap;
+	UBYTE *dest = (UBYTE *) pulDstMipmap;
+	for (int i = 0 ; i < pixHeight; i++)
+	{
+		for (int j = 0; j < pixWidth; j++)
+		{
+			// Grab pixels from image
+			UWORD upleft[4];
+			UWORD upright[4];
+			UWORD downleft[4];
+			UWORD downright[4];
+			upleft[0] = *(src + 0);
+			upleft[1] = *(src + 1);
+			upleft[2] = *(src + 2);
+			upleft[3] = *(src + 3);
+			upright[0] = *(src + 4);
+			upright[1] = *(src + 5);
+			upright[2] = *(src + 6);
+			upright[3] = *(src + 7);
+
+			downleft[0] = *(src + pixWidth*8 + 0);
+			downleft[1] = *(src + pixWidth*8 + 1);
+			downleft[2] = *(src + pixWidth*8 + 2);
+			downleft[3] = *(src + pixWidth*8 + 3);
+			downright[0] = *(src + pixWidth*8 + 4);
+			downright[1] = *(src + pixWidth*8 + 5);
+			downright[2] = *(src + pixWidth*8 + 6);
+			downright[3] = *(src + pixWidth*8 + 7);
+
+			UWORD answer[4];
+			answer[0] = upleft[0] + upright[0] + downleft[0] + downright[0] + 2;
+			answer[1] = upleft[1] + upright[1] + downleft[1] + downright[1] + 2;
+			answer[2] = upleft[2] + upright[2] + downleft[2] + downright[2] + 2;
+			answer[3] = upleft[3] + upright[3] + downleft[3] + downright[3] + 2;
+			answer[0] /= 4;
+			answer[1] /= 4;
+			answer[2] /= 4;
+			answer[3] /= 4;
+
+			*(dest + 0) = answer[0];
+			*(dest + 1) = answer[1];
+			*(dest + 2) = answer[2];
+			*(dest + 3) = answer[3];
+
+			src += 8;
+			dest += 4;
+		}
+		src += 8*pixWidth;
+    }
+
+   #endif
+    }
+    else
+    { // NEAREST-NEIGHBOUR but with border preserving
+       ULONG ulRowModulo = pixWidth*2 *BYTES_PER_TEXEL;
+
+   #if (defined __MSVC_INLINE__)
+    __asm {
+      xor     ebx,ebx
+      mov     esi,D [pulSrcMipmap]
+      mov     edi,D [pulDstMipmap]
+      // setup upper half
+      mov     edx,D [pixHeight]
+      shr     edx,1
+halfLoop:
+      mov     ecx,D [pixWidth]
+      shr     ecx,1
+leftLoop:
+      mov     eax,D [esi+ ebx*8+ 0] // upper-left (or lower-left)
+      mov     D [edi],eax
+      // advance to next pixel
+      add     esi,4*2
+      add     edi,4
+      sub     ecx,1
+      jg      leftLoop
+      // do right row half
+      mov     ecx,D [pixWidth]
+      shr     ecx,1
+      jz      halfEnd
+rightLoop:
+      mov     eax,D [esi+ ebx*8+ 4] // upper-right (or lower-right)
+      mov     D [edi],eax
+      // advance to next pixel
+      add     esi,4*2
+      add     edi,4
+      sub     ecx,1
+      jg      rightLoop
+halfEnd:
+      // advance to next row
+      add     esi,D [ulRowModulo]  // skip one row in source mip-map
+      sub     edx,1
+      jg      halfLoop
+      // do eventual lower half loop (if not yet done)
+      mov     edx,D [pixHeight]
+      shr     edx,1
+      jz      fullEnd
+      cmp     ebx,D [pixWidth]
+      mov     ebx,D [pixWidth]
+      jne     halfLoop
+fullEnd:
+    }
+
+   #elif (defined __GNU_INLINE_X86_32__)
+    ULONG tmp, tmp2;
+    __asm__ __volatile__ (
+      "xorl     %[xbx], %[xbx]             \n\t"
+      "movl     %[pulSrcMipmap], %%esi     \n\t"
+      "movl     %[pulDstMipmap], %%edi     \n\t"
+      // setup upper half
+      "movl     %[pixHeight], %%eax        \n\t"
+      "movl     %%eax, %[xdx]              \n\t"
+      "shrl     $1, %[xdx]                 \n\t"
+
+      "0:                                  \n\t" // halfLoop
+      "movl     %[pixWidth], %%ecx         \n\t"
+      "shrl     $1, %%ecx                  \n\t"
+
+      "1:                                  \n\t" // leftLoop
+      "movl     0(%%esi, %[xbx], 8), %%eax \n\t" // upper-left (or lower-left)
+      "movl     %%eax, (%%edi)             \n\t"
+
+      // advance to next pixel
+      "addl     $8, %%esi                  \n\t"
+      "addl     $4, %%edi                  \n\t"
+      "subl     $1, %%ecx                  \n\t"
+      "jg       1b                         \n\t" // leftLoop
+
+      // do right row half
+      "movl     %[pixWidth], %%ecx         \n\t"
+      "shrl     $1, %%ecx                  \n\t"
+      "jz       3f                         \n\t" // halfEnd
+
+      "2:                                  \n\t" // rightLoop
+      "movl     4(%%esi, %[xbx], 8), %%eax \n\t" // upper-right (or lower-right)
+      "movl     %%eax, (%%edi)             \n\t"
+
+      // advance to next pixel
+      "addl     $8, %%esi                  \n\t"
+      "addl     $4, %%edi                  \n\t"
+      "subl     $1, %%ecx                  \n\t"
+      "jg       2b                         \n\t" // rightLoop
+
+      "3:                                  \n\t" // halfEnd
+      // advance to next row
+      "addl     %[ulRowModulo], %%esi      \n\t" // skip one row in source mip-map
+      "subl     $1, %[xdx]                 \n\t"
+      "jg       0b                         \n\t" // halfLoop
+
+      // do eventual lower half loop (if not yet done)
+      "movl     %[pixHeight], %%eax        \n\t"
+      "movl     %%eax, %[xdx]              \n\t"
+      "shrl     $1, %[xdx]                 \n\t"
+      "jz       4f                         \n\t" // fullEnd
+      "cmpl     %[pixWidth], %[xbx]        \n\t"
+      "movl     %[pixWidth], %[xbx]        \n\t"
+      "jne      0b                         \n\t" // halfLoop
+
+      "4:                                  \n\t" // fullEnd
+          : [xbx] "=&r" (tmp), [xdx] "=&g" (tmp2)
+          : [pulSrcMipmap] "g" (pulSrcMipmap),
+            [pulDstMipmap] "g" (pulDstMipmap),
+            [pixHeight] "g" (pixHeight), [pixWidth] "g" (pixWidth),
+            [ulRowModulo] "g" (ulRowModulo)
+          : "eax", "ecx", "esi", "edi", "cc", "memory"
+    );
+
+   #else
+     PIX offset = 0;
+     ulRowModulo /= 4;
+
+     for (int q = 0; q < 2; q++)
+     {
+         for (PIX i = pixHeight / 2; i > 0; i--)
+         {
+             for (PIX j = pixWidth / 2; j > 0; j--)
+             {
+                 *pulDstMipmap = *(pulSrcMipmap + offset);
+                 pulSrcMipmap += 2;
+                 pulDstMipmap++;
+             }
+
+             for (PIX j = pixWidth / 2; j > 0; j--)
+             {
+                 *pulDstMipmap = *(pulSrcMipmap + offset + 1);
+                 pulSrcMipmap += 2;
+                 pulDstMipmap++;
+             }
+
+             pulSrcMipmap += ulRowModulo;
+        }
+
+        offset = pixWidth * 2;
+     }
+
+   #endif
+  }
 }
 
 
@@ -369,7 +548,7 @@ void ColorizeMipmaps( INDEX i1stMipmapToColorize, ULONG *pulMipmaps, PIX pixWidt
 {
   // prepare ...
   ULONG *pulSrcMipmap = pulMipmaps + GetMipmapOffset( i1stMipmapToColorize, pixWidth, pixHeight);
-  ULONG *pulDstMipmap;
+  //ULONG *pulDstMipmap;
   PIX pixCurrWidth  = pixWidth >>i1stMipmapToColorize;
   PIX pixCurrHeight = pixHeight>>i1stMipmapToColorize;
   PIX pixMipSize;
@@ -382,7 +561,7 @@ void ColorizeMipmaps( INDEX i1stMipmapToColorize, ULONG *pulMipmaps, PIX pixWidt
   while( pixCurrWidth>1 && pixCurrHeight>1)
   { // prepare current mip-level
     pixMipSize   = pixCurrWidth*pixCurrHeight;
-    pulDstMipmap = pulSrcMipmap + pixMipSize;
+    //pulDstMipmap = pulSrcMipmap + pixMipSize;
     // mask mipmap
     const ULONG ulColorMask = ByteSwap( _acolMips[iTableOfs] | 0x3F3F3FFF);
     for( INDEX iPix=0; iPix<pixMipSize; iPix++) pulSrcMipmap[iPix] &= ulColorMask;
@@ -451,276 +630,529 @@ static ULONG ulDither2[4][4] = {
 };
 
 
-static __int64 mmErrDiffMask=0;
-static __int64 mmW3 = 0x0003000300030003;
-static __int64 mmW5 = 0x0005000500050005;
-static __int64 mmW7 = 0x0007000700070007;
-static __int64 mmShift = 0;
-static __int64 mmMask  = 0;
+__int64 mmErrDiffMask=0;
+#if (defined __GNUC__)
+__int64 mmW3 = 0x0003000300030003ll;
+__int64 mmW5 = 0x0005000500050005ll;
+__int64 mmW7 = 0x0007000700070007ll;
+#else
+__int64 mmW3 = 0x0003000300030003;
+__int64 mmW5 = 0x0005000500050005;
+__int64 mmW7 = 0x0007000700070007;
+#endif
+__int64 mmShifter = 0;
+__int64 mmMask  = 0;
+ULONG *pulDitherTable;
+
+#if !(defined __MSVC_INLINE__) && !(defined __GNU_INLINE_X86_32__)
+extern const UBYTE *pubClipByte;
+// increment a byte without overflowing it
+static inline void IncrementByteWithClip( UBYTE &ub, SLONG slAdd)
+{
+  ub = pubClipByte[(SLONG)ub+slAdd];
+}
+#endif
 
 // performs dithering of a 32-bit bipmap (can be in-place)
 void DitherBitmap( INDEX iDitherType, ULONG *pulSrc, ULONG *pulDst, PIX pixWidth, PIX pixHeight,
                    PIX pixCanvasWidth, PIX pixCanvasHeight)
 {
-  PIX stride = pixCanvasWidth;
-  if (!stride) stride = pixWidth;
-  ASSERT(stride >= pixWidth);
-  _pfGfxProfile.StartTimer(CGfxProfile::PTI_DITHERBITMAP);
+  _pfGfxProfile.StartTimer( CGfxProfile::PTI_DITHERBITMAP);
 
-//  // determine row modulo
-//  SLONG slModulo      = (stride-pixWidth) *BYTES_PER_TEXEL;
-  SLONG slModulo = stride - pixWidth;
-//  SLONG slWidthModulo = pixWidth*BYTES_PER_TEXEL +slModulo;
+  // determine row modulo
+  if( pixCanvasWidth ==0) pixCanvasWidth  = pixWidth;
+  if( pixCanvasHeight==0) pixCanvasHeight = pixHeight;
+  ASSERT( pixCanvasWidth>=pixWidth && pixCanvasHeight>=pixHeight);
+  SLONG slModulo      = (pixCanvasWidth-pixWidth) *BYTES_PER_TEXEL;
+  SLONG slWidthModulo = pixWidth*BYTES_PER_TEXEL +slModulo;
+  (void)slWidthModulo; // shut up compiler, this is used if inline ASM is used
 
   // if bitmap is smaller than 4x2 pixels
-  if (pixWidth < 4 || pixHeight < 2) { // don't dither it at all, rather copy only (if needed)
-    if (pulSrc != pulDst) {
-      for (PIX y = 0; y < pixHeight; y++) {
-        memcpy(pulDst, pulSrc, pixWidth * BYTES_PER_TEXEL);
-        pulSrc += stride;
-        pulDst += stride;
-      }
-    }
+  if( pixWidth<4 || pixHeight<2)
+  { // don't dither it at all, rather copy only (if needed)
+    if( pulDst!=pulSrc) memcpy( pulDst, pulSrc, pixCanvasWidth*pixCanvasHeight *BYTES_PER_TEXEL);
     goto theEnd;
   }
 
   // determine proper dither type
-  typedef ULONG Dither_t[4][4];
-  static Dither_t *pulDitherTable;
   switch( iDitherType)
   { // low dithers
   case 1:
-    pulDitherTable = &ulDither2;
-    mmShift = 2;
-    mmMask  = 0x3F3F;
+    pulDitherTable = &ulDither2[0][0];
+    mmShifter = 2;
+#ifdef __GNUC__
+    mmMask  = 0x3F3F3F3F3F3F3F3Fll;
+#else
+    mmMask  = 0x3F3F3F3F3F3F3F3F;
+#endif
     goto ditherOrder;
   case 2:
-    pulDitherTable = &ulDither2;
-    mmShift = 1;
-    mmMask  = 0x7F7F;
+    pulDitherTable = &ulDither2[0][0];
+    mmShifter = 1;
+#ifdef __GNUC__
+    mmMask  = 0x7F7F7F7F7F7F7F7Fll;
+#else
+    mmMask  = 0x7F7F7F7F7F7F7F7F;
+#endif
     goto ditherOrder;
   case 3:
-    mmErrDiffMask = 0x0003;
+#ifdef __GNUC__
+    mmErrDiffMask = 0x0003000300030003ll;
+#else
+    mmErrDiffMask = 0x0003000300030003;
+#endif
     goto ditherError;
   // medium dithers
   case 4:
-    pulDitherTable = &ulDither2;
-    mmShift = 0;
-    mmMask  = 0xFFFF;
+    pulDitherTable = &ulDither2[0][0];
+    mmShifter = 0;
+#ifdef __GNUC__
+    mmMask  = 0xFFFFFFFFFFFFFFFFll;
+#else
+    mmMask  = 0xFFFFFFFFFFFFFFFF;
+#endif
     goto ditherOrder;
   case 5:
-    pulDitherTable = &ulDither3;
-    mmShift = 1;
-    mmMask  = 0x7F7F;
+    pulDitherTable = &ulDither3[0][0];
+    mmShifter = 1;
+#ifdef __GNUC__
+    mmMask  = 0x7F7F7F7F7F7F7F7Fll;
+#else
+    mmMask  = 0x7F7F7F7F7F7F7F7F;
+#endif
     goto ditherOrder;
   case 6:
-    pulDitherTable = &ulDither4;
-    mmShift = 1;
-    mmMask  = 0x7F7F;
+    pulDitherTable = &ulDither4[0][0];
+    mmShifter = 1;
+#ifdef __GNUC__
+    mmMask  = 0x7F7F7F7F7F7F7F7Fll;
+#else
+    mmMask  = 0x7F7F7F7F7F7F7F7F;
+#endif
     goto ditherOrder;
   case 7:
+#ifdef __GNUC__
+    mmErrDiffMask = 0x0007000700070007ll;
+#else
     mmErrDiffMask = 0x0007000700070007;
+#endif
     goto ditherError;
   // high dithers
   case 8:
-    pulDitherTable = &ulDither3;
-    mmShift = 0;
-    mmMask  = 0xFFFF;
+    pulDitherTable = &ulDither3[0][0];
+    mmShifter = 0;
+#ifdef __GNUC__
+    mmMask  = 0xFFFFFFFFFFFFFFFFll;
+#else
+    mmMask  = 0xFFFFFFFFFFFFFFFF;
+#endif
     goto ditherOrder;
   case 9:
-    pulDitherTable = &ulDither4;
-    mmShift = 0;
-    mmMask  = 0xFFFF;
+    pulDitherTable = &ulDither4[0][0];
+    mmShifter = 0;
+#ifdef __GNUC__
+    mmMask  = 0xFFFFFFFFFFFFFFFFll;
+#else
+    mmMask  = 0xFFFFFFFFFFFFFFFF;
+#endif
     goto ditherOrder;
   case 10:
+#ifdef __GNUC__
+    mmErrDiffMask = 0x000F000F000F000Fll;
+#else
     mmErrDiffMask = 0x000F000F000F000F;
+#endif
     goto ditherError;
   default:
     // improper dither type
     ASSERTALWAYS( "Improper dithering type.");
     // if bitmap copying is needed
-    if (pulSrc != pulDst) {
-      for (PIX y = 0; y < pixHeight; y++) {
-        memcpy(pulDst, pulSrc, pixWidth * BYTES_PER_TEXEL);
-        pulSrc += stride;
-        pulDst += stride;
-      }
-    }
+    if( pulDst!=pulSrc) memcpy( pulDst, pulSrc, pixCanvasWidth*pixCanvasHeight *BYTES_PER_TEXEL);
     goto theEnd;
   }
 
-
-
 // ------------------------------- ordered matrix dithering routine
+
 ditherOrder:
-  for (int y = 0; y < pixHeight; y++) {
-    for (int x = 0; x < pixWidth; x++) {
-      *pulDst = ((LC((*pulDitherTable)[y % 4][x % 4]) >> mmShift & mmMask) + LC(*pulSrc)).packUnsignedSaturate();
-      pulSrc++;
-      pulDst++;
-    }
-    pulSrc += slModulo;
-    pulDst += slModulo;
+#if (defined __MSVC_INLINE__)
+  __asm {
+    mov     esi,D [pulSrc]
+    mov     edi,D [pulDst]
+    mov     ebx,D [pulDitherTable]
+    // reset dither line offset
+    xor     eax,eax
+    mov     edx,D [pixHeight]
+rowLoopO:
+    // get horizontal dither patterns
+    movq    mm4,Q [ebx+ eax*4 +0]
+    movq    mm5,Q [ebx+ eax*4 +8]
+    psrlw   mm4,Q [mmShifter]
+    psrlw   mm5,Q [mmShifter]
+    pand    mm4,Q [mmMask]
+    pand    mm5,Q [mmMask]
+    // process row
+    mov     ecx,D [pixWidth]
+pixLoopO:
+    movq    mm1,Q [esi +0]
+    movq    mm2,Q [esi +8]
+    paddusb mm1,mm4
+    paddusb mm2,mm5
+    movq    Q [edi +0],mm1
+    movq    Q [edi +8],mm2
+    // advance to next pixel
+    add     esi,4*4
+    add     edi,4*4
+    sub     ecx,4
+    jg      pixLoopO  // !!!! possible memory leak?
+    je      nextRowO
+    // backup couple of pixels
+    lea     esi,[esi+ ecx*4]
+    lea     edi,[edi+ ecx*4]
+nextRowO:
+    // get next dither line patterns
+    add     esi,D [slModulo]
+    add     edi,D [slModulo]
+    add     eax,1*4
+    and     eax,4*4-1
+    // advance to next row
+    dec     edx
+    jnz     rowLoopO
+    emms;
   }
-//  __asm {
-//    mov     esi,D [pulSrc]
-//    mov     edi,D [pulDst]
-//    mov     ebx,D [pulDitherTable]
-//    // reset dither line offset
-//    xor     eax,eax
-//    mov     edx,D [pixHeight]
-//rowLoopO:
-//    // get horizontal dither patterns
-//    movq    mm4,Q [ebx+ eax*4 +0]
-//    movq    mm5,Q [ebx+ eax*4 +8]
-//    psrlw   mm4,Q [mmShift]
-//    psrlw   mm5,Q [mmShift]
-//    pand    mm4,Q [mmMask]
-//    pand    mm5,Q [mmMask]
-//    // process row
-//    mov     ecx,D [pixWidth]
-//pixLoopO:
-//    movq    mm1,Q [esi +0]
-//    movq    mm2,Q [esi +8]
-//    paddusb mm1,mm4
-//    paddusb mm2,mm5
-//    movq    Q [edi +0],mm1
-//    movq    Q [edi +8],mm2
-//    // advance to next pixel
-//    add     esi,4*4
-//    add     edi,4*4
-//    sub     ecx,4
-//    jg      pixLoopO  // !!!! possible memory leak?
-//    je      nextRowO
-//    // backup couple of pixels
-//    lea     esi,[esi+ ecx*4]
-//    lea     edi,[edi+ ecx*4]
-//nextRowO:
-//    // get next dither line patterns
-//    add     esi,D [slModulo]
-//    add     edi,D [slModulo]
-//    add     eax,1*4
-//    and     eax,4*4-1
-//    // advance to next row
-//    dec     edx
-//    jnz     rowLoopO
-//    emms;
-//  }
+
+#elif (defined __GNU_INLINE_X86_32__)
+  ULONG tmp;
+  __asm__ __volatile__ (
+    "movl     %[pulSrc], %%esi           \n\t"
+    "movl     %[pulDst], %%edi           \n\t"
+    // reset dither line offset
+    "movl     %[pixHeight], %%eax        \n\t"
+    "movl     %%eax, %[xdx]              \n\t"
+    "xorl     %%eax, %%eax               \n\t"
+
+    "0:                                  \n\t" // rowLoopO
+    // get horizontal dither patterns
+    "movq    0(%[pulDitherTable], %%eax, 4), %%mm4 \n\t"
+    "movq    8(%[pulDitherTable], %%eax, 4), %%mm5 \n\t"
+    "psrlw   (" ASMSYM(mmShifter) "), %%mm4            \n\t"
+    "psrlw   (" ASMSYM(mmShifter) "), %%mm5            \n\t"
+    "pand    (" ASMSYM(mmMask) "), %%mm4             \n\t"
+    "pand    (" ASMSYM(mmMask) "), %%mm5             \n\t"
+
+    // process row
+    "movl    %[pixWidth], %%ecx          \n\t"
+    "1:                                  \n\t" // pixLoopO
+    "movq    0(%%esi), %%mm1             \n\t"
+    "movq    8(%%esi), %%mm2             \n\t"
+    "paddusb %%mm4, %%mm1                \n\t"
+    "paddusb %%mm5, %%mm2                \n\t"
+    "movq    %%mm1, 0(%%edi)             \n\t"
+    "movq    %%mm2, 8(%%edi)             \n\t"
+
+    // advance to next pixel
+    "addl     $16, %%esi                 \n\t"
+    "addl     $16, %%edi                 \n\t"
+    "subl     $4, %%ecx                  \n\t"
+    "jg       1b                         \n\t" // !!!! possible memory leak?
+    "je       2f                         \n\t" // nextRowO
+
+    // backup couple of pixels
+    "leal     0(%%esi, %%ecx, 4), %%esi  \n\t"
+    "leal     0(%%edi, %%ecx, 4), %%edi  \n\t"
+
+    "2:                                  \n\t" // nextRowO
+    // get next dither line patterns
+    "addl     %[slModulo], %%esi         \n\t"
+    "addl     %[slModulo], %%edi         \n\t"
+    "addl     $4, %%eax                  \n\t"
+    "andl     $15, %%eax                 \n\t"
+
+    // advance to next row
+    "decl     %[xdx]                     \n\t"
+    "jnz      0b                         \n\t" // rowLoopO
+    "emms                                \n\t"
+        : [xdx] "=&g" (tmp)
+        : [pulSrc] "g" (pulSrc), [pulDst] "g" (pulDst),
+          [pixHeight] "g" (pixHeight), [pixWidth] "g" (pixWidth),
+          [slModulo] "g" (slModulo), [pulDitherTable] "r" (pulDitherTable)
+        : FPU_REGS, MMX_REGS, "eax", "ecx", "esi", "edi",
+          "cc", "memory"
+  );
+
+#else
+  union uConv
+  {
+    __int64 val;
+    DWORD dwords[2];
+    UWORD words[4];
+    WORD  iwords[4];
+    UBYTE bytes[8];
+  };
+  for (int i=0; i<pixHeight; i++) {
+    int idx = i&3;
+    uConv dith;
+    dith.dwords[0] = pulDitherTable[idx];
+    dith.dwords[1] = pulDitherTable[idx+1];
+    for (int j=0; j<4; j++) { dith.words[j] >>= mmShifter; }
+    dith.val &= mmMask;
+    uConv* src = (uConv*)(pulSrc+i*pixWidth);
+    uConv* dst = (uConv*)(pulDst+i*pixWidth);
+    for (int j=0; j<pixWidth; j+=2) {
+      uConv p=src[0];
+      for (int k=0; k<8; k++) {
+        IncrementByteWithClip(p.bytes[k], dith.bytes[k]);
+      }
+      dst[0] = p;
+      src++;
+      dst++;
+    }
+  }
+
+#endif
+
   goto theEnd;
 
 // ------------------------------- error diffusion dithering routine
 
 ditherError:
-//  WarningMessage("TODO: ditherError");
-//  slModulo++; // ??
-  for (int y = 0; y < pixHeight; y++) {
-    for (int x = 0; x < pixWidth; x++) {
-      *pulDst = *pulSrc;
-//      *pulDst |= 0xffffff;
-      pulSrc++;
-      pulDst++;
-    }
-    pulSrc += slModulo;
-    pulDst += slModulo;
+  // since error diffusion algorithm requires in-place dithering, original bitmap must be copied if needed
+  if( pulDst!=pulSrc) memcpy( pulDst, pulSrc, pixCanvasWidth*pixCanvasHeight *BYTES_PER_TEXEL);
+  // slModulo+=4;
+  // now, dither destination
+#if (defined __MSVC_INLINE__)
+  __asm {
+    pxor    mm0,mm0
+    mov     esi,D [pulDst]
+    mov     ebx,D [pixCanvasWidth]
+    mov     edx,D [pixHeight]
+    dec     edx // need not to dither last row
+rowLoopE:
+    // left to right
+    mov     ecx,D [pixWidth]
+    dec     ecx
+pixLoopEL:
+    movd    mm1,D [esi]
+    punpcklbw mm1,mm0
+    pand    mm1,Q [mmErrDiffMask] 
+    // determine errors
+    movq    mm3,mm1
+    movq    mm5,mm1
+    movq    mm7,mm1
+    pmullw  mm3,Q [mmW3]
+    pmullw  mm5,Q [mmW5]
+    pmullw  mm7,Q [mmW7]
+    psrlw   mm3,4     // *3/16
+    psrlw   mm5,4     // *5/16
+    psrlw   mm7,4     // *7/16
+    psubw   mm1,mm3
+    psubw   mm1,mm5
+    psubw   mm1,mm7   // *rest/16
+    packuswb mm1,mm0
+    packuswb mm3,mm0
+    packuswb mm5,mm0
+    packuswb mm7,mm0
+    // spread errors
+    paddusb mm7,Q [esi+       +4]
+    paddusb mm3,Q [esi+ ebx*4 -4]
+    paddusb mm5,Q [esi+ ebx*4 +0]
+    paddusb mm1,Q [esi+ ebx*4 +4]  // !!!! possible memory leak?
+    movd    D [esi+       +4],mm7
+    movd    D [esi+ ebx*4 -4],mm3
+    movd    D [esi+ ebx*4 +0],mm5
+    movd    D [esi+ ebx*4 +4],mm1
+    // advance to next pixel
+    add     esi,4
+    dec     ecx
+    jnz     pixLoopEL
+    // advance to next row
+    add     esi,D [slWidthModulo]
+    dec     edx
+    jz      allDoneE
+
+    // right to left
+    mov     ecx,D [pixWidth]
+    dec     ecx
+pixLoopER:
+    movd    mm1,D [esi]
+    punpcklbw mm1,mm0
+    pand    mm1,Q [mmErrDiffMask] 
+    // determine errors
+    movq    mm3,mm1
+    movq    mm5,mm1
+    movq    mm7,mm1
+    pmullw  mm3,Q [mmW3]
+    pmullw  mm5,Q [mmW5]
+    pmullw  mm7,Q [mmW7]
+    psrlw   mm3,4     // *3/16
+    psrlw   mm5,4     // *5/16
+    psrlw   mm7,4     // *7/16
+    psubw   mm1,mm3
+    psubw   mm1,mm5
+    psubw   mm1,mm7   // *rest/16
+    packuswb mm1,mm0
+    packuswb mm3,mm0
+    packuswb mm5,mm0
+    packuswb mm7,mm0
+    // spread errors
+    paddusb mm7,Q [esi+       -4]
+    paddusb mm1,Q [esi+ ebx*4 -4]
+    paddusb mm5,Q [esi+ ebx*4 +0]
+    paddusb mm3,Q [esi+ ebx*4 +4]   // !!!! possible memory leak?
+    movd    D [esi+       -4],mm7
+    movd    D [esi+ ebx*4 -4],mm1
+    movd    D [esi+ ebx*4 +0],mm5
+    movd    D [esi+ ebx*4 +4],mm3
+    // revert to previous pixel
+    sub     esi,4
+    dec     ecx
+    jnz     pixLoopER
+    // advance to next row
+    lea     esi,[esi+ ebx*4]
+    dec     edx
+    jnz     rowLoopE
+allDoneE:
+    emms;
   }
 
-//  // since error diffusion algorithm requires in-place dithering, original bitmap must be copied if needed
-//  if( pulDst!=pulSrc) memcpy( pulDst, pulSrc, pixCanvasWidth*pixCanvasHeight *BYTES_PER_TEXEL);
-//  // slModulo+=4;
-//  // now, dither destination
-//  __asm {
-//    pxor    mm0,mm0
-//    mov     esi,D [pulDst]
-//    mov     ebx,D [pixCanvasWidth]
-//    mov     edx,D [pixHeight]
-//    dec     edx // need not to dither last row
-//rowLoopE:
-//    // left to right
-//    mov     ecx,D [pixWidth]
-//    dec     ecx
-//pixLoopEL:
-//    movd    mm1,D [esi]
-//    punpcklbw mm1,mm0
-//    pand    mm1,Q [mmErrDiffMask]
-//    // determine errors
-//    movq    mm3,mm1
-//    movq    mm5,mm1
-//    movq    mm7,mm1
-//    pmullw  mm3,Q [mmW3]
-//    pmullw  mm5,Q [mmW5]
-//    pmullw  mm7,Q [mmW7]
-//    psrlw   mm3,4     // *3/16
-//    psrlw   mm5,4     // *5/16
-//    psrlw   mm7,4     // *7/16
-//    psubw   mm1,mm3
-//    psubw   mm1,mm5
-//    psubw   mm1,mm7   // *rest/16
-//    packuswb mm1,mm0
-//    packuswb mm3,mm0
-//    packuswb mm5,mm0
-//    packuswb mm7,mm0
-//    // spread errors
-//    paddusb mm7,Q [esi+       +4]
-//    paddusb mm3,Q [esi+ ebx*4 -4]
-//    paddusb mm5,Q [esi+ ebx*4 +0]
-//    paddusb mm1,Q [esi+ ebx*4 +4]  // !!!! possible memory leak?
-//    movd    D [esi+       +4],mm7
-//    movd    D [esi+ ebx*4 -4],mm3
-//    movd    D [esi+ ebx*4 +0],mm5
-//    movd    D [esi+ ebx*4 +4],mm1
-//    // advance to next pixel
-//    add     esi,4
-//    dec     ecx
-//    jnz     pixLoopEL
-//    // advance to next row
-//    add     esi,D [slWidthModulo]
-//    dec     edx
-//    jz      allDoneE
-//
-//    // right to left
-//    mov     ecx,D [pixWidth]
-//    dec     ecx
-//pixLoopER:
-//    movd    mm1,D [esi]
-//    punpcklbw mm1,mm0
-//    pand    mm1,Q [mmErrDiffMask]
-//    // determine errors
-//    movq    mm3,mm1
-//    movq    mm5,mm1
-//    movq    mm7,mm1
-//    pmullw  mm3,Q [mmW3]
-//    pmullw  mm5,Q [mmW5]
-//    pmullw  mm7,Q [mmW7]
-//    psrlw   mm3,4     // *3/16
-//    psrlw   mm5,4     // *5/16
-//    psrlw   mm7,4     // *7/16
-//    psubw   mm1,mm3
-//    psubw   mm1,mm5
-//    psubw   mm1,mm7   // *rest/16
-//    packuswb mm1,mm0
-//    packuswb mm3,mm0
-//    packuswb mm5,mm0
-//    packuswb mm7,mm0
-//    // spread errors
-//    paddusb mm7,Q [esi+       -4]
-//    paddusb mm1,Q [esi+ ebx*4 -4]
-//    paddusb mm5,Q [esi+ ebx*4 +0]
-//    paddusb mm3,Q [esi+ ebx*4 +4]   // !!!! possible memory leak?
-//    movd    D [esi+       -4],mm7
-//    movd    D [esi+ ebx*4 -4],mm1
-//    movd    D [esi+ ebx*4 +0],mm5
-//    movd    D [esi+ ebx*4 +4],mm3
-//    // revert to previous pixel
-//    sub     esi,4
-//    dec     ecx
-//    jnz     pixLoopER
-//    // advance to next row
-//    lea     esi,[esi+ ebx*4]
-//    dec     edx
-//    jnz     rowLoopE
-//allDoneE:
-//    emms;
-//  }
+#elif (defined __GNU_INLINE_X86_32__)
+  __asm__ __volatile__ (
+    "pxor    %%mm0, %%mm0                 \n\t"
+    "movl    %[pulDst], %%esi             \n\t"
+    "movl    %[pixHeight], %%edx          \n\t"
+    "decl    %%edx                        \n\t" // need not to dither last row
+
+    "0:                                   \n\t" // rowLoopE
+    // left to right
+    "movl      %[pixWidth], %%ecx         \n\t"
+    "decl      %%ecx                      \n\t"
+
+    "1:                                   \n\t" // pixLoopEL
+    "movd      (%%esi), %%mm1             \n\t"
+    "punpcklbw %%mm0, %%mm1               \n\t"
+    "pand      (" ASMSYM(mmErrDiffMask) "), %%mm1     \n\t"
+
+    // determine errors
+    "movq      %%mm1, %%mm3               \n\t"
+    "movq      %%mm1, %%mm5               \n\t"
+    "movq      %%mm1, %%mm7               \n\t"
+    "pmullw    (" ASMSYM(mmW3) "), %%mm3              \n\t"
+    "pmullw    (" ASMSYM(mmW5) "), %%mm5              \n\t"
+    "pmullw    (" ASMSYM(mmW7) "), %%mm7              \n\t"
+    "psrlw     $4, %%mm3                  \n\t"  // *3/16
+    "psrlw     $4, %%mm5                  \n\t"  // *5/16
+    "psrlw     $4, %%mm7                  \n\t"  // *7/16     
+    "psubw     %%mm3,%%mm1                \n\t"
+    "psubw     %%mm5,%%mm1                \n\t"
+    "psubw     %%mm7,%%mm1                \n\t"  // *rest/16
+    "packuswb  %%mm0,%%mm1                \n\t"
+    "packuswb  %%mm0,%%mm3                \n\t"
+    "packuswb  %%mm0,%%mm5                \n\t"
+    "packuswb  %%mm0,%%mm7                \n\t"
+
+    // spread errors
+    "paddusb    4(%%esi), %%mm7           \n\t"
+    "paddusb   -4(%%esi, %[pixCanvasWidth], 4), %%mm3 \n\t"
+    "paddusb    0(%%esi, %[pixCanvasWidth], 4), %%mm5 \n\t"
+    "paddusb    4(%%esi, %[pixCanvasWidth], 4), %%mm1 \n\t"  // !!!! possible memory leak?
+    "movd      %%mm7,  4(%%esi)           \n\t"
+    "movd      %%mm3, -4(%%esi, %[pixCanvasWidth], 4) \n\t"
+    "movd      %%mm5,  0(%%esi, %[pixCanvasWidth], 4) \n\t"
+    "movd      %%mm1,  4(%%esi, %[pixCanvasWidth], 4) \n\t"
+
+    // advance to next pixel
+    "addl      $4, %%esi                  \n\t"
+    "decl      %%ecx                      \n\t"
+    "jnz       1b                         \n\t" // pixLoopEL
+
+    // advance to next row
+    "addl      %[slWidthModulo], %%esi    \n\t"
+    "decl      %%edx                      \n\t"
+    "jz        3f                         \n\t" // allDoneE
+
+    // right to left
+    "movl      %[pixWidth], %%ecx         \n\t"
+    "decl      %%ecx                      \n\t"
+
+    "2:                                   \n\t" // pixLoopER
+    "movd      (%%esi), %%mm1             \n\t"
+    "punpcklbw %%mm0, %%mm1               \n\t"
+    "pand      (" ASMSYM(mmErrDiffMask) "), %%mm1     \n\t"
+ 
+    // determine errors
+    "movq      %%mm1, %%mm3               \n\t"
+    "movq      %%mm1, %%mm5               \n\t"
+    "movq      %%mm1, %%mm7               \n\t"
+    "pmullw    (" ASMSYM(mmW3) "), %%mm3              \n\t"
+    "pmullw    (" ASMSYM(mmW5) "), %%mm5              \n\t"
+    "pmullw    (" ASMSYM(mmW7) "), %%mm7              \n\t"
+    "psrlw     $4, %%mm3                  \n\t" // *3/16
+    "psrlw     $4, %%mm5                  \n\t" // *5/16
+    "psrlw     $4, %%mm7                  \n\t" // *7/16
+    "psubw     %%mm3, %%mm1               \n\t"
+    "psubw     %%mm5, %%mm1               \n\t"
+    "psubw     %%mm7, %%mm1               \n\t" // *rest/16
+    "packuswb  %%mm0, %%mm1               \n\t"
+    "packuswb  %%mm0, %%mm3               \n\t"
+    "packuswb  %%mm0, %%mm5               \n\t"
+    "packuswb  %%mm0, %%mm7               \n\t"
+
+    // spread errors
+    "paddusb   -4(%%esi), %%mm7           \n\t"
+    "paddusb   -4(%%esi, %[pixCanvasWidth], 4), %%mm1 \n\t"
+    "paddusb    0(%%esi, %[pixCanvasWidth], 4), %%mm5 \n\t"
+    "paddusb    4(%%esi, %[pixCanvasWidth], 4), %%mm3 \n\t" // !!!! possible memory leak?
+    "movd      %%mm7, -4(%%esi)           \n\t"
+    "movd      %%mm1, -4(%%esi, %[pixCanvasWidth], 4) \n\t"
+    "movd      %%mm5,  0(%%esi, %[pixCanvasWidth], 4) \n\t"
+    "movd      %%mm3,  4(%%esi, %[pixCanvasWidth], 4) \n\t"
+
+    // revert to previous pixel
+    "subl      $4, %%esi                  \n\t"
+    "decl      %%ecx                      \n\t"
+    "jnz       2b                         \n\t" // pixLoopER
+
+    // advance to next row
+    "leal      0(%%esi, %[pixCanvasWidth], 4), %%esi \n\t"
+    "decl      %%edx                      \n\t"
+    "jnz       0b                         \n\t" // rowLoopE
+    "3:                                   \n\t" // allDoneE
+    "emms                                 \n\t"
+        : // no outputs.
+        : [pulDst] "g" (pulDst), [pixCanvasWidth] "r" (pixCanvasWidth),
+          [pixHeight] "g" (pixHeight), [pixWidth] "g" (pixWidth),
+          [slWidthModulo] "g" (slWidthModulo)
+        : FPU_REGS, MMX_REGS, "ecx", "edx", "esi", "cc", "memory"
+  );
+
+#else
+  #if 1 //SEB doesn't works....
+  for (int i=0; i<pixHeight-1; i++) {
+    int step = (i&1)?-4:+4;
+    const UBYTE ubMask = (mmErrDiffMask&0xff);
+    UBYTE *src = ((UBYTE*)pulDst)+i*pixCanvasWidth*4;
+    if(i&1) src+=pixWidth*4;
+    // left to right or right to left
+    for (int j=0; j<pixWidth-1; j++) {
+      uConv p1, p3, p5, p7;
+      src+=step;
+      for (int k=0; k<4; k++) { p1.words[k] = src[k]&ubMask; }
+      //p1.val &= mmErrDiffMask;
+      for (int k=0; k<4; k++) { p3.words[k] = (p1.words[k]*3)>>4;
+                                p5.words[k] = (p1.words[k]*5)>>4;
+                                p7.words[k] = (p1.words[k]*7)>>4; }
+      for (int k=0; k<4; k++) { p1.words[k] -= (p3.words[k] + p5.words[k] + p7.words[k]);}
+      for (int k=0; k<4; k++) { 
+        IncrementByteWithClip( src[k + step]                 , p7.words[k]);
+        IncrementByteWithClip( src[pixCanvasWidth*4 -step +k], p5.words[k]);
+        IncrementByteWithClip( src[pixCanvasWidth*4 +0    +k], p3.words[k]);
+        IncrementByteWithClip( src[pixCanvasWidth*4 +step +k], p1.words[k]);
+      }
+    }
+  }
+  #endif
+
+#endif
+
   goto theEnd;
 
   // all done
@@ -761,19 +1193,23 @@ static INDEX aiFilters[6][3] = {
   {  1,  1,  1 }}; // 
 
 // temp for middle pixels, vertical/horizontal edges, and corners
-static __int64 mmMc,  mmMe,  mmMm;  // corner, edge, middle
-static __int64 mmEch, mmEm;  // corner-high, middle
+__int64 mmMc,  mmMe,  mmMm;  // corner, edge, middle
+__int64 mmEch, mmEm;  // corner-high, middle
 #define mmEcl mmMc  // corner-low
 #define mmEe  mmMe  // edge
-static __int64 mmCm;  // middle
+__int64 mmCm;  // middle
 #define mmCc mmMc  // corner
 #define mmCe mmEch // edge
-static __int64 mmInvDiv;
-static __int64 mmAdd = 0x0007000700070007;
+__int64 mmInvDiv;
+
+#if (defined __GNUC__)
+__int64 mmAdd = 0x0007000700070007ll;
+#else
+__int64 mmAdd = 0x0007000700070007;
+#endif
 
 // temp rows for in-place filtering support
-static ULONG aulRows[2048];
-
+extern "C" { ULONG aulRows[2048]; }
 
 // FilterBitmap() INTERNAL: generates convolution filter matrix if needed
 static INDEX iLastFilter;
@@ -811,430 +1247,1298 @@ static void GenerateConvolutionMatrix( INDEX iFilter)
 }
 
 
-/**
- * +---+---+---+
- * | 1 | 2 | 3 |
- * +---+---+---+
- * | 4 | 5 | 6 |
- * +---+---+---+
- * | 7 | 8 | 9 |
- * +---+---+---+
- *
- * Weighted average filter (https://www.tutorialspoint.com/dip/concept_of_blurring.htm)
- * p5 = ((p1+p3+p7+p9) * cornerMultiplier + (p2+p4+p6+p8) * edgeMultiplier + p5 * middleMultiplier + 7) / sumOfMultipliers;
- *
- */
+extern "C" {
+    ULONG *FB_pulSrc = NULL;
+    ULONG *FB_pulDst = NULL;
+    PIX FB_pixWidth = 0;
+    PIX FB_pixHeight = 0;
+    PIX FB_pixCanvasWidth = 0;
+    SLONG FB_slModulo1 = 0;
+    SLONG FB_slCanvasWidth = 0;
+}
+
+
+#if !(defined USE_MMX_INTRINSICS) && !(defined __MSVC_INLINE__) && !(defined __GNU_INLINE_X86_32__)
+typedef SWORD ExtPix[4];
+
+static inline void extpix_fromi64(ExtPix &pix, const __int64 i64)
+{
+    //memcpy(pix, i64, sizeof (ExtPix));
+    pix[0] = ((i64 >>  0) & 0xFFFF);
+    pix[1] = ((i64 >> 16) & 0xFFFF);
+    pix[2] = ((i64 >> 32) & 0xFFFF);
+    pix[3] = ((i64 >> 48) & 0xFFFF);
+}
+
+static inline void extend_pixel(const ULONG ul, ExtPix &pix)
+{
+    pix[0] = ((ul >>  0) & 0xFF);
+    pix[1] = ((ul >>  8) & 0xFF);
+    pix[2] = ((ul >> 16) & 0xFF);
+    pix[3] = ((ul >> 24) & 0xFF);
+}
+
+static inline ULONG unextend_pixel(const ExtPix &pix)
+{
+    return
+    (
+        (((ULONG) ((pix[0] >= 255) ? 255 : ((pix[0] <= 0) ? 0 : pix[0]))) <<  0) |
+        (((ULONG) ((pix[1] >= 255) ? 255 : ((pix[1] <= 0) ? 0 : pix[1]))) <<  8) |
+        (((ULONG) ((pix[2] >= 255) ? 255 : ((pix[2] <= 0) ? 0 : pix[2]))) << 16) |
+        (((ULONG) ((pix[3] >= 255) ? 255 : ((pix[3] <= 0) ? 0 : pix[3]))) << 24)
+    );
+}
+
+static inline void extpix_add(ExtPix &p1, const ExtPix &p2)
+{
+    p1[0] = (SWORD) (((SLONG) p1[0]) + ((SLONG) p2[0]));
+    p1[1] = (SWORD) (((SLONG) p1[1]) + ((SLONG) p2[1]));
+    p1[2] = (SWORD) (((SLONG) p1[2]) + ((SLONG) p2[2]));
+    p1[3] = (SWORD) (((SLONG) p1[3]) + ((SLONG) p2[3]));
+}
+
+static inline void extpix_mul(ExtPix &p1, const ExtPix &p2)
+{
+    p1[0] = (SWORD) (((SLONG) p1[0]) * ((SLONG) p2[0]));
+    p1[1] = (SWORD) (((SLONG) p1[1]) * ((SLONG) p2[1]));
+    p1[2] = (SWORD) (((SLONG) p1[2]) * ((SLONG) p2[2]));
+    p1[3] = (SWORD) (((SLONG) p1[3]) * ((SLONG) p2[3]));
+}
+
+static inline void extpix_adds(ExtPix &p1, const ExtPix &p2)
+{
+    SLONG x0 = (((SLONG) ((SWORD) p1[0])) + ((SLONG) ((SWORD) p2[0])));
+    SLONG x1 = (((SLONG) ((SWORD) p1[1])) + ((SLONG) ((SWORD) p2[1])));
+    SLONG x2 = (((SLONG) ((SWORD) p1[2])) + ((SLONG) ((SWORD) p2[2])));
+    SLONG x3 = (((SLONG) ((SWORD) p1[3])) + ((SLONG) ((SWORD) p2[3])));
+
+    p1[0] = (SWORD) ((x0 <= -32768) ? -32768 : ((x0 >= 32767) ? 32767 : x0));
+    p1[1] = (SWORD) ((x1 <= -32768) ? -32768 : ((x1 >= 32767) ? 32767 : x1));
+    p1[2] = (SWORD) ((x2 <= -32768) ? -32768 : ((x2 >= 32767) ? 32767 : x2));
+    p1[3] = (SWORD) ((x3 <= -32768) ? -32768 : ((x3 >= 32767) ? 32767 : x3));
+}
+
+static inline void extpix_mulhi(ExtPix &p1, const ExtPix &p2)
+{
+    p1[0] = (SWORD) (((((SLONG) p1[0]) * ((SLONG) p2[0])) >> 16) & 0xFFFF);
+    p1[1] = (SWORD) (((((SLONG) p1[1]) * ((SLONG) p2[1])) >> 16) & 0xFFFF);
+    p1[2] = (SWORD) (((((SLONG) p1[2]) * ((SLONG) p2[2])) >> 16) & 0xFFFF);
+    p1[3] = (SWORD) (((((SLONG) p1[3]) * ((SLONG) p2[3])) >> 16) & 0xFFFF);
+}
+#endif
+
+
 // applies filter to bitmap
-// slCanvasWidth, pixCanvasHeight:= pixel allocati in pulSrc e pulDst
-// pixWidth, pixHeight:= pixel di processare
 void FilterBitmap( INDEX iFilter, ULONG *pulSrc, ULONG *pulDst, PIX pixWidth, PIX pixHeight,
                    PIX pixCanvasWidth, PIX pixCanvasHeight)
 {
   _pfGfxProfile.StartTimer( CGfxProfile::PTI_FILTERBITMAP);
   ASSERT( iFilter>=-6 && iFilter<=+6);
 
-  PIX stride = pixCanvasWidth;
-  if (!stride) stride = pixWidth;
-  ASSERT(stride >= pixWidth);
+  // adjust canvas size
+  if( pixCanvasWidth ==0) pixCanvasWidth  = pixWidth;
+  if( pixCanvasHeight==0) pixCanvasHeight = pixHeight;
+  ASSERT( pixCanvasWidth>=pixWidth && pixCanvasHeight>=pixHeight);
 
   // if bitmap is smaller than 4x4
-  if (pixWidth < 4 || pixHeight < 4) {
-    // don't blur it at all, but eventually only copy
-    if (pulSrc != pulDst) {
-      for (PIX y = 0; y < pixHeight; y++) {
-        memcpy(pulDst, pulSrc, pixWidth * BYTES_PER_TEXEL);
-        pulSrc += stride;
-        pulDst += stride;
-      }
-    }
-    _pfGfxProfile.StopTimer(CGfxProfile::PTI_FILTERBITMAP);
+  if( pixWidth<4 || pixHeight<4)
+  { // don't blur it at all, but eventually only copy
+    if( pulDst!=pulSrc) memcpy( pulDst, pulSrc, pixCanvasWidth*pixCanvasHeight *BYTES_PER_TEXEL);
+    _pfGfxProfile.StopTimer( CGfxProfile::PTI_FILTERBITMAP);
     return;
   }
 
   // prepare convolution matrix and row modulo
-  iFilter = Clamp( iFilter, -6L, +6L);
+  iFilter = Clamp( iFilter, -6L, 6L);
   GenerateConvolutionMatrix( iFilter);
-
-  INDEX iFilterAbs = Abs(iFilter) -1;
-  // convert convolution values to MMX format
-  INDEX cornerMultiplier = aiFilters[iFilterAbs][0];  // corner
-  INDEX edgeMultiplier = aiFilters[iFilterAbs][1];  // edge
-  INDEX middleMultiplier = aiFilters[iFilterAbs][2];  // middle
-  // negate values for sharpen filter case
-  if( iFilter<0) {
-    middleMultiplier += (edgeMultiplier+cornerMultiplier) *8;  // (4*Edge + 4*Corner) *2
-    edgeMultiplier  = -edgeMultiplier;
-    cornerMultiplier  = -cornerMultiplier;
-  }
-  INDEX divider = cornerMultiplier * 4 + edgeMultiplier * 4 + middleMultiplier;
-
-  // input image casted as LargeColor<uint32_t>
-  static std::vector<LC> srcLarge;
-
-  // reallocate if necessary
-  PIX pixels = pixWidth * pixHeight;
-  if (pixels > srcLarge.size()) {
-    srcLarge.resize(pixels);
-  }
-
-  // convert source image
-  LC *yy = &srcLarge[0];
-  for (PIX y = 0; y < pixHeight; y++) {
-    ULONG *it = pulSrc + y * stride;
-    for (PIX x = 0; x < pixWidth; x++) {
-      *yy++ = LC(*it++);
-    }
-  }
-
-  // a clean but slow implementation
-#define GET_XY(x, y) srcLarge[Clamp((unsigned long)(y), 0lu, (unsigned long)pixHeight-1lu) * pixWidth + Clamp((unsigned long)(x), 0lu, (unsigned long)pixWidth-1lu)]
-  for (PIX y = 0; y < pixHeight; y++) {
-    ULONG *itDst = pulDst + y * stride;
-    for (PIX x = 0; x < pixWidth; x++) {
-      LC sum;
-      // previous line
-      sum += GET_XY(x - 1, y - 1) * cornerMultiplier;
-      sum += GET_XY(x + 0, y - 1) * edgeMultiplier;
-      sum += GET_XY(x + 1, y - 1) * cornerMultiplier;
-      // current line
-      sum += GET_XY(x - 1, y + 0) * edgeMultiplier;
-      sum += GET_XY(x + 0, y + 0) * middleMultiplier;
-      sum += GET_XY(x + 1, y + 0) * edgeMultiplier;
-      // next line
-      sum += GET_XY(x - 1, y + 1) * cornerMultiplier;
-      sum += GET_XY(x + 0, y + 1) * edgeMultiplier;
-      sum += GET_XY(x + 1, y + 1) * cornerMultiplier;
-      // avg
-      *itDst = (sum / divider).pack();
-      itDst++;
-    }
-  }
-#undef GET_XY
-
-//  SLONG slModulo1 = (pixCanvasWidth-pixWidth+1) *BYTES_PER_TEXEL;
-//  SLONG slCanvasWidth = pixCanvasWidth *BYTES_PER_TEXEL;
+  SLONG slModulo1 = (pixCanvasWidth-pixWidth+1) *BYTES_PER_TEXEL;
+  SLONG slCanvasWidth = pixCanvasWidth *BYTES_PER_TEXEL;
 
   // lets roll ...
-//  __asm {
-//    cld
-//    mov     eax,D [pixCanvasWidth] // EAX = positive row offset
-//    mov     edx,eax
-//    neg     edx                    // EDX = negative row offset
-//    pxor    mm0,mm0
-//    mov     esi,D [pulSrc]
-//    mov     edi,D [pulDst]
-//    xor     ebx,ebx
-//
-//// ----------------------- process upper left corner
-//
-//    movd    mm1,D [esi+       +0]
-//    movd    mm2,D [esi+       +4]
-//    movd    mm3,D [esi+ eax*4 +0]
-//    movd    mm4,D [esi+ eax*4 +4]
-//    punpcklbw mm1,mm0
-//    punpcklbw mm2,mm0
-//    punpcklbw mm3,mm0
-//    punpcklbw mm4,mm0
-//    paddw   mm2,mm3
-//    pmullw  mm1,Q [mmCm]
-//    pmullw  mm2,Q [mmCe]
-//    pmullw  mm4,Q [mmCc]
-//    paddw   mm1,mm2
-//    paddw   mm1,mm4
-//    paddsw  mm1,Q [mmAdd]
-//    pmulhw  mm1,Q [mmInvDiv]
-//    packuswb mm1,mm0
-//    movd    D [ebx+ aulRows],mm1
-//    add     esi,4
-//    add     ebx,4
-//
-//// ----------------------- process upper edge pixels
-//
-//    mov     ecx,D [pixWidth]
-//    sub     ecx,2
-//    // for each pixel
-//upperLoop:
-//    movd    mm1,D [esi+       -4]
-//    movd    mm2,D [esi+       +0]
-//    movd    mm3,D [esi+       +4]
-//    movd    mm4,D [esi+ eax*4 -4]
-//    movd    mm5,D [esi+ eax*4 +0]
-//    movd    mm6,D [esi+ eax*4 +4]
-//    punpcklbw mm1,mm0
-//    punpcklbw mm2,mm0
-//    punpcklbw mm3,mm0
-//    punpcklbw mm4,mm0
-//    punpcklbw mm5,mm0
-//    punpcklbw mm6,mm0
-//    paddw   mm1,mm3
-//    paddw   mm4,mm6
-//    pmullw  mm1,Q [mmEch]
-//    pmullw  mm2,Q [mmEm]
-//    pmullw  mm4,Q [mmEcl]
-//    pmullw  mm5,Q [mmEe]
-//    paddw   mm1,mm2
-//    paddw   mm1,mm4
-//    paddw   mm1,mm5
-//    paddsw  mm1,Q [mmAdd]
-//    pmulhw  mm1,Q [mmInvDiv]
-//    packuswb mm1,mm0
-//    movd    D [ebx+ aulRows],mm1
-//    // advance to next pixel
-//    add     esi,4
-//    add     ebx,4
-//    dec     ecx
-//    jnz     upperLoop
-//
-//// ----------------------- process upper right corner
-//
-//    movd    mm1,D [esi+       -4]
-//    movd    mm2,D [esi+       +0]
-//    movd    mm3,D [esi+ eax*4 -4]
-//    movd    mm4,D [esi+ eax*4 +0]
-//    punpcklbw mm1,mm0
-//    punpcklbw mm2,mm0
-//    punpcklbw mm3,mm0
-//    punpcklbw mm4,mm0
-//    paddw   mm1,mm4
-//    pmullw  mm1,Q [mmCe]
-//    pmullw  mm2,Q [mmCm]
-//    pmullw  mm3,Q [mmCc]
-//    paddw   mm1,mm2
-//    paddw   mm1,mm3
-//    paddsw  mm1,Q [mmAdd]
-//    pmulhw  mm1,Q [mmInvDiv]
-//    packuswb mm1,mm0
-//    movd    D [ebx+ aulRows],mm1
-//
-//// ----------------------- process bitmap middle pixels
-//
-//    add     esi,D [slModulo1]
-//    add     edi,D [slCanvasWidth]
-//    mov     ebx,D [pixHeight]
-//    sub     ebx,2
-//    // for each row
-//rowLoop:
-//    push    ebx
-//    xor     ebx,ebx
-//    // process left edge pixel
-//    movd    mm1,D [esi+ edx*4 +0]
-//    movd    mm2,D [esi+ edx*4 +4]
-//    movd    mm3,D [esi+       +0]
-//    movd    mm4,D [esi+       +4]
-//    movd    mm5,D [esi+ eax*4 +0]
-//    movd    mm6,D [esi+ eax*4 +4]
-//    punpcklbw mm1,mm0
-//    punpcklbw mm2,mm0
-//    punpcklbw mm3,mm0
-//    punpcklbw mm4,mm0
-//    punpcklbw mm5,mm0
-//    punpcklbw mm6,mm0
-//    paddw   mm1,mm5
-//    paddw   mm2,mm6
-//    pmullw  mm1,Q [mmEch]
-//    pmullw  mm2,Q [mmEcl]
-//    pmullw  mm3,Q [mmEm]
-//    pmullw  mm4,Q [mmEe]
-//    paddw   mm1,mm2
-//    paddw   mm1,mm3
-//    paddw   mm1,mm4
-//    paddsw  mm1,Q [mmAdd]
-//    pmulhw  mm1,Q [mmInvDiv]
-//    packuswb mm1,mm0
-//    movd    mm2,D [ebx+ aulRows]
-//    movd    D [ebx+ aulRows],mm1
-//    movd    D [edi+ edx*4],mm2
-//    add     esi,4
-//    add     edi,4
-//    add     ebx,4
-//
-//    // for each pixel in current row
-//    mov     ecx,D [pixWidth]
-//    sub     ecx,2
-//pixLoop:
-//    // prepare upper convolution row
-//    movd    mm1,D [esi+ edx*4 -4]
-//    movd    mm2,D [esi+ edx*4 +0]
-//    movd    mm3,D [esi+ edx*4 +4]
-//    punpcklbw mm1,mm0
-//    punpcklbw mm2,mm0
-//    punpcklbw mm3,mm0
-//    // prepare middle convolution row
-//    movd    mm4,D [esi+ -4]
-//    movd    mm5,D [esi+ +0]
-//    movd    mm6,D [esi+ +4]
-//    punpcklbw mm4,mm0
-//    punpcklbw mm5,mm0
-//    punpcklbw mm6,mm0
-//    // free some registers
-//    paddw   mm1,mm3
-//    paddw   mm2,mm4
-//    pmullw  mm5,Q [mmMm]
-//    // prepare lower convolution row
-//    movd    mm3,D [esi+ eax*4 -4]
-//    movd    mm4,D [esi+ eax*4 +0]
-//    movd    mm7,D [esi+ eax*4 +4]
-//    punpcklbw mm3,mm0
-//    punpcklbw mm4,mm0
-//    punpcklbw mm7,mm0
-//    // calc weightened value
-//    paddw   mm2,mm6
-//    paddw   mm1,mm3
-//    paddw   mm2,mm4
-//    paddw   mm1,mm7
-//    pmullw  mm2,Q [mmMe]
-//    pmullw  mm1,Q [mmMc]
-//    paddw   mm2,mm5
-//    paddw   mm1,mm2
-//    // calc and store wightened value
-//    paddsw  mm1,Q [mmAdd]
-//    pmulhw  mm1,Q [mmInvDiv]
-//    packuswb mm1,mm0
-//    movd    mm2,D [ebx+ aulRows]
-//    movd    D [ebx+ aulRows],mm1
-//    movd    D [edi+ edx*4],mm2
-//    // advance to next pixel
-//    add     esi,4
-//    add     edi,4
-//    add     ebx,4
-//    dec     ecx
-//    jnz     pixLoop
-//
-//    // process right edge pixel
-//    movd    mm1,D [esi+ edx*4 -4]
-//    movd    mm2,D [esi+ edx*4 +0]
-//    movd    mm3,D [esi+       -4]
-//    movd    mm4,D [esi+       +0]
-//    movd    mm5,D [esi+ eax*4 -4]
-//    movd    mm6,D [esi+ eax*4 +0]
-//    punpcklbw mm1,mm0
-//    punpcklbw mm2,mm0
-//    punpcklbw mm3,mm0
-//    punpcklbw mm4,mm0
-//    punpcklbw mm5,mm0
-//    punpcklbw mm6,mm0
-//    paddw   mm1,mm5
-//    paddw   mm2,mm6
-//    pmullw  mm1,Q [mmEcl]
-//    pmullw  mm2,Q [mmEch]
-//    pmullw  mm3,Q [mmEe]
-//    pmullw  mm4,Q [mmEm]
-//    paddw   mm1,mm2
-//    paddw   mm1,mm3
-//    paddw   mm1,mm4
-//    paddsw  mm1,Q [mmAdd]
-//    pmulhw  mm1,Q [mmInvDiv]
-//    packuswb mm1,mm0
-//    movd    mm2,D [ebx+ aulRows]
-//    movd    D [ebx+ aulRows],mm1
-//    movd    D [edi+ edx*4],mm2
-//    // advance to next row
-//    add     esi,D [slModulo1]
-//    add     edi,D [slModulo1]
-//    pop     ebx
-//    dec     ebx
-//    jnz     rowLoop
-//
-//// ----------------------- process lower left corner
-//
-//    xor     ebx,ebx
-//    movd    mm1,D [esi+ edx*4 +0]
-//    movd    mm2,D [esi+ edx*4 +4]
-//    movd    mm3,D [esi+       +0]
-//    movd    mm4,D [esi+       +4]
-//    punpcklbw mm1,mm0
-//    punpcklbw mm2,mm0
-//    punpcklbw mm3,mm0
-//    punpcklbw mm4,mm0
-//    paddw   mm1,mm4
-//    pmullw  mm1,Q [mmCe]
-//    pmullw  mm2,Q [mmCc]
-//    pmullw  mm3,Q [mmCm]
-//    paddw   mm1,mm2
-//    paddw   mm1,mm3
-//    paddsw  mm1,Q [mmAdd]
-//    pmulhw  mm1,Q [mmInvDiv]
-//    packuswb mm1,mm0
-//    movd    mm2,D [ebx+ aulRows]
-//    movd    D [edi],mm1
-//    movd    D [edi+ edx*4],mm2
-//    add     esi,4
-//    add     edi,4
-//    add     ebx,4
-//
-//// ----------------------- process lower edge pixels
-//
-//    mov     ecx,D [pixWidth]
-//    sub     ecx,2
-//    // for each pixel
-//lowerLoop:
-//    movd    mm1,D [esi+ edx*4 -4]
-//    movd    mm2,D [esi+ edx*4 +0]
-//    movd    mm3,D [esi+ edx*4 +4]
-//    movd    mm4,D [esi+       -4]
-//    movd    mm5,D [esi+       +0]
-//    movd    mm6,D [esi+       +4]
-//    punpcklbw mm1,mm0
-//    punpcklbw mm2,mm0
-//    punpcklbw mm3,mm0
-//    punpcklbw mm4,mm0
-//    punpcklbw mm5,mm0
-//    punpcklbw mm6,mm0
-//    paddw   mm1,mm3
-//    paddw   mm4,mm6
-//    pmullw  mm1,Q [mmEcl]
-//    pmullw  mm2,Q [mmEe]
-//    pmullw  mm4,Q [mmEch]
-//    pmullw  mm5,Q [mmEm]
-//    paddw   mm1,mm2
-//    paddw   mm1,mm4
-//    paddw   mm1,mm5
-//    paddsw  mm1,Q [mmAdd]
-//    pmulhw  mm1,Q [mmInvDiv]
-//    packuswb mm1,mm0
-//    movd    mm2,D [ebx+ aulRows]
-//    movd    D [edi],mm1
-//    movd    D [edi+ edx*4],mm2
-//    // advance to next pixel
-//    add     esi,4
-//    add     edi,4
-//    add     ebx,4
-//    dec     ecx
-//    jnz     lowerLoop
-//
-//// ----------------------- lower right corners
-//
-//    movd    mm1,D [esi+ edx*4 -4]
-//    movd    mm2,D [esi+ edx*4 +0]
-//    movd    mm3,D [esi+       -4]
-//    movd    mm4,D [esi+       +0]
-//    punpcklbw mm1,mm0
-//    punpcklbw mm2,mm0
-//    punpcklbw mm3,mm0
-//    punpcklbw mm4,mm0
-//    paddw   mm2,mm3
-//    pmullw  mm1,Q [mmCc]
-//    pmullw  mm2,Q [mmCe]
-//    pmullw  mm4,Q [mmCm]
-//    paddw   mm1,mm2
-//    paddw   mm1,mm4
-//    paddsw  mm1,Q [mmAdd]
-//    pmulhw  mm1,Q [mmInvDiv]
-//    packuswb mm1,mm0
-//    movd    mm2,D [ebx+ aulRows]
-//    movd    D [edi],mm1
-//    movd    D [edi+ edx*4],mm2
-//    emms
-//  }
+#if (defined USE_MMX_INTRINSICS)
+    slModulo1 /= BYTES_PER_TEXEL;  // C++ handles incrementing by sizeof type
+    slCanvasWidth /= BYTES_PER_TEXEL;  // C++ handles incrementing by sizeof type
+
+    ULONG *src = pulSrc;
+    ULONG *dst = pulDst;
+    ULONG *rowptr = aulRows;
+
+    __m64 rmm0 = _mm_setzero_si64();
+    __m64 rmmCm = _mm_set_pi32(((int *)((char*)&mmCm))[0],((int *)((char*)&mmCm))[1]);
+    __m64 rmmCe = _mm_set_pi32(((int *)((char*)&mmCe))[0],((int *)((char*)&mmCe))[1]);
+    __m64 rmmCc = _mm_set_pi32(((int *)((char*)&mmCc))[0],((int *)((char*)&mmCc))[1]);
+    __m64 rmmEch = _mm_set_pi32(((int *)((char*)&mmEch))[0],((int *)((char*)&mmEch))[1]);
+    __m64 rmmEcl = _mm_set_pi32(((int *)((char*)&mmEcl))[0],((int *)((char*)&mmEcl))[1]);
+    __m64 rmmEe = _mm_set_pi32(((int *)((char*)&mmEe))[0],((int *)((char*)&mmEe))[1]);
+    __m64 rmmEm = _mm_set_pi32(((int *)((char*)&mmEm))[0],((int *)((char*)&mmEm))[1]);
+    __m64 rmmMm = _mm_set_pi32(((int *)((char*)&mmMm))[0],((int *)((char*)&mmMm))[1]);
+    __m64 rmmMe = _mm_set_pi32(((int *)((char*)&mmMe))[0],((int *)((char*)&mmMe))[1]);
+    __m64 rmmMc = _mm_set_pi32(((int *)((char*)&mmMc))[0],((int *)((char*)&mmMc))[1]);
+    __m64 rmmAdd = _mm_set_pi32(((int *)((char*)&mmAdd))[0],((int *)((char*)&mmAdd))[1]);
+    __m64 rmmInvDiv = _mm_set_pi32(((int *)((char*)&mmInvDiv))[0],((int *)((char*)&mmInvDiv))[1]);
+
+    // ----------------------- process upper left corner
+    __m64 rmm1 = _mm_unpacklo_pi8(_mm_cvtsi32_si64(src[0]), rmm0);
+    __m64 rmm2 = _mm_unpacklo_pi8(_mm_cvtsi32_si64(src[1]), rmm0);
+    __m64 rmm3 = _mm_unpacklo_pi8(_mm_cvtsi32_si64(src[pixCanvasWidth]), rmm0);
+    __m64 rmm4 = _mm_unpacklo_pi8(_mm_cvtsi32_si64(src[pixCanvasWidth+1]), rmm0);
+    __m64 rmm5 = _mm_setzero_si64();
+    __m64 rmm6 = _mm_setzero_si64();
+    __m64 rmm7 = _mm_setzero_si64();
+
+    rmm2 = _mm_add_pi16(rmm2, rmm3);
+    rmm1 = _mm_mullo_pi16(rmm1, rmmCm);
+    rmm2 = _mm_mullo_pi16(rmm2, rmmCe);
+    rmm4 = _mm_mullo_pi16(rmm4, rmmCc);
+    rmm1 = _mm_add_pi16(rmm1, rmm2);
+    rmm1 = _mm_add_pi16(rmm1, rmm4);
+    rmm1 = _mm_adds_pi16(rmm1, rmmAdd);
+    rmm1 = _mm_mulhi_pi16(rmm1, rmmInvDiv);
+    rmm1 = _mm_packs_pu16(rmm1, rmm0);
+    *(rowptr++) = _mm_cvtsi64_si32(rmm1);
+    src++;
+
+    // ----------------------- process upper edge pixels
+    for (PIX i = pixWidth - 2; i != 0; i--)
+    {
+        rmm1 = _mm_unpacklo_pi8(_mm_cvtsi32_si64(src[-1]), rmm0);
+        rmm2 = _mm_unpacklo_pi8(_mm_cvtsi32_si64(src[0]), rmm0);
+        rmm3 = _mm_unpacklo_pi8(_mm_cvtsi32_si64(src[1]), rmm0);
+        rmm4 = _mm_unpacklo_pi8(_mm_cvtsi32_si64(src[pixCanvasWidth-1]), rmm0);
+        rmm5 = _mm_unpacklo_pi8(_mm_cvtsi32_si64(src[pixCanvasWidth]), rmm0);
+        rmm6 = _mm_unpacklo_pi8(_mm_cvtsi32_si64(src[pixCanvasWidth+1]), rmm0);
+
+        rmm1 = _mm_add_pi16(rmm1, rmm3);
+        rmm4 = _mm_add_pi16(rmm4, rmm6);
+        rmm1 = _mm_mullo_pi16(rmm1, rmmEch);
+        rmm2 = _mm_mullo_pi16(rmm2, rmmEm);
+        rmm4 = _mm_mullo_pi16(rmm4, rmmEcl);
+        rmm5 = _mm_mullo_pi16(rmm5, rmmEe);
+        rmm1 = _mm_add_pi16(rmm1, rmm2);
+        rmm1 = _mm_add_pi16(rmm1, rmm4);
+        rmm1 = _mm_add_pi16(rmm1, rmm5);
+        rmm1 = _mm_adds_pi16(rmm1, rmmAdd);
+        rmm1 = _mm_mulhi_pi16(rmm1, rmmInvDiv);
+        rmm1 = _mm_packs_pu16(rmm1, rmm0);
+        *(rowptr++) = _mm_cvtsi64_si32(rmm1);
+        src++;
+    }
+
+    // ----------------------- process upper right corner
+
+    rmm1 = _mm_unpacklo_pi8(_mm_cvtsi32_si64(src[-1]), rmm0);
+    rmm2 = _mm_unpacklo_pi8(_mm_cvtsi32_si64(src[0]), rmm0);
+    rmm3 = _mm_unpacklo_pi8(_mm_cvtsi32_si64(src[pixCanvasWidth-1]), rmm0);
+    rmm4 = _mm_unpacklo_pi8(_mm_cvtsi32_si64(src[pixCanvasWidth]), rmm0);
+
+    rmm1 = _mm_add_pi16(rmm1, rmm4);
+    rmm1 = _mm_mullo_pi16(rmm1, rmmCe);
+    rmm2 = _mm_mullo_pi16(rmm2, rmmCm);
+    rmm3 = _mm_mullo_pi16(rmm3, rmmCc);
+    rmm1 = _mm_add_pi16(rmm1, rmm2);
+    rmm1 = _mm_add_pi16(rmm1, rmm3);
+    rmm1 = _mm_adds_pi16(rmm1, rmmAdd);
+    rmm1 = _mm_mulhi_pi16(rmm1, rmmInvDiv);
+    rmm1 = _mm_packs_pu16(rmm1, rmm0);
+    *rowptr = _mm_cvtsi64_si32(rmm1);
+
+// ----------------------- process bitmap middle pixels
+
+    dst += slCanvasWidth;
+    src += slModulo1;
+
+    // for each row
+    for (size_t i = pixHeight-2; i != 0; i--)  // rowLoop
+    {
+        rowptr = aulRows;
+
+        // process left edge pixel
+        rmm1 = _mm_unpacklo_pi8(_mm_cvtsi32_si64(src[-pixCanvasWidth]), rmm0);
+        rmm2 = _mm_unpacklo_pi8(_mm_cvtsi32_si64(src[(-pixCanvasWidth)+1]), rmm0);
+        rmm3 = _mm_unpacklo_pi8(_mm_cvtsi32_si64(src[0]), rmm0);
+        rmm4 = _mm_unpacklo_pi8(_mm_cvtsi32_si64(src[1]), rmm0);
+        rmm5 = _mm_unpacklo_pi8(_mm_cvtsi32_si64(src[pixCanvasWidth]), rmm0);
+        rmm6 = _mm_unpacklo_pi8(_mm_cvtsi32_si64(src[pixCanvasWidth+1]), rmm0);
+        rmm1 = _mm_add_pi16(rmm1, rmm5);
+        rmm2 = _mm_add_pi16(rmm2, rmm6);
+        rmm1 = _mm_mullo_pi16(rmm1, rmmEch);
+        rmm2 = _mm_mullo_pi16(rmm2, rmmEcl);
+        rmm3 = _mm_mullo_pi16(rmm3, rmmEm);
+        rmm4 = _mm_mullo_pi16(rmm4, rmmEe);
+        rmm1 = _mm_add_pi16(rmm1, rmm2);
+        rmm1 = _mm_add_pi16(rmm1, rmm3);
+        rmm1 = _mm_add_pi16(rmm1, rmm4);
+        rmm1 = _mm_adds_pi16(rmm1, rmmAdd);
+        rmm1 = _mm_mulhi_pi16(rmm1, rmmInvDiv);
+        rmm1 = _mm_packs_pu16(rmm1, rmm0);
+        dst[-pixCanvasWidth] = *rowptr;
+        *(rowptr++) = _mm_cvtsi64_si32(rmm1);
+        src++;
+        dst++;
+
+        // for each pixel in current row
+        for (size_t j = pixWidth-2; j != 0; j--)  // pixLoop
+        {
+            // prepare upper convolution row
+            rmm1 = _mm_unpacklo_pi8(_mm_cvtsi32_si64(src[(-pixCanvasWidth)-1]), rmm0);
+            rmm2 = _mm_unpacklo_pi8(_mm_cvtsi32_si64(src[-pixCanvasWidth]), rmm0);
+            rmm3 = _mm_unpacklo_pi8(_mm_cvtsi32_si64(src[(-pixCanvasWidth)+1]), rmm0);
+
+            // prepare middle convolution row
+            rmm4 = _mm_unpacklo_pi8(_mm_cvtsi32_si64(src[-1]), rmm0);
+            rmm5 = _mm_unpacklo_pi8(_mm_cvtsi32_si64(src[0]), rmm0);
+            rmm6 = _mm_unpacklo_pi8(_mm_cvtsi32_si64(src[1]), rmm0);
+
+            // free some registers
+            rmm1 = _mm_add_pi16(rmm1, rmm3);
+            rmm2 = _mm_add_pi16(rmm2, rmm4);
+            rmm5 = _mm_mullo_pi16(rmm5, rmmMm);
+
+            // prepare lower convolution row
+            rmm3 = _mm_unpacklo_pi8(_mm_cvtsi32_si64(src[pixCanvasWidth-1]), rmm0);
+            rmm4 = _mm_unpacklo_pi8(_mm_cvtsi32_si64(src[pixCanvasWidth]), rmm0);
+            rmm7 = _mm_unpacklo_pi8(_mm_cvtsi32_si64(src[pixCanvasWidth+1]), rmm0);
+
+            // calc weightened value
+            rmm2 = _mm_add_pi16(rmm2, rmm6);
+            rmm1 = _mm_add_pi16(rmm1, rmm3);
+            rmm2 = _mm_add_pi16(rmm2, rmm4);
+            rmm1 = _mm_add_pi16(rmm1, rmm7);
+            rmm2 = _mm_mullo_pi16(rmm2, rmmMe);
+            rmm1 = _mm_mullo_pi16(rmm1, rmmMc);
+            rmm2 = _mm_add_pi16(rmm2, rmm5);
+            rmm1 = _mm_add_pi16(rmm1, rmm2);
+
+            // calc and store wightened value
+            rmm1 = _mm_adds_pi16(rmm1, rmmAdd);
+            rmm1 = _mm_mulhi_pi16(rmm1, rmmInvDiv);
+            rmm1 = _mm_packs_pu16(rmm1, rmm0);
+            dst[-pixCanvasWidth] = *rowptr;
+            *(rowptr++) = _mm_cvtsi64_si32(rmm1);
+
+            // advance to next pixel
+            src++;
+            dst++;
+        }
+
+        // process right edge pixel
+        rmm1 = _mm_unpacklo_pi8(_mm_cvtsi32_si64(src[(-pixCanvasWidth)-1]), rmm0);
+        rmm2 = _mm_unpacklo_pi8(_mm_cvtsi32_si64(src[-pixCanvasWidth]), rmm0);
+        rmm3 = _mm_unpacklo_pi8(_mm_cvtsi32_si64(src[-1]), rmm0);
+        rmm4 = _mm_unpacklo_pi8(_mm_cvtsi32_si64(src[0]), rmm0);
+        rmm5 = _mm_unpacklo_pi8(_mm_cvtsi32_si64(src[pixCanvasWidth-1]), rmm0);
+        rmm6 = _mm_unpacklo_pi8(_mm_cvtsi32_si64(src[pixCanvasWidth]), rmm0);
+
+        rmm1 = _mm_add_pi16(rmm1, rmm5);
+        rmm2 = _mm_add_pi16(rmm2, rmm6);
+        rmm1 = _mm_mullo_pi16(rmm1, rmmEcl);
+        rmm2 = _mm_mullo_pi16(rmm2, rmmEch);
+        rmm3 = _mm_mullo_pi16(rmm3, rmmEe);
+        rmm4 = _mm_mullo_pi16(rmm4, rmmEm);
+        rmm1 = _mm_add_pi16(rmm1, rmm2);
+        rmm1 = _mm_add_pi16(rmm1, rmm3);
+        rmm1 = _mm_add_pi16(rmm1, rmm4);
+        rmm1 = _mm_adds_pi16(rmm1, rmmAdd);
+        rmm1 = _mm_mulhi_pi16(rmm1, rmmInvDiv);
+        rmm1 = _mm_packs_pu16(rmm1, rmm0);
+        dst[-pixCanvasWidth] = *rowptr;
+        *rowptr = _mm_cvtsi64_si32(rmm1);
+
+        // advance to next row
+        src += slModulo1;
+        dst += slModulo1;
+    }
+
+    // ----------------------- process lower left corner
+    rowptr = aulRows;
+    rmm1 = _mm_unpacklo_pi8(_mm_cvtsi32_si64(src[-pixCanvasWidth]), rmm0);
+    rmm2 = _mm_unpacklo_pi8(_mm_cvtsi32_si64(src[(-pixCanvasWidth)+1]), rmm0);
+    rmm3 = _mm_unpacklo_pi8(_mm_cvtsi32_si64(src[0]), rmm0);
+    rmm4 = _mm_unpacklo_pi8(_mm_cvtsi32_si64(src[1]), rmm0);
+
+    rmm1 = _mm_add_pi16(rmm1, rmm4);
+    rmm1 = _mm_mullo_pi16(rmm1, rmmCe);
+    rmm2 = _mm_mullo_pi16(rmm2, rmmCc);
+    rmm3 = _mm_mullo_pi16(rmm3, rmmCm);
+    rmm1 = _mm_add_pi16(rmm1, rmm2);
+    rmm1 = _mm_add_pi16(rmm1, rmm3);
+    rmm1 = _mm_adds_pi16(rmm1, rmmAdd);
+    rmm1 = _mm_mulhi_pi16(rmm1, rmmInvDiv);
+    rmm1 = _mm_packs_pu16(rmm1, rmm0);
+    dst[-pixCanvasWidth] = *rowptr;
+    dst[0] = _mm_cvtsi64_si32(rmm1);
+
+    src++;
+    dst++;
+    rowptr++;
+
+    // ----------------------- process lower edge pixels
+    for (size_t i = pixWidth-2; i != 0; i--)  // lowerLoop
+    {
+        // for each pixel
+        rmm1 = _mm_unpacklo_pi8(_mm_cvtsi32_si64(src[(-pixCanvasWidth)-1]), rmm0);
+        rmm2 = _mm_unpacklo_pi8(_mm_cvtsi32_si64(src[-pixCanvasWidth]), rmm0);
+        rmm3 = _mm_unpacklo_pi8(_mm_cvtsi32_si64(src[(-pixCanvasWidth)+1]), rmm0);
+        rmm4 = _mm_unpacklo_pi8(_mm_cvtsi32_si64(src[-1]), rmm0);
+        rmm5 = _mm_unpacklo_pi8(_mm_cvtsi32_si64(src[0]), rmm0);
+        rmm6 = _mm_unpacklo_pi8(_mm_cvtsi32_si64(src[1]), rmm0);
+
+        rmm1 = _mm_add_pi16(rmm1, rmm3);
+        rmm4 = _mm_add_pi16(rmm4, rmm6);
+        rmm1 = _mm_mullo_pi16(rmm1, rmmEcl);
+        rmm2 = _mm_mullo_pi16(rmm2, rmmEe);
+        rmm4 = _mm_mullo_pi16(rmm4, rmmEch);
+        rmm5 = _mm_mullo_pi16(rmm5, rmmEm);
+        rmm1 = _mm_add_pi16(rmm1, rmm2);
+        rmm1 = _mm_add_pi16(rmm1, rmm4);
+        rmm1 = _mm_add_pi16(rmm1, rmm5);
+        rmm1 = _mm_adds_pi16(rmm1, rmmAdd);
+        rmm1 = _mm_mulhi_pi16(rmm1, rmmInvDiv);
+        rmm1 = _mm_packs_pu16(rmm1, rmm0);
+        dst[-pixCanvasWidth] = *rowptr;
+        dst[0] = _mm_cvtsi64_si32(rmm1);
+
+        // advance to next pixel
+        src++;
+        dst++;
+        rowptr++;
+    }
+
+    // ----------------------- lower right corners
+    rmm1 = _mm_unpacklo_pi8(_mm_cvtsi32_si64(src[(-pixCanvasWidth)-1]), rmm0);
+    rmm2 = _mm_unpacklo_pi8(_mm_cvtsi32_si64(src[-pixCanvasWidth]), rmm0);
+    rmm3 = _mm_unpacklo_pi8(_mm_cvtsi32_si64(src[-1]), rmm0);
+    rmm4 = _mm_unpacklo_pi8(_mm_cvtsi32_si64(src[0]), rmm0);
+
+    rmm2 = _mm_add_pi16(rmm2, rmm3);
+    rmm1 = _mm_mullo_pi16(rmm1, rmmCc);
+    rmm2 = _mm_mullo_pi16(rmm2, rmmCe);
+    rmm4 = _mm_mullo_pi16(rmm4, rmmCm);
+    rmm1 = _mm_add_pi16(rmm1, rmm2);
+    rmm1 = _mm_add_pi16(rmm1, rmm4);
+    rmm1 = _mm_adds_pi16(rmm1, rmmAdd);
+    rmm1 = _mm_mulhi_pi16(rmm1, rmmInvDiv);
+    rmm1 = _mm_packs_pu16(rmm1, rmm0);
+    dst[-pixCanvasWidth] = *rowptr;
+    dst[0] = _mm_cvtsi64_si32(rmm1);
+
+    _mm_empty();  // we're done, clear out the MMX registers!
+
+
+#elif (defined __MSVC_INLINE__)
+  __asm {
+    cld
+    mov     eax,D [pixCanvasWidth] // EAX = positive row offset
+    mov     edx,eax
+    neg     edx                    // EDX = negative row offset
+    pxor    mm0,mm0
+    mov     esi,D [pulSrc]
+    mov     edi,D [pulDst]
+    xor     ebx,ebx
+
+// ----------------------- process upper left corner
+
+    movd    mm1,D [esi+       +0]
+    movd    mm2,D [esi+       +4]
+    movd    mm3,D [esi+ eax*4 +0]
+    movd    mm4,D [esi+ eax*4 +4]
+    punpcklbw mm1,mm0
+    punpcklbw mm2,mm0
+    punpcklbw mm3,mm0
+    punpcklbw mm4,mm0
+    paddw   mm2,mm3
+    pmullw  mm1,Q [mmCm]
+    pmullw  mm2,Q [mmCe]
+    pmullw  mm4,Q [mmCc]
+    paddw   mm1,mm2
+    paddw   mm1,mm4
+    paddsw  mm1,Q [mmAdd]
+    pmulhw  mm1,Q [mmInvDiv]
+    packuswb mm1,mm0
+    movd    D [ebx+ aulRows],mm1
+    add     esi,4
+    add     ebx,4
+
+// ----------------------- process upper edge pixels
+
+    mov     ecx,D [pixWidth]
+    sub     ecx,2
+    // for each pixel
+upperLoop:      
+    movd    mm1,D [esi+       -4]
+    movd    mm2,D [esi+       +0]
+    movd    mm3,D [esi+       +4]
+    movd    mm4,D [esi+ eax*4 -4]
+    movd    mm5,D [esi+ eax*4 +0]
+    movd    mm6,D [esi+ eax*4 +4]
+    punpcklbw mm1,mm0
+    punpcklbw mm2,mm0
+    punpcklbw mm3,mm0
+    punpcklbw mm4,mm0
+    punpcklbw mm5,mm0
+    punpcklbw mm6,mm0
+    paddw   mm1,mm3
+    paddw   mm4,mm6
+    pmullw  mm1,Q [mmEch]
+    pmullw  mm2,Q [mmEm]
+    pmullw  mm4,Q [mmEcl]
+    pmullw  mm5,Q [mmEe]
+    paddw   mm1,mm2
+    paddw   mm1,mm4
+    paddw   mm1,mm5
+    paddsw  mm1,Q [mmAdd]
+    pmulhw  mm1,Q [mmInvDiv]
+    packuswb mm1,mm0
+    movd    D [ebx+ aulRows],mm1
+    // advance to next pixel
+    add     esi,4
+    add     ebx,4
+    dec     ecx
+    jnz     upperLoop
+
+// ----------------------- process upper right corner
+
+    movd    mm1,D [esi+       -4]
+    movd    mm2,D [esi+       +0]
+    movd    mm3,D [esi+ eax*4 -4]
+    movd    mm4,D [esi+ eax*4 +0]
+    punpcklbw mm1,mm0
+    punpcklbw mm2,mm0
+    punpcklbw mm3,mm0
+    punpcklbw mm4,mm0
+    paddw   mm1,mm4
+    pmullw  mm1,Q [mmCe]
+    pmullw  mm2,Q [mmCm]
+    pmullw  mm3,Q [mmCc]
+    paddw   mm1,mm2
+    paddw   mm1,mm3
+    paddsw  mm1,Q [mmAdd]
+    pmulhw  mm1,Q [mmInvDiv]
+    packuswb mm1,mm0
+    movd    D [ebx+ aulRows],mm1
+
+// ----------------------- process bitmap middle pixels
+
+    add     esi,D [slModulo1]
+    add     edi,D [slCanvasWidth]
+    mov     ebx,D [pixHeight]
+    sub     ebx,2
+    // for each row
+rowLoop:      
+    push    ebx
+    xor     ebx,ebx
+    // process left edge pixel
+    movd    mm1,D [esi+ edx*4 +0]
+    movd    mm2,D [esi+ edx*4 +4]
+    movd    mm3,D [esi+       +0]
+    movd    mm4,D [esi+       +4]
+    movd    mm5,D [esi+ eax*4 +0]
+    movd    mm6,D [esi+ eax*4 +4]
+    punpcklbw mm1,mm0
+    punpcklbw mm2,mm0
+    punpcklbw mm3,mm0
+    punpcklbw mm4,mm0
+    punpcklbw mm5,mm0
+    punpcklbw mm6,mm0
+    paddw   mm1,mm5
+    paddw   mm2,mm6
+    pmullw  mm1,Q [mmEch]
+    pmullw  mm2,Q [mmEcl]
+    pmullw  mm3,Q [mmEm]
+    pmullw  mm4,Q [mmEe]
+    paddw   mm1,mm2
+    paddw   mm1,mm3
+    paddw   mm1,mm4
+    paddsw  mm1,Q [mmAdd]
+    pmulhw  mm1,Q [mmInvDiv]
+    packuswb mm1,mm0
+    movd    mm2,D [ebx+ aulRows]
+    movd    D [ebx+ aulRows],mm1
+    movd    D [edi+ edx*4],mm2
+    add     esi,4
+    add     edi,4
+    add     ebx,4
+
+    // for each pixel in current row
+    mov     ecx,D [pixWidth]
+    sub     ecx,2
+pixLoop:
+    // prepare upper convolution row
+    movd    mm1,D [esi+ edx*4 -4]
+    movd    mm2,D [esi+ edx*4 +0]
+    movd    mm3,D [esi+ edx*4 +4]
+    punpcklbw mm1,mm0
+    punpcklbw mm2,mm0
+    punpcklbw mm3,mm0
+    // prepare middle convolution row
+    movd    mm4,D [esi+ -4]
+    movd    mm5,D [esi+ +0]
+    movd    mm6,D [esi+ +4]
+    punpcklbw mm4,mm0
+    punpcklbw mm5,mm0
+    punpcklbw mm6,mm0
+    // free some registers
+    paddw   mm1,mm3
+    paddw   mm2,mm4
+    pmullw  mm5,Q [mmMm]
+    // prepare lower convolution row
+    movd    mm3,D [esi+ eax*4 -4]
+    movd    mm4,D [esi+ eax*4 +0]
+    movd    mm7,D [esi+ eax*4 +4]
+    punpcklbw mm3,mm0
+    punpcklbw mm4,mm0
+    punpcklbw mm7,mm0
+    // calc weightened value
+    paddw   mm2,mm6
+    paddw   mm1,mm3
+    paddw   mm2,mm4
+    paddw   mm1,mm7
+    pmullw  mm2,Q [mmMe]
+    pmullw  mm1,Q [mmMc]
+    paddw   mm2,mm5
+    paddw   mm1,mm2
+    // calc and store wightened value
+    paddsw  mm1,Q [mmAdd]
+    pmulhw  mm1,Q [mmInvDiv]
+    packuswb mm1,mm0
+    movd    mm2,D [ebx+ aulRows]
+    movd    D [ebx+ aulRows],mm1
+    movd    D [edi+ edx*4],mm2
+    // advance to next pixel
+    add     esi,4
+    add     edi,4
+    add     ebx,4
+    dec     ecx
+    jnz     pixLoop
+
+    // process right edge pixel
+    movd    mm1,D [esi+ edx*4 -4]
+    movd    mm2,D [esi+ edx*4 +0]
+    movd    mm3,D [esi+       -4]
+    movd    mm4,D [esi+       +0]
+    movd    mm5,D [esi+ eax*4 -4]
+    movd    mm6,D [esi+ eax*4 +0]
+    punpcklbw mm1,mm0
+    punpcklbw mm2,mm0
+    punpcklbw mm3,mm0
+    punpcklbw mm4,mm0
+    punpcklbw mm5,mm0
+    punpcklbw mm6,mm0
+    paddw   mm1,mm5
+    paddw   mm2,mm6
+    pmullw  mm1,Q [mmEcl]
+    pmullw  mm2,Q [mmEch]
+    pmullw  mm3,Q [mmEe]
+    pmullw  mm4,Q [mmEm]
+    paddw   mm1,mm2
+    paddw   mm1,mm3
+    paddw   mm1,mm4
+    paddsw  mm1,Q [mmAdd]
+    pmulhw  mm1,Q [mmInvDiv]
+    packuswb mm1,mm0
+    movd    mm2,D [ebx+ aulRows]
+    movd    D [ebx+ aulRows],mm1
+    movd    D [edi+ edx*4],mm2
+    // advance to next row
+    add     esi,D [slModulo1]
+    add     edi,D [slModulo1]
+    pop     ebx
+    dec     ebx
+    jnz     rowLoop
+
+// ----------------------- process lower left corner
+
+    xor     ebx,ebx
+    movd    mm1,D [esi+ edx*4 +0]
+    movd    mm2,D [esi+ edx*4 +4]
+    movd    mm3,D [esi+       +0]
+    movd    mm4,D [esi+       +4]
+    punpcklbw mm1,mm0
+    punpcklbw mm2,mm0
+    punpcklbw mm3,mm0
+    punpcklbw mm4,mm0
+    paddw   mm1,mm4
+    pmullw  mm1,Q [mmCe]
+    pmullw  mm2,Q [mmCc]
+    pmullw  mm3,Q [mmCm]
+    paddw   mm1,mm2
+    paddw   mm1,mm3
+    paddsw  mm1,Q [mmAdd]
+    pmulhw  mm1,Q [mmInvDiv]
+    packuswb mm1,mm0
+    movd    mm2,D [ebx+ aulRows]
+    movd    D [edi],mm1
+    movd    D [edi+ edx*4],mm2
+    add     esi,4
+    add     edi,4
+    add     ebx,4
+
+// ----------------------- process lower edge pixels
+
+    mov     ecx,D [pixWidth]
+    sub     ecx,2
+    // for each pixel
+lowerLoop:      
+    movd    mm1,D [esi+ edx*4 -4]
+    movd    mm2,D [esi+ edx*4 +0]
+    movd    mm3,D [esi+ edx*4 +4]
+    movd    mm4,D [esi+       -4]
+    movd    mm5,D [esi+       +0]
+    movd    mm6,D [esi+       +4]
+    punpcklbw mm1,mm0
+    punpcklbw mm2,mm0
+    punpcklbw mm3,mm0
+    punpcklbw mm4,mm0
+    punpcklbw mm5,mm0
+    punpcklbw mm6,mm0
+    paddw   mm1,mm3
+    paddw   mm4,mm6
+    pmullw  mm1,Q [mmEcl]
+    pmullw  mm2,Q [mmEe]
+    pmullw  mm4,Q [mmEch]
+    pmullw  mm5,Q [mmEm]
+    paddw   mm1,mm2
+    paddw   mm1,mm4
+    paddw   mm1,mm5
+    paddsw  mm1,Q [mmAdd]
+    pmulhw  mm1,Q [mmInvDiv]
+    packuswb mm1,mm0
+    movd    mm2,D [ebx+ aulRows]
+    movd    D [edi],mm1
+    movd    D [edi+ edx*4],mm2
+    // advance to next pixel
+    add     esi,4
+    add     edi,4
+    add     ebx,4
+    dec     ecx
+    jnz     lowerLoop
+
+// ----------------------- lower right corners
+
+    movd    mm1,D [esi+ edx*4 -4]
+    movd    mm2,D [esi+ edx*4 +0]
+    movd    mm3,D [esi+       -4]
+    movd    mm4,D [esi+       +0]
+    punpcklbw mm1,mm0
+    punpcklbw mm2,mm0
+    punpcklbw mm3,mm0
+    punpcklbw mm4,mm0
+    paddw   mm2,mm3
+    pmullw  mm1,Q [mmCc]
+    pmullw  mm2,Q [mmCe]
+    pmullw  mm4,Q [mmCm]
+    paddw   mm1,mm2
+    paddw   mm1,mm4
+    paddsw  mm1,Q [mmAdd]
+    pmulhw  mm1,Q [mmInvDiv]
+    packuswb mm1,mm0
+    movd    mm2,D [ebx+ aulRows]
+    movd    D [edi],mm1
+    movd    D [edi+ edx*4],mm2
+    emms
+  }
+
+#elif (defined __GNU_INLINE_X86_32__)
+
+  FB_pulSrc = pulSrc;
+  FB_pulDst = pulDst;
+  FB_pixWidth = pixWidth;
+  FB_pixHeight = pixHeight;
+  FB_pixCanvasWidth = pixCanvasWidth;
+  FB_slModulo1 = slModulo1;
+  FB_slCanvasWidth = slCanvasWidth;
+
+  __asm__ __volatile__ (
+    "pushl     %%ebx                      \n\t"
+    "cld                                  \n\t"
+    "movl      (" ASMSYM(FB_pixCanvasWidth) "), %%eax \n\t" // EAX = positive row offset
+    "movl      %%eax, %%edx               \n\t"
+    "negl      %%edx                      \n\t" // EDX = negative row offset
+    "pxor      %%mm0, %%mm0               \n\t"
+    "movl      (" ASMSYM(FB_pulSrc) "), %%esi         \n\t"
+    "movl      (" ASMSYM(FB_pulDst) "), %%edi         \n\t"
+    "xorl      %%ebx, %%ebx               \n\t"
+
+// ----------------------- process upper left corner
+
+    "movd      0(%%esi), %%mm1            \n\t"
+    "movd      4(%%esi), %%mm2            \n\t"
+    "movd      0(%%esi, %%eax, 4), %%mm3  \n\t"
+    "movd      4(%%esi, %%eax, 4), %%mm4  \n\t"
+    "punpcklbw %%mm0, %%mm1               \n\t"
+    "punpcklbw %%mm0, %%mm2               \n\t"
+    "punpcklbw %%mm0, %%mm3               \n\t"
+    "punpcklbw %%mm0, %%mm4               \n\t"
+    "paddw     %%mm3, %%mm2               \n\t"
+    "pmullw    (" ASMSYM(mmCm) "), %%mm1              \n\t"
+    "pmullw    (" ASMSYM(mmEch) "), %%mm2             \n\t"
+    "pmullw    (" ASMSYM(mmMc) "), %%mm4              \n\t"
+    "paddw     %%mm2, %%mm1               \n\t"
+    "paddw     %%mm4, %%mm1               \n\t"
+    "paddsw    (" ASMSYM(mmAdd) "), %%mm1             \n\t"
+    "pmulhw    (" ASMSYM(mmInvDiv) "), %%mm1          \n\t"
+    "packuswb  %%mm0, %%mm1               \n\t"
+    "movd      %%mm1, " ASMSYM(aulRows) "(%%ebx)      \n\t"
+    "add       $4, %%esi                  \n\t"
+    "add       $4, %%ebx                  \n\t"
+
+// ----------------------- process upper edge pixels
+
+    "movl      (" ASMSYM(FB_pixWidth) "), %%ecx       \n\t"
+    "subl      $2, %%ecx                  \n\t"
+
+    // for each pixel
+    "0:                                   \n\t"  // upperLoop
+    "movd      -4(%%esi), %%mm1           \n\t"
+    "movd       0(%%esi), %%mm2           \n\t"
+    "movd       4(%%esi), %%mm3           \n\t"
+    "movd      -4(%%esi, %%eax, 4), %%mm4 \n\t"
+    "movd       0(%%esi, %%eax, 4), %%mm5 \n\t"
+    "movd       4(%%esi, %%eax, 4), %%mm6 \n\t"
+    "punpcklbw %%mm0, %%mm1               \n\t"
+    "punpcklbw %%mm0, %%mm2               \n\t"
+    "punpcklbw %%mm0, %%mm3               \n\t"
+    "punpcklbw %%mm0, %%mm4               \n\t"
+    "punpcklbw %%mm0, %%mm5               \n\t"
+    "punpcklbw %%mm0, %%mm6               \n\t"
+    "paddw     %%mm3, %%mm1               \n\t"
+    "paddw     %%mm6, %%mm4               \n\t"
+    "pmullw    (" ASMSYM(mmEch) "), %%mm1             \n\t"
+    "pmullw    (" ASMSYM(mmEm) "), %%mm2              \n\t"
+    "pmullw    (" ASMSYM(mmMc) "), %%mm4              \n\t"
+    "pmullw    (" ASMSYM(mmMe) "), %%mm5              \n\t"
+    "paddw     %%mm2, %%mm1               \n\t"
+    "paddw     %%mm4, %%mm1               \n\t"
+    "paddw     %%mm5, %%mm1               \n\t"
+    "paddsw    (" ASMSYM(mmAdd) "), %%mm1             \n\t"
+    "pmulhw    (" ASMSYM(mmInvDiv) "), %%mm1          \n\t"
+    "packuswb  %%mm0, %%mm1               \n\t"
+    "movd      %%mm1, " ASMSYM(aulRows) "(%%ebx)      \n\t"
+
+    // advance to next pixel
+    "addl      $4, %%esi                  \n\t"
+    "addl      $4, %%ebx                  \n\t"
+    "decl      %%ecx                      \n\t"
+    "jnz       0b                         \n\t"  // upperLoop
+
+// ----------------------- process upper right corner
+
+    "movd      -4(%%esi), %%mm1           \n\t"
+    "movd       0(%%esi), %%mm2           \n\t"
+    "movd      -4(%%esi, %%eax, 4), %%mm3 \n\t"
+    "movd       0(%%esi, %%eax, 4), %%mm4 \n\t"
+    "punpcklbw %%mm0, %%mm1               \n\t"
+    "punpcklbw %%mm0, %%mm2               \n\t"
+    "punpcklbw %%mm0, %%mm3               \n\t"
+    "punpcklbw %%mm0, %%mm4               \n\t"
+    "paddw     %%mm4, %%mm1               \n\t"
+    "pmullw    (" ASMSYM(mmEch) "), %%mm1              \n\t"
+    "pmullw    (" ASMSYM(mmCm) "), %%mm2              \n\t"
+    "pmullw    (" ASMSYM(mmMc) "), %%mm3              \n\t"
+    "paddw     %%mm2, %%mm1               \n\t"
+    "paddw     %%mm3, %%mm1               \n\t"
+    "paddsw    (" ASMSYM(mmAdd) "), %%mm1             \n\t"
+    "pmulhw    (" ASMSYM(mmInvDiv) "), %%mm1          \n\t"
+    "packuswb  %%mm0, %%mm1               \n\t"
+    "movd      %%mm1, " ASMSYM(aulRows) "(%%ebx)      \n\t"
+
+// ----------------------- process bitmap middle pixels
+
+    "addl      (" ASMSYM(FB_slModulo1) "), %%esi      \n\t"
+    "addl      (" ASMSYM(FB_slCanvasWidth) "), %%edi  \n\t"
+    "movl      (" ASMSYM(FB_pixHeight) "), %%ebx      \n\t"
+    "subl      $2, %%ebx                  \n\t"
+
+    // for each row
+    "1:                                   \n\t"  // rowLoop
+    "pushl     %%ebx                      \n\t"
+    "xorl      %%ebx, %%ebx               \n\t"
+    // process left edge pixel
+    "movd      0(%%esi, %%edx, 4), %%mm1  \n\t"
+    "movd      4(%%esi, %%edx, 4), %%mm2  \n\t"
+    "movd      0(%%esi), %%mm3            \n\t"
+    "movd      4(%%esi), %%mm4            \n\t"
+    "movd      0(%%esi, %%eax, 4), %%mm5  \n\t"
+    "movd      4(%%esi, %%eax, 4), %%mm6  \n\t"
+    "punpcklbw %%mm0, %%mm1               \n\t"
+    "punpcklbw %%mm0, %%mm2               \n\t"
+    "punpcklbw %%mm0, %%mm3               \n\t"
+    "punpcklbw %%mm0, %%mm4               \n\t"
+    "punpcklbw %%mm0, %%mm5               \n\t"
+    "punpcklbw %%mm0, %%mm6               \n\t"
+    "paddw     %%mm5, %%mm1               \n\t"
+    "paddw     %%mm6, %%mm2               \n\t"
+    "pmullw    (" ASMSYM(mmEch) "), %%mm1             \n\t"
+    "pmullw    (" ASMSYM(mmMc) "), %%mm2              \n\t"
+    "pmullw    (" ASMSYM(mmEm) "), %%mm3              \n\t"
+    "pmullw    (" ASMSYM(mmMe) "), %%mm4              \n\t"
+    "paddw     %%mm2, %%mm1               \n\t"
+    "paddw     %%mm3, %%mm1               \n\t"
+    "paddw     %%mm4, %%mm1               \n\t"
+    "paddsw    (" ASMSYM(mmAdd) "), %%mm1             \n\t"
+    "pmulhw    (" ASMSYM(mmInvDiv) "), %%mm1          \n\t"
+    "packuswb  %%mm0, %%mm1               \n\t"
+    "movd      " ASMSYM(aulRows) "(%%ebx), %%mm2      \n\t"
+    "movd      %%mm1, " ASMSYM(aulRows) "(%%ebx)      \n\t"
+    "movd      %%mm2, 0(%%edi, %%edx, 4)  \n\t"
+    "add       $4, %%esi                  \n\t"
+    "add       $4, %%edi                  \n\t"
+    "add       $4, %%ebx                  \n\t"
+
+    // for each pixel in current row
+    "mov       (" ASMSYM(FB_pixWidth) "), %%ecx       \n\t"
+    "sub       $2, %%ecx                  \n\t"
+    "2:                                   \n\t" // pixLoop
+    // prepare upper convolution row
+    "movd      -4(%%esi, %%edx, 4), %%mm1 \n\t"
+    "movd       0(%%esi, %%edx, 4), %%mm2 \n\t"
+    "movd       4(%%esi, %%edx, 4), %%mm3 \n\t"
+    "punpcklbw %%mm0, %%mm1               \n\t"
+    "punpcklbw %%mm0, %%mm2               \n\t"
+    "punpcklbw %%mm0, %%mm3               \n\t"
+    // prepare middle convolution row
+    "movd      -4(%%esi), %%mm4           \n\t"
+    "movd       0(%%esi), %%mm5           \n\t"
+    "movd       4(%%esi), %%mm6           \n\t"
+    "punpcklbw %%mm0, %%mm4               \n\t"
+    "punpcklbw %%mm0, %%mm5               \n\t"
+    "punpcklbw %%mm0, %%mm6               \n\t"
+    // free some registers
+    "paddw     %%mm3, %%mm1               \n\t"
+    "paddw     %%mm4, %%mm2               \n\t"
+    "pmullw    (" ASMSYM(mmMm) "), %%mm5              \n\t"
+    // prepare lower convolution row
+    "movd      -4(%%esi, %%eax, 4), %%mm3 \n\t"
+    "movd       0(%%esi, %%eax, 4), %%mm4 \n\t"
+    "movd       4(%%esi, %%eax, 4), %%mm7 \n\t"
+    "punpcklbw %%mm0, %%mm3               \n\t"
+    "punpcklbw %%mm0, %%mm4               \n\t"
+    "punpcklbw %%mm0, %%mm7               \n\t"
+    // calc weightened value
+    "paddw     %%mm6, %%mm2               \n\t"
+    "paddw     %%mm3, %%mm1               \n\t"
+    "paddw     %%mm4, %%mm2               \n\t"
+    "paddw     %%mm7, %%mm1               \n\t"
+    "pmullw    (" ASMSYM(mmMe) "), %%mm2              \n\t"
+    "pmullw    (" ASMSYM(mmMc) "), %%mm1              \n\t"
+    "paddw     %%mm5, %%mm2               \n\t"
+    "paddw     %%mm2, %%mm1               \n\t"
+    // calc and store wightened value
+    "paddsw    (" ASMSYM(mmAdd) "), %%mm1             \n\t"
+    "pmulhw    (" ASMSYM(mmInvDiv) "), %%mm1          \n\t"
+    "packuswb  %%mm0, %%mm1               \n\t"
+    "movd      " ASMSYM(aulRows) "(%%ebx), %%mm2      \n\t"
+    "movd      %%mm1, " ASMSYM(aulRows) "(%%ebx)      \n\t"
+    "movd      %%mm2, (%%edi, %%edx, 4)   \n\t"
+    // advance to next pixel
+    "addl      $4, %%esi                  \n\t"
+    "addl      $4, %%edi                  \n\t"
+    "addl      $4, %%ebx                  \n\t"
+    "decl      %%ecx                      \n\t"
+    "jnz       2b                         \n\t"  // pixLoop
+
+    // process right edge pixel
+    "movd      -4(%%esi, %%edx, 4), %%mm1 \n\t"
+    "movd       0(%%esi, %%edx, 4), %%mm2 \n\t"
+    "movd      -4(%%esi), %%mm3           \n\t"
+    "movd       0(%%esi), %%mm4           \n\t"
+    "movd      -4(%%esi, %%eax, 4), %%mm5 \n\t"
+    "movd       0(%%esi, %%eax, 4), %%mm6 \n\t"
+    "punpcklbw %%mm0, %%mm1               \n\t"
+    "punpcklbw %%mm0, %%mm2               \n\t"
+    "punpcklbw %%mm0, %%mm3               \n\t"
+    "punpcklbw %%mm0, %%mm4               \n\t"
+    "punpcklbw %%mm0, %%mm5               \n\t"
+    "punpcklbw %%mm0, %%mm6               \n\t"
+    "paddw     %%mm5, %%mm1               \n\t"
+    "paddw     %%mm6, %%mm2               \n\t"
+    "pmullw    (" ASMSYM(mmMc) "), %%mm1              \n\t"
+    "pmullw    (" ASMSYM(mmEch) "), %%mm2             \n\t"
+    "pmullw    (" ASMSYM(mmMe) "), %%mm3              \n\t"
+    "pmullw    (" ASMSYM(mmEm) "), %%mm4              \n\t"
+    "paddw     %%mm2, %%mm1               \n\t"
+    "paddw     %%mm3, %%mm1               \n\t"
+    "paddw     %%mm4, %%mm1               \n\t"
+    "paddsw    (" ASMSYM(mmAdd) "), %%mm1             \n\t"
+    "pmulhw    (" ASMSYM(mmInvDiv) "), %%mm1          \n\t"
+    "packuswb  %%mm0, %%mm1               \n\t"
+    "movd      " ASMSYM(aulRows) "(%%ebx), %%mm2      \n\t"
+    "movd      %%mm1, " ASMSYM(aulRows) "(%%ebx)      \n\t"
+    "movd      %%mm2, 0(%%edi, %%edx, 4)  \n\t"
+
+    // advance to next row
+    "addl     (" ASMSYM(FB_slModulo1) "), %%esi       \n\t"  // slModulo1
+    "addl     (" ASMSYM(FB_slModulo1) "), %%edi       \n\t"  // slModulo1
+    "popl     %%ebx                       \n\t"
+    "decl     %%ebx                       \n\t"
+    "jnz      1b                          \n\t"  // rowLoop
+
+// ----------------------- process lower left corner
+
+    "xorl      %%ebx, %%ebx               \n\t"
+    "movd      0(%%esi, %%edx, 4), %%mm1  \n\t"
+    "movd      4(%%esi, %%edx, 4), %%mm2  \n\t"
+    "movd      0(%%esi), %%mm3            \n\t"
+    "movd      4(%%esi), %%mm4            \n\t"
+    "punpcklbw %%mm0, %%mm1               \n\t"
+    "punpcklbw %%mm0, %%mm2               \n\t"
+    "punpcklbw %%mm0, %%mm3               \n\t"
+    "punpcklbw %%mm0, %%mm4               \n\t"
+    "paddw     %%mm4, %%mm1               \n\t"
+    "pmullw    (" ASMSYM(mmEch) "), %%mm1             \n\t"
+    "pmullw    (" ASMSYM(mmMc) "), %%mm2              \n\t"
+    "pmullw    (" ASMSYM(mmCm) "), %%mm3              \n\t"
+    "paddw     %%mm2, %%mm1               \n\t"
+    "paddw     %%mm3, %%mm1               \n\t"
+    "paddsw    (" ASMSYM(mmAdd) "), %%mm1             \n\t"
+    "pmulhw    (" ASMSYM(mmInvDiv) "), %%mm1          \n\t"
+    "packuswb  %%mm0, %%mm1               \n\t"
+    "movd      " ASMSYM(aulRows) "(%%ebx), %%mm2      \n\t"
+    "movd      %%mm1, (%%edi)             \n\t"
+    "movd      %%mm2, 0(%%edi, %%edx, 4)  \n\t"
+    "add       $4, %%esi                  \n\t"
+    "add       $4, %%edi                  \n\t"
+    "add       $4, %%ebx                  \n\t"
+
+// ----------------------- process lower edge pixels
+
+    "movl      (" ASMSYM(FB_pixWidth) "), %%ecx       \n\t" // pixWidth
+    "subl      $2, %%ecx                  \n\t"
+    // for each pixel
+    "3:                                   \n\t" // lowerLoop
+    "movd      -4(%%esi, %%edx, 4), %%mm1 \n\t"
+    "movd       0(%%esi, %%edx, 4), %%mm2 \n\t"
+    "movd       4(%%esi, %%edx, 4), %%mm3 \n\t"
+    "movd      -4(%%esi), %%mm4           \n\t"
+    "movd       0(%%esi), %%mm5           \n\t"
+    "movd       4(%%esi), %%mm6           \n\t"
+    "punpcklbw %%mm0, %%mm1               \n\t"
+    "punpcklbw %%mm0, %%mm2               \n\t"
+    "punpcklbw %%mm0, %%mm3               \n\t"
+    "punpcklbw %%mm0, %%mm4               \n\t"
+    "punpcklbw %%mm0, %%mm5               \n\t"
+    "punpcklbw %%mm0, %%mm6               \n\t"
+    "paddw     %%mm3, %%mm1               \n\t"
+    "paddw     %%mm6, %%mm4               \n\t"
+    "pmullw    (" ASMSYM(mmMc) "), %%mm1              \n\t"
+    "pmullw    (" ASMSYM(mmMe) "), %%mm2              \n\t"
+    "pmullw    (" ASMSYM(mmEch) "), %%mm4             \n\t"
+    "pmullw    (" ASMSYM(mmEm) "), %%mm5              \n\t"
+    "paddw     %%mm2, %%mm1               \n\t"
+    "paddw     %%mm4, %%mm1               \n\t"
+    "paddw     %%mm5, %%mm1               \n\t"
+    "paddsw    (" ASMSYM(mmAdd) "), %%mm1             \n\t"
+    "pmulhw    (" ASMSYM(mmInvDiv) "), %%mm1          \n\t"
+    "packuswb  %%mm0, %%mm1               \n\t"
+    "movd      " ASMSYM(aulRows) "(%%ebx), %%mm2      \n\t"
+    "movd      %%mm1, (%%edi)             \n\t"
+    "movd      %%mm2, 0(%%edi, %%edx, 4)  \n\t"
+    // advance to next pixel
+    "addl     $4, %%esi                   \n\t"
+    "addl     $4, %%edi                   \n\t"
+    "addl     $4, %%ebx                   \n\t"
+    "decl     %%ecx                       \n\t"
+    "jnz      3b                          \n\t" // lowerLoop
+
+// ----------------------- lower right corners
+
+    "movd      -4(%%esi, %%edx, 4), %%mm1 \n\t"
+    "movd       0(%%esi, %%edx, 4), %%mm2 \n\t"
+    "movd      -4(%%esi), %%mm3           \n\t"
+    "movd       0(%%esi), %%mm4           \n\t"
+    "punpcklbw %%mm0, %%mm1               \n\t"
+    "punpcklbw %%mm0, %%mm2               \n\t"
+    "punpcklbw %%mm0, %%mm3               \n\t"
+    "punpcklbw %%mm0, %%mm4               \n\t"
+    "paddw     %%mm3, %%mm2               \n\t"
+    "pmullw    (" ASMSYM(mmMc) "), %%mm1              \n\t"
+    "pmullw    (" ASMSYM(mmEch) "), %%mm2              \n\t"
+    "pmullw    (" ASMSYM(mmCm) "), %%mm4              \n\t"
+    "paddw     %%mm2, %%mm1               \n\t"
+    "paddw     %%mm4, %%mm1               \n\t"
+    "paddsw    (" ASMSYM(mmAdd) "), %%mm1             \n\t"
+    "pmulhw    (" ASMSYM(mmInvDiv) "), %%mm1          \n\t"
+    "packuswb  %%mm0, %%mm1               \n\t"
+    "movd      " ASMSYM(aulRows) "(%%ebx), %%mm2      \n\t"
+    "movd      %%mm1, (%%edi)             \n\t"
+    "movd      %%mm2, 0(%%edi, %%edx, 4)  \n\t"
+    "emms                                 \n\t"
+    "popl      %%ebx                      \n\t"
+        : // no outputs.
+        : // inputs are all globals.
+        : FPU_REGS, MMX_REGS, "eax", "ecx", "edx", "esi", "edi",
+          "cc", "memory"
+  );
+
+#else
+    slModulo1 /= BYTES_PER_TEXEL;  // C++ handles incrementing by sizeof type
+    slCanvasWidth /= BYTES_PER_TEXEL;  // C++ handles incrementing by sizeof type
+
+    ULONG *src = pulSrc;
+    ULONG *dst = pulDst;
+    ULONG *rowptr = aulRows;
+
+    ExtPix rmm1={0}, rmm2={0}, rmm3={0}, rmm4={0}, rmm5={0}, rmm6={0}, rmm7={0};
+    #define EXTPIXFROMINT64(x) ExtPix r##x; extpix_fromi64(r##x, x);
+    EXTPIXFROMINT64(mmCm);
+    EXTPIXFROMINT64(mmCe);
+    EXTPIXFROMINT64(mmCc);
+    EXTPIXFROMINT64(mmEch);
+    EXTPIXFROMINT64(mmEcl);
+    EXTPIXFROMINT64(mmEe);
+    EXTPIXFROMINT64(mmEm);
+    EXTPIXFROMINT64(mmMm);
+    EXTPIXFROMINT64(mmMe);
+    EXTPIXFROMINT64(mmMc);
+    EXTPIXFROMINT64(mmAdd);
+    EXTPIXFROMINT64(mmInvDiv);
+    #undef EXTPIXFROMINT64
+
+    // ----------------------- process upper left corner
+    extend_pixel(src[0], rmm1);
+    extend_pixel(src[1], rmm2);
+    extend_pixel(src[pixCanvasWidth], rmm3);
+    extend_pixel(src[pixCanvasWidth+1], rmm4);
+
+    extpix_add(rmm2, rmm3);
+    extpix_mul(rmm1, rmmCm);
+    extpix_mul(rmm2, rmmCe);
+    extpix_mul(rmm4, rmmCc);
+    extpix_add(rmm1, rmm2);
+    extpix_add(rmm1, rmm4);
+    extpix_adds(rmm1, rmmAdd);
+    extpix_mulhi(rmm1, rmmInvDiv);
+    *(rowptr++) = unextend_pixel(rmm1);
+    
+    src++;
+
+    // ----------------------- process upper edge pixels
+    for (PIX i = pixWidth - 2; i != 0; i--)
+    {
+        extend_pixel(src[-1], rmm1);
+        extend_pixel(src[0], rmm2);
+        extend_pixel(src[1], rmm3);
+        extend_pixel(src[pixCanvasWidth-1], rmm4);
+        extend_pixel(src[pixCanvasWidth], rmm5);
+        extend_pixel(src[pixCanvasWidth+1], rmm6);
+
+        extpix_add(rmm1, rmm3);
+        extpix_add(rmm4, rmm6);
+        extpix_mul(rmm1, rmmEch);
+        extpix_mul(rmm2, rmmEm);
+        extpix_mul(rmm4, rmmEcl);
+        extpix_mul(rmm5, rmmEe);
+        extpix_add(rmm1, rmm2);
+        extpix_add(rmm1, rmm4);
+        extpix_add(rmm1, rmm5);
+        extpix_adds(rmm1, rmmAdd);
+        extpix_mulhi(rmm1, rmmInvDiv);
+        *(rowptr++) = unextend_pixel(rmm1);
+        src++;
+    }
+
+    // ----------------------- process upper right corner
+
+    extend_pixel(src[-1], rmm1);
+    extend_pixel(src[0], rmm2);
+    extend_pixel(src[pixCanvasWidth-1], rmm3);
+    extend_pixel(src[pixCanvasWidth], rmm4);
+
+    extpix_add(rmm1, rmm4);
+    extpix_mul(rmm1, rmmCe);
+    extpix_mul(rmm2, rmmCm);
+    extpix_mul(rmm3, rmmCc);
+    extpix_add(rmm1, rmm2);
+    extpix_add(rmm1, rmm3);
+    extpix_adds(rmm1, rmmAdd);
+    extpix_mulhi(rmm1, rmmInvDiv);
+    *rowptr = unextend_pixel(rmm1);
+
+// ----------------------- process bitmap middle pixels
+
+    dst += slCanvasWidth;
+    src += slModulo1;
+
+    // for each row
+    for (size_t i = pixHeight-2; i != 0; i--)  // rowLoop
+    {
+        rowptr = aulRows;
+
+        // process left edge pixel
+        extend_pixel(src[-pixCanvasWidth], rmm1);
+        extend_pixel(src[(-pixCanvasWidth)+1], rmm2);
+        extend_pixel(src[0], rmm3);
+        extend_pixel(src[1], rmm4);
+        extend_pixel(src[pixCanvasWidth], rmm5);
+        extend_pixel(src[pixCanvasWidth+1], rmm6);
+
+        extpix_add(rmm1, rmm5);
+        extpix_add(rmm2, rmm6);
+        extpix_mul(rmm1, rmmEch);
+        extpix_mul(rmm2, rmmEcl);
+        extpix_mul(rmm3, rmmEm);
+        extpix_mul(rmm4, rmmEe);
+        extpix_add(rmm1, rmm2);
+        extpix_add(rmm1, rmm3);
+        extpix_add(rmm1, rmm4);
+        extpix_adds(rmm1, rmmAdd);
+        extpix_mulhi(rmm1, rmmInvDiv);
+        dst[-pixCanvasWidth] = *rowptr;
+        *(rowptr++) = unextend_pixel(rmm1);
+        src++;
+        dst++;
+
+        // for each pixel in current row
+        for (size_t j = pixWidth-2; j != 0; j--)  // pixLoop
+        {
+            // prepare upper convolution row
+            extend_pixel(src[(-pixCanvasWidth)-1], rmm1);
+            extend_pixel(src[-pixCanvasWidth], rmm2);
+            extend_pixel(src[(-pixCanvasWidth)+1], rmm3);
+
+            // prepare middle convolution row
+            extend_pixel(src[-1], rmm4);
+            extend_pixel(src[0], rmm5);
+            extend_pixel(src[1], rmm6);
+
+            // free some registers
+            extpix_add(rmm1, rmm3);
+            extpix_add(rmm2, rmm4);
+            extpix_mul(rmm5, rmmMm);
+
+            // prepare lower convolution row
+            extend_pixel(src[pixCanvasWidth-1], rmm3);
+            extend_pixel(src[pixCanvasWidth], rmm4);
+            extend_pixel(src[pixCanvasWidth+1], rmm7);
+
+            // calc weightened value
+            extpix_add(rmm2, rmm6);
+            extpix_add(rmm1, rmm3);
+            extpix_add(rmm2, rmm4);
+            extpix_add(rmm1, rmm7);
+            extpix_mul(rmm2, rmmMe);
+            extpix_mul(rmm1, rmmMc);
+            extpix_add(rmm2, rmm5);
+            extpix_add(rmm1, rmm2);
+
+            // calc and store wightened value
+            extpix_adds(rmm1, rmmAdd);
+            extpix_mulhi(rmm1, rmmInvDiv);
+            dst[-pixCanvasWidth] = *rowptr;
+            *(rowptr++) = unextend_pixel(rmm1);
+
+            // advance to next pixel
+            src++;
+            dst++;
+        }
+
+        // process right edge pixel
+        extend_pixel(src[(-pixCanvasWidth)-1], rmm1);
+        extend_pixel(src[-pixCanvasWidth], rmm2);
+        extend_pixel(src[-1], rmm3);
+        extend_pixel(src[0], rmm4);
+        extend_pixel(src[pixCanvasWidth-1], rmm5);
+        extend_pixel(src[pixCanvasWidth], rmm6);
+
+        extpix_add(rmm1, rmm5);
+        extpix_add(rmm2, rmm6);
+        extpix_mul(rmm1, rmmEcl);
+        extpix_mul(rmm2, rmmEch);
+        extpix_mul(rmm3, rmmEe);
+        extpix_mul(rmm4, rmmEm);
+        extpix_add(rmm1, rmm2);
+        extpix_add(rmm1, rmm3);
+        extpix_add(rmm1, rmm4);
+        extpix_adds(rmm1, rmmAdd);
+        extpix_mulhi(rmm1, rmmInvDiv);
+        dst[-pixCanvasWidth] = *rowptr;
+        *rowptr = unextend_pixel(rmm1);
+
+        // advance to next row
+        src += slModulo1;
+        dst += slModulo1;
+    }
+
+    // ----------------------- process lower left corner
+    rowptr = aulRows;
+    extend_pixel(src[-pixCanvasWidth], rmm1);
+    extend_pixel(src[(-pixCanvasWidth)+1], rmm2);
+    extend_pixel(src[0], rmm3);
+    extend_pixel(src[1], rmm4);
+
+    extpix_add(rmm1, rmm4);
+    extpix_mul(rmm1, rmmCe);
+    extpix_mul(rmm2, rmmCc);
+    extpix_mul(rmm3, rmmCm);
+    extpix_add(rmm1, rmm2);
+    extpix_add(rmm1, rmm3);
+    extpix_adds(rmm1, rmmAdd);
+    extpix_mulhi(rmm1, rmmInvDiv);
+    dst[-pixCanvasWidth] = *rowptr;
+    dst[0] = unextend_pixel(rmm1);
+
+    src++;
+    dst++;
+    rowptr++;
+
+    // ----------------------- process lower edge pixels
+    for (size_t i = pixWidth-2; i != 0; i--)  // lowerLoop
+    {
+        // for each pixel
+        extend_pixel(src[(-pixCanvasWidth)-1], rmm1);
+        extend_pixel(src[-pixCanvasWidth], rmm2);
+        extend_pixel(src[(-pixCanvasWidth)+1], rmm3);
+        extend_pixel(src[-1], rmm4);
+        extend_pixel(src[0], rmm5);
+        extend_pixel(src[1], rmm6);
+
+        extpix_add(rmm1, rmm3);
+        extpix_add(rmm4, rmm6);
+        extpix_mul(rmm1, rmmEcl);
+        extpix_mul(rmm2, rmmEe);
+        extpix_mul(rmm4, rmmEch);
+        extpix_mul(rmm5, rmmEm);
+        extpix_add(rmm1, rmm2);
+        extpix_add(rmm1, rmm4);
+        extpix_add(rmm1, rmm5);
+        extpix_adds(rmm1, rmmAdd);
+        extpix_mulhi(rmm1, rmmInvDiv);
+        dst[-pixCanvasWidth] = *rowptr;
+        dst[0] = unextend_pixel(rmm1);
+
+        // advance to next pixel
+        src++;
+        dst++;
+        rowptr++;
+    }
+
+    // ----------------------- lower right corners
+    extend_pixel(src[(-pixCanvasWidth)-1], rmm1);
+    extend_pixel(src[-pixCanvasWidth], rmm2);
+    extend_pixel(src[-1], rmm3);
+    extend_pixel(src[0], rmm4);
+
+    extpix_add(rmm2, rmm3);
+    extpix_mul(rmm1, rmmCc);
+    extpix_mul(rmm2, rmmCe);
+    extpix_mul(rmm4, rmmCm);
+    extpix_add(rmm1, rmm2);
+    extpix_add(rmm1, rmm4);
+    extpix_adds(rmm1, rmmAdd);
+    extpix_mulhi(rmm1, rmmInvDiv);
+    dst[-pixCanvasWidth] = *rowptr;
+    dst[0] = unextend_pixel(rmm1);
+
+#endif
 
   // all done (finally)
   _pfGfxProfile.StopTimer( CGfxProfile::PTI_FILTERBITMAP);
 }
-
+ 
 
 
 // saturate color of bitmap
-void AdjustBitmapColor( ULONG *pulSrc, ULONG *pulDst, PIX pixWidth, PIX pixHeight,
+void AdjustBitmapColor( ULONG *pulSrc, ULONG *pulDst, PIX pixWidth, PIX pixHeight, 
                         SLONG const slHueShift, SLONG const slSaturation)
 {
   for( INDEX i=0; i<(pixWidth*pixHeight); i++) {
@@ -1274,7 +2578,7 @@ void MakeMipmapTable( PIX pixU, PIX pixV, MipmapTable &mmt)
 
 static ULONG *_pulTexture;
 static PIX    _pixTexWidth, _pixTexHeight;
-extern BOOL   _bSomeDarkExists = FALSE;
+BOOL   _bSomeDarkExists = FALSE;
 
 
 // set texture that will be used for all subsequent triangles
@@ -1371,14 +2675,14 @@ void DrawTriangle_Mask( UBYTE *pubMaskPlane, SLONG slMaskWidth, SLONG slMaskHeig
   // find row counter and max delta J
   SLONG ctJShort1 = pixMdJ - pixUpJ;
   SLONG ctJShort2 = pixDnJ - pixMdJ;
-  SLONG ctJLong   = pixDnJ - pixUpJ;
+  //SLONG ctJLong   = pixDnJ - pixUpJ;
 
   FLOAT currK, curr1oK, currUoK, currVoK;
   PIX   pixJ = pixUpJ;
 
   // if model has texture and texture has alpha channel, do complex mapping thru texture's alpha channel
-  if( _pulTexture!=NULL && bTransparency)
-  {
+  if( _pulTexture!=NULL && bTransparency) 
+  { 
     // calculate some texture variables
     FLOAT fD1oKoDJShort1 = fD1oKShort1 * f1oDJShort1;
     FLOAT fD1oKoDJShort2 = fD1oKShort2 * f1oDJShort2;
@@ -1480,8 +2784,8 @@ void DrawTriangle_Mask( UBYTE *pubMaskPlane, SLONG slMaskWidth, SLONG slMaskHeig
     }
   }
   // simple flat mapping (no texture at all)
-  else
-  {
+  else 
+  { 
     // render upper triangle part
     while( ctJShort1>0) {
       SLONG currI = fixILong>>11;
@@ -1530,7 +2834,7 @@ void DrawTriangle_Mask( UBYTE *pubMaskPlane, SLONG slMaskWidth, SLONG slMaskHeig
 #if 0
 
   // bilinear filtering of lower mipmap
-
+  
   // row loop
   UBYTE r,g,b,a;
   for( PIX v=0; v<pixHeight; v++)
@@ -1560,7 +2864,7 @@ void DrawTriangle_Mask( UBYTE *pubMaskPlane, SLONG slMaskWidth, SLONG slMaskHeig
 
   // row loop
   PIX u,v;
-  for( v=0; v<pixCurrHeight/2; v++) {
+  for( v=0; v<pixCurrHeight/2; v++) { 
     for( u=0; u<pixCurrWidth/2; u++) { // mipmap upper left pixel
       pulDstMipmap[v*pixCurrWidth+u] = pulSrcMipmap[((v*2+0)*pixCurrWidth*2+u*2) +0];
     }
@@ -1568,7 +2872,7 @@ void DrawTriangle_Mask( UBYTE *pubMaskPlane, SLONG slMaskWidth, SLONG slMaskHeig
       pulDstMipmap[v*pixCurrWidth+u] = pulSrcMipmap[((v*2+0)*pixCurrWidth*2+u*2) +1];
     }
   }
-  for( v=pixCurrHeight/2; v<pixCurrHeight; v++) {
+  for( v=pixCurrHeight/2; v<pixCurrHeight; v++) { 
     for( u=0; u<pixCurrWidth/2; u++) { // mipmap upper left pixel
       pulDstMipmap[v*pixCurrWidth+u] = pulSrcMipmap[((v*2+1)*pixCurrWidth*2+u*2) +0];
     }
@@ -1593,7 +2897,7 @@ rowLoopE:
 pixLoopE:
     movd    mm1,D [esi]
     punpcklbw mm1,mm0
-    pand    mm1,Q [mmErrDiffMask]
+    pand    mm1,Q [mmErrDiffMask] 
     // determine errors
     movq    mm3,mm1
     paddw   mm3,mm3 // *2
@@ -1649,7 +2953,7 @@ rowLoopE:
 pixLoopEL:
     movd    mm1,D [esi]
     punpcklbw mm1,mm0
-    pand    mm1,Q [mmErrDiffMask]
+    pand    mm1,Q [mmErrDiffMask] 
     // determine errors
     movq    mm3,mm1
     paddw   mm3,mm3 // *2
@@ -1693,7 +2997,7 @@ pixLoopEL:
 pixLoopER:
     movd    mm1,D [esi]
     punpcklbw mm1,mm0
-    pand    mm1,Q [mmErrDiffMask]
+    pand    mm1,Q [mmErrDiffMask] 
     // determine errors
     movq    mm3,mm1
     paddw   mm3,mm3 // *2

@@ -671,7 +671,7 @@ static void RSSetPolygonColors( ScenePolygon *pspoGroup, UBYTE ubAlpha)
   for( ScenePolygon *pspo = pspoGroup; pspo != NULL; pspo = pspo->spo_pspoSucc) {
     col  = ByteSwap( AdjustColor( pspo->spo_cColor|ubAlpha, _slTexHueShift, _slTexSaturation));
     pcol = &_acolPass[pspo->spo_iVtx0Pass];
-    for( INDEX i=0; i<pspo->spo_ctVtx; i++) pcol[i].abgr = col;
+    for( INDEX i=0; i<pspo->spo_ctVtx; i++) pcol[i].gfxcol.ul.abgr = col;
   }
   gfxSetColorArray( &_acolPass[0]);
   _pfGfxProfile.StopTimer( CGfxProfile::PTI_RS_SETCOLORS);
@@ -683,7 +683,7 @@ static void RSSetConstantColors( COLOR col)
   _pfGfxProfile.StartTimer( CGfxProfile::PTI_RS_SETCOLORS);
   col = ByteSwap( AdjustColor( col, _slTexHueShift, _slTexSaturation));
   GFXColor *pcol = &_acolPass[0];
-  for( INDEX i=0; i<_acolPass.Count(); i++) pcol[i].abgr = col;
+  for( INDEX i=0; i<_acolPass.Count(); i++) pcol[i].gfxcol.ul.abgr = col;
   gfxSetColorArray( &_acolPass[0]);
   _pfGfxProfile.StopTimer( CGfxProfile::PTI_RS_SETCOLORS);
 }
@@ -717,7 +717,7 @@ static void RSSetTextureColors( ScenePolygon *pspoGroup, ULONG ulLayerMask)
     // store
     colTotal = ByteSwap(colTotal);
     GFXColor *pcol= &_acolPass[pspo->spo_iVtx0Pass];
-    for( INDEX i=0; i<pspo->spo_ctVtx; i++) pcol[i].abgr = colTotal;
+    for( INDEX i=0; i<pspo->spo_ctVtx; i++) pcol[i].gfxcol.ul.abgr = colTotal;
   }
   // set color array
   gfxSetColorArray( &_acolPass[0]);
@@ -761,8 +761,8 @@ static void RSSetTextureCoords( ScenePolygon *pspoGroup, INDEX iLayer, INDEX iUn
         const FLOAT fRVz = fVz - 2*vN(3)*fNV;
         const FLOAT fRVxT = fRVx*mViewer(1,1) + fRVy*mViewer(2,1) + fRVz*mViewer(3,1);
         const FLOAT fRVzT = fRVx*mViewer(1,3) + fRVy*mViewer(2,3) + fRVz*mViewer(3,3);
-        ptex[i].s = fRVxT*0.5f +0.5f;
-        ptex[i].t = fRVzT*0.5f +0.5f;
+        ptex[i].gfxtc.st.s = fRVxT*0.5f +0.5f;
+        ptex[i].gfxtc.st.t = fRVzT*0.5f +0.5f;
       }
       // advance to next polygon
       continue;
@@ -778,7 +778,7 @@ static void RSSetTextureCoords( ScenePolygon *pspoGroup, INDEX iLayer, INDEX iUn
       lea     eax,[esi].spo_amvMapping[edi].mv_vO
       lea     ebx,[esi].spo_amvMapping[edi].mv_vU
       lea     ecx,[esi].spo_amvMapping[edi].mv_vV
-      mov     edx,D [esi].spo_ctVtx
+      mov     edx,D [esi].gfxtc.st.spo_ctVtx
       mov     esi,D [pvtx]
       mov     edi,D [ptex]
 vtxLoop:
@@ -804,8 +804,8 @@ vtxLoop:
       faddp   st(1),st(0) // vU(1)*fDX+vU(2)*fDY+vU(3)*fDZ,  vV(1)*fDX+vV(2)*fDY, vV(3)*fDZ
       fxch    st(1)
       faddp   st(2),st(0) // vU(1)*fDX+vU(2)*fDY+vU(3)*fDZ,  vV(1)*fDX+vV(2)*fDY+vV(3)*fDZ
-      fstp    D [edi]GFXTexCoord.s
-      fstp    D [edi]GFXTexCoord.t
+      fstp    D [edi]GFXTexCoord.gfxtc.st.s
+      fstp    D [edi]GFXTexCoord.gfxtc.st.t
       add     esi,4*4
       add     edi,2*4
       dec     edx
@@ -818,8 +818,8 @@ vtxLoop:
       const FLOAT fDX = pvtx[i].x -vO(1);
       const FLOAT fDY = pvtx[i].y -vO(2);
       const FLOAT fDZ = pvtx[i].z -vO(3);
-      ptex[i].s = vU(1)*fDX + vU(2)*fDY + vU(3)*fDZ;
-      ptex[i].t = vV(1)*fDX + vV(2)*fDY + vV(3)*fDZ;
+      ptex[i].gfxtc.st.s = vU(1)*fDX + vU(2)*fDY + vU(3)*fDZ;
+      ptex[i].gfxtc.st.t = vV(1)*fDX + vV(2)*fDY + vV(3)*fDZ;
     }
 #endif
   }
@@ -840,8 +840,8 @@ static void RSSetFogCoordinates( ScenePolygon *pspoGroup)
     const GFXVertex   *pvtx = &_avtxPass[pspo->spo_iVtx0Pass];
           GFXTexCoord *ptex = &_atexPass[0][pspo->spo_iVtx0Pass];
     for( INDEX i=0; i<pspo->spo_ctVtx; i++) {
-      ptex[i].s = pvtx[i].z *_fFogMul;
-      ptex[i].t = (_fog_vHDirView(1)*pvtx[i].x + _fog_vHDirView(2)*pvtx[i].y
+      ptex[i].gfxtc.st.s = pvtx[i].z *_fFogMul;
+      ptex[i].gfxtc.st.t = (_fog_vHDirView(1)*pvtx[i].x + _fog_vHDirView(2)*pvtx[i].y
                 +  _fog_vHDirView(3)*pvtx[i].z + _fog_fAddH) * _fog_fMulH;
     }
   }
@@ -859,8 +859,8 @@ static void RSSetHazeCoordinates( ScenePolygon *pspoGroup)
     const GFXVertex   *pvtx = &_avtxPass[pspo->spo_iVtx0Pass];
           GFXTexCoord *ptex = &_atexPass[0][pspo->spo_iVtx0Pass];
     for( INDEX i=0; i<pspo->spo_ctVtx; i++) {
-      ptex[i].s = (pvtx[i].z + _fHazeAdd) *_fHazeMul;
-      ptex[i].t = 0;
+      ptex[i].gfxtc.st.s = (pvtx[i].z + _fHazeAdd) *_fHazeMul;
+      ptex[i].gfxtc.st.t = 0;
     }
   }
   gfxSetTexCoordArray( &_atexPass[0][0], FALSE);
@@ -1192,7 +1192,7 @@ __forceinline void RSRenderFog( ScenePolygon *pspoFirst)
     const GFXTexCoord *ptex = &_atexPass[0][pspo->spo_iVtx0Pass];
     for( INDEX i=0; i<pspo->spo_ctVtx; i++) {
       // polygon is in fog, stop searching
-      if( InFog(ptex[i].t)) goto hasFog;
+      if( InFog(ptex[i].gfxtc.st.t)) goto hasFog;
     }
     // hasn't got any fog, so skip it
     continue;
@@ -1216,7 +1216,7 @@ __forceinline void RSRenderHaze( ScenePolygon *pspoFirst)
     const GFXTexCoord *ptex = &_atexPass[0][pspo->spo_iVtx0Pass];
     for( INDEX i=0; i<pspo->spo_ctVtx; i++) {
       // polygon is in haze, stop searching
-      if( InHaze(ptex[i].s)) goto hasHaze;
+      if( InHaze(ptex[i].gfxtc.st.s)) goto hasHaze;
     }
     // hasn't got any haze, so skip it
     continue;

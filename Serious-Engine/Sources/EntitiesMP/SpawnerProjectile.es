@@ -15,7 +15,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 507
 %{
-#include "StdH.h"
+#include "EntitiesMP/StdH/StdH.h"
   
 #define ECF_SPAWNERPROJECTILE ( \
   ((ECBI_BRUSH)<<ECB_TEST) |\

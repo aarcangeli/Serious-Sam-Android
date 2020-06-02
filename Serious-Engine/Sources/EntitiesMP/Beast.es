@@ -16,7 +16,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 336
 
 %{
-#include "StdH.h"
+#include "EntitiesMP/StdH/StdH.h"
 #include "Models/Enemies/Beast/Beast.h"
 #include "EntitiesMP/WorldSettingsController.h"
 #include "EntitiesMP/BackgroundViewer.h"
@@ -357,7 +357,7 @@ procedures:
       autowait(0.51f);
 
       ShootProjectile(PRT_BEAST_PROJECTILE, FLOAT3D( 0.0f, 1.5f*BEAST_STRETCH, 0.0f),
-        ANGLE3D(AngleDeg((FRnd()-0.5)*30.0f), AngleDeg(FRnd()*10.0f), 0));
+        ANGLE3D(AngleDeg((FRnd()-0.5f)*30.0f), AngleDeg(FRnd()*10.0f), 0));
       autowait(0.3f);
     }
     

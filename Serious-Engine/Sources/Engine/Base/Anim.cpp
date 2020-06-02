@@ -171,14 +171,12 @@ BOOL CAnimData::IsAutoFreed(void)
 /////////////////////////////////////////////////////////////////////
 // Reference counting functions
 void CAnimData::AddReference(void) {
-  if (this!=NULL) {
+    ASSERT(this!=NULL);
     MarkUsed();
-  }
 };
 void CAnimData::RemReference(void) {
-  if (this!=NULL) {
+    ASSERT(this!=NULL);
     RemReference_internal();
-  }
 };
 void CAnimData::RemReference_internal(void) {
   _pAnimStock->Release(this);
@@ -593,7 +591,7 @@ CAnimObject::CAnimObject(void)
 /* Destructor. */
 CAnimObject::~CAnimObject(void)
 {
-  ao_AnimData->RemReference();
+  if(ao_AnimData != NULL) ao_AnimData->RemReference();
 };
 
 // copy from another object of same class
@@ -788,9 +786,9 @@ BOOL CAnimObject::IsUpToDate(const CUpdateable &ud) const
  */
 void CAnimObject::SetData(CAnimData *pAD) {
   // mark new data as referenced once more
-  pAD->AddReference();
+  if(pAD != NULL) pAD->AddReference();
   // mark old data as referenced once less
-  ao_AnimData->RemReference();
+  if(ao_AnimData != NULL) ao_AnimData->RemReference();
   // remember new data
   ao_AnimData = pAD;
   if( pAD != NULL) StartAnim( 0);

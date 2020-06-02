@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 #include <Engine/Math/Vector.h>
 #include <Engine/Math/Plane.h>
 #include <Engine/Math/Functions.h>
@@ -41,7 +41,7 @@ CStaticStackArray<GFXColor>   _aiExtColors;
 CStaticStackArray<INDEX>      _aiHitTiles;
 
 static ULONG *_pulSharedTopMap = NULL; // Shared memory used for topmap regeneration
-extern SLONG  _slSharedTopMapSize = 0; // Size of shared memory allocated for topmap regeneration
+SLONG  _slSharedTopMapSize = 0; // Size of shared memory allocated for topmap regeneration
 extern INDEX  _ctShadowMapUpdates;
 #pragma message(">> Create class with destructor to clear shared topmap memory")
 
@@ -53,12 +53,13 @@ FLOATaabbox3D _bboxDrawTwo;
 #define LEFT	  1
 #define MIDDLE	2
 
+#if 0 // DG: unused.
 // Test AABBox agains ray
 static BOOL HitBoundingBox(FLOAT3D &vOrigin, FLOAT3D &vDir, FLOAT3D &vHit, FLOATaabbox3D &bbox)
 {
 	BOOL bInside = TRUE;
 	BOOL quadrant[NUMDIM];
-	register int i;
+	int i;
 	int whichPlane;
 
   double maxT[NUMDIM];
@@ -123,7 +124,6 @@ static BOOL HitBoundingBox(FLOAT3D &vOrigin, FLOAT3D &vDir, FLOAT3D &vHit, FLOAT
 	return (TRUE);				/* ray hits box */
 }
 
-
 // Test AABBox agains ray
 static BOOL RayHitsAABBox(FLOAT3D &vOrigin, FLOAT3D &vDir, FLOAT3D &vHit, FLOATaabbox3D &bbox)
 {
@@ -141,7 +141,7 @@ static BOOL RayHitsAABBox(FLOAT3D &vOrigin, FLOAT3D &vDir, FLOAT3D &vHit, FLOATa
 
 	char inside = TRUE;
 	char quadrant[3];
-	register int i;
+	int i;
 	int whichPlane;
 	FLOAT maxT[3];
 	FLOAT candidatePlane[3];
@@ -201,11 +201,12 @@ static BOOL RayHitsAABBox(FLOAT3D &vOrigin, FLOAT3D &vDir, FLOAT3D &vHit, FLOATa
   vHit = FLOAT3D(coord[0],coord[1],coord[2]);
 	return TRUE;
 }
+#endif // 0 (unused)
 
 // Get exact hit location in tile
 FLOAT GetExactHitLocation(INDEX iTileIndex, FLOAT3D &vOrigin, FLOAT3D &vTarget, FLOAT3D &vHitLocation)
 {
-  CTerrainTile &tt  = _ptrTerrain->tr_attTiles[iTileIndex];
+  //CTerrainTile &tt  = _ptrTerrain->tr_attTiles[iTileIndex];
   QuadTreeNode &qtn = _ptrTerrain->tr_aqtnQuadTreeNodes[iTileIndex];
 
   GFXVertex *pavVertices;
@@ -308,16 +309,31 @@ Rect ExtractPolygonsInBox(CTerrain *ptrTerrain, const FLOATaabbox3D &bboxExtract
   Rect rc;
   if(!bFixSize) {
     // max vector of bbox in incremented for one, because first vertex is at 0,0,0 in world and in heightmap is at 1,1
+#ifdef __arm__
+  #define Isinf(a) (((*(unsigned int*)&a)&0x7fffffff)==0x7f800000)
+    rc.rc_iLeft   = (Isinf(bbox.minvect(1)))?(INDEX)0:Clamp((INDEX)(bbox.minvect(1)-0),(INDEX)0,ptrTerrain->tr_pixHeightMapWidth);
+    rc.rc_iTop    = (Isinf(bbox.minvect(3)))?(INDEX)0:Clamp((INDEX)(bbox.minvect(3)-0),(INDEX)0,ptrTerrain->tr_pixHeightMapHeight);
+    rc.rc_iRight  = (Isinf(bbox.maxvect(1)))?(INDEX)0:Clamp((INDEX)ceil(bbox.maxvect(1)+1),(INDEX)0,ptrTerrain->tr_pixHeightMapWidth);
+    rc.rc_iBottom = (Isinf(bbox.maxvect(3)))?(INDEX)0:Clamp((INDEX)ceil(bbox.maxvect(3)+1),(INDEX)0,ptrTerrain->tr_pixHeightMapHeight);
+#else
     rc.rc_iLeft   = Clamp((INDEX)(bbox.minvect(1)-0),(INDEX)0,ptrTerrain->tr_pixHeightMapWidth);
     rc.rc_iTop    = Clamp((INDEX)(bbox.minvect(3)-0),(INDEX)0,ptrTerrain->tr_pixHeightMapHeight);
     rc.rc_iRight  = Clamp((INDEX)ceil(bbox.maxvect(1)+1),(INDEX)0,ptrTerrain->tr_pixHeightMapWidth);
     rc.rc_iBottom = Clamp((INDEX)ceil(bbox.maxvect(3)+1),(INDEX)0,ptrTerrain->tr_pixHeightMapHeight);
+#endif
   } else {
     // max vector of bbox in incremented for one, because first vertex is at 0,0,0 in world and in heightmap is at 1,1
+#ifdef __arm__
+    rc.rc_iLeft   = (Isinf(bbox.minvect(1)))?(INDEX)0:Clamp((INDEX)(bbox.minvect(1)-0),(INDEX)0,ptrTerrain->tr_pixHeightMapWidth);
+    rc.rc_iTop    = (Isinf(bbox.minvect(3)))?(INDEX)0:Clamp((INDEX)(bbox.minvect(3)-0),(INDEX)0,ptrTerrain->tr_pixHeightMapHeight);
+    rc.rc_iRight  = (Isinf(bbox.maxvect(1)))?(INDEX)0:Clamp((INDEX)(bbox.maxvect(1)+0),(INDEX)0,ptrTerrain->tr_pixHeightMapWidth);
+    rc.rc_iBottom = (Isinf(bbox.maxvect(3)))?(INDEX)0:Clamp((INDEX)(bbox.maxvect(3)+0),(INDEX)0,ptrTerrain->tr_pixHeightMapHeight);
+#else
     rc.rc_iLeft   = Clamp((INDEX)(bbox.minvect(1)-0),(INDEX)0,ptrTerrain->tr_pixHeightMapWidth);
     rc.rc_iTop    = Clamp((INDEX)(bbox.minvect(3)-0),(INDEX)0,ptrTerrain->tr_pixHeightMapHeight);
     rc.rc_iRight  = Clamp((INDEX)(bbox.maxvect(1)+0),(INDEX)0,ptrTerrain->tr_pixHeightMapWidth);
     rc.rc_iBottom = Clamp((INDEX)(bbox.maxvect(3)+0),(INDEX)0,ptrTerrain->tr_pixHeightMapHeight);
+#endif
   }
 
   INDEX iStartX = rc.rc_iLeft;
@@ -327,7 +343,7 @@ Rect ExtractPolygonsInBox(CTerrain *ptrTerrain, const FLOATaabbox3D &bboxExtract
 
   INDEX iFirst = iStartX + iStartY * ptrTerrain->tr_pixHeightMapWidth;
   INDEX iPitchX = ptrTerrain->tr_pixHeightMapWidth  - iWidth;
-  INDEX iPitchY = ptrTerrain->tr_pixHeightMapHeight - iHeight;
+  //INDEX iPitchY = ptrTerrain->tr_pixHeightMapHeight - iHeight;
 
   // get first pixel in height map
   UWORD *puwHeight = &ptrTerrain->tr_auwHeightMap[iFirst];
@@ -351,10 +367,10 @@ Rect ExtractPolygonsInBox(CTerrain *ptrTerrain, const FLOATaabbox3D &bboxExtract
   INDEX *pauiIndices = &_aiExtIndices[0];
 
   // for each row
-  INDEX iy=0;
-  for(;iy<iHeight;iy++) {
+  INDEX iy, ix;
+  for(iy=0;iy<iHeight;iy++) {
     // for each column
-    for(INDEX ix=0;ix<iWidth;ix++) {
+    for(ix=0;ix<iWidth;ix++) {
       // Add one vertex
       GFXVertex4 &vx = *pavVertices;
       vx.x = (FLOAT)(ix+iStartX)*ptrTerrain->tr_vStretch(1);
@@ -371,7 +387,7 @@ Rect ExtractPolygonsInBox(CTerrain *ptrTerrain, const FLOATaabbox3D &bboxExtract
   }
 
   INDEX ivx=0;
-  INDEX ind=0;
+  //INDEX ind=0;
   INDEX iFacing=iFirst;
 
   GFXVertex *pavExtVtx = &_avExtVertices[0];
@@ -380,7 +396,7 @@ Rect ExtractPolygonsInBox(CTerrain *ptrTerrain, const FLOATaabbox3D &bboxExtract
   // for each row
   for(iy=0;iy<iHeight-1;iy++) {
     // for each column
-    for(INDEX ix=0;ix<iWidth-1;ix++) {
+    for(ix=0;ix<iWidth-1;ix++) {
       // Add one quad ( if it is visible )
       if(iFacing&1) {
         // if all vertices in this triangle are visible
@@ -465,9 +481,9 @@ void ExtractVerticesInRect(CTerrain *ptrTerrain, Rect &rc, GFXVertex4 **pavVtx,
   UWORD *puwHeight   = &ptrTerrain->tr_auwHeightMap[iFirstHeight];
 
   GFXVertex *pavVertices = &_avExtVertices[0];
-  INDEX iy=0;
-  for(;iy<iHeight;iy++) {
-    for(INDEX ix=0;ix<iWidth;ix++) {
+  INDEX iy, ix;
+  for(iy=0;iy<iHeight;iy++) {
+    for(ix=0;ix<iWidth;ix++) {
       pavVertices->x = (FLOAT)(ix+iStartX)*ptrTerrain->tr_vStretch(1);
       pavVertices->z = (FLOAT)(iy+iStartY)*ptrTerrain->tr_vStretch(3);
       pavVertices->y = *puwHeight * ptrTerrain->tr_vStretch(2);
@@ -479,7 +495,7 @@ void ExtractVerticesInRect(CTerrain *ptrTerrain, Rect &rc, GFXVertex4 **pavVtx,
 
   INDEX *pauiIndices = &_aiExtIndices[0];
   INDEX ivx=0;
-  INDEX ind=0;
+  //INDEX ind=0;
   INDEX iFacing=iFirstHeight;
   // for each row
   for(iy=0;iy<iHeight-1;iy++) {
@@ -547,7 +563,7 @@ UBYTE GetValueFromMask(CTerrain *ptrTerrain, INDEX iLayer, FLOAT3D vHitPoint)
   vHit(3)=ceil(vHit(3)/ptrTerrain->tr_vStretch(3));
 
   CTerrainLayer &tl = ptrTerrain->GetLayer(iLayer);
-  INDEX iVtx = vHit(1) + tl.tl_iMaskWidth*vHit(3);
+  INDEX iVtx = (INDEX) (vHit(1) + tl.tl_iMaskWidth*vHit(3));
   if(iVtx<0 || iVtx>=tl.tl_iMaskWidth*tl.tl_iMaskHeight) {
     ASSERTALWAYS("Invalid hit point");
     return 0;
@@ -749,17 +765,17 @@ static void CalcPointLight(CPlacement3D &plLight, CLightSource *plsLight, Rect &
       }
       ULONG ulIntensity = NormFloatToByte(fIntensity);
       ulIntensity = (ulIntensity<<CT_RSHIFT)|(ulIntensity<<CT_GSHIFT)|(ulIntensity<<CT_BSHIFT);
-      colLight = MulColors(ByteSwap(colLight.abgr), ulIntensity);
+      colLight = MulColors(ByteSwap(colLight.gfxcol.ul.abgr), ulIntensity);
 
 
       FLOAT fDot = vNormal%vLightNormal;
       fDot = Clamp(fDot,0.0f,1.0f);
       SLONG slDot = NormFloatToByte(fDot);
 
-      pacolData->r = ClampUp(pacolData->r + ((colLight.r*slDot)>>8),255L);
-      pacolData->g = ClampUp(pacolData->g + ((colLight.g*slDot)>>8),255L);
-      pacolData->b = ClampUp(pacolData->b + ((colLight.b*slDot)>>8),255L);
-      pacolData->a = 255;
+      pacolData->gfxcol.ub.r = ClampUp(pacolData->gfxcol.ub.r + ((colLight.gfxcol.ub.r*slDot)>>8),255L);
+      pacolData->gfxcol.ub.g = ClampUp(pacolData->gfxcol.ub.g + ((colLight.gfxcol.ub.g*slDot)>>8),255L);
+      pacolData->gfxcol.ub.b = ClampUp(pacolData->gfxcol.ub.b + ((colLight.gfxcol.ub.b*slDot)>>8),255L);
+      pacolData->gfxcol.ub.a = 255;
       pacolData++;
     }
     pacolData+=pixStepX;
@@ -787,9 +803,9 @@ static void CalcDirectionalLight(CPlacement3D &plLight, CLightSource *plsLight, 
   GFXColor colAmbient = plsLight->GetLightAmbient();
 
   UBYTE ubColShift = 8;
-  SLONG slar = colAmbient.r;
-  SLONG slag = colAmbient.g;
-  SLONG slab = colAmbient.b;
+  SLONG slar = colAmbient.gfxcol.ub.r;
+  SLONG slag = colAmbient.gfxcol.ub.g;
+  SLONG slab = colAmbient.gfxcol.ub.b;
 
   extern INDEX mdl_bAllowOverbright;
   BOOL bOverBrightning = mdl_bAllowOverbright && _pGfx->gl_ctTextureUnits>1;
@@ -824,10 +840,10 @@ static void CalcDirectionalLight(CPlacement3D &plLight, CLightSource *plsLight, 
       fDot = Clamp(fDot,0.0f,1.0f);
       SLONG slDot = NormFloatToByte(fDot);
 
-      pacolData->r = ClampUp(pacolData->r + slar + ((colLight.r*slDot)>>ubColShift),255L);
-      pacolData->g = ClampUp(pacolData->g + slag + ((colLight.g*slDot)>>ubColShift),255L);
-      pacolData->b = ClampUp(pacolData->b + slab + ((colLight.b*slDot)>>ubColShift),255L);
-      pacolData->a = 255;
+      pacolData->gfxcol.ub.r = ClampUp(pacolData->gfxcol.ub.r + slar + ((colLight.gfxcol.ub.r*slDot)>>ubColShift),255L);
+      pacolData->gfxcol.ub.g = ClampUp(pacolData->gfxcol.ub.g + slag + ((colLight.gfxcol.ub.g*slDot)>>ubColShift),255L);
+      pacolData->gfxcol.ub.b = ClampUp(pacolData->gfxcol.ub.b + slab + ((colLight.gfxcol.ub.b*slDot)>>ubColShift),255L);
+      pacolData->gfxcol.ub.a = 255;
       pacolData++;
     }
     pacolData+=pixStepX;
@@ -889,7 +905,7 @@ static FLOATaabbox3D AbsoluteToRelative(const CTerrain *ptrTerrain, const FLOATa
   return bboxRelative;
 }
 
-static ULONG ulTemp = 0xFFFFFFFF;
+//static ULONG ulTemp = 0xFFFFFFFF;
 
 void UpdateTerrainShadowMap(CTerrain *ptrTerrain, FLOATaabbox3D *pboxUpdate/*=NULL*/, BOOL bAbsoluteSpace/*=FALSE*/)
 {
@@ -938,8 +954,8 @@ void UpdateTerrainShadowMap(CTerrain *ptrTerrain, FLOATaabbox3D *pboxUpdate/*=NU
   // Get pointer to world that holds this terrain
   CWorld *pwldWorld = penEntity->en_pwoWorld;
   
-  PIX pixWidth  = ptrTerrain->GetShadowMapWidth();
-  PIX pixHeight = ptrTerrain->GetShadowMapHeight();
+  //PIX pixWidth  = ptrTerrain->GetShadowMapWidth();
+  //PIX pixHeight = ptrTerrain->GetShadowMapHeight();
 
   CTextureData &tdShadowMap = ptrTerrain->tr_tdShadowMap;
   ASSERT(tdShadowMap.td_pulFrames!=NULL);
@@ -1030,8 +1046,8 @@ Point Calculate2dHitPoint(CTerrain *ptrTerrain, FLOAT3D &vHitPoint)
   
   // Unstretch hit point and convert it to 2d
   Point pt;
-  pt.pt_iX = ceil(vRelHitPoint(1) / ptrTerrain->tr_vStretch(1) - 0.5f);
-  pt.pt_iY = ceil(vRelHitPoint(3) / ptrTerrain->tr_vStretch(3) - 0.5f);
+  pt.pt_iX = (INDEX) (ceil(vRelHitPoint(1) / ptrTerrain->tr_vStretch(1) - 0.5f));
+  pt.pt_iY = (INDEX) (ceil(vRelHitPoint(3) / ptrTerrain->tr_vStretch(3) - 0.5f));
   
   return pt;
 }

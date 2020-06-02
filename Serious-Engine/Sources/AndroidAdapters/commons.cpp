@@ -47,18 +47,22 @@ int _CrtCheckMemory(void) {
 
 HMODULE GetModuleHandleA(LPCSTR lpModuleName) {
     FatalError("GetModuleHandleA()");
+    return 0;
 }
 
 u_long WINAPI htonl(u_long hostlong) {
     FatalError("htonl()");
+    return 1;
 }
 
 size_t WINAPI inet_addr(const char *cp) {
     FatalError("inet_addr()");
+    return 1;
 }
 
 int WINAPI gethostname(char *name, int namelen) {
     FatalError("gethostname()");
+    return 1;
 }
 
 void reportError(const char *func) {

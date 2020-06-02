@@ -25,11 +25,11 @@ static FLOAT fComputerFadeValue     = 0.0f;  // faded value of computer (0..1)
 static CTimerValue tvComputerLast;
 static CTimerValue _tvMessageAppear;
 static CPlayer *_ppenPlayer = NULL;
-extern FLOAT _fMsgAppearFade = 0.0f;
-extern FLOAT _fMsgAppearDelta = 0.0f;
+FLOAT _fMsgAppearFade = 0.0f;
+FLOAT _fMsgAppearDelta = 0.0f;
 
 // player statistics are set here
-extern CTString _strStatsDetails = "";
+CTString _strStatsDetails = "";
 
 // mouse cursor position
 static PIX2D _vpixMouse;

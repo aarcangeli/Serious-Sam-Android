@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "Camera.h"
 
 class CCameraPos {
@@ -34,7 +34,7 @@ CCameraPos _cp1;
 CCameraPos _cp;
 
 // camera control
-extern INDEX cam_bRecord           = FALSE;
+INDEX cam_bRecord           = FALSE;
 static INDEX cam_bMoveForward      = FALSE;
 static INDEX cam_bMoveBackward     = FALSE;
 static INDEX cam_bMoveLeft         = FALSE;
@@ -230,5 +230,6 @@ void CAM_Render(CEntity *pen, CDrawPort *pdp)
   // set up viewer position
   prProjection->ViewerPlacementL() = plCamera;
   // render the view
-  RenderView(*pen->en_pwoWorld, *(CEntity*)NULL, prProjection, *pdp);
+  int* test = NULL;
+  RenderView(*pen->en_pwoWorld, *(CEntity*)test, prProjection, *pdp);
 }

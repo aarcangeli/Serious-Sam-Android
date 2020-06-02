@@ -15,12 +15,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 // common headers for flesh entity classes
 
-enum DebrisParticlesType : int;
-enum BasicEffectType : int;
-enum KeyItemType : int;
-enum WorldLinkType : int;
-enum EffectorEffectType : int;
-
 #define SURFACE_SAND 9
 #define SURFACE_WATER 12
 #define SURFACE_RED_SAND 13
@@ -224,8 +218,8 @@ DECL_DLL const char *PrintStack(CEntity *pen);
 // debris spawning
 DECL_DLL void Debris_Begin(
   EntityInfoBodyType Eeibt, 
-  enum DebrisParticlesType dptParticles,
-  enum BasicEffectType  betStain,
+  int dptParticles,
+  int  betStain,
   FLOAT fEntitySize,             // entity size in meters
   const FLOAT3D &vSpeed,
   const FLOAT3D &vSpawnerSpeed,  // how fast was the entity moving
@@ -259,8 +253,8 @@ DECL_DLL CEntityPointer Debris_Spawn_Independent(
   ANGLE3D aRotation);
 DECL_DLL CEntityPointer Debris_Spawn_Template(
   EntityInfoBodyType eibt,
-  enum DebrisParticlesType dptParticles,
-  enum BasicEffectType betStain,
+  int dptParticles,
+  int betStain,
   class CModelHolder2 *penmhDestroyed,
   CEntity *penComponents,
   class CModelHolder2 *penmh2,
@@ -283,7 +277,7 @@ DECL_DLL void PrintCenterMessage(CEntity *penThis, CEntity *penTarget,
   const CTString &strMessage, TIME tmLength, enum MessageSound mssSound);
 
 // get name of a key item
-DECL_DLL const char *GetKeyName(enum KeyItemType kit);
+DECL_DLL const char *GetKeyName(int kit);
 
 // get session properties
 DECL_DLL inline const CSessionProperties *GetSP(void)

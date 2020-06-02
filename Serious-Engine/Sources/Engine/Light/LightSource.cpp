@@ -398,7 +398,7 @@ static inline BOOL IsPolygonInfluencedByPointLight(CBrushPolygon *pbpo)
 }
 
 
-extern CEntity *_penLightUpdating = NULL;
+CEntity *_penLightUpdating = NULL;
 
 void CLightSource::FindShadowLayersPoint(BOOL bSelectedOnly)
 {

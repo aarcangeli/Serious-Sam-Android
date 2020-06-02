@@ -15,7 +15,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 808
 %{
-#include "StdH.h"
+#include "EntitiesMP/StdH/StdH.h"
 #include "Models/Items/ItemHolder/ItemHolder.h"
 %}
 
@@ -157,7 +157,7 @@ functions:
         m_strDescription.PrintF("Invisibility");
         AddItem(  MODEL_INVISIB, TEXTURE_REFLECTION_METAL, 0, TEXTURE_SPECULAR_STRONG, 0);  // set appearance
         AddFlare( MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.2f,0), FLOAT3D(1,1,0.3f) );  // add flare
-        StretchItem( FLOAT3D(1.0f*0.75f, 1.0f*0.75f, 1.0f*0.75));
+        StretchItem( FLOAT3D(1.0f*0.75f, 1.0f*0.75f, 1.0f*0.75f));
         break;
       case PUIT_INVULNER:
         StartModelAnim( ITEMHOLDER_ANIM_SMALLOSCILATION, AOF_LOOPING|AOF_NORESTART);
@@ -166,7 +166,7 @@ functions:
         m_strDescription.PrintF("Invulnerability");
         AddItem(  MODEL_INVULNER, TEXTURE_REFLECTION_GOLD, TEXTURE_REFLECTION_METAL, TEXTURE_SPECULAR_MEDIUM, 0);  // set appearance
         AddFlare( MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.2f,0), FLOAT3D(1,1,0.3f) );  // add flare
-        StretchItem( FLOAT3D(1.0f*0.75f, 1.0f*0.75f, 1.0f*0.75));
+        StretchItem( FLOAT3D(1.0f*0.75f, 1.0f*0.75f, 1.0f*0.75f));
         break;                                                               
       case PUIT_DAMAGE:
         StartModelAnim( ITEMHOLDER_ANIM_SMALLOSCILATION, AOF_LOOPING|AOF_NORESTART);
@@ -175,7 +175,7 @@ functions:
         m_strDescription.PrintF("SeriousDamage");
         AddItem(  MODEL_DAMAGE, TEXTURE_DAMAGE, 0, TEXTURE_SPECULAR_STRONG, 0);  // set appearance
         AddFlare( MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.2f,0), FLOAT3D(1,1,0.3f) );  // add flare
-        StretchItem( FLOAT3D(1.0f*0.75f, 1.0f*0.75f, 1.0f*0.75));
+        StretchItem( FLOAT3D(1.0f*0.75f, 1.0f*0.75f, 1.0f*0.75f));
         break;
       case PUIT_SPEED:
         StartModelAnim( ITEMHOLDER_ANIM_SMALLOSCILATION, AOF_LOOPING|AOF_NORESTART);
@@ -184,7 +184,7 @@ functions:
         m_strDescription.PrintF("SeriousSpeed");
         AddItem(  MODEL_SPEED, TEXTURE_SPEED, 0, 0, 0);  // set appearance
         AddFlare( MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.2f,0), FLOAT3D(1,1,0.3f) );  // add flare
-        StretchItem( FLOAT3D(1.0f*0.75f, 1.0f*0.75f, 1.0f*0.75));
+        StretchItem( FLOAT3D(1.0f*0.75f, 1.0f*0.75f, 1.0f*0.75f));
         break;
       case PUIT_BOMB:
         StartModelAnim( ITEMHOLDER_ANIM_SMALLOSCILATION, AOF_LOOPING|AOF_NORESTART);
@@ -193,7 +193,7 @@ functions:
         m_strDescription.PrintF("Serious Bomb!");
         AddItem(  MODEL_BOMB, TEXTURE_BOMB, 0, 0, 0);  // set appearance
         AddFlare( MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.2f,0), FLOAT3D(1,1,0.3f) );  // add flare
-        StretchItem( FLOAT3D(1.0f*3.0f, 1.0f*3.0f, 1.0f*3.0));
+        StretchItem( FLOAT3D(1.0f*3.0f, 1.0f*3.0f, 1.0f*3.0f));
         break;
     }
   };

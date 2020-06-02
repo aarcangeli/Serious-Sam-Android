@@ -50,7 +50,7 @@ extern BOOL _bPredictionActive;
 // console variables for volume
 extern FLOAT snd_fSoundVolume;
 extern FLOAT snd_fMusicVolume;
-
+#if 0
 static CTString GetPred(CEntity*pen)
 {
   CTString str1;
@@ -67,6 +67,7 @@ static CTString GetPred(CEntity*pen)
   str.PrintF("%08x-%s", pen, str1);
   return str;
 }
+#endif
 /* ====================================================
  *
  *  Class global methods
@@ -107,7 +108,7 @@ CSoundObject::CSoundObject()
   so_sp3.sp3_fHotSpot = 0.0f;
   so_sp3.sp3_fMaxVolume   = 0.0f;
   so_sp3.sp3_fPitch       = 1.0f;
-};
+}
 
 /*
  *  Destructor
@@ -115,7 +116,7 @@ CSoundObject::CSoundObject()
 CSoundObject::~CSoundObject()
 {
   Stop_internal();
-};
+}
 
 // copy from another object of same class
 void CSoundObject::Copy(CSoundObject &soOther)
@@ -147,7 +148,7 @@ void CSoundObject::Set3DParameters( FLOAT fFalloff, FLOAT fHotSpot,
       //CPrintF("SET3D: ");
       CEntity *pen = so_penEntity->GetPredictionTail();
       if (pen!=so_penEntity) {
-        pso = (CSoundObject *)( ((UBYTE*)pen) + (int(this)-int(so_penEntity)) );
+        pso = (CSoundObject *)( ((UBYTE*)pen) + (size_t(this)-size_t(so_penEntity)) );
       }
     }
   }
@@ -156,7 +157,7 @@ void CSoundObject::Set3DParameters( FLOAT fFalloff, FLOAT fHotSpot,
   pso->so_sp3.sp3_fHotSpot = fHotSpot;
   pso->so_sp3.sp3_fMaxVolume   = fMaxVolume;
   pso->so_sp3.sp3_fPitch       = fPitch;
-};
+}
 
 
 /* ====================================================
@@ -175,7 +176,7 @@ CSoundObject *CSoundObject::GetPredictionTail(ULONG ulTypeID, ULONG ulEventID)
       // it must not play the sound
       return NULL;
     }
-    SLONG slOffset = int(this)-int(so_penEntity);
+    SLONG slOffset = size_t(this)-size_t(so_penEntity);
 
     ULONG ulCRC;
     CRC_Start(ulCRC);
@@ -238,9 +239,9 @@ void CSoundObject::Play_internal( CSoundData *pCsdLink, SLONG slFlags)
   Stop_internal();
 
   // mark new data as referenced once more
-  pCsdLink->AddReference();
+  if(pCsdLink != NULL) pCsdLink->AddReference();
   // mark old data as referenced once less
-  so_pCsdLink->RemReference();
+  if(so_pCsdLink != NULL) so_pCsdLink->RemReference();
 
   // store init SoundData
   so_pCsdLink = pCsdLink;
@@ -321,7 +322,7 @@ void CSoundObject::SetOffset( FLOAT fOffset)
   // safety check
   ASSERT( fOffset>=0);
   if( fOffset<0) {
-    CPrintF( "BUG: Trying to set negative offset (%.2g) in sound '%s' !\n", fOffset, (CTString&)psoTail->so_pCsdLink->GetName());
+    CPrintF( "BUG: Trying to set negative offset (%.2g) in sound '%s' !\n", fOffset, (const char *) (CTString&)psoTail->so_pCsdLink->GetName());
     fOffset = 0.0f;
   }
 
@@ -378,7 +379,7 @@ void CSoundObject::Stop_internal(void)
     // clear SoundData link
     so_pCsdLink = NULL;
   }
-};
+}
 
 
 // Update all 3d effects
@@ -408,7 +409,7 @@ void CSoundObject::Update3DEffects(void)
   FLOAT fTLFilter = UpperLimit(0.0f), fTRFilter = UpperLimit(0.0f);
   FLOAT fTLDelay  = UpperLimit(0.0f), fTRDelay  = UpperLimit(0.0f);
   FLOAT fTPitchShift = 0;
-
+ 
   // get your position parameters
   FLOAT3D vPosition(0,0,0);
   FLOAT3D vSpeed(0,0,0);
@@ -605,7 +606,7 @@ void CSoundObject::PrepareSound(void)
     so_fLastLeftVolume  *= snd_fSoundVolume;
     so_fLastRightVolume *= snd_fSoundVolume;
   }
-};
+}
 
 
 // Obtain sound and play it for this object
@@ -618,7 +619,7 @@ void CSoundObject::Play_t(const CTFileName &fnmSound, SLONG slFlags) // throw ch
   // release it (removes one reference)
   _pSoundStock->Release(ptd);
   // total reference count +1+1-1 = +1 for new data -1 for old data
-};
+}
 
 
 
@@ -666,7 +667,7 @@ void CSoundObject::Read_t(CTStream *pistr)  // throw char *
   if ( fnmSound != "" && (so_slFlags&SOF_PLAY)) {
     Play_t( fnmSound, so_slFlags|SOF_LOADED);
   }
-};
+}
 
 void CSoundObject::Write_t(CTStream *pistr) // throw char *
 {
@@ -705,4 +706,4 @@ void CSoundObject::Write_t(CTStream *pistr) // throw char *
   *pistr << so_sp3.sp3_fHotSpot;
   *pistr << so_sp3.sp3_fMaxVolume;
   *pistr << so_sp3.sp3_fPitch;
-};
+}

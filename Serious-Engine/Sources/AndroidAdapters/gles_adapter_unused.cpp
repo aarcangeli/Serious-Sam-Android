@@ -992,11 +992,13 @@ namespace gles_adapter {
   GLboolean
   gles_adp_glAreTexturesResident(GLsizei n, const GLuint *textures, GLboolean *residences) {
     reportError("glAreTexturesResident");
+  return 0;
   }
 
   GLboolean gles_adp_glIsTexture(GLuint texture) {
     reportError("glIsTexture");
-  };
+  return 0;
+};
 
   void
   gles_adp_glTexSubImage1D(GLenum target, GLint level, GLint xoffset, GLsizei width, GLenum format,
@@ -1258,12 +1260,14 @@ namespace gles_adapter {
   GLboolean
   gles_adp_glAreTexturesResidentEXT(GLsizei n, const GLuint *textures, GLboolean *residences) {
     reportError("glAreTexturesResidentEXT");
+    return 0;
   }
 
 
   GLboolean gles_adp_glIsTextureEXT(GLuint texture) {
     reportError("glIsTextureEXT");
-  };
+    return 0; 
+ };
 
 
   void gles_adp_glTexImage3DEXT(GLenum target, GLint level, GLenum internalFormat, GLsizei width,

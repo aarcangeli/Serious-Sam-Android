@@ -15,7 +15,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 608
 %{
-#include "StdH.h"
+#include "EntitiesMP/StdH/StdH.h"
 #include "EntitiesMP/Effector.h"
 #include <EntitiesMP/BloodSpray.h>
 %}
@@ -125,7 +125,7 @@ functions:
 
   void AdjustMipFactor(FLOAT &fMipFactor)
   {
-    if (m_eetType==ET_DISAPPEAR_MODEL || m_eetType==ET_DISAPPEAR_MODEL_NOW && m_penModel!=NULL)
+    if (m_eetType==ET_DISAPPEAR_MODEL || (m_eetType==ET_DISAPPEAR_MODEL_NOW && m_penModel!=NULL))
     {
       CModelObject *pmo = m_penModel->GetModelObject();
       TIME tmDelta = _pTimer->GetLerpedCurrentTick()-m_tmStarted;
@@ -146,7 +146,7 @@ functions:
       COLOR col = C_WHITE|ubAlpha;
       pmo->mo_colBlendColor = col;
     }
-    if (m_eetType==ET_APPEAR_MODEL || m_eetType==ET_APPEAR_MODEL_NOW && m_penModel!=NULL)
+    if (m_eetType==ET_APPEAR_MODEL || (m_eetType==ET_APPEAR_MODEL_NOW && m_penModel!=NULL))
     {
       CModelObject *pmo = m_penModel->GetModelObject();
       TIME tmDelta = _pTimer->GetLerpedCurrentTick()-m_tmStarted;

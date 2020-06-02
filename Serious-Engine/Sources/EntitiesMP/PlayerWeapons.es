@@ -15,7 +15,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 402
 %{
-#include "StdH.h"
+#include "EntitiesMP/StdH/StdH.h"
 #include "GameMP/SEColors.h"
   
 #include <Engine/Build.h>
@@ -48,11 +48,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "ModelsMP/Weapons/Flamer/Body.h"
 #include "ModelsMP/Weapons/Flamer/FuelReservoir.h"
 #include "ModelsMP/Weapons/Flamer/Flame.h"  
-#include "ModelsMP/Weapons/Chainsaw/Chainsaw.h"
-#include "ModelsMP/Weapons/Chainsaw/ChainSawForPlayer.h"
-#include "ModelsMP/Weapons/Chainsaw/Body.h"
-#include "ModelsMP/Weapons/Chainsaw/Blade.h"
-#include "ModelsMP/Weapons/Chainsaw/Teeth.h"
+#include "ModelsMP/Weapons/ChainSaw/ChainSaw.h"
+#include "ModelsMP/Weapons/ChainSaw/ChainsawForPlayer.h"
+#include "ModelsMP/Weapons/ChainSaw/Body.h"
+#include "ModelsMP/Weapons/ChainSaw/Blade.h"
+#include "ModelsMP/Weapons/ChainSaw/Teeth.h"
 
 // Mission Pack player body instead of the old one
 #include "ModelsMP/Player/SeriousSam/Body.h"
@@ -218,7 +218,7 @@ static FLOAT hud_fCrosshairRatio    = 0.5f;  // max distance size ratio
 static INDEX hud_bShowPlayerName = TRUE;
 static INDEX hud_bShowCoords     = FALSE;
 static FLOAT plr_tmSnoopingDelay = 1.0f; // seconds 
-extern FLOAT plr_tmSnoopingTime  = 1.0f; // seconds 
+FLOAT plr_tmSnoopingTime  = 1.0f; // seconds 
 
 // some static vars
 static INDEX _iLastCrosshairType=-1;
@@ -1813,7 +1813,7 @@ functions:
         FLOAT3D vToTarget = penClosest->GetPlacement().pl_PositionVector - m_penPlayer->GetPlacement().pl_PositionVector;
         FLOAT3D vTargetHeading = FLOAT3D(0.0, 0.0, -1.0f)*penClosest->GetRotationMatrix();
         vToTarget.Normalize(); vTargetHeading.Normalize();
-        if (vToTarget%vTargetHeading>0.64279) //CosFast(50.0f)
+        if (vToTarget%vTargetHeading>0.64279f) //CosFast(50.0f)
         {
           PrintCenterMessage(this, m_penPlayer, TRANS("Backstab!"), 4.0f, MSS_NONE);
           fDamage *= 4.0f;
@@ -4014,7 +4014,7 @@ procedures:
         }
       }
 
-      autowait(GetSP()->sp_bCooperative ? 0.5f : 0.375);
+      autowait(GetSP()->sp_bCooperative ? 0.5f : 0.375f);
       /* drop shell */
 
       /* add one empty bullet shell */

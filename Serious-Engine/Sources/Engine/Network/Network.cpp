@@ -79,107 +79,105 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 CNetworkLibrary *_pNetwork= NULL;
 
 extern BOOL _bNeedPretouch;
-extern BOOL _bMultiPlayer = FALSE;
-extern INDEX _ctEntities = 0;
-extern INDEX _ctPredictorEntities = 0;
-extern LevelChangePhase _lphCurrent = LCP_NOCHANGE;
-extern BOOL _bTempNetwork = FALSE;  // set while using temporary second network object
+BOOL _bMultiPlayer = FALSE;
+INDEX _ctEntities = 0;
+INDEX _ctPredictorEntities = 0;
+LevelChangePhase _lphCurrent = LCP_NOCHANGE;
+BOOL _bTempNetwork = FALSE;  // set while using temporary second network object
 extern BOOL con_bCapture;
 extern CTString con_strCapture;
-
-static CWorld *_pwoCurrentWorld = NULL;
 
 static FLOAT _bStartDemoRecordingNextTime = FALSE;
 static FLOAT _bStopDemoRecordingNextTime = FALSE;
 static INDEX dem_iRecordedNumber = 0;
 
 // network control
-extern INDEX ser_bReportSyncOK   = FALSE;
-extern INDEX ser_bReportSyncBad  = TRUE;
-extern INDEX ser_bReportSyncLate = FALSE;
-extern INDEX ser_bReportSyncEarly = FALSE;
-extern INDEX ser_bPauseOnSyncBad = FALSE;
-extern INDEX ser_iKickOnSyncBad = 10;
-extern INDEX ser_bKickOnSyncLate = 1;
-extern INDEX ser_iRememberBehind = 3000;
-extern INDEX ser_iExtensiveSyncCheck = 0;
-extern INDEX ser_bClientsMayPause = TRUE;
-extern FLOAT ser_tmSyncCheckFrequency = 1.0f;
-extern INDEX ser_iSyncCheckBuffer = 60;
-extern INDEX ser_bEnumeration  = TRUE;
-extern INDEX ser_bPingGameAgent = TRUE;
-extern FLOAT ser_tmKeepAlive = 0.1f;
-extern FLOAT ser_tmPingUpdate = 3.0f;
-extern INDEX ser_bWaitFirstPlayer = 0;
-extern INDEX ser_iMaxAllowedBPS = 8000;
-extern CTString ser_strIPMask = "";
-extern CTString ser_strNameMask = "";
-extern INDEX ser_bInverseBanning = FALSE;
-extern CTString ser_strMOTD = "";
+INDEX ser_bReportSyncOK   = FALSE;
+INDEX ser_bReportSyncBad  = TRUE;
+INDEX ser_bReportSyncLate = FALSE;
+INDEX ser_bReportSyncEarly = FALSE;
+INDEX ser_bPauseOnSyncBad = FALSE;
+INDEX ser_iKickOnSyncBad = 10;
+INDEX ser_bKickOnSyncLate = 1;
+INDEX ser_iRememberBehind = 3000;
+INDEX ser_iExtensiveSyncCheck = 0;
+INDEX ser_bClientsMayPause = TRUE;
+FLOAT ser_tmSyncCheckFrequency = 1.0f;
+INDEX ser_iSyncCheckBuffer = 60;
+INDEX ser_bEnumeration  = TRUE;
+INDEX ser_bPingGameAgent = TRUE;
+FLOAT ser_tmKeepAlive = 0.1f;
+FLOAT ser_tmPingUpdate = 3.0f;
+INDEX ser_bWaitFirstPlayer = 0;
+INDEX ser_iMaxAllowedBPS = 8000;
+CTString ser_strIPMask = "";
+CTString ser_strNameMask = "";
+INDEX ser_bInverseBanning = FALSE;
+CTString ser_strMOTD = "";
 
-extern INDEX cli_bEmulateDesync  = FALSE;
-extern INDEX cli_bDumpSync       = FALSE;
-extern INDEX cli_bDumpSyncEachTick = FALSE;
-extern INDEX cli_bAutoAdjustSettings = FALSE;
-extern FLOAT cli_tmAutoAdjustThreshold = 2.0f;
-extern INDEX cli_bPrediction = FALSE;
-extern INDEX cli_iMaxPredictionSteps = 10;
-extern INDEX cli_bPredictIfServer = FALSE;
-extern INDEX cli_bPredictLocalPlayers = TRUE;
-extern INDEX cli_bPredictRemotePlayers = FALSE;
-extern FLOAT cli_fPredictEntitiesRange = 20.0f;
-extern INDEX cli_bLerpActions = FALSE;
-extern INDEX cli_bReportPredicted = FALSE;
-extern INDEX cli_iSendBehind = 3;
-extern INDEX cli_iPredictionFlushing = 1;
+INDEX cli_bEmulateDesync  = FALSE;
+INDEX cli_bDumpSync       = TRUE;
+INDEX cli_bDumpSyncEachTick = TRUE;
+INDEX cli_bAutoAdjustSettings = FALSE;
+FLOAT cli_tmAutoAdjustThreshold = 2.0f;
+INDEX cli_bPrediction = FALSE;
+INDEX cli_iMaxPredictionSteps = 10;
+INDEX cli_bPredictIfServer = FALSE;
+INDEX cli_bPredictLocalPlayers = TRUE;
+INDEX cli_bPredictRemotePlayers = FALSE;
+FLOAT cli_fPredictEntitiesRange = 20.0f;
+INDEX cli_bLerpActions = FALSE;
+INDEX cli_bReportPredicted = FALSE;
+INDEX cli_iSendBehind = 3;
+INDEX cli_iPredictionFlushing = 1;
 
-extern INDEX cli_iBufferActions = 1;
-extern INDEX cli_iMaxBPS = 4000;
-extern INDEX cli_iMinBPS = 0;
+INDEX cli_iBufferActions = 1;
+INDEX cli_iMaxBPS = 4000;
+INDEX cli_iMinBPS = 0;
 
-extern INDEX net_iCompression = 1;
-extern INDEX net_bLookupHostNames = FALSE;
-extern INDEX net_bReportPackets = FALSE;
-extern INDEX net_iMaxSendRetries = 10;
-extern FLOAT net_fSendRetryWait = 0.5f;
-extern INDEX net_bReportTraffic = FALSE;
-extern INDEX net_bReportICMPErrors = FALSE;
-extern INDEX net_bReportMiscErrors = FALSE;
-extern INDEX net_bLerping       = TRUE;
-extern INDEX net_iGraphBuffer = 100;
-extern INDEX net_iExactTimer = 2;
-extern INDEX net_bDumpStreamBlocks = 0;
-extern INDEX net_bDumpConnectionInfo = 0;
-extern INDEX net_iPort = 25600;
-extern CTString net_strLocalHost = "";
-extern CTString net_strLocationCode = "";
-extern CTString net_strConnectPassword = "";
-extern CTString net_strAdminPassword = "";
-extern CTString net_strVIPPassword = "";
-extern CTString net_strObserverPassword = "";
-extern INDEX net_iVIPReserve = 0;
-extern INDEX net_iMaxObservers = 16;
-extern INDEX net_iMaxClients = 0;
-extern FLOAT net_tmConnectionTimeout = 30.0f;
-extern FLOAT net_tmProblemsTimeout = 5.0f;
-extern FLOAT net_tmDisconnectTimeout = 300.0f;  // must be higher for level changing
-extern INDEX net_bReportCRC = FALSE;
-extern FLOAT net_fDropPackets = 0.0f;
-extern FLOAT net_tmLatency = 0.0f;
+INDEX net_iCompression = 1;
+INDEX net_bLookupHostNames = FALSE;
+INDEX net_bReportPackets = FALSE;
+INDEX net_iMaxSendRetries = 10;
+FLOAT net_fSendRetryWait = 0.5f;
+INDEX net_bReportTraffic = FALSE;
+INDEX net_bReportICMPErrors = FALSE;
+INDEX net_bReportMiscErrors = FALSE;
+INDEX net_bLerping       = TRUE;
+INDEX net_iGraphBuffer = 100;
+INDEX net_iExactTimer = 2;
+INDEX net_bDumpStreamBlocks = 0;
+INDEX net_bDumpConnectionInfo = 0;
+INDEX net_iPort = 25600;
+CTString net_strLocalHost = "";
+CTString net_strLocationCode = "";
+CTString net_strConnectPassword = "";
+CTString net_strAdminPassword = "";
+CTString net_strVIPPassword = "";
+CTString net_strObserverPassword = "";
+INDEX net_iVIPReserve = 0;
+INDEX net_iMaxObservers = 16;
+INDEX net_iMaxClients = 0;
+FLOAT net_tmConnectionTimeout = 30.0f;
+FLOAT net_tmProblemsTimeout = 5.0f;
+FLOAT net_tmDisconnectTimeout = 300.0f;  // must be higher for level changing
+INDEX net_bReportCRC = TRUE;
+FLOAT net_fDropPackets = 0.0f;
+FLOAT net_tmLatency = 0.0f;
 
-extern INDEX ent_bReportSpawnInWall = FALSE;
+INDEX ent_bReportSpawnInWall = FALSE;
 
-extern FLOAT cmd_tmTick = 0.0f;
-extern CTString cmd_cmdOnTick = "";
-extern CTString cmd_strChatSender = "";
-extern CTString cmd_strChatMessage = "";
-extern CTString cmd_cmdOnChat = "";
-extern INDEX net_ctChatMessages = 0;  // counter for incoming chat messages
+FLOAT cmd_tmTick = 0.0f;
+CTString cmd_cmdOnTick = "";
+CTString cmd_strChatSender = "";
+CTString cmd_strChatMessage = "";
+CTString cmd_cmdOnChat = "";
+INDEX net_ctChatMessages = 0;  // counter for incoming chat messages
 
 extern CPacketBufferStats _pbsSend;
 extern CPacketBufferStats _pbsRecv;
 
-extern BOOL _bPredictionActive = FALSE;
+BOOL _bPredictionActive = FALSE;
 
 class CGatherCRC {
 public:
@@ -196,43 +194,43 @@ CGatherCRC::~CGatherCRC() {
 }
 
 // precache control
-extern INDEX _precache_NONE      = PRECACHE_NONE;
-extern INDEX _precache_SMART     = PRECACHE_SMART;
-extern INDEX _precache_ALL       = PRECACHE_ALL;
-extern INDEX _precache_PARANOIA  = PRECACHE_PARANOIA;
-extern INDEX gam_iPrecachePolicy = _precache_SMART;
-extern INDEX _precache_bNowPrecaching = FALSE;
+INDEX _precache_NONE      = PRECACHE_NONE;
+INDEX _precache_SMART     = PRECACHE_SMART;
+INDEX _precache_ALL       = PRECACHE_ALL;
+INDEX _precache_PARANOIA  = PRECACHE_PARANOIA;
+INDEX gam_iPrecachePolicy = _precache_SMART;
+INDEX _precache_bNowPrecaching = FALSE;
 
-extern INDEX dbg_bBreak = FALSE;
-extern INDEX gam_bPretouch = FALSE;
+INDEX dbg_bBreak = FALSE;
+INDEX gam_bPretouch = FALSE;
 
-extern FLOAT phy_fCollisionCacheAhead  = 5.0f;
-extern FLOAT phy_fCollisionCacheAround = 1.5f;
-extern FLOAT cli_fPredictionFilter = 0.5f;
+FLOAT phy_fCollisionCacheAhead  = 5.0f;
+FLOAT phy_fCollisionCacheAround = 1.5f;
+FLOAT cli_fPredictionFilter = 0.5f;
 
 extern INDEX shd_bCacheAll;
 
 
 // input
-extern INDEX inp_iKeyboardReadingMethod = 2;  // 0=getasynckey, 1=virtkeytrap, 2=scancodetrap
-extern INDEX inp_bAllowMouseAcceleration = TRUE;
-extern FLOAT inp_fMouseSensitivity = 1.0f;
-extern INDEX inp_bMousePrecision = FALSE;
-extern FLOAT inp_fMousePrecisionFactor = 4.0f;
-extern FLOAT inp_fMousePrecisionThreshold = 10.0f;
-extern FLOAT inp_fMousePrecisionTimeout = 0.25f;
-extern FLOAT inp_bInvertMouse = FALSE;
-extern INDEX inp_bFilterMouse = FALSE;
-extern INDEX inp_bAllowPrescan = TRUE;
+INDEX inp_iKeyboardReadingMethod = 2;  // 0=getasynckey, 1=virtkeytrap, 2=scancodetrap
+INDEX inp_bAllowMouseAcceleration = TRUE;
+FLOAT inp_fMouseSensitivity = 1.0f;
+INDEX inp_bMousePrecision = FALSE;
+FLOAT inp_fMousePrecisionFactor = 4.0f;
+FLOAT inp_fMousePrecisionThreshold = 10.0f;
+FLOAT inp_fMousePrecisionTimeout = 0.25f;
+FLOAT inp_bInvertMouse = FALSE;
+INDEX inp_bFilterMouse = FALSE;
+INDEX inp_bAllowPrescan = TRUE;
 
-extern INDEX inp_i2ndMousePort = 0; // COM no (0=disable)
-extern FLOAT inp_f2ndMouseSensitivity = 1.0f;
-extern INDEX inp_b2ndMousePrecision = FALSE;
-extern FLOAT inp_f2ndMousePrecisionFactor = 4.0f;
-extern FLOAT inp_f2ndMousePrecisionThreshold = 10.0f;
-extern FLOAT inp_f2ndMousePrecisionTimeout = 0.25f;
-extern INDEX inp_bInvert2ndMouse = FALSE;
-extern INDEX inp_bFilter2ndMouse = FALSE;
+INDEX inp_i2ndMousePort = 0; // COM no (0=disable)
+FLOAT inp_f2ndMouseSensitivity = 1.0f;
+INDEX inp_b2ndMousePrecision = FALSE;
+FLOAT inp_f2ndMousePrecisionFactor = 4.0f;
+FLOAT inp_f2ndMousePrecisionThreshold = 10.0f;
+FLOAT inp_f2ndMousePrecisionTimeout = 0.25f;
+INDEX inp_bInvert2ndMouse = FALSE;
+INDEX inp_bFilter2ndMouse = FALSE;
 
 extern INDEX inp_iMButton4Up;
 extern INDEX inp_iMButton4Dn;
@@ -243,7 +241,7 @@ extern INDEX inp_ctJoysticksAllowed;
 extern INDEX inp_bForceJoystickPolling;
 extern INDEX inp_bAutoDisableJoysticks;
 
-extern INDEX wed_bUseGenericTextureReplacement = FALSE;
+INDEX wed_bUseGenericTextureReplacement = FALSE;
 
 extern void RendererInfo(void);
 extern void ClearRenderer(void);
@@ -254,7 +252,7 @@ extern void CacheShadows(void)
 {
   // mute all sounds
   _pSound->Mute();
-  CWorld *pwo = (CWorld*)_pShell->GetINDEX("pwoCurrentWorld");
+  CWorld *pwo = _pShell->GetCurrentWorld();
   if( pwo!=NULL) {
     pwo->wo_baBrushes.CacheAllShadowmaps();
     CPrintF( TRANS("All shadows recached"));
@@ -522,7 +520,7 @@ static void StockInfo(void)
   INDEX ctEntities=0, ctShadowLayers=0, ctPolys=0,    ctPlanes=0,   ctEdges=0,    ctVertices=0, ctSectors=0;
   SLONG slEntBytes=0, slLyrBytes=0,     slPlyBytes=0, slPlnBytes=0, slEdgBytes=0, slVtxBytes=0, slSecBytes=0;
   SLONG slCgrBytes=0;
-  CWorld *pwo = (CWorld*)_pShell->GetINDEX("pwoCurrentWorld");
+  CWorld *pwo = _pShell->GetCurrentWorld();
 
   if( pwo!=NULL)
   {
@@ -657,7 +655,8 @@ extern void FreeUnusedStock(void)
  */
 void CNetworkTimerHandler::HandleTimer(void)
 {
-  if (this==NULL || _bTempNetwork) {
+  ASSERT(this!=NULL);
+  if (_bTempNetwork) {
     return; // this can happen during NET_MakeDefaultState_t()!
   }
   // enable stream handling during timer
@@ -891,7 +890,6 @@ void CNetworkLibrary::Init(const CTString &strGameID)
   _pShell->DeclareSymbol("persistent user CTString ga_strMSLegacy;", &ga_strMSLegacy);
   _pShell->DeclareSymbol("persistent user INDEX ga_bMSLegacy;", &ga_bMSLegacy);
 
-  _pShell->DeclareSymbol("INDEX pwoCurrentWorld;", &_pwoCurrentWorld);
 }
 
 /*
@@ -899,7 +897,8 @@ void CNetworkLibrary::Init(const CTString &strGameID)
  */
 void CNetworkLibrary::AddTimerHandler(void)
 {
-  if (this==NULL || _bTempNetwork) {
+  ASSERT(this!=NULL);
+  if (_bTempNetwork) {
     return; // this can happen during NET_MakeDefaultState_t()!
   }
   _pTimer->AddHandler(&ga_thTimerHandler);
@@ -909,7 +908,8 @@ void CNetworkLibrary::AddTimerHandler(void)
  */
 void CNetworkLibrary::RemoveTimerHandler(void)
 {
-  if (this==NULL || _bTempNetwork) {
+  ASSERT(this!=NULL);
+  if (_bTempNetwork) {
     return; // this can happen during NET_MakeDefaultState_t()!
   }
   _pTimer->RemHandler(&ga_thTimerHandler);
@@ -1033,7 +1033,7 @@ void CNetworkLibrary::StartPeerToPeer_t(const CTString &strSessionName,
     throw;
   }
   // remember the world pointer
-  _pShell->SetINDEX("pwoCurrentWorld", (INDEX)&ga_World);
+  _pShell->SetCurrentWorld(&ga_World);
 
   SetProgressDescription(TRANS("starting server"));
   CallProgressHook_t(0.0f);
@@ -1270,7 +1270,7 @@ void CNetworkLibrary::JoinSession_t(const CNetworkSession &nsSesssion, INDEX ctL
   }
 
   // remember the world pointer
-  _pShell->SetINDEX("pwoCurrentWorld", (INDEX)&ga_World);
+  _pShell->SetCurrentWorld(&ga_World);
 
   // eventually cache all shadowmaps in world (memory eater!)
   if( shd_bCacheAll) ga_World.wo_baBrushes.CacheAllShadowmaps();
@@ -1342,7 +1342,7 @@ void CNetworkLibrary::StartDemoPlay_t(const CTFileName &fnDemo)  // throw char *
   _bNeedPretouch = TRUE;
 
   // remember the world pointer
-  _pShell->SetINDEX("pwoCurrentWorld", (INDEX)&ga_World);
+  _pShell->SetCurrentWorld(&ga_World);
 
   // demo synchronization starts at the beginning initially
   ga_fDemoTimer = 0.0f;
@@ -1387,7 +1387,8 @@ void CNetworkLibrary::TogglePause(void)
 // test if game is paused
 BOOL CNetworkLibrary::IsPaused(void)
 {
-  if (this==NULL || _bTempNetwork) {
+  ASSERT(this!=NULL);
+  if (_bTempNetwork) {
     return TRUE; // this can happen during NET_MakeDefaultState_t()!
   }
   return ga_sesSessionState.ses_bPause;
@@ -1424,7 +1425,8 @@ void CNetworkLibrary::SetLocalPause(BOOL bPause)
 
 BOOL CNetworkLibrary::GetLocalPause(void)
 {
-  if (this==NULL || _bTempNetwork) {
+  ASSERT(this!=NULL);
+  if (_bTempNetwork) {
     return TRUE; // this can happen during NET_MakeDefaultState_t()!
   }
   return ga_bLocalPause;
@@ -1551,7 +1553,7 @@ void CNetworkLibrary::StopGame(void)
   ga_aplsPlayers.Clear();
   ga_aplsPlayers.New(NET_MAXLOCALPLAYERS);
   // remember the world pointer
-  _pShell->SetINDEX("pwoCurrentWorld", (INDEX)NULL);
+  _pShell->SetCurrentWorld(NULL);
 
   // rewind the timer
   _pTimer->SetCurrentTick(0.0f);
@@ -1675,7 +1677,7 @@ void CNetworkLibrary::ChangeLevel_internal(void)
     // remember the world filename
     ga_fnmWorld = ga_fnmNextLevel;
     // remember the world pointer
-    _pShell->SetINDEX("pwoCurrentWorld", (INDEX)&ga_World);
+    _pShell->SetCurrentWorld(&ga_World);
   // if there is remembered level
   } else {
     // restore it
@@ -2030,7 +2032,8 @@ void CNetworkLibrary::SendActionsToServer(void)
  */
 void CNetworkLibrary::TimerLoop(void)
 {
-  if (this==NULL || _bTempNetwork) {
+  ASSERT(this!=NULL);
+  if (_bTempNetwork) {
     return; // this can happen during NET_MakeDefaultState_t()!
   }
   _pfNetworkProfile.StartTimer(CNetworkProfile::PTI_TIMERLOOP);
@@ -2380,7 +2383,7 @@ extern void NET_MakeDefaultState_t(
     _pNetwork->ga_fnmWorld = fnmWorld;
     _pNetwork->ga_fnmNextLevel = CTString("");
     // remember the world pointer
-    _pShell->SetINDEX("pwoCurrentWorld", (INDEX)&_pNetwork->ga_World);
+    _pShell->SetCurrentWorld(&_pNetwork->ga_World);
 
     // reset random number generator
     _pNetwork->ga_sesSessionState.ResetRND();

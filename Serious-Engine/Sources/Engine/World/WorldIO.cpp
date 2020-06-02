@@ -34,11 +34,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #define WORLDSTATEVERSION_MULTITEXTURING 8
 #define WORLDSTATEVERSION_SHADOWSPERMIP 7
 #define WORLDSTATEVERSION_CURRENT WORLDSTATEVERSION_NOCLASSCONTAINER
-extern CWorld *_pwoCurrentLoading = NULL;  // world that is currently loading
+CWorld *_pwoCurrentLoading = NULL;  // world that is currently loading
 extern BOOL _bPortalSectorLinksPreLoaded;
 extern BOOL _bEntitySectorLinksPreLoaded;
 extern BOOL _bFileReplacingApplied;
-extern BOOL _bReadEntitiesByID = FALSE;
+BOOL _bReadEntitiesByID = FALSE;
 
 /*
  * Save entire world (both brushes  current state).

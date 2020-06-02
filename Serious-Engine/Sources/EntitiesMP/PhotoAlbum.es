@@ -15,7 +15,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 614
 %{
-#include "StdH.h"
+#include "EntitiesMP/StdH/StdH.h"
 #include "ModelsMP/CutSequences/Book/Book.h"
 #include "ModelsMP/CutSequences/Book/CoverPages.h"
 %}

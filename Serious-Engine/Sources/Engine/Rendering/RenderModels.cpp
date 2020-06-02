@@ -868,8 +868,8 @@ void CRenderer::RenderLensFlares(void)
     if( lfi.lfi_ulFlags&LFF_FOG) {
       // get fog strength at light position
       GFXTexCoord tex;
-      tex.s = -lfi.lfi_vProjected(3)*_fog_fMulZ;
-      tex.t = (lfi.lfi_vProjected%_fog_vHDirView+_fog_fAddH)*_fog_fMulH;
+      tex.gfxtc.st.s = -lfi.lfi_vProjected(3)*_fog_fMulZ;
+      tex.gfxtc.st.t = (lfi.lfi_vProjected%_fog_vHDirView+_fog_fAddH)*_fog_fMulH;
       FLOAT fFogStrength = NormByteToFloat(GetFogAlpha(tex));
       // fade flare with fog
       fFogHazeFade *= 1-fFogStrength;

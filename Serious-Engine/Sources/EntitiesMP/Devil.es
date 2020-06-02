@@ -15,7 +15,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 332
 %{
-#include "StdH.h"
+#include "EntitiesMP/StdH/StdH.h"
 #include "Models/Enemies/Devil/Devil.h"
 #include "Models/Enemies/Devil/Weapons/Laser.h"
 #include "Models/Weapons/RocketLauncher/RocketLauncherItem.h"

@@ -19,6 +19,5 @@ unsigned int _rotl(unsigned int value, int shift);
 char *strupr(char *string);
 
 #include <AndroidAdapters/win-constants.h>
-#include <AndroidAdapters/stringFormatter.h>
 
 #endif // ANDROID_ADAPTERS_H

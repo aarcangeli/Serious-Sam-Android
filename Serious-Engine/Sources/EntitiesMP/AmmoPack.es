@@ -15,7 +15,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 806
 %{
-#include "StdH.h"
+#include "EntitiesMP/StdH/StdH.h"
 #include "Models/Items/ItemHolder/ItemHolder.h"
 %}
 
@@ -90,7 +90,7 @@ functions:
       return;
     }
 
-    Particles_Spiral(this, 3.0f*0.5, 2.5f*0.5, PT_STAR04, 10);
+    Particles_Spiral(this, 3.0f*0.5f, 2.5f*0.5f, PT_STAR04, 10);
   }
 
   /* Fill in entity statistics - for AI purposes only */

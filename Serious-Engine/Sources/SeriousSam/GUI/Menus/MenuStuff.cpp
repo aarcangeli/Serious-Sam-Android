@@ -20,24 +20,24 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #define RADIOTRANS(str) ("ETRS" str)
 
-extern CTString astrNoYes[] = {
+CTString astrNoYes[] = {
   RADIOTRANS("No"),
   RADIOTRANS("Yes"),
 };
 
-extern CTString astrComputerInvoke[] = {
+CTString astrComputerInvoke[] = {
   RADIOTRANS("Use"),
   RADIOTRANS("Double-click use"),
 };
 
-extern CTString astrWeapon[] = {
+CTString astrWeapon[] = {
   RADIOTRANS("Only if new"),
   RADIOTRANS("Never"),
   RADIOTRANS("Always"),
   RADIOTRANS("Only if stronger"),
 };
 
-extern PIX apixWidths[][2] = {
+PIX apixWidths[][2] = {
   320, 240,
   400, 300,
   512, 384,
@@ -60,7 +60,7 @@ extern PIX apixWidths[][2] = {
   2048, 1536,
 };
 
-extern CTString astrCrosshair[] = {
+CTString astrCrosshair[] = {
   "",
   "Textures\\Interface\\Crosshairs\\Crosshair1.tex",
   "Textures\\Interface\\Crosshairs\\Crosshair2.tex",
@@ -71,7 +71,7 @@ extern CTString astrCrosshair[] = {
   "Textures\\Interface\\Crosshairs\\Crosshair7.tex",
 };
 
-extern CTString astrMaxPlayersRadioTexts[] = {
+CTString astrMaxPlayersRadioTexts[] = {
   RADIOTRANS("2"),
   RADIOTRANS("3"),
   RADIOTRANS("4"),
@@ -90,16 +90,16 @@ extern CTString astrMaxPlayersRadioTexts[] = {
 };
 // here, we just reserve space for up to 16 different game types
 // actual names are added later
-extern CTString astrGameTypeRadioTexts[] = {
+CTString astrGameTypeRadioTexts[] = {
   "", "", "", "", "",
   "", "", "", "", "",
   "", "", "", "", "",
   "", "", "", "", "",
 };
 
-extern INDEX ctGameTypeRadioTexts = 1;
+INDEX ctGameTypeRadioTexts = 1;
 
-extern CTString astrDifficultyRadioTexts[] = {
+CTString astrDifficultyRadioTexts[] = {
   RADIOTRANS("Tourist"),
   RADIOTRANS("Easy"),
   RADIOTRANS("Normal"),
@@ -108,39 +108,39 @@ extern CTString astrDifficultyRadioTexts[] = {
   RADIOTRANS("Mental"),
 };
 
-extern CTString astrSplitScreenRadioTexts[] = {
+CTString astrSplitScreenRadioTexts[] = {
   RADIOTRANS("1"),
   RADIOTRANS("2 - split screen"),
   RADIOTRANS("3 - split screen"),
   RADIOTRANS("4 - split screen"),
 };
 
-extern CTString astrDisplayPrefsRadioTexts[] = {
+CTString astrDisplayPrefsRadioTexts[] = {
   RADIOTRANS("Speed"),
   RADIOTRANS("Normal"),
   RADIOTRANS("Quality"),
   RADIOTRANS("Custom"),
 };
 
-extern CTString astrDisplayAPIRadioTexts[] = {
+CTString astrDisplayAPIRadioTexts[] = {
   RADIOTRANS("OpenGL"),
   RADIOTRANS("Direct3D"),
 };
 
-extern CTString astrBitsPerPixelRadioTexts[] = {
+CTString astrBitsPerPixelRadioTexts[] = {
   RADIOTRANS("Desktop"),
   RADIOTRANS("16 BPP"),
   RADIOTRANS("32 BPP"),
 };
 
-extern CTString astrFrequencyRadioTexts[] = {
+CTString astrFrequencyRadioTexts[] = {
   RADIOTRANS("No sound"),
   RADIOTRANS("11kHz"),
   RADIOTRANS("22kHz"),
   RADIOTRANS("44kHz"),
 };
 
-extern CTString astrSoundAPIRadioTexts[] = {
+CTString astrSoundAPIRadioTexts[] = {
   RADIOTRANS("WaveOut"),
   RADIOTRANS("DirectSound"),
   RADIOTRANS("EAX"),
@@ -190,7 +190,7 @@ void InitGameTypes(void)
   // if none
   if (pss == NULL) {
     // error
-    astrGameTypeRadioTexts[0] = "<???>";
+    astrGameTypeRadioTexts[0] = "<\?\?\?>";
     ctGameTypeRadioTexts = 1;
     return;
   }

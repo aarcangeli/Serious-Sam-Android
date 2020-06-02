@@ -15,7 +15,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 347
 %{
-#include "StdH.h"
+#include "EntitiesMP/StdH/StdH.h"
 #include "EntitiesMP/BackgroundViewer.h"
 #include "EntitiesMP/WorldSettingsController.h"
 #include "ModelsMP/Enemies/Summoner/Summoner.h"
@@ -564,7 +564,7 @@ functions:
 //CPrintF("FIRE DISABLED -> too much fuss\n");
       m_bFireOK = FALSE;
     // enable firing only when very little fuss
-    } else if (m_fFuss<0.4*m_fMaxCurrentFuss) {
+    } else if (m_fFuss<0.4f*m_fMaxCurrentFuss) {
 //CPrintF("FIRE ENABLE -> fuss more then %f\n", 0.4*m_fMaxCurrentFuss);
       m_bFireOK = TRUE; 
     // but if significant damage since last spawn, enable firing anyway
@@ -922,7 +922,7 @@ procedures:
         }
         
         if (iEnemyCount<6) {
-          fToSpawn = (6.0 - (FLOAT)iEnemyCount)/2.0f;
+          fToSpawn = (6.0f - (FLOAT)iEnemyCount)/2.0f;
         } else {
           fToSpawn = 1.0f;
         }

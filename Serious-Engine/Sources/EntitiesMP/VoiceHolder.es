@@ -15,7 +15,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 231
 %{
-#include "StdH.h"
+#include "EntitiesMP/StdH/StdH.h"
 extern INDEX ent_bReportBrokenChains;
 %}
 

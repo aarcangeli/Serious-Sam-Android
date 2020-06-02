@@ -19,6 +19,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
   #pragma once
 #endif
 
+#include <Engine/Base/ErrorReporting.h>
+
 // Print formated text to the main console.
 ENGINE_API extern void CPrintF(CTString strBuffer);
 template<typename ... Types>

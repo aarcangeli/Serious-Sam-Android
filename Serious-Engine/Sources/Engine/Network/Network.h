@@ -186,7 +186,7 @@ public:
   /* Default constructor. */
   CNetworkLibrary(void);
   ~CNetworkLibrary(void);
-  DECLARE_NOCOPYING(CNetworkLibrary);
+  DECLARE_NOCOPYING(CNetworkLibrary)
 
   /* Initialize game management. */
   void Init(const CTString &strGameID);

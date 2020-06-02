@@ -15,7 +15,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 504
 %{
-#include "StdH.h"
+#include "EntitiesMP/StdH/StdH.h"
 #define TM_APPLY_DAMAGE_QUANTUM 0.25f
 #define TM_APPLY_WHOLE_DAMAGE 7.5f
 #define DAMAGE_AMMOUNT 30.0f
@@ -277,7 +277,7 @@ procedures:
         }
 
         // if the plane is mostly horizontal
-        if (Abs(plPlane(2))>0.5) {
+        if (Abs(plPlane(2))>0.5f) {
           // use cross product of +x axis and plane normal as +s axis
           vU = FLOAT3D(1.0f, 0.0f, 0.0f)*m_vPlaneNormal;
         // if the plane is mostly vertical

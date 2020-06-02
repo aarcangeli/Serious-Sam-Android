@@ -15,7 +15,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 403
 %{
-#include "StdH.h"
+#include "EntitiesMP/StdH/StdH.h"
 #include "EntitiesMP/Player.h"
 #include "EntitiesMP/PlayerWeapons.h"
 %}
@@ -174,7 +174,7 @@ functions:
     if (bFollowCrossHair) {
       FLOAT3D vTarget = vBase-ppw->m_vRayHit;
       FLOAT fLen = vTarget.Length();
-      if (fLen>0.01) {
+      if (fLen>0.01f) {
         vTarget/=fLen;
       } else {
         vTarget = FLOAT3D(0,1,0);

@@ -26,7 +26,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "resource.h"
 #include "SplashScreen.h"
 #include "MainWindow.h"
-#include "GlSettings.h"
+#include "GLSettings.h"
 #include "LevelInfo.h"
 #include "LCDDrawing.h"
 #include "CmdLine.h"
@@ -38,42 +38,42 @@ void drawBannerFpsVersion(CDrawPort *pdp, int64_t deltaFrame, float fps);
 
 // _pGame reused from GameMP module
 #ifndef STATIC_LINKING
-extern CGame *_pGame = NULL;
+CGame *_pGame = NULL;
 #endif
 
 // application state variables
-extern BOOL _bRunning = TRUE;
-extern BOOL _bExitQuitScreen = TRUE;
-extern BOOL _bQuitScreen = TRUE;
-extern BOOL bMenuActive = FALSE;
-extern BOOL bMenuRendering = FALSE;
+BOOL _bRunning = TRUE;
+BOOL _bExitQuitScreen = TRUE;
+BOOL _bQuitScreen = TRUE;
+BOOL bMenuActive = FALSE;
+BOOL bMenuRendering = FALSE;
 
 extern BOOL _bDefiningKey;
 static BOOL _bReconsiderInput = FALSE;
-extern PIX  _pixDesktopWidth = 0;    // desktop width when started (for some tests)
+PIX  _pixDesktopWidth = 0;    // desktop width when started (for some tests)
 
 static INDEX sam_iMaxFPSActive   = 500;
 static INDEX sam_iMaxFPSInactive = 10;
 static INDEX sam_bPauseOnMinimize = TRUE; // auto-pause when window has been minimized
-extern INDEX sam_bWideScreen = FALSE;
-extern FLOAT sam_fPlayerOffset = 0.0f;
+INDEX sam_bWideScreen = FALSE;
+FLOAT sam_fPlayerOffset = 0.0f;
 
 // display mode settings
-extern INDEX sam_bFullScreenActive = FALSE;
-extern INDEX sam_iScreenSizeI = 640;  // current size of the window
-extern INDEX sam_iScreenSizeJ = 480;  // current size of the window
-extern INDEX sam_iDisplayDepth  = 0;  // 0==default, 1==16bit, 2==32bit
-extern INDEX sam_iDisplayAdapter = 0;
-extern INDEX sam_iGfxAPI = 0;         // 0==OpenGL
-extern INDEX sam_bFirstStarted = FALSE;
-extern FLOAT sam_tmDisplayModeReport = 5.0f;
-extern INDEX sam_bShowAllLevels = FALSE;
-extern INDEX sam_bMentalActivated = FALSE;
+INDEX sam_bFullScreenActive = FALSE;
+INDEX sam_iScreenSizeI = 640;  // current size of the window
+INDEX sam_iScreenSizeJ = 480;  // current size of the window
+INDEX sam_iDisplayDepth  = 0;  // 0==default, 1==16bit, 2==32bit
+INDEX sam_iDisplayAdapter = 0;
+INDEX sam_iGfxAPI = 0;         // 0==OpenGL
+INDEX sam_bFirstStarted = FALSE;
+FLOAT sam_tmDisplayModeReport = 5.0f;
+INDEX sam_bShowAllLevels = FALSE;
+INDEX sam_bMentalActivated = FALSE;
 
 // network settings
-extern CTString sam_strNetworkSettings = "";
+CTString sam_strNetworkSettings = "";
 // command line
-extern CTString sam_strCommandLine = "";
+CTString sam_strCommandLine = "";
 
 // 0...app started for the first time
 // 1...all ok
@@ -82,53 +82,53 @@ static INDEX _iDisplayModeChangeFlag = 0;
 static TIME _tmDisplayModeChanged = 100.0f; // when display mode was last changed
 
 // rendering preferences for automatic settings
-extern INDEX sam_iVideoSetup = 1;  // 0==speed, 1==normal, 2==quality, 3==custom
+INDEX sam_iVideoSetup = 1;  // 0==speed, 1==normal, 2==quality, 3==custom
 // automatic adjustment of audio quality
-extern BOOL sam_bAutoAdjustAudio = TRUE;
+BOOL sam_bAutoAdjustAudio = TRUE;
 
-extern INDEX sam_bAutoPlayDemos = TRUE;
+INDEX sam_bAutoPlayDemos = TRUE;
 static INDEX _bInAutoPlayLoop = TRUE;
 
 // menu calling
-extern INDEX sam_bMenu         = FALSE;
-extern INDEX sam_bMenuSave     = FALSE;
-extern INDEX sam_bMenuLoad     = FALSE;
-extern INDEX sam_bMenuControls = FALSE;
-extern INDEX sam_bMenuHiScore  = FALSE;
-extern INDEX sam_bToggleConsole = FALSE;
-extern INDEX sam_iStartCredits = FALSE;
+INDEX sam_bMenu         = FALSE;
+INDEX sam_bMenuSave     = FALSE;
+INDEX sam_bMenuLoad     = FALSE;
+INDEX sam_bMenuControls = FALSE;
+INDEX sam_bMenuHiScore  = FALSE;
+INDEX sam_bToggleConsole = FALSE;
+INDEX sam_iStartCredits = FALSE;
 
 // for mod re-loading
-extern CTFileName _fnmModToLoad = CTString("");
-extern CTString _strModServerJoin = CTString("");
-extern CTString _strURLToVisit = CTString("");
-extern CTFileName _modToLoadTxt = CTString("ModToLoad.txt");
+CTFileName _fnmModToLoad = CTString("");
+CTString _strModServerJoin = CTString("");
+CTString _strURLToVisit = CTString("");
+CTFileName _modToLoadTxt = CTString("ModToLoad.txt");
 
 // state variables fo addon execution
 // 0 - nothing
 // 1 - start (invoke console)
 // 2 - console invoked, waiting for one redraw
-extern INDEX _iAddonExecState = 0;
-extern CTFileName _fnmAddonToExec = CTString("");
+INDEX _iAddonExecState = 0;
+CTFileName _fnmAddonToExec = CTString("");
 
 // logo textures
 static CTextureObject  _toLogoCT;
 static CTextureObject  _toLogoODI;
 static CTextureObject  _toLogoEAX;
-extern CTextureObject *_ptoLogoCT  = NULL;
-extern CTextureObject *_ptoLogoODI = NULL;
-extern CTextureObject *_ptoLogoEAX = NULL;
+CTextureObject *_ptoLogoCT  = NULL;
+CTextureObject *_ptoLogoODI = NULL;
+CTextureObject *_ptoLogoEAX = NULL;
 
-extern CTString sam_strVersion = SSA_VERSION;
-extern CTString sam_strModName = TRANS("-   A N D R O I D   P O R T   ( U N O F F I C I A L )   -");
-extern CTString sam_strBackLink = TRANS("https://github.com/aarcangeli/Serious-Sam-Android");
+CTString sam_strVersion = SSA_VERSION;
+CTString sam_strModName = TRANS("-   A N D R O I D   P O R T   ( U N O F F I C I A L )   -");
+CTString sam_strBackLink = TRANS("https://github.com/aarcangeli/Serious-Sam-Android");
 
-extern CTFileName sam_strFirstLevel = CTString("Levels\\LevelsMP\\1_0_InTheLastEpisode.wld");
-extern CTFileName sam_strIntroLevel = CTString("Levels\\LevelsMP\\Intro.wld");
-extern CTString sam_strGameName = "serioussamse";
+CTFileName sam_strFirstLevel = CTString("Levels\\LevelsMP\\1_0_InTheLastEpisode.wld");
+CTFileName sam_strIntroLevel = CTString("Levels\\LevelsMP\\Intro.wld");
+CTString sam_strGameName = "serioussamse";
 
-extern CTString sam_strTechTestLevel = "Levels\\LevelsMP\\Technology\\TechTest.wld";
-extern CTString sam_strTrainingLevel = "Levels\\KarnakDemo.wld";
+CTString sam_strTechTestLevel = "Levels\\LevelsMP\\Technology\\TechTest.wld";
+CTString sam_strTrainingLevel = "Levels\\KarnakDemo.wld";
 
 ENGINE_API extern INDEX snd_iFormat;
 
@@ -382,7 +382,7 @@ void UpdatePauseState(void)
 // limit current frame rate if neeeded
 void LimitFrameRate(void)
 {
-  // measure passed time for each loop
+ /* // measure passed time for each loop
   static CTimerValue tvLast(-1.0f);
   CTimerValue tvNow   = _pTimer->GetHighPrecisionTimer();
   TIME tmCurrentDelta = (tvNow-tvLast).GetSeconds();
@@ -398,7 +398,7 @@ void LimitFrameRate(void)
   if( tmCurrentDelta<tmWantedDelta) Sleep( (tmWantedDelta-tmCurrentDelta)*1000.0f);
   
   // remember new time
-  tvLast = _pTimer->GetHighPrecisionTimer();
+  tvLast = _pTimer->GetHighPrecisionTimer(); */
 }
 
 // load first demo

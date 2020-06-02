@@ -15,7 +15,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "StdH.h"
 
-#include <Engine\Math\Projection.h>
+#include <Engine/Math/Projection.h>
 #include <Engine/Graphics/Shader.h>
 #include <Engine/Graphics/Texture.h>
 #include <Engine/Graphics/RenderPoly.h>
@@ -121,8 +121,8 @@ extern void InternalShader_Mask(void)
 
     // adjust texture coords (if any!)
     if( ptex!=NULL) {
-      tvd.tvd_fU = ptex[iVtx].s;
-      tvd.tvd_fV = ptex[iVtx].t;
+      tvd.tvd_fU = ptex[iVtx].gfxtc.st.s;
+      tvd.tvd_fV = ptex[iVtx].gfxtc.st.t;
       tvd.tvd_pv2.pv2_fUoK = tvd.tvd_fU * tvd.tvd_pv2.pv2_f1oK *pixMipWidth;
       tvd.tvd_pv2.pv2_fVoK = tvd.tvd_fV * tvd.tvd_pv2.pv2_f1oK *pixMipHeight;
     } else tvd.tvd_fU = tvd.tvd_fV = 0;

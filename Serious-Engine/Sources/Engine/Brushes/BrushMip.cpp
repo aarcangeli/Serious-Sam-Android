@@ -29,7 +29,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Templates/StaticArray.cpp>
 #include <Engine/Templates/Selection.cpp>
 
-template CDynamicArray<CBrushSector>;
+template class CDynamicArray<CBrushSector>;
 
 // tolerance value for csg selection
 #define CSG_RANGE_EPSILON (0.25f)
@@ -308,7 +308,7 @@ void CBrushMip::RemoveDummyPortals(BOOL bClearPortalFlags)
         {
           bpo.bpo_ulFlags &= ~(BPOF_PASSABLE|BPOF_PORTAL);
         }
-        bpo.bpo_abptTextures[0].s.bpt_ubBlend = BPT_BLEND_OPAQUE;
+        bpo.bpo_abptTextures[0].bpt.s.bpt_ubBlend = BPT_BLEND_OPAQUE;
         bpo.bpo_bppProperties.bpp_ubShadowBlend = BPT_BLEND_SHADE;
 
         // remove all of its links

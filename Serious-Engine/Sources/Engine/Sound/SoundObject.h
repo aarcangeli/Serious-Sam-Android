@@ -142,8 +142,8 @@ public:
   // Set filter
   inline void SetFilter( FLOAT fLeftFilter, FLOAT fRightFilter) { // 1=no filter (>1=more bass)
     ASSERT( (fLeftFilter >= 1) && (fRightFilter >= 1));
-    so_spNew.sp_slLeftFilter  = FloatToInt(32767.0/fLeftFilter);
-    so_spNew.sp_slRightFilter = FloatToInt(32767.0/fRightFilter);
+    so_spNew.sp_slLeftFilter  = FloatToInt(32767.0f/fLeftFilter);
+    so_spNew.sp_slRightFilter = FloatToInt(32767.0f/fRightFilter);
   };
   // Set pitch shifting
   inline void SetPitch( FLOAT fPitch) { // 1.0 for normal (<1 = slower, >1 = faster playing)

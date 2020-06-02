@@ -49,7 +49,7 @@ public:
 #include <vorbis/vorbisfile.h>  // we define needed stuff ourselves, and ignore the rest
 
 // vorbis vars
-extern BOOL _bOVEnabled = FALSE;
+BOOL _bOVEnabled = FALSE;
 static HINSTANCE _hOV = NULL;
 
 class CDecodeData_OGG {

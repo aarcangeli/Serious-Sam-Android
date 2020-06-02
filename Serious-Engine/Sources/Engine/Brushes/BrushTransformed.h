@@ -38,7 +38,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 class CWorkingVertex {
 public:
   FLOAT3D wvx_vRelative;  // coordinates in brush space
-  ALIGNED_NEW_AND_DELETE(32);
+  ALIGNED_NEW_AND_DELETE(32)
   /* Clear the object. */
   inline void Clear(void) {};
 };

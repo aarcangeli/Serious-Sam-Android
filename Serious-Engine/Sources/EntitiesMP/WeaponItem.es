@@ -15,7 +15,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 802
 %{
-#include "StdH.h"
+#include "EntitiesMP/StdH/StdH.h"
 #include "Models/Items/ItemHolder/ItemHolder.h"
 #include "Models/Weapons/Colt/ColtItem.h"
 #include "Models/Weapons/SingleShotgun/SingleShotgunItem.h"
@@ -27,8 +27,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "ModelsMP/Weapons/Sniper/SniperItem.h"
 #include "ModelsMP/Weapons/Sniper/Body.h"
 #include "ModelsMP/Weapons/Flamer/FlamerItem.h"
-#include "ModelsMP/Weapons/Chainsaw/ChainsawItem.h"
-#include "ModelsMP/Weapons/Chainsaw/BladeForPlayer.h"
+#include "ModelsMP/Weapons/ChainSaw/ChainsawItem.h"
+#include "ModelsMP/Weapons/ChainSaw/BladeForPlayer.h"
 #include "Models/Weapons/Laser/LaserItem.h"
 #include "Models/Weapons/Cannon/Cannon.h"
 

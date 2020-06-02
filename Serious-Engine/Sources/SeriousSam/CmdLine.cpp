@@ -18,15 +18,15 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/CurrentVersion.h>
 #include "CmdLine.h"
 
-extern CTString cmd_strWorld = "";  // world to load
-extern INDEX cmd_iGoToMarker = -1;  // marker to go to
-extern CTString cmd_strScript = ""; // script to execute
-extern CTString cmd_strServer = ""; // server to connect to
-extern INDEX cmd_iPort = -1;     // port to connect to
-extern CTString cmd_strPassword = ""; // network password
-extern CTString cmd_strOutput = ""; // output from parsing command line
-extern BOOL cmd_bServer = FALSE;  // set to run as server
-extern BOOL cmd_bQuickJoin = FALSE; // do not ask for players and network settings
+CTString cmd_strWorld = "";  // world to load
+INDEX cmd_iGoToMarker = -1;  // marker to go to
+CTString cmd_strScript = ""; // script to execute
+CTString cmd_strServer = ""; // server to connect to
+INDEX cmd_iPort = -1;     // port to connect to
+CTString cmd_strPassword = ""; // network password
+CTString cmd_strOutput = ""; // output from parsing command line
+BOOL cmd_bServer = FALSE;  // set to run as server
+BOOL cmd_bQuickJoin = FALSE; // do not ask for players and network settings
 
 static CTString _strCmd;
 

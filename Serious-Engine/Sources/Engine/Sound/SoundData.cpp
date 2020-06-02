@@ -255,7 +255,7 @@ void CSoundData::AddReference(void)
 {
   if (this!=NULL) {
     MarkUsed();
-  }
+ }
 }
 
 
@@ -264,5 +264,5 @@ void CSoundData::RemReference(void)
 {
   if (this!=NULL) {
     _pSoundStock->Release(this);
-  }
+ }
 }

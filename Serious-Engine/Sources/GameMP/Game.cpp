@@ -16,7 +16,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 // Game.cpp : Defines the initialization routines for the DLL.
 //
 
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "Game.h"
 #include <dirent.h> // for _mkdir()
 #include <sys/stat.h>
@@ -32,9 +32,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "Camera.h"
 #include "LCDDrawing.h"
 
-extern FLOAT con_fHeightFactor = 0.3f;
-extern FLOAT con_tmLastLines   = 5.0f;
-extern INDEX con_bTalk = 0;
+FLOAT con_fHeightFactor = 0.3f;
+FLOAT con_tmLastLines   = 5.0f;
+INDEX con_bTalk = 0;
 CTimerValue _tvMenuQuickSave;
 
 // used filenames
@@ -60,7 +60,7 @@ static CStaticStackArray<INDEX> _actTriangles;  // world, model, particle, total
 
 
 // one and only Game object
-extern CGame *_pGame = NULL;
+CGame *_pGame = NULL;
 
 extern "C" CGame *GAME_Create(void)
 {
@@ -80,50 +80,50 @@ static INDEX _ctProfileRecording = 0;
 static FLOAT gam_iRecordHighScore = -1.0f;
 
 
-extern FLOAT gam_afAmmoQuantity[5]        = {2.0f,  2.0f,  1.0f, 1.0f , 2.0f };
-extern FLOAT gam_afDamageStrength[5]      = {0.25f, 0.5f,  1.0f, 1.5f , 2.0f };
-extern FLOAT gam_afEnemyAttackSpeed[5]    = {0.75f, 0.75f, 1.0f, 2.0f , 2.0f };
-extern FLOAT gam_afEnemyMovementSpeed[5]  = {1.0f , 1.0f , 1.0f, 1.25f, 1.25f};
-extern FLOAT gam_fManaTransferFactor = 0.5f;
-extern FLOAT gam_fExtraEnemyStrength          = 0;
-extern FLOAT gam_fExtraEnemyStrengthPerPlayer = 0;
-extern INDEX gam_iCredits = -1;   // number of credits for respawning
-extern FLOAT gam_tmSpawnInvulnerability = 3;
-extern INDEX gam_iScoreLimit = 100000;
-extern INDEX gam_iFragLimit = 20;
-extern INDEX gam_iTimeLimit = 0;
-extern INDEX gam_bWeaponsStay = TRUE;
-extern INDEX gam_bAmmoStays = TRUE;
-extern INDEX gam_bHealthArmorStays = TRUE;
-extern INDEX gam_bAllowHealth = TRUE;
-extern INDEX gam_bAllowArmor = TRUE;
-extern INDEX gam_bInfiniteAmmo = FALSE;
-extern INDEX gam_bRespawnInPlace = TRUE;
-extern INDEX gam_bPlayEntireGame = TRUE;
-extern INDEX gam_bFriendlyFire = FALSE;
-extern INDEX gam_ctMaxPlayers = 8;
-extern INDEX gam_bWaitAllPlayers = FALSE;
-extern INDEX gam_iInitialMana = 100;
-extern INDEX gam_bQuickLoad = FALSE;
-extern INDEX gam_bQuickSave = FALSE;
-extern INDEX gam_iQuickSaveSlots = 8;
+FLOAT gam_afAmmoQuantity[5]        = {2.0f,  2.0f,  1.0f, 1.0f , 2.0f };
+FLOAT gam_afDamageStrength[5]      = {0.25f, 0.5f,  1.0f, 1.5f , 2.0f };
+FLOAT gam_afEnemyAttackSpeed[5]    = {0.75f, 0.75f, 1.0f, 2.0f , 2.0f };
+FLOAT gam_afEnemyMovementSpeed[5]  = {1.0f , 1.0f , 1.0f, 1.25f, 1.25f};
+FLOAT gam_fManaTransferFactor = 0.5f;
+FLOAT gam_fExtraEnemyStrength          = 0;
+FLOAT gam_fExtraEnemyStrengthPerPlayer = 0;
+INDEX gam_iCredits = -1;   // number of credits for respawning
+FLOAT gam_tmSpawnInvulnerability = 3;
+INDEX gam_iScoreLimit = 100000;
+INDEX gam_iFragLimit = 20;
+INDEX gam_iTimeLimit = 0;
+INDEX gam_bWeaponsStay = TRUE;
+INDEX gam_bAmmoStays = TRUE;
+INDEX gam_bHealthArmorStays = TRUE;
+INDEX gam_bAllowHealth = TRUE;
+INDEX gam_bAllowArmor = TRUE;
+INDEX gam_bInfiniteAmmo = FALSE;
+INDEX gam_bRespawnInPlace = TRUE;
+INDEX gam_bPlayEntireGame = TRUE;
+INDEX gam_bFriendlyFire = FALSE;
+INDEX gam_ctMaxPlayers = 8;
+INDEX gam_bWaitAllPlayers = FALSE;
+INDEX gam_iInitialMana = 100;
+INDEX gam_bQuickLoad = FALSE;
+INDEX gam_bQuickSave = FALSE;
+INDEX gam_iQuickSaveSlots = 8;
 
-extern INDEX gam_iQuickStartDifficulty = 1;
-extern INDEX gam_iQuickStartMode = 0;
-extern INDEX gam_bQuickStartMP = 0;
+INDEX gam_iQuickStartDifficulty = 1;
+INDEX gam_iQuickStartMode = 0;
+INDEX gam_bQuickStartMP = 0;
 
-extern INDEX gam_bEnableAdvancedObserving = 0;
-extern INDEX gam_iObserverConfig = 0;
-extern INDEX gam_iObserverOffset = 0;
+INDEX gam_bEnableAdvancedObserving = 0;
+INDEX gam_iObserverConfig = 0;
+INDEX gam_iObserverOffset = 0;
 
-extern INDEX gam_iStartDifficulty = 1;
-extern INDEX gam_iStartMode = 0;
-extern CTString gam_strGameAgentExtras = "";
+INDEX gam_iStartDifficulty = 1;
+INDEX gam_iStartMode = 0;
+CTString gam_strGameAgentExtras = "";
 
-extern INDEX gam_iBlood = 2;     // 0=none, 1=green, 2=red, 3=hippie
-extern INDEX gam_bGibs  = TRUE;   
+INDEX gam_iBlood = 2;     // 0=none, 1=green, 2=red, 3=hippie
+INDEX gam_bGibs  = TRUE;   
 
-extern INDEX gam_bUseExtraEnemies = TRUE;
+INDEX gam_bUseExtraEnemies = TRUE;
 
 static INDEX hud_iEnableStats = 1;
 static FLOAT hud_fEnableFPS   = 1;
@@ -143,8 +143,8 @@ static INDEX ctl_iCurrentPlayerLocal = -1;
 static INDEX ctl_iCurrentPlayer = -1;
 static FLOAT gam_fChatSoundVolume = 0.25f;
 
-extern BOOL _bUserBreakEnabled = FALSE;
-extern BOOL map_bIsFirstEncounter = FALSE;
+BOOL _bUserBreakEnabled = FALSE;
+BOOL map_bIsFirstEncounter = FALSE;
 
 // make sure that console doesn't show last lines if not playing in network
 void MaybeDiscardLastLines(void)
@@ -2281,7 +2281,7 @@ void CGame::GameRedrawView( CDrawPort *pdpDrawPort, ULONG ulFlags)
         strIndicator = TRANS("Game finished");
       } else if (_pNetwork->IsPaused() || _pNetwork->GetLocalPause()) {
         strIndicator = TRANS("Paused");
-      } else if (_tvMenuQuickSave.tv_llValue!=0lli &&
+      } else if (_tvMenuQuickSave.tv_llValue!=0 &&
         (_pTimer->GetHighPrecisionTimer()-_tvMenuQuickSave).GetSeconds()<3) {
 //        strIndicator = TRANS("Use F6 for QuickSave during game!");
       } else if (_pNetwork->ga_sesSessionState.ses_strMOTD!="") {
@@ -2292,7 +2292,7 @@ void CGame::GameRedrawView( CDrawPort *pdpDrawPort, ULONG ulFlags)
           tvLastMotd = _pTimer->GetHighPrecisionTimer();
           strLastMotd = strMotd;
         }
-        if (tvLastMotd.tv_llValue!=0lli && (_pTimer->GetHighPrecisionTimer()-tvLastMotd).GetSeconds()<3) {
+        if (tvLastMotd.tv_llValue!=0 && (_pTimer->GetHighPrecisionTimer()-tvLastMotd).GetSeconds()<3) {
           strIndicator = strMotd;
         }
       }

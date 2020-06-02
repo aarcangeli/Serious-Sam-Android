@@ -26,6 +26,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/FileName.h>
 #include <Engine/Base/ErrorReporting.h>
 #include <Engine/Templates/DynamicStackArray.h>
+#include <Engine/Base/ErrorReporting.h>
 
 // maximum length of file that can be saved (default: 8Mb)
 ENGINE_API extern ULONG _ulMaxLengthOfSavingFile;

@@ -187,7 +187,7 @@ CEntity::~CEntity(void)
   }
   // clear entity type
   en_RenderType = RT_NONE;
-  en_pecClass->RemReference();
+  if(en_pecClass != NULL) en_pecClass->RemReference();
   en_pecClass = NULL;
 
   en_fSpatialClassificationRadius = -1.0f;
@@ -1012,7 +1012,7 @@ void CEntity::FallDownToFloor( void)
 
 
 extern CEntity *_penLightUpdating;
-extern BOOL _bDontDiscardLinks = FALSE;
+BOOL _bDontDiscardLinks = FALSE;
 
 // internal repositioning function
 void CEntity::SetPlacement_internal(const CPlacement3D &plNew, const FLOATmatrix3D &mRotation,
@@ -2037,10 +2037,7 @@ static CStaticStackArray<CSentEvent> _aseSentEvents;  // delayed events
 /* Send an event to this entity. */
 void CEntity::SendEvent(const CEntityEvent &ee)
 {
-  if (this==NULL) {
-    ASSERT(FALSE);
-    return;
-  }
+  ASSERT(this!=NULL);
   CSentEvent &se = _aseSentEvents.Push();
   se.se_penEntity = this;
   se.se_peeEvent = ((CEntityEvent&)ee).MakeCopy();  // discard const qualifier

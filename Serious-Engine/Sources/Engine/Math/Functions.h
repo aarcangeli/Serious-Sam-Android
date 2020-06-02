@@ -313,7 +313,8 @@ inline FLOAT NormByteToFloat( const ULONG ul)
 inline SLONG FloatToInt( FLOAT f)
 {
 #if (defined USE_PORTABLE_C)
-  return((SLONG) f);  /* best of luck to you. */
+  float addToRound = copysignf(0.5f, f); // copy f's signbit to 0.5 => if f<0 then addToRound = -0.5, else 0.5
+  return((SLONG) (f + addToRound));
 
 #elif (defined _MSC_VER)
   SLONG slRet;
@@ -341,7 +342,7 @@ inline SLONG FloatToInt( FLOAT f)
 // log base 2 of any float numero
 inline FLOAT Log2( FLOAT f) {
 #if (defined USE_PORTABLE_C)
-  return (FLOAT)(log10(f)*3.321928094887);  // log10(x)/log10(2)
+  return log2f(f);
 
 #elif (defined _MSC_VER)
   FLOAT fRet;
@@ -374,13 +375,7 @@ inline FLOAT Log2( FLOAT f) {
 // returns accurate values only for integers that are power of 2
 inline SLONG FastLog2( SLONG x)
 {
-#if (defined USE_PORTABLE_C)
-  ULONG temp = (ULONG) x;
-  SLONG result = 0;
-  while (temp >>= 1) result++;
-  return result;
-
-#elif (defined _MSC_VER)
+#if (defined __MSVC_INLINE__)
   SLONG slRet;
   __asm {
     bsr   eax,D [x]
@@ -388,18 +383,30 @@ inline SLONG FastLog2( SLONG x)
   }
   return slRet;
 
-#elif (defined __GNUC__)
+#elif (defined __GNU_INLINE_X86_32__)
   SLONG slRet;
   __asm__ __volatile__ (
-    "bsrl  (%%ebx), %%eax     \n\t"
-    "movl   %%eax, (%%esi)    \n\t"
-        :
-        : "b" (&x), "S" (&slRet)
+    "bsrl   %%ecx, %%eax      \n\t"
+        : "=a" (slRet)
+        : "c" (x)
         : "memory"
   );
   return(slRet);
+#elif (defined __GNUC__)
+  if(x == 0) return 0; // __builtin_clz() is undefined for 0
+  int numLeadingZeros  = __builtin_clz(x);
+  return 31 - numLeadingZeros;
 #else
-  #error Fill this in for your platform.
+  SLONG val = x;
+  SLONG retval = 31;
+  while (retval > 0)
+  {
+    if (val & (1 << retval))
+        return retval;
+    retval--;
+  }
+
+  return 0;
 #endif
 }
 
@@ -444,7 +451,11 @@ inline SLONG FastMaxLog2( SLONG x)
 
 
 // square root (works with negative numbers)
+#ifdef __arm__
+inline FLOAT Sqrt( FLOAT x) { return sqrtf( ClampDn( x, 0.0f)); }
+#else
 inline FLOAT Sqrt( FLOAT x) { return (FLOAT)sqrt( ClampDn( x, 0.0f)); }
+#endif
 
 
 
@@ -490,34 +501,59 @@ inline FLOAT RadAngle(ANGLE aAngle) {
   return FLOAT (WrapAngle(aAngle)*PI/ANGLE_180);
 }
 
-ENGINE_API FLOAT Sin(ANGLE a);
-ENGINE_API FLOAT Cos(ANGLE a);
-ENGINE_API FLOAT Tan(ANGLE a);
+#ifdef __arm__
+inline ENGINE_API FLOAT Sin(ANGLE a) { return sinf(a*(PI/ANGLE_180)); };
+inline ENGINE_API FLOAT Cos(ANGLE a) { return cosf(a*(PI/ANGLE_180)); };
+inline ENGINE_API FLOAT Tan(ANGLE a) { return tanf(a*(PI/ANGLE_180)); };
+#else
+inline ENGINE_API FLOAT Sin(ANGLE a) { return sin(a*(PI/ANGLE_180)); };
+inline ENGINE_API FLOAT Cos(ANGLE a) { return cos(a*(PI/ANGLE_180)); };
+inline ENGINE_API FLOAT Tan(ANGLE a) { return tan(a*(PI/ANGLE_180)); };
+#endif
 
+#ifdef __arm__
+inline ENGINE_API FLOAT SinFast(ANGLE a) { return sinf(a*(PI/ANGLE_180)); };
+inline ENGINE_API FLOAT CosFast(ANGLE a) { return cosf(a*(PI/ANGLE_180)); };
+inline ENGINE_API FLOAT TanFast(ANGLE a) { return tanf(a*(PI/ANGLE_180)); };
+inline ANGLE ASin(FLOAT y) {
+  return AngleRad (asinf(Clamp(y, -1.0f, 1.0f)));
+}
+inline ANGLE ACos(FLOAT x) {
+  return AngleRad (acosf(Clamp(x, -1.0f, 1.0f)));
+
+}
+inline ANGLE ATan(FLOAT z) {
+  return AngleRad (atanf(z));
+}
+inline ANGLE ATan2(FLOAT y, FLOAT x) {
+  return AngleRad (atan2f(y, x));
+}
+#else
 inline ENGINE_API FLOAT SinFast(ANGLE a) { return (FLOAT)sin(a*(PI/ANGLE_180)); };
 inline ENGINE_API FLOAT CosFast(ANGLE a) { return (FLOAT)cos(a*(PI/ANGLE_180)); };
 inline ENGINE_API FLOAT TanFast(ANGLE a) { return (FLOAT)tan(a*(PI/ANGLE_180)); };
-
 inline ANGLE ASin(FLOAT y) {
   return AngleRad (asin(Clamp(y, -1.0f, 1.0f)));
-}
-inline ANGLE ASin(DOUBLE y) {
-  return AngleRad (asin(Clamp(y, -1.0, 1.0)));
 }
 inline ANGLE ACos(FLOAT x) {
   return AngleRad (acos(Clamp(x, -1.0f, 1.0f)));
 }
-inline ANGLE ACos(DOUBLE x) {
-  return AngleRad (acos(Clamp(x, -1.0, 1.0)));
-}
 inline ANGLE ATan(FLOAT z) {
-  return AngleRad (atan(z));
-}
-inline ANGLE ATan(DOUBLE z) {
   return AngleRad (atan(z));
 }
 inline ANGLE ATan2(FLOAT y, FLOAT x) {
   return AngleRad (atan2(y, x));
+}
+#endif
+
+inline ANGLE ASin(DOUBLE y) {
+  return AngleRad (asin(Clamp(y, -1.0, 1.0)));
+}
+inline ANGLE ACos(DOUBLE x) {
+  return AngleRad (acos(Clamp(x, -1.0, 1.0)));
+}
+inline ANGLE ATan(DOUBLE z) {
+  return AngleRad (atan(z));
 }
 inline ANGLE ATan2(DOUBLE y, DOUBLE x) {
   return AngleRad (atan2(y, x));

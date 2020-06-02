@@ -15,13 +15,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 322
 %{
-#include "StdH.h"
-//#include "Models/Enemies/Elementals/AirMan.h"
-//#include "Models/Enemies/Elementals/IceMan.h"
+#include "EntitiesMP/StdH/StdH.h"
 #include "Models/Enemies/Elementals/StoneMan.h"
-//#include "Models/Enemies/Elementals/Twister.h"
-//#include "Models/Enemies/Elementals/WaterMan.h"
-//#include "Models/Enemies/Elementals/Projectile/IcePyramid.h"
 #include "Models/Enemies/Elementals/Projectile/LavaStone.h"
 
 #include "Models/Enemies/ElementalLava/ElementalLava.h"
@@ -49,8 +44,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 %}
 
 uses "EntitiesMP/EnemyBase";
-//uses "EntitiesMP/Twister";
-//uses "EntitiesMP/Water";
 
 enum ElementalType {
   0 ELT_AIR           "obsolete",        // air elemental
@@ -225,16 +218,6 @@ components:
   4 class   CLASS_BLOOD_SPRAY  "Classes\\BloodSpray.ecl",
   5 class   CLASS_BASIC_EFFECT "Classes\\BasicEffect.ecl",
 
-/* // air
- 10 model   MODEL_AIR               "Models\\Enemies\\Elementals\\AirMan.mdl",
- 11 model   MODEL_AIR_TWISTER       "Models\\Enemies\\Elementals\\Twister.mdl",
- 12 texture TEXTURE_AIR             "Models\\Enemies\\Elementals\\AirMan01.tex",
-
- // ice
- 20 model   MODEL_ICE               "Models\\Enemies\\Elementals\\IceMan.mdl",
- 21 model   MODEL_ICE_PICK          "Models\\Enemies\\Elementals\\IcePick.mdl",
- 22 texture TEXTURE_ICE             "Models\\Enemies\\Elementals\\IceMan01.tex",
-*/
  // lava
  30 model   MODEL_LAVA              "Models\\Enemies\\ElementalLava\\ElementalLava.mdl",
  31 model   MODEL_LAVA_BODY_FLARE   "Models\\Enemies\\ElementalLava\\BodyFlare.mdl",
@@ -242,34 +225,6 @@ components:
  33 texture TEXTURE_LAVA            "Models\\Enemies\\ElementalLava\\Lava04Fx.tex",
  34 texture TEXTURE_LAVA_DETAIL     "Models\\Enemies\\ElementalLava\\Detail.tex",
  35 texture TEXTURE_LAVA_FLARE      "Models\\Enemies\\ElementalLava\\Flare.tex",
-/*
- // stone
- 40 model   MODEL_STONE             "Models\\Enemies\\Elementals\\StoneMan.mdl",
- 41 model   MODEL_STONE_MAUL        "Models\\Enemies\\Elementals\\Maul.mdl",
- 42 texture TEXTURE_STONE           "Models\\Enemies\\Elementals\\StoneMan01.tex",
-
- // water
- 50 model   MODEL_WATER             "Models\\Enemies\\Elementals\\WaterMan.mdl",
- 51 model   MODEL_WATER_BODY_FLARE  "Models\\Enemies\\Elementals\\WaterManFX\\BodyFlare.mdl",
- 52 texture TEXTURE_WATER           "Models\\Enemies\\Elementals\\WaterManFX.tex",
- 53 texture TEXTURE_WATER_FLARE     "Models\\Enemies\\Elementals\\WaterManFX\\BodyFlare.tex",
-*/
- // debris
-// 80 model   MODEL_ELEM_STONE            "Models\\Enemies\\Elementals\\Projectile\\Stone.mdl",
-// 82 model   MODEL_ELEM_LAVASTONE        "Models\\Enemies\\ElementalLava\\Projectile\\LavaStone.mdl",
-// 83 model   MODEL_ELEM_LAVASTONE_FLARE  "Models\\Enemies\\ElementalLava\\Projectile\\LavaStoneFlare.mdl",
-// 84 model   MODEL_ELEM_ICE              "Models\\Enemies\\Elementals\\Projectile\\IcePyramid.mdl",
-// 85 model   MODEL_ELEM_ICE_FLARE        "Models\\Enemies\\Elementals\\Projectile\\IcePyramidFlare.mdl",
-
-// 90 texture TEXTURE_ELEM_STONE          "Models\\Enemies\\Elementals\\Projectile\\Stone.tex",
-// 92 texture TEXTURE_ELEM_LAVASTONE      "Models\\Enemies\\ElementalLava\\Projectile\\LavaStone.tex",
-// 93 texture TEXTURE_ELEM_ICE            "Models\\Enemies\\Elementals\\Projectile\\IcePyramid.tex",
-// 94 texture TEXTURE_ELEM_FLARE          "Textures\\Effects\\Flares\\03\\Flaire06.tex",
-
-// ************** SPECULAR **************
-//210 texture TEX_SPEC_WEAK           "Models\\SpecularTextures\\Weak.tex",
-//211 texture TEX_SPEC_MEDIUM         "Models\\SpecularTextures\\Medium.tex",
-//212 texture TEX_SPEC_STRONG         "Models\\SpecularTextures\\Strong.tex",
 
 // ************** SOUNDS **************
 250 sound   SOUND_LAVA_IDLE      "Models\\Enemies\\ElementalLava\\Sounds\\Idle.wav",

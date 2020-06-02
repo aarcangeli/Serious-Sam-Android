@@ -15,7 +15,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 217
 %{
-#include "StdH.h"
+#include "EntitiesMP/StdH/StdH.h"
 %}
 
 uses "EntitiesMP/ModelHolder2";
@@ -61,8 +61,8 @@ properties:
  27 FLOAT m_fParticleSize "Particle Size" 'Z' = 1.0f, // size of particles
  28 BOOL m_bRequireExplosion "Requires Explosion" = FALSE,
  29 FLOAT m_fDebrisLaunchPower "CC: Debris Launch Power" 'L' = 1.0f, // launch power of debris
- 30 enum DebrisParticlesType m_dptParticles "CC: Trail particles" = DPT_NONE,
- 31 enum BasicEffectType m_betStain "CC: Leave stain" = BET_NONE,
+ 30 INDEX m_dptParticles "CC: Trail particles" = DPT_NONE,
+ 31 INDEX m_betStain "CC: Leave stain" = BET_NONE,
  32 FLOAT m_fLaunchCone "CC: Launch cone" = 45.0f,
  33 FLOAT m_fRndRotH "CC: Rotation heading" = 720.0f,
  34 FLOAT m_fRndRotP "CC: Rotation pitch" = 720.0f,

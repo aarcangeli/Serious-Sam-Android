@@ -38,6 +38,8 @@ public:
   // conversion from euler angles
   void FromEuler(const Vector<Type, 3> &a);
 
+  inline Type EPS(Type orig) const;
+
   // conversion to matrix
   void ToMatrix(Matrix<Type, 3, 3> &m) const;
   // conversion from matrix
@@ -57,7 +59,12 @@ public:
   // multiplication/division by a scalar
   inline Quaternion<Type> operator*(Type t) const;
   inline Quaternion<Type> &operator*=(Type t);
-  friend Quaternion<Type> operator*(Type t, Quaternion<Type> q);
+
+  friend Quaternion<Type> operator*(Type t, Quaternion<Type> q)
+  {
+    return Quaternion<Type>(q.q_w*t, q.q_x*t, q.q_y*t, q.q_z*t);
+  }
+
   inline Quaternion<Type> operator/(Type t) const;
   inline Quaternion<Type> &operator/=(Type t);
   
@@ -75,17 +82,88 @@ public:
   // quaternion norm (euclidian length of a 4d vector)
   inline Type Norm(void) const;
 
+  friend __forceinline CTStream &operator>>(CTStream &strm, Quaternion<Type> &q) {
+    strm>>q.q_w;
+    strm>>q.q_x;
+    strm>>q.q_y;
+    strm>>q.q_z;
+    return strm;
+  }
+
+  friend __forceinline CTStream &operator<<(CTStream &strm, const Quaternion<Type> &q) {
+    strm<<q.q_w;
+    strm<<q.q_x;
+    strm<<q.q_y;
+    strm<<q.q_z;
+    return strm;
+  }
+
   // transcendental functions
-  /*friend Quaternion<Type> Exp(const Quaternion<Type> &q);
-  friend Quaternion<Type> Log(const Quaternion<Type> &q);*/
+  friend Quaternion<Type> Exp(const Quaternion<Type> &q)
+  {
+    Type tAngle = (Type)sqrt(q.q_x*q.q_x + q.q_y*q.q_y + q.q_z*q.q_z);
+    Type tSin = sin(tAngle);
+    Type tCos = cos(tAngle);
+
+    if (fabs(tSin)<0.001) {
+      return Quaternion<Type>(tCos, q.q_x, q.q_y, q.q_z);
+    } else {
+      Type tRatio = tSin/tAngle;
+      return Quaternion<Type>(tCos, q.q_x*tRatio, q.q_y*tRatio, q.q_z*tRatio);
+    }
+  }
+
+  friend Quaternion<Type> Log(const Quaternion<Type> &q)
+  {
+    if (fabs(q.q_w)<1.0) {
+      Type tAngle = acos(q.q_w);
+      Type tSin   = sin(tAngle);
+      if (fabs(tSin)>=0.001) {
+        Type tRatio = tAngle/tSin;
+        return Quaternion<Type>(Type(0), q.q_x*tRatio, q.q_y*tRatio, q.q_z*tRatio);
+      }
+    }
+
+    return Quaternion<Type>(Type(0), q.q_x, q.q_y, q.q_z);
+  }
 
   // spherical linear interpolation
-  /*friend Quaternion<Type> Slerp(Type tT,
-    const Quaternion<Type> &q1, const Quaternion<Type> &q2);*/
+  friend Quaternion<Type> Slerp(Type tT,
+    const Quaternion<Type> &q1, const Quaternion<Type> &q2)
+  {
+    Type tCos = q1%q2;
+
+    Quaternion<Type> qTemp;
+  
+    if (tCos<Type(0)) {
+      tCos = -tCos;
+      qTemp = -q2;
+    } else  {
+      qTemp = q2;
+    }
+
+    Type tF1, tF2;
+    if ((Type(1)-tCos) > Type(0.001)) {
+      // standard case (slerp)
+      Type tAngle = acos(tCos);
+      Type tSin   = sin(tAngle);
+      tF1 = sin((Type(1)-tT)*tAngle)/tSin;
+      tF2 = sin(tT*tAngle)/tSin;
+    } else {
+      // linear interpolation
+      tF1 = Type(1)-tT;
+      tF2 = tT;
+    }
+    return q1*tF1 + qTemp*tF2;
+  }
+
   // spherical quadratic interpolation
-  /*friend Quaternion<Type> Squad(Type tT,
+  friend Quaternion<Type> Squad(Type tT,
     const Quaternion<Type> &q1, const Quaternion<Type> &q2,
-    const Quaternion<Type> &qa, const Quaternion<Type> &qb);*/
+    const Quaternion<Type> &qa, const Quaternion<Type> &qb)
+  {
+    return Slerp(2*tT*(1-tT),Slerp(tT,q1,q2),Slerp(tT,qa,qb));
+  }
 };
 
 // inline functions implementation
@@ -126,10 +204,14 @@ inline Quaternion<Type> &Quaternion<Type>::operator*=(Type t) {
   q_w*=t; q_x*=t; q_y*=t; q_z*=t;
   return *this;
 }
+
+#if 0
 template<class Type>
 inline Quaternion<Type> operator*(Type t, Quaternion<Type> q) {
   return Quaternion<Type>(q.q_w*t, q.q_x*t, q.q_y*t, q.q_z*t);
 }
+#endif
+
 template<class Type>
 inline Quaternion<Type> Quaternion<Type>::operator/(Type t) const {
   return Quaternion<Type>(q_w/t, q_x/t, q_y/t, q_z/t);
@@ -186,6 +268,7 @@ inline Type Quaternion<Type>::Norm(void) const {
   return (Type)sqrt(q_w*q_w + q_x*q_x + q_y*q_y + q_z*q_z);
 }
 
+#if 0
 // transcendental functions
 template<class Type>
 inline Quaternion<Type> Exp(const Quaternion<Type> &q)
@@ -255,6 +338,7 @@ inline Quaternion<Type> Squad(Type tT,
 {
   return Slerp(2*tT*(1-tT),Slerp(tT,q1,q2),Slerp(tT,qa,qb));
 }
+#endif
 
 // conversion from euler angles
 template<class Type>
@@ -281,6 +365,17 @@ void Quaternion<Type>::FromEuler(const Vector<Type, 3> &a)
   (*this) = qH*qP*qB;
 }
 
+
+// Check for almost, not really, but should be 0.0 values...
+template<class Type>
+Type Quaternion<Type>::EPS(Type orig) const
+{
+    if ((orig <= 1e-4f) && (orig >= -1e-4f))
+        return(0.0f);
+
+    return(orig);
+}
+
 // conversion to matrix
 template<class Type>
 void Quaternion<Type>::ToMatrix(Matrix<Type, 3, 3> &m) const
@@ -289,9 +384,9 @@ void Quaternion<Type>::ToMatrix(Matrix<Type, 3, 3> &m) const
   Type yy = 2*q_y*q_y; Type yz = 2*q_y*q_z; Type zz = 2*q_z*q_z;
   Type wx = 2*q_w*q_x; Type wy = 2*q_w*q_y; Type wz = 2*q_w*q_z;
 
-  m(1,1) = 1.0-(yy+zz); m(1,2) = xy-wz;        m(1,3) = xz+wy;      	
-  m(2,1) = xy+wz;		    m(2,2) = 1.0-(xx+zz);  m(2,3) = yz-wx;		    
-  m(3,1) = xz-wy;		    m(3,2) = yz+wx;        m(3,3) = 1.0-(xx+yy);
+  m(1,1) = 1.0f-EPS(yy+zz);  m(1,2) = EPS(xy-wz);       m(1,3) = EPS(xz+wy);
+  m(2,1) = EPS(xy+wz);       m(2,2) = 1.0f-EPS(xx+zz);  m(2,3) = EPS(yz-wx);
+  m(3,1) = EPS(xz-wy);       m(3,2) = EPS(yz+wx);       m(3,3) = 1.0f-EPS(xx+yy);
 }
 
 // conversion from matrix
@@ -301,12 +396,12 @@ void Quaternion<Type>::FromMatrix(Matrix<Type, 3, 3> &m)
     Type trace = m(1,1)+m(2,2)+m(3,3);
     Type root;
 
-    if ( trace > 0.0 )
+    if ( trace > 0.0f )
     {
         // |w| > 1/2, may as well choose w > 1/2
-        root = sqrt(trace+1.0);  // 2w
-        q_w = 0.5*root;
-        root = 0.5/root;  // 1/(4w)
+        root = sqrt(trace+1.0f);  // 2w
+        q_w = 0.5f*root;
+        root = 0.5f/root;  // 1/(4w)
         q_x = (m(3,2)-m(2,3))*root;
         q_y = (m(1,3)-m(3,1))*root;
         q_z = (m(2,1)-m(1,2))*root;
@@ -323,10 +418,10 @@ void Quaternion<Type>::FromMatrix(Matrix<Type, 3, 3> &m)
         int j = next[i];
         int k = next[j];
 
-        root = sqrt(m(i+1,i+1)-m(j+1,j+1)-m(k+1,k+1)+1.0);
+        root = sqrt(m(i+1,i+1)-m(j+1,j+1)-m(k+1,k+1)+1.0f);
         Type* quat[3] = { &q_x, &q_y, &q_z };
-        *quat[i] = 0.5*root;
-        root = 0.5/root;
+        *quat[i] = 0.5f*root;
+        root = 0.5f/root;
         q_w = (m(k+1,j+1)-m(j+1,k+1))*root;
         *quat[j] = (m(j+1,i+1)+m(i+1,j+1))*root;
         *quat[k] = (m(k+1,i+1)+m(i+1,k+1))*root;

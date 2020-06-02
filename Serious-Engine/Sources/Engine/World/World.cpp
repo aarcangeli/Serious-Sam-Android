@@ -42,10 +42,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <Engine/Templates/Stock_CEntityClass.h>
 
-template CDynamicContainer<CEntity>;
-template CBrushPolygonSelection;
-template CBrushSectorSelection;
-template CEntitySelection;
+template class CDynamicContainer<CEntity>;
+template class CSelection<CBrushPolygon, BPOF_SELECTED>;
+template class CSelection<CBrushSector, BSCF_SELECTED>;
+template class CSelection<CEntity, ENF_SELECTED>;
 
 extern BOOL _bPortalSectorLinksPreLoaded;
 extern BOOL _bEntitySectorLinksPreLoaded;

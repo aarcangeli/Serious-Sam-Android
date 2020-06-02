@@ -15,7 +15,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 406
 %{
-#include "StdH.h"
+#include "EntitiesMP/StdH/StdH.h"
 
 #include "ModelsMP/Player/SeriousSam/Player.h"
 #include "ModelsMP/Player/SeriousSam/Body.h"
@@ -40,9 +40,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "ModelsMP/Weapons/Flamer/FlamerItem.h"
 #include "ModelsMP/Weapons/Flamer/Body.h"
 //#include "ModelsMP/Weapons/Chainsaw/ChainsawItem.h"
-#include "ModelsMP/Weapons/Chainsaw/ChainsawForPlayer.h"
-#include "ModelsMP/Weapons/Chainsaw/BladeForPlayer.h"
-#include "ModelsMP/Weapons/Chainsaw/Body.h"
+#include "ModelsMP/Weapons/ChainSaw/ChainsawForPlayer.h"
+#include "ModelsMP/Weapons/ChainSaw/BladeForPlayer.h"
+#include "ModelsMP/Weapons/ChainSaw/Body.h"
 #include "Models/Weapons/Laser/LaserItem.h"
 //#include "Models/Weapons/GhostBuster/GhostBusterItem.h"
 //#include "Models/Weapons/GhostBuster/Effect01.h"
@@ -1172,7 +1172,7 @@ functions:
 
     // moving view change
     // translating -> change banking
-    if (m_bReference != NULL && vDesiredTranslation.Length()>1.0f && vCurrentTranslation.Length()>1.0f) {
+    if (m_bReference != FALSE && vDesiredTranslation.Length()>1.0f && vCurrentTranslation.Length()>1.0f) {
       m_bMoving = TRUE;
       // sidestep banking
       FLOAT vSidestepSpeedDesired = vDesiredTranslation(1);

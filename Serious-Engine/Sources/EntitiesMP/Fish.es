@@ -15,7 +15,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 337
 %{
-#include "StdH.h"
+#include "EntitiesMP/StdH/StdH.h"
 #include "Models/Enemies/Fish/Fish.h"
 %}
 
@@ -212,7 +212,7 @@ functions:
       if( fTimePassed > 0.25f)
       {
         // calculate light dying factor
-        fDieFactor = 1.0-(ClampUp(fTimePassed-0.25f,0.5f)/0.5f);
+        fDieFactor = 1.0f-(ClampUp(fTimePassed-0.25f,0.5f)/0.5f);
       }
       // adjust light fx
       FLOAT fR = 0.7f+0.1f*(FLOAT(rand())/RAND_MAX);

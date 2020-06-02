@@ -504,7 +504,7 @@ FLOAT TestRayCastHit(CTerrain *ptrTerrain, const FLOATmatrix3D &mRotation, const
 
 }
 
-#include <Engine/Graphics/Drawport.h>
+#include <Engine/Graphics/DrawPort.h>
 #include <Engine/Graphics/Font.h>
 void ShowRayPath(CDrawPort *pdp)
 {

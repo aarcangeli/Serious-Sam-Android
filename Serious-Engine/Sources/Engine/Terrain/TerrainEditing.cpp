@@ -189,8 +189,8 @@ void ShowSelectionInternal(CTerrain *ptrTerrain, Rect &rcExtract, CTextureData *
   for(INDEX iy=0;iy<pixHeight;iy++) {
     // for each col
     for(INDEX ix=0;ix<pixWidth;ix++) {
-      pacolColor->abgr = colSelection.abgr;
-      pacolColor->a    = (pacolBrush->r*slStrength)>>8;
+      pacolColor->gfxcol.ul.abgr = colSelection.gfxcol.ul.abgr;
+      pacolColor->gfxcol.ub.a    = (pacolBrush->gfxcol.ub.r*slStrength)>>8;
       pacolColor++;
       pacolBrush++;
     }

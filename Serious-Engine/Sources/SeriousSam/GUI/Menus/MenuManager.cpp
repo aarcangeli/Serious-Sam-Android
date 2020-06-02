@@ -18,4 +18,4 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "MenuManager.h"
 
-extern CMenuManager* _pGUIM = NULL;
+CMenuManager* _pGUIM = NULL;

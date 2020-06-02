@@ -50,7 +50,7 @@ public:
 
 static CStaticArray<CPointerRemapping> _aprRemaps;
 static BOOL _bRemapPointersToNULLs = TRUE;
-extern BOOL _bReinitEntitiesWhileCopying = TRUE;
+BOOL _bReinitEntitiesWhileCopying = TRUE;
 static BOOL _bMirrorAndStretch = FALSE;
 static FLOAT _fStretch = 1.0f;
 static enum WorldMirrorType _wmtMirror = WMT_NONE;

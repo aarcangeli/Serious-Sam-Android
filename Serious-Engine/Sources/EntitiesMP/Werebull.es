@@ -15,8 +15,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 307
 %{
-#include "StdH.h"
-#include "Models/Enemies/Werebull/Werebull.h"
+#include "EntitiesMP/StdH/StdH.h"
+#include "Models/Enemies/WereBull/WereBull.h"
 %}
 
 uses "EntitiesMP/EnemyBase";

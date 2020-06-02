@@ -15,7 +15,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 405
 %{
-#include "StdH.h"
+#include "EntitiesMP/StdH/StdH.h"
 #define EPF_MODEL_SHELL (EPF_ONBLOCK_BOUNCE|EPF_TRANSLATEDBYGRAVITY|EPF_MOVABLE)
 #define ECF_MODEL_SHELL ( \
   ((ECBI_BRUSH|ECBI_MODEL_HOLDER)<<ECB_TEST) |\

@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "LCDDrawing.h"
 
 extern BOOL map_bIsFirstEncounter;
@@ -427,7 +427,6 @@ PIX aPathDotsFE[][10][2] =
 BOOL ObtainMapData(void)
 {
   try {
-    if (!map_bIsFirstEncounter) {
       // the second encounter
       atoIconsSE[ 0].SetData_t(CTFILENAME("TexturesMP\\Computer\\Map\\Book.tex"));
       atoIconsSE[ 1].SetData_t(CTFILENAME("TexturesMP\\Computer\\Map\\Level00.tex"));
@@ -466,8 +465,7 @@ BOOL ObtainMapData(void)
       ((CTextureData*)_toMapBcgLUSE .GetData())->Force(TEX_CONSTANT);
       ((CTextureData*)_toMapBcgRDSE .GetData())->Force(TEX_CONSTANT);
       ((CTextureData*)_toMapBcgRUSE .GetData())->Force(TEX_CONSTANT);
-
-    } else {
+if (map_bIsFirstEncounter) {
       // the first encounter
       atoIconsFE[ 0].SetData_t(CTFILENAME("Textures\\Computer\\Map\\Level00.tex"));
       atoIconsFE[ 1].SetData_t(CTFILENAME("Textures\\Computer\\Map\\Level01.tex"));
@@ -508,7 +506,7 @@ BOOL ObtainMapData(void)
       ((CTextureData*)_toMapBcgLUFE .GetData())->Force(TEX_CONSTANT);
       ((CTextureData*)_toMapBcgRDFE .GetData())->Force(TEX_CONSTANT);
       ((CTextureData*)_toMapBcgRUFE .GetData())->Force(TEX_CONSTANT);
-    }
+}
   }
   catch ( const char *strError) {
     CPrintF("%s\n", strError);

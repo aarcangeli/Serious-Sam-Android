@@ -1,5 +1,5 @@
 
-/*  A Bison parser, made from engine/base/parser.y with Bison version GNU Bison version 1.24
+/*  A Bison parser, made from Parser.y with Bison version GNU Bison version 1.24
   */
 
 #define YYBISON 1  /* Identify Bison output.  */
@@ -36,18 +36,18 @@
 #define	TYPECAST	287
 #define	SIGN	288
 
-#line 1 "engine/base/parser.y"
+#line 1 "Parser.y"
 
 #include "StdH.h"
 
 #include <Engine/Base/Console.h>
 #include <Engine/Base/Shell.h>
-#include "ParsingSymbols.h"
+#include <Engine/Base/ParsingSymbols.h>
 
 #include <Engine/Templates/DynamicStackArray.cpp>
 #include <Engine/Templates/AllocationArray.cpp>
 
-#line 13 "engine/base/parser.y"
+#line 13 "Parser.y"
 
 #define YYERROR_VERBOSE 1
 // if error occurs in parsing
@@ -133,7 +133,7 @@ void Declaration(
     if (!ShellTypeIsSame(ssNew.ss_istType, istType) || 
       ((ssNew.ss_ulFlags&SSF_CONSTANT)!=(ulQualifiers&SSF_CONSTANT))) {
       // error
-      _pShell->ErrorF("Symbol '%s' is already declared diferrently", ssNew.ss_strName);
+      _pShell->ErrorF("Symbol '%s' is already declared diferrently", ssNew.ss_strName.str_String);
       return;
     }
 
@@ -150,7 +150,7 @@ void Declaration(
       NOTHING;  // function values are not retained
     } else {
       // error
-      _pShell->ErrorF("'%s': old value couldn't be retained", ssNew.ss_strName);
+      _pShell->ErrorF("'%s': old value couldn't be retained", ssNew.ss_strName.str_String);
       return;
     }
   }
@@ -221,7 +221,7 @@ void DoComparison(value &vRes, value &v0, value &v1, int token)
   }
 }
 
-#line 192 "engine/base/parser.y"
+#line 192 "Parser.y"
 typedef union {
   value val;                  // for constants and expressions
   arguments arg;               // for function input arguments
@@ -232,7 +232,7 @@ typedef union {
   INDEX (*pPreFunc)(INDEX);  // pre-set function for a variable
   void (*pPostFunc)(INDEX); // post-set function for a variable
 } YYSTYPE;
-#line 203 "engine/base/parser.y"
+#line 203 "Parser.y"
 
   extern int yylex(YYSTYPE *lvalp);
 
@@ -718,9 +718,9 @@ __yy_memcpy (from, to, count)
      char *to;
      int count;
 {
-  register char *f = from;
-  register char *t = to;
-  register int i = count;
+  char *f = from;
+  char *t = to;
+  int i = count;
 
   while (i-- > 0)
     *t++ = *f++;
@@ -733,9 +733,9 @@ __yy_memcpy (from, to, count)
 static void
 __yy_memcpy (char *from, char *to, int count)
 {
-  register char *f = from;
-  register char *t = to;
-  register int i = count;
+  char *f = from;
+  char *t = to;
+  int i = count;
 
   while (i-- > 0)
     *t++ = *f++;
@@ -763,10 +763,10 @@ int
 yyparse(YYPARSE_PARAM)
      YYPARSE_PARAM_DECL
 {
-  register int yystate;
-  register int yyn;
-  register short *yyssp;
-  register YYSTYPE *yyvsp;
+  int yystate;
+  int yyn;
+  short *yyssp;
+  YYSTYPE *yyvsp;
   int yyerrstatus;	/*  number of tokens to shift before error messages enabled */
   int yychar1 = 0;		/*  lookahead token as an internal (translated) token number */
 
@@ -1043,43 +1043,43 @@ yyreduce:
   switch (yyn) {
 
 case 7:
-#line 285 "engine/base/parser.y"
+#line 285 "Parser.y"
 {
   yyval.ulFlags = 0;
 ;
     break;}
 case 8:
-#line 288 "engine/base/parser.y"
+#line 288 "Parser.y"
 {
   yyval.ulFlags = yyvsp[-1].ulFlags | SSF_CONSTANT;
 ;
     break;}
 case 9:
-#line 291 "engine/base/parser.y"
+#line 291 "Parser.y"
 {
   yyval.ulFlags = yyvsp[-1].ulFlags | SSF_USER;
 ;
     break;}
 case 10:
-#line 294 "engine/base/parser.y"
+#line 294 "Parser.y"
 {
   yyval.ulFlags = yyvsp[-1].ulFlags | SSF_PERSISTENT;
 ;
     break;}
 case 11:
-#line 297 "engine/base/parser.y"
+#line 297 "Parser.y"
 {
   yyval.ulFlags = yyvsp[-1].ulFlags | SSF_EXTERNAL;
 ;
     break;}
 case 12:
-#line 302 "engine/base/parser.y"
+#line 302 "Parser.y"
 {
   yyval.val.strString = "";
 ;
     break;}
 case 13:
-#line 305 "engine/base/parser.y"
+#line 305 "Parser.y"
 {
   // !!!! remove this option
   //_pShell->ErrorF("Warning: symbol comments are not supported");
@@ -1087,43 +1087,43 @@ case 13:
 ;
     break;}
 case 14:
-#line 312 "engine/base/parser.y"
+#line 312 "Parser.y"
 {
   yyval.istType = ShellTypeNewFloat();
 ;
     break;}
 case 15:
-#line 315 "engine/base/parser.y"
+#line 315 "Parser.y"
 {
   yyval.istType = ShellTypeNewIndex();
 ;
     break;}
 case 16:
-#line 318 "engine/base/parser.y"
+#line 318 "Parser.y"
 {
   yyval.istType = ShellTypeNewString();
 ;
     break;}
 case 17:
-#line 321 "engine/base/parser.y"
+#line 321 "Parser.y"
 {
   yyval.istType = ShellTypeNewVoid();
 ;
     break;}
 case 18:
-#line 326 "engine/base/parser.y"
+#line 326 "Parser.y"
 {
   yyval.pPreFunc = NULL;
 ;
     break;}
 case 19:
-#line 329 "engine/base/parser.y"
+#line 329 "Parser.y"
 {
   if (_shell_ast[yyvsp[0].pssSymbol->ss_istType].st_sttType!=STT_FUNCTION
     ||_shell_ast[_shell_ast[yyvsp[0].pssSymbol->ss_istType].st_istBaseType].st_sttType!=STT_INDEX
     ||_shell_ast[yyvsp[0].pssSymbol->ss_istType].st_istFirstArgument!=_shell_ast[yyvsp[0].pssSymbol->ss_istType].st_istLastArgument
     ||_shell_ast[_shell_ast[yyvsp[0].pssSymbol->ss_istType].st_istFirstArgument].st_sttType!=STT_INDEX) {
-    _pShell->ErrorF("'%s' must return 'INDEX' and take 'INDEX' as input", yyvsp[0].pssSymbol->ss_strName);
+    _pShell->ErrorF("'%s' must return 'INDEX' and take 'INDEX' as input", yyvsp[0].pssSymbol->ss_strName.str_String);
   } else {
     void *pv = yyvsp[0].pssSymbol->ss_pvValue;
     yyval.pPreFunc = (INDEX(*)(INDEX))yyvsp[0].pssSymbol->ss_pvValue;
@@ -1131,60 +1131,60 @@ case 19:
 ;
     break;}
 case 20:
-#line 342 "engine/base/parser.y"
+#line 342 "Parser.y"
 {
   yyval.pPostFunc = NULL;
 ;
     break;}
 case 21:
-#line 345 "engine/base/parser.y"
+#line 345 "Parser.y"
 {
   if (_shell_ast[yyvsp[0].pssSymbol->ss_istType].st_sttType!=STT_FUNCTION
     ||_shell_ast[_shell_ast[yyvsp[0].pssSymbol->ss_istType].st_istBaseType].st_sttType!=STT_VOID
     ||_shell_ast[yyvsp[0].pssSymbol->ss_istType].st_istFirstArgument!=_shell_ast[yyvsp[0].pssSymbol->ss_istType].st_istLastArgument
     ||_shell_ast[_shell_ast[yyvsp[0].pssSymbol->ss_istType].st_istFirstArgument].st_sttType!=STT_INDEX) {
-    _pShell->ErrorF("'%s' must return 'void' and take 'INDEX' as input", yyvsp[0].pssSymbol->ss_strName);
+    _pShell->ErrorF("'%s' must return 'void' and take 'INDEX' as input", yyvsp[0].pssSymbol->ss_strName.str_String);
   } else {
     yyval.pPostFunc = (void(*)(INDEX))yyvsp[0].pssSymbol->ss_pvValue;
   }
 ;
     break;}
 case 22:
-#line 358 "engine/base/parser.y"
+#line 358 "Parser.y"
 {
   yyval.istType = ShellTypeNewFunction(0);
   ShellTypeAddFunctionArgument(yyval.istType, ShellTypeNewVoid());
 ;
     break;}
 case 23:
-#line 362 "engine/base/parser.y"
+#line 362 "Parser.y"
 {
   yyval.istType = yyvsp[0].istType;
 ;
     break;}
 case 24:
-#line 368 "engine/base/parser.y"
+#line 368 "Parser.y"
 {
   yyval.istType = ShellTypeNewFunction(0);
   ShellTypeAddFunctionArgument(yyval.istType, yyvsp[0].istType);
 ;
     break;}
 case 25:
-#line 376 "engine/base/parser.y"
+#line 376 "Parser.y"
 {
   yyval.istType = yyvsp[-2].istType;
   ShellTypeAddFunctionArgument(yyval.istType, yyvsp[0].istType);
 ;
     break;}
 case 26:
-#line 387 "engine/base/parser.y"
+#line 387 "Parser.y"
 {
   Declaration(yyvsp[-6].ulFlags, yyvsp[-5].istType, *yyvsp[-4].pssSymbol, yyvsp[-3].pPreFunc, yyvsp[-2].pPostFunc);
   ShellTypeDelete(yyvsp[-5].istType);
 ;
     break;}
 case 27:
-#line 391 "engine/base/parser.y"
+#line 391 "Parser.y"
 {
   // take function from the parameter list and set its return type
   _shell_ast[yyvsp[-3].istType].st_istBaseType = yyvsp[-6].istType;
@@ -1196,7 +1196,7 @@ case 27:
 ;
     break;}
 case 28:
-#line 400 "engine/base/parser.y"
+#line 400 "Parser.y"
 {
   if (yyvsp[-5].val.sttType!=STT_INDEX) {
     _pShell->ErrorF("Array size is not integral");
@@ -1207,19 +1207,19 @@ case 28:
 ;
     break;}
 case 29:
-#line 410 "engine/base/parser.y"
+#line 410 "Parser.y"
 {
   // dummy
 ;
     break;}
 case 30:
-#line 413 "engine/base/parser.y"
+#line 413 "Parser.y"
 {
   // dummy
 ;
     break;}
 case 31:
-#line 416 "engine/base/parser.y"
+#line 416 "Parser.y"
 {
   // print its value
   if (yyvsp[-1].val.sttType == STT_VOID) {
@@ -1236,11 +1236,11 @@ case 31:
 ;
     break;}
 case 32:
-#line 430 "engine/base/parser.y"
+#line 430 "Parser.y"
 {
   // if it is constant
   if (yyvsp[-3].lvLValue.lv_pssSymbol->ss_ulFlags&SSF_CONSTANT) {
-    _pShell->ErrorF("Symbol '%s' is a constant", yyvsp[-3].lvLValue.lv_pssSymbol->ss_strName);
+    _pShell->ErrorF("Symbol '%s' is a constant", yyvsp[-3].lvLValue.lv_pssSymbol->ss_strName.str_String);
   // if it is not constant
   } else {
     // if it can be changed
@@ -1277,7 +1277,7 @@ case 32:
 ;
     break;}
 case 33:
-#line 468 "engine/base/parser.y"
+#line 468 "Parser.y"
 {
   Declaration(yyvsp[-5].ulFlags, yyvsp[-4].istType, *yyvsp[-3].pssSymbol, NULL, NULL);
   ShellTypeDelete(yyvsp[-4].istType);
@@ -1286,7 +1286,7 @@ case 33:
   // if it is constant
   if (ssSymbol.ss_ulFlags&SSF_CONSTANT) {
     // error
-    _pShell->ErrorF("Symbol '%s' is a constant", ssSymbol.ss_strName);
+    _pShell->ErrorF("Symbol '%s' is a constant", ssSymbol.ss_strName.str_String);
   }
 
   // get symbol type
@@ -1309,33 +1309,33 @@ case 33:
     _pShell->ErrorF("Warning: assigning INDEX to FLOAT!");  
     *(FLOAT*)ssSymbol.ss_pvValue = yyvsp[-1].val.iIndex;
   } else {
-    _pShell->ErrorF("Symbol '%s' and its initializer have different types", ssSymbol.ss_strName);
+    _pShell->ErrorF("Symbol '%s' and its initializer have different types", ssSymbol.ss_strName.str_String);
   }
 ;
     break;}
 case 34:
-#line 502 "engine/base/parser.y"
+#line 502 "Parser.y"
 { 
 extern void PrintShellSymbolHelp(const CTString &strSymbol);
-  PrintShellSymbolHelp(yyvsp[0].pssSymbol->ss_strName);
+  PrintShellSymbolHelp(yyvsp[0].pssSymbol->ss_strName.str_String);
 ;
     break;}
 case 35:
-#line 506 "engine/base/parser.y"
+#line 506 "Parser.y"
 { 
 extern void PrintShellSymbolHelp(const CTString &strSymbol);
-  PrintShellSymbolHelp(yyvsp[-2].pssSymbol->ss_strName);
+  PrintShellSymbolHelp(yyvsp[-2].pssSymbol->ss_strName.str_String);
 ;
     break;}
 case 36:
-#line 510 "engine/base/parser.y"
+#line 510 "Parser.y"
 { 
 extern void PrintShellSymbolHelp(const CTString &strSymbol);
-  PrintShellSymbolHelp(yyvsp[-2].pssSymbol->ss_strName);
+  PrintShellSymbolHelp(yyvsp[-2].pssSymbol->ss_strName.str_String);
 ;
     break;}
 case 37:
-#line 514 "engine/base/parser.y"
+#line 514 "Parser.y"
 { 
   _bExecNextBlock = FALSE;
   if (yyvsp[-1].val.sttType == STT_INDEX) {
@@ -1349,14 +1349,14 @@ case 37:
 ;
     break;}
 case 38:
-#line 524 "engine/base/parser.y"
+#line 524 "Parser.y"
 {
   _bExecNextElse = !yyvsp[-5].ulFlags;
   _bExecNextBlock = TRUE;
 ;
     break;}
 case 41:
-#line 533 "engine/base/parser.y"
+#line 533 "Parser.y"
 {
   if (_bExecNextElse) {  
     _bExecNextBlock = FALSE;
@@ -1376,26 +1376,26 @@ case 41:
 ;
     break;}
 case 42:
-#line 549 "engine/base/parser.y"
+#line 549 "Parser.y"
 {
   _bExecNextElse = !yyvsp[-5].ulFlags;
   _bExecNextBlock = TRUE;
 ;
     break;}
 case 44:
-#line 554 "engine/base/parser.y"
+#line 554 "Parser.y"
 {
   _bExecNextBlock = _bExecNextElse;  
 ;
     break;}
 case 45:
-#line 556 "engine/base/parser.y"
+#line 556 "Parser.y"
 {
   _bExecNextBlock = TRUE;
 ;
     break;}
 case 46:
-#line 562 "engine/base/parser.y"
+#line 562 "Parser.y"
 {
   CShellSymbol &ssSymbol = *yyvsp[0].pssSymbol;
   const ShellType &stType = _shell_ast[ssSymbol.ss_istType];
@@ -1403,7 +1403,7 @@ case 46:
   yyval.lvLValue.lv_pssSymbol = &ssSymbol;
   if (!ssSymbol.IsDeclared()) {
     // error
-    _pShell->ErrorF("Identifier '%s' is not declared", yyvsp[0].pssSymbol->ss_strName);
+    _pShell->ErrorF("Identifier '%s' is not declared", yyvsp[0].pssSymbol->ss_strName.str_String);
     fDummy = -666;
     yyval.lvLValue.lv_sttType = STT_VOID;
     yyval.lvLValue.lv_pvAddress = &fDummy;
@@ -1415,7 +1415,7 @@ case 46:
   // if the identifier is something else
   } else {
     // error
-    _pShell->ErrorF("'%s' doesn't have a value", yyvsp[0].pssSymbol->ss_strName);
+    _pShell->ErrorF("'%s' doesn't have a value", yyvsp[0].pssSymbol->ss_strName.str_String);
     fDummy = -666.0f;
     yyval.lvLValue.lv_sttType = STT_VOID;
     yyval.lvLValue.lv_pvAddress = &fDummy;
@@ -1423,7 +1423,7 @@ case 46:
 ;
     break;}
 case 47:
-#line 587 "engine/base/parser.y"
+#line 587 "Parser.y"
 {
   CShellSymbol &ssSymbol = *yyvsp[-3].pssSymbol;
   const ShellType &stType = _shell_ast[ssSymbol.ss_istType];
@@ -1456,14 +1456,14 @@ case 47:
       }
     }
   } else {
-    _pShell->ErrorF("'%s[]' doesn't have a value", yyvsp[-3].pssSymbol->ss_strName);
+    _pShell->ErrorF("'%s[]' doesn't have a value", yyvsp[-3].pssSymbol->ss_strName.str_String);
     fDummy = -666.0f;
     yyval.lvLValue.lv_pvAddress = &fDummy;
   }
 ;
     break;}
 case 48:
-#line 627 "engine/base/parser.y"
+#line 627 "Parser.y"
 {
   yyval.arg.istType = ShellTypeNewFunction(ShellTypeNewVoid());
   ShellTypeAddFunctionArgument(yyval.arg.istType, ShellTypeNewVoid());
@@ -1471,13 +1471,13 @@ case 48:
 ;
     break;}
 case 49:
-#line 632 "engine/base/parser.y"
+#line 632 "Parser.y"
 {
   yyval.arg = yyvsp[0].arg;
 ;
     break;}
 case 50:
-#line 638 "engine/base/parser.y"
+#line 638 "Parser.y"
 {
   yyval.arg.istType = ShellTypeNewFunction(ShellTypeNewVoid());
   ShellTypeAddFunctionArgument(yyval.arg.istType, ShellTypeNewByType(yyvsp[0].val.sttType));
@@ -1485,7 +1485,7 @@ case 50:
 ;
     break;}
 case 51:
-#line 643 "engine/base/parser.y"
+#line 643 "Parser.y"
 {
   yyval.arg = yyvsp[-2].arg;
   ShellTypeAddFunctionArgument(yyval.arg.istType, ShellTypeNewByType(yyvsp[0].val.sttType));
@@ -1493,28 +1493,28 @@ case 51:
 ;
     break;}
 case 52:
-#line 650 "engine/base/parser.y"
+#line 650 "Parser.y"
 {
   yyval.val.sttType = STT_FLOAT;  
   yyval.val.fFloat = yyvsp[0].val.fFloat;
 ;
     break;}
 case 53:
-#line 654 "engine/base/parser.y"
+#line 654 "Parser.y"
 {
   yyval.val.sttType = STT_INDEX;  
   yyval.val.iIndex = yyvsp[0].val.iIndex;
 ;
     break;}
 case 54:
-#line 658 "engine/base/parser.y"
+#line 658 "Parser.y"
 {
   yyval.val.sttType = STT_STRING;  
   yyval.val.strString = yyvsp[0].val.strString;
 ;
     break;}
 case 55:
-#line 662 "engine/base/parser.y"
+#line 662 "Parser.y"
 {
   // get its value
   yyval.val.sttType = yyvsp[0].lvLValue.lv_sttType;
@@ -1529,12 +1529,12 @@ case 55:
   } else {
     yyval.val.sttType = STT_FLOAT;
     yyval.val.fFloat = -666.0f;
-    _pShell->ErrorF("'%s' is of wrong type", yyvsp[0].lvLValue.lv_pssSymbol->ss_strName);
+    _pShell->ErrorF("'%s' is of wrong type", yyvsp[0].lvLValue.lv_pssSymbol->ss_strName.str_String);
   }
 ;
     break;}
 case 56:
-#line 680 "engine/base/parser.y"
+#line 680 "Parser.y"
 {
 
   MatchTypes(yyvsp[-2].val, yyvsp[0].val);
@@ -1550,7 +1550,7 @@ case 56:
 ;
     break;}
 case 57:
-#line 693 "engine/base/parser.y"
+#line 693 "Parser.y"
 {
 
   MatchTypes(yyvsp[-2].val, yyvsp[0].val);
@@ -1566,7 +1566,7 @@ case 57:
 ;
     break;}
 case 58:
-#line 707 "engine/base/parser.y"
+#line 707 "Parser.y"
 {
 
   MatchTypes(yyvsp[-2].val, yyvsp[0].val);
@@ -1583,7 +1583,7 @@ case 58:
 ;
     break;}
 case 59:
-#line 721 "engine/base/parser.y"
+#line 721 "Parser.y"
 {
 
   MatchTypes(yyvsp[-2].val, yyvsp[0].val);
@@ -1600,7 +1600,7 @@ case 59:
 ;
     break;}
 case 60:
-#line 735 "engine/base/parser.y"
+#line 735 "Parser.y"
 {
 
   MatchTypes(yyvsp[-2].val, yyvsp[0].val);
@@ -1617,7 +1617,7 @@ case 60:
 ;
     break;}
 case 61:
-#line 751 "engine/base/parser.y"
+#line 751 "Parser.y"
 {
 
   MatchTypes(yyvsp[-2].val, yyvsp[0].val);
@@ -1634,7 +1634,7 @@ case 61:
 ;
     break;}
 case 62:
-#line 765 "engine/base/parser.y"
+#line 765 "Parser.y"
 {
 
   MatchTypes(yyvsp[-2].val, yyvsp[0].val);
@@ -1651,7 +1651,7 @@ case 62:
 ;
     break;}
 case 63:
-#line 780 "engine/base/parser.y"
+#line 780 "Parser.y"
 {
 
   MatchTypes(yyvsp[-2].val, yyvsp[0].val);
@@ -1672,7 +1672,7 @@ case 63:
 ;
     break;}
 case 64:
-#line 799 "engine/base/parser.y"
+#line 799 "Parser.y"
 {
 
   MatchTypes(yyvsp[-2].val, yyvsp[0].val);
@@ -1689,7 +1689,7 @@ case 64:
 ;
     break;}
 case 65:
-#line 815 "engine/base/parser.y"
+#line 815 "Parser.y"
 {
 
   MatchTypes(yyvsp[-2].val, yyvsp[0].val);
@@ -1707,7 +1707,7 @@ case 65:
 ;
     break;}
 case 66:
-#line 831 "engine/base/parser.y"
+#line 831 "Parser.y"
 {
 
   MatchTypes(yyvsp[-2].val, yyvsp[0].val);
@@ -1730,7 +1730,7 @@ case 66:
 ;
     break;}
 case 67:
-#line 853 "engine/base/parser.y"
+#line 853 "Parser.y"
 {
   MatchTypes(yyvsp[-2].val, yyvsp[0].val);
 
@@ -1747,43 +1747,43 @@ case 67:
 ;
     break;}
 case 68:
-#line 869 "engine/base/parser.y"
+#line 869 "Parser.y"
 {
   DoComparison(yyval.val, yyvsp[-2].val, yyvsp[0].val, '<');
 ;
     break;}
 case 69:
-#line 872 "engine/base/parser.y"
+#line 872 "Parser.y"
 {
   DoComparison(yyval.val, yyvsp[-2].val, yyvsp[0].val, '>');
 ;
     break;}
 case 70:
-#line 875 "engine/base/parser.y"
+#line 875 "Parser.y"
 {
   DoComparison(yyval.val, yyvsp[-2].val, yyvsp[0].val, '=');
 ;
     break;}
 case 71:
-#line 878 "engine/base/parser.y"
+#line 878 "Parser.y"
 {
   DoComparison(yyval.val, yyvsp[-2].val, yyvsp[0].val, '!');
 ;
     break;}
 case 72:
-#line 881 "engine/base/parser.y"
+#line 881 "Parser.y"
 {
   DoComparison(yyval.val, yyvsp[-2].val, yyvsp[0].val, '}');
 ;
     break;}
 case 73:
-#line 884 "engine/base/parser.y"
+#line 884 "Parser.y"
 {
   DoComparison(yyval.val, yyvsp[-2].val, yyvsp[0].val, '{');
 ;
     break;}
 case 74:
-#line 890 "engine/base/parser.y"
+#line 890 "Parser.y"
 {
   yyval.val.sttType = yyvsp[0].val.sttType;
   if (yyvsp[0].val.sttType == STT_FLOAT) {
@@ -1797,7 +1797,7 @@ case 74:
 ;
     break;}
 case 75:
-#line 904 "engine/base/parser.y"
+#line 904 "Parser.y"
 {
   yyval.val.sttType = yyvsp[0].val.sttType;
   if (yyvsp[0].val.sttType == STT_FLOAT) {
@@ -1811,7 +1811,7 @@ case 75:
 ;
     break;}
 case 76:
-#line 916 "engine/base/parser.y"
+#line 916 "Parser.y"
 {
   yyval.val.sttType = yyvsp[0].val.sttType;
   if (yyvsp[0].val.sttType == STT_FLOAT) {
@@ -1826,7 +1826,7 @@ case 76:
 ;
     break;}
 case 77:
-#line 929 "engine/base/parser.y"
+#line 929 "Parser.y"
 {
   yyval.val.sttType = STT_FLOAT;
   if (yyvsp[0].val.sttType == STT_FLOAT) {
@@ -1842,7 +1842,7 @@ case 77:
 ;
     break;}
 case 78:
-#line 943 "engine/base/parser.y"
+#line 943 "Parser.y"
 {
   yyval.val.sttType = STT_INDEX;
   if (yyvsp[0].val.sttType == STT_FLOAT) {
@@ -1858,7 +1858,7 @@ case 78:
 ;
     break;}
 case 79:
-#line 957 "engine/base/parser.y"
+#line 957 "Parser.y"
 {
   CTString &strNew = _shell_astrTempStrings.Push();
   yyval.val.sttType = STT_STRING;
@@ -1876,12 +1876,12 @@ case 79:
 ;
     break;}
 case 80:
-#line 974 "engine/base/parser.y"
+#line 974 "Parser.y"
 {
   // if the identifier is not declared
   if (!yyvsp[-3].pssSymbol->IsDeclared()) {
     // error
-    _pShell->ErrorF("Identifier '%s' is not declared", yyvsp[-3].pssSymbol->ss_strName);
+    _pShell->ErrorF("Identifier '%s' is not declared", yyvsp[-3].pssSymbol->ss_strName.str_String);
   // if the identifier is declared
   } else {
     // get its type
@@ -1897,7 +1897,7 @@ case 80:
       if (ShellTypeIsSame(yyvsp[-1].arg.istType, yyvsp[-3].pssSymbol->ss_istType)) {
 
 #define PUSHPARAMS \
-  memcpy(_alloca(yyvsp[-1].arg.ctBytes), _ubStack+_iStack-yyvsp[-1].arg.ctBytes, yyvsp[-1].arg.ctBytes);
+  memcpy(alloca(yyvsp[-1].arg.ctBytes), _ubStack+_iStack-yyvsp[-1].arg.ctBytes, yyvsp[-1].arg.ctBytes);
 
         // if void
         if (stResult.st_sttType==STT_VOID) {
@@ -1934,13 +1934,13 @@ case 80:
       } else {
         // error
         yyval.val.sttType = STT_VOID;
-        _pShell->ErrorF("Wrong parameters for '%s'", yyvsp[-3].pssSymbol->ss_strName);
+        _pShell->ErrorF("Wrong parameters for '%s'", yyvsp[-3].pssSymbol->ss_strName.str_String);
       }
     // if the identifier is something else
     } else {
       // error
       yyval.val.sttType = STT_VOID;
-      _pShell->ErrorF("Can't call '%s'", yyvsp[-3].pssSymbol->ss_strName);
+      _pShell->ErrorF("Can't call '%s'", yyvsp[-3].pssSymbol->ss_strName.str_String);
     }
   }
 
@@ -1950,7 +1950,7 @@ case 80:
 ;
     break;}
 case 81:
-#line 1046 "engine/base/parser.y"
+#line 1046 "Parser.y"
 {
   yyval.val = yyvsp[-1].val;
 ;
@@ -2153,5 +2153,5 @@ yyerrhandle:
   yystate = yyn;
   goto yynewstate;
 }
-#line 1051 "engine/base/parser.y"
+#line 1051 "Parser.y"
 

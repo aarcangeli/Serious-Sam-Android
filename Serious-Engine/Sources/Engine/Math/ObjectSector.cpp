@@ -45,8 +45,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #define EDX_EPSILON DOUBLE(0.00390625*mth_fCSGEpsilon) // 1/2^8
 
 // use O(nlogn) instead O(n2) algorithms for object optimization
-extern INDEX wld_bFastObjectOptimization = 1.0f;
-extern FLOAT mth_fCSGEpsilon = 1.0f;
+INDEX wld_bFastObjectOptimization = 1.0f;
+FLOAT mth_fCSGEpsilon = 1.0f;
 
 /*
  * Compare two vertices.
@@ -579,8 +579,8 @@ void CObjectSector::CheckOptimizationAlgorithm(void)
       CObjectEdge &ed2 = ited2.Current();
       if (&ed1 == &ed2) continue;
       BOOL inv1, inv2;
-      inv1 = (&ed1 == ed2.optimize.oed_InverseEdge);
-      inv2 = (&ed2 == ed1.optimize.oed_InverseEdge);
+      inv1 = (&ed1 == ed2.edg.optimize.oed_InverseEdge);
+      inv2 = (&ed2 == ed1.edg.optimize.oed_InverseEdge);
       // check against cross linked inverses
       ASSERT(!(inv1&&inv2));
       if (inv1) {
@@ -820,7 +820,7 @@ bug:
 
 skipbug:;
 #endif //NDEBUG
-#endif 0
+#endif
 }
 
 /*
@@ -929,13 +929,13 @@ void CObjectSector::RemoveUnusedEdges(void)
       // copy it to new array
       *poedUsed = itoed.Current();
       // set its remap pointer into new array
-      itoed->optimize.oed_Remap = poedUsed;
+      itoed->edg.optimize.oed_Remap = poedUsed;
       poedUsed++;
     // if it is not used
     } else {
       // clear its remap pointer (for debugging)
       #ifndef NDEBUG
-      itoed->optimize.oed_Remap = NULL;
+      itoed->edg.optimize.oed_Remap = NULL;
       #endif
     }
   }}
@@ -943,7 +943,7 @@ void CObjectSector::RemoveUnusedEdges(void)
   // remap edge pointers in all polygons
   {FOREACHINDYNAMICARRAY(osc_aopoPolygons, CObjectPolygon, itopo) {
     {FOREACHINDYNAMICARRAY(itopo->opo_PolygonEdges, CObjectPolygonEdge, itope) {
-      itope->ope_Edge = itope->ope_Edge->optimize.oed_Remap;
+      itope->ope_Edge = itope->ope_Edge->edg.optimize.oed_Remap;
     }}
   }}
 
@@ -1041,7 +1041,7 @@ void CObjectSector::SplitEdgeWithVertices(CObjectEdge &oedOriginal,
   }
 
   // init the edge as remap pointer
-  oedOriginal.colinear1.oed_FirstChild = NULL;
+  oedOriginal.edg.colinear1.oed_FirstChild = NULL;
 
   INDEX iVertex;  // current vertex in run
   // skip until start vertex is found
@@ -1062,8 +1062,8 @@ void CObjectSector::SplitEdgeWithVertices(CObjectEdge &oedOriginal,
       }
       ASSERT(CompareVertices(*poedNewChild->oed_Vertex0, *poedNewChild->oed_Vertex1)!=0);
       // link it as a child of this edge
-      poedNewChild->colinear1.oed_NextSibling = oedOriginal.colinear1.oed_FirstChild;
-      oedOriginal.colinear1.oed_FirstChild = poedNewChild;
+      poedNewChild->edg.colinear1.oed_NextSibling = oedOriginal.edg.colinear1.oed_FirstChild;
+      oedOriginal.edg.colinear1.oed_FirstChild = poedNewChild;
     }
   }
 }
@@ -1106,10 +1106,10 @@ void CObjectPolygon::JoinContinuingEdges(CDynamicArray<CObjectEdge> &oedEdges)
 
   // for each edge
   {FOREACHINDYNAMICARRAY(opo_PolygonEdges, CObjectPolygonEdge, itope) {
-    CObjectEdge &oedThis = *itope->ope_Edge;
+    CObjectEdge *poedThis = itope->ope_Edge;
 
     // if not already marked for removal
-    if (&oedThis != NULL) {
+    if (poedThis != NULL) {
       CObjectVertex *povxStartThis, *povxEndThis;
       // get start and end vertices
       itope->GetVertices(povxStartThis, povxEndThis);
@@ -1124,12 +1124,12 @@ void CObjectPolygon::JoinContinuingEdges(CDynamicArray<CObjectEdge> &oedEdges)
 
         // for each edge
         {FOREACHINDYNAMICARRAY(opo_PolygonEdges, CObjectPolygonEdge, itope2) {
-          CObjectEdge &oedOther = *itope2->ope_Edge;
+          CObjectEdge *poedOther = itope2->ope_Edge;
 
           // if not already marked for removal
-          if (&oedOther != NULL) {
+          if (poedOther != NULL) {
             // if the two edges are collinear
-            if ( CompareEdgeLines(*oedThis.colinear2.oed_pedxLine, *oedOther.colinear2.oed_pedxLine)==0) {
+            if ( CompareEdgeLines(*poedThis->edg.colinear2.oed_pedxLine, *poedOther->edg.colinear2.oed_pedxLine)==0) {
               CObjectVertex *povxStartOther, *povxEndOther;
               // get start and end vertices
               itope2->GetVertices(povxStartOther, povxEndOther);
@@ -1321,7 +1321,7 @@ void CObjectSector::CreateEdgeLines(CStaticArray<CEdgeEx> &aedxEdgeLines,
     // set the pointer in sorting array
     apedxSortedEdgeLines[iEdge] = &aedxEdgeLines[iEdge];
     // set back-reference in the edge
-    osc_aoedEdges[iEdge].colinear2.oed_pedxLine = &aedxEdgeLines[iEdge];
+    osc_aoedEdges[iEdge].edg.colinear2.oed_pedxLine = &aedxEdgeLines[iEdge];
   }
 }
 /*
@@ -1371,9 +1371,9 @@ void CObjectSector::SplitCollinearEdges(void)
     INDEX ctNewEdges = 0;
     {FOREACHINDYNAMICARRAY(itpo2->opo_PolygonEdges, CObjectPolygonEdge, itope) {
       // count all children
-      for (CObjectEdge *poed = itope->ope_Edge->colinear1.oed_FirstChild;
+      for (CObjectEdge *poed = itope->ope_Edge->edg.colinear1.oed_FirstChild;
           poed!=NULL;
-          poed = poed->colinear1.oed_NextSibling) {
+          poed = poed->edg.colinear1.oed_NextSibling) {
         ctNewEdges++;
       }
     }}
@@ -1391,9 +1391,9 @@ void CObjectSector::SplitCollinearEdges(void)
     {FOREACHINDYNAMICARRAY(itpo2->opo_PolygonEdges, CObjectPolygonEdge, itope) {
 
       // for all of its children
-      for (CObjectEdge *poed = itope->ope_Edge->colinear1.oed_FirstChild;
+      for (CObjectEdge *poed = itope->ope_Edge->edg.colinear1.oed_FirstChild;
           poed!=NULL;
-          poed = poed->colinear1.oed_NextSibling) {
+          poed = poed->edg.colinear1.oed_NextSibling) {
         // set the child polygon edge
         aopoNewPolygonEdges[iChildEdge] = CObjectPolygonEdge(poed, itope->ope_Backward);
         iChildEdge++;
@@ -1546,9 +1546,9 @@ void CObjectSector::RemapClonedEdges(void)
     // set the pointers in sorting array
     apedSortedEdges[iEdge] = &osc_aoedEdges[iEdge];
     // set remap pointer to itself
-    osc_aoedEdges[iEdge].optimize.oed_Remap = &osc_aoedEdges[iEdge];
+    osc_aoedEdges[iEdge].edg.optimize.oed_Remap = &osc_aoedEdges[iEdge];
     // clear the inverse pointer
-    osc_aoedEdges[iEdge].optimize.oed_InverseEdge = NULL;
+    osc_aoedEdges[iEdge].edg.optimize.oed_InverseEdge = NULL;
     // clear the edge tag, meaning that this edge is unused
     osc_aoedEdges[iEdge].oed_Tag = FALSE;
   }
@@ -1563,7 +1563,7 @@ void CObjectSector::RemapClonedEdges(void)
     if ( CompareEdges(*apedSortedEdges[iSortedEdge],
                          *apedSortedEdges[iSortedEdge+1]) == 0 ) {
       // set its remap pointer to same as this remap pointer
-      apedSortedEdges[iSortedEdge+1]->optimize.oed_Remap = apedSortedEdges[iSortedEdge]->optimize.oed_Remap;
+      apedSortedEdges[iSortedEdge+1]->edg.optimize.oed_Remap = apedSortedEdges[iSortedEdge]->edg.optimize.oed_Remap;
     }
   }
 
@@ -1575,17 +1575,17 @@ void CObjectSector::RemapClonedEdges(void)
     CObjectEdge *pedInverse;
 
     // if this edge is not remapped
-    if (edNormal.optimize.oed_Remap == &edNormal) {
+    if (edNormal.edg.optimize.oed_Remap == &edNormal) {
       // if some edge with inverse vertices is found
       if (FindEdge(apedSortedEdges, *edNormal.oed_Vertex1, *edNormal.oed_Vertex0, &pedInverse)) {
         // take its remap edge
-        CObjectEdge &edInverse = *pedInverse->optimize.oed_Remap;
+        CObjectEdge &edInverse = *pedInverse->edg.optimize.oed_Remap;
         // if the inverse edge pointer is less than this pointer
         if (&edInverse < &edNormal) {
           // the inverse edge must not be remapped
-          ASSERT(&edInverse == edInverse.optimize.oed_Remap);
+          ASSERT(&edInverse == edInverse.edg.optimize.oed_Remap);
           // set the inverse pointer in this edge to the inverse edge
-          edNormal.optimize.oed_InverseEdge = &edInverse;
+          edNormal.edg.optimize.oed_InverseEdge = &edInverse;
         }
       }
     }
@@ -1594,9 +1594,9 @@ void CObjectSector::RemapClonedEdges(void)
 #ifndef NDEBUG
   // for all edges in object
   {FOREACHINDYNAMICARRAY(osc_aoedEdges, CObjectEdge, ited) {
-    CObjectEdge &edInverse = *ited->optimize.oed_InverseEdge;
+    CObjectEdge &edInverse = *ited->edg.optimize.oed_InverseEdge;
     // check that no remapped edges have been marked as inverses
-    ASSERT( &edInverse==NULL || edInverse.optimize.oed_Remap == &edInverse );
+    ASSERT( &edInverse==NULL || edInverse.edg.optimize.oed_Remap == &edInverse );
   }}
 #endif // NDEBUG
 
@@ -1607,12 +1607,12 @@ void CObjectSector::RemapClonedEdges(void)
     // for all of its edge pointers
     FOREACHINDYNAMICARRAY(itpo2->opo_PolygonEdges, CObjectPolygonEdge, itope) {
       // get the remapped edge pointer
-      CObjectEdge *pedNew= itope->ope_Edge->optimize.oed_Remap;
+      CObjectEdge *pedNew= itope->ope_Edge->edg.optimize.oed_Remap;
 
       // if has an inverse edge
-      if (pedNew->optimize.oed_InverseEdge!=NULL) {
+      if (pedNew->edg.optimize.oed_InverseEdge!=NULL) {
         // use the inverse edge
-        pedNew = pedNew->optimize.oed_InverseEdge;
+        pedNew = pedNew->edg.optimize.oed_InverseEdge;
         // mark that the direction has changed
         itope->ope_Backward = !itope->ope_Backward;
       }
