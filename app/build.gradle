@@ -1,5 +1,8 @@
 apply plugin: 'com.android.application'
 
+/**
+ * Get version and version code from environment or version.properties
+ */
 def getReleaseVersion() {
     def SSA_VERSION = System.getenv('SSA_VERSION')
 
@@ -19,37 +22,61 @@ def getReleaseVersion() {
     ]
 }
 
-def signing = null
+/**
+ * Get signing configs from environment or signing.properties
+ */
+def getSigningInfo() {
+    def KEY_ALIAS = System.getenv('KEY_ALIAS')
+    def STORE_FILE = System.getenv('STORE_FILE')
+    def STORE_PASSWORD = System.getenv('STORE_PASSWORD')
+    def KEY_PASSWORD = System.getenv('KEY_PASSWORD')
 
-// read signign informations
-def propFile = file('../signing.properties')
-if (propFile.canRead()) {
-    Properties props = new Properties()
-
-    def is = new FileInputStream(propFile);
-    props.load(is)
-    is.close()
-
-    android {
-        signingConfigs {
-            app {
-                keyAlias props['KEY_ALIAS']
-                keyPassword props['KEY_PASSWORD']
-                storeFile file(props['STORE_FILE'])
-                storePassword props['STORE_PASSWORD']
-                v2SigningEnabled false
+    if (KEY_ALIAS && STORE_FILE && STORE_PASSWORD && KEY_PASSWORD) {
+        android {
+            signingConfigs {
+                app {
+                    keyAlias KEY_ALIAS.trim()
+                    keyPassword KEY_PASSWORD.trim()
+                    storeFile file(STORE_FILE.trim())
+                    storePassword STORE_PASSWORD.trim()
+                    v2SigningEnabled false
+                }
             }
         }
+        return android.signingConfigs.app
     }
 
-    signing = android.signingConfigs.app
+    def propFile = file('../signing.properties')
+    if (propFile.canRead()) {
+        Properties props = new Properties()
+
+        def is = new FileInputStream(propFile);
+        props.load(is)
+        is.close()
+
+        android {
+            signingConfigs {
+                app {
+                    keyAlias props['KEY_ALIAS'].trim()
+                    keyPassword props['KEY_PASSWORD'].trim()
+                    storeFile file(props['STORE_FILE'].trim())
+                    storePassword props['STORE_PASSWORD'].trim()
+                    v2SigningEnabled false
+                }
+            }
+        }
+        return android.signingConfigs.app
+    }
 }
 
 android {
+
+    def signing = getSigningInfo()
     def ver = getReleaseVersion()
+
     println("Serious-Sam-Android v${ver.version} (${ver.versionCode})")
     if (signing) {
-        println("Signign as '${signing.keyAlias}'")
+        println("Signign as '${signing.keyAlias}' (keyStore: $signing.storeFile)")
     }
 
     compileSdkVersion 28

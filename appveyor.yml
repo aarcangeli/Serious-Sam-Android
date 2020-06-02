@@ -6,8 +6,11 @@ environment:
   ANDROID_NDK_HOME: C:\android-ndk-windows\android-ndk-r19c
   ANDROID_TOOLS_URL: https://dl.google.com/android/repository/sdk-tools-windows-3859397.zip
   ANDROID_NDK_URL: https://dl.google.com/android/repository/android-ndk-r19c-windows-x86_64.zip
+  # signing infos
+  STORE_FILE: ..\\serious-sam.jks
   STORE_PASSWORD:
     secure: 0AfQe/tOH2cahhafeHbZfyXod8sLKbXkF54aN52XInw=
+  KEY_ALIAS: alessandro arcangeli
   KEY_PASSWORD:
     secure: V+MTj5TxI8nQ1U5lTKIDJQ==
 
@@ -31,18 +34,13 @@ install:
       %ANDROID_HOME%\tools\bin\sdkmanager.bat "cmake;3.10.2.4988404" "platform-tools" "platforms;android-28"
 
   # generate key
-  - if defined STORE_PASSWORD (
-      echo KEY_ALIAS=alessandro arcangeli>signing.properties &&
-      echo STORE_FILE=..\\serious-sam.jks>>signing.properties &&
-      echo STORE_PASSWORD=%STORE_PASSWORD%>>signing.properties &&
-      echo KEY_PASSWORD=%KEY_PASSWORD%>>signing.properties
-    ) else (
-      echo In pull requests, generates a random key &&
-      keytool -genkey -v -keystore C:\my-random-key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias appveyor-ci -noprompt -dname "CN=Serious-Sam-Android-appveyor-build" -storepass VerySecurePassword -keypass VerySecurePassword &&
-      echo KEY_ALIAS=appveyor-ci>signing.properties &&
-      echo STORE_FILE=C:\\my-random-key.jks>>signing.properties &&
-      echo STORE_PASSWORD=VerySecurePassword>>signing.properties &&
-      echo KEY_PASSWORD=VerySecurePassword>>signing.properties
+  - if not defined STORE_PASSWORD (
+      echo Generating a random key&&
+      keytool -genkey -v -keystore C:\my-random-key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias appveyor-ci -noprompt -dname "CN=Serious-Sam-Android-appveyor-build" -storepass VerySecurePassword -keypass VerySecurePassword&&
+      set KEY_ALIAS=appveyor-ci&&
+      set STORE_FILE=C:\\my-random-key.jks&&
+      set STORE_PASSWORD=VerySecurePassword&&
+      set KEY_PASSWORD=VerySecurePassword
     )
 
 build_script:
