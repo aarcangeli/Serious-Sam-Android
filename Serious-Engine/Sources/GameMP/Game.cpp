@@ -228,6 +228,7 @@ static void PlayScriptSound(INDEX iChannel, const CTString &strSound, FLOAT fVol
     CPrintF("%s\n", strError);
   }
 }
+#if 0
 static void PlayScriptSoundCfunc(void* pArgs)
 {
   INDEX iChannel = NEXTARGUMENT(INDEX);
@@ -237,6 +238,7 @@ static void PlayScriptSoundCfunc(void* pArgs)
   BOOL bLooping = NEXTARGUMENT(INDEX);
   PlayScriptSound(iChannel, strSound, fVolume, fPitch, bLooping);
 }
+#endif
 static void StopScriptSound(void* pArgs)
 {
   INDEX iChannel = NEXTARGUMENT(INDEX);
@@ -328,10 +330,8 @@ CButtonAction::CButtonAction(void)
   ba_bSecondKeyDown = FALSE;
 }
 
-CButtonAction::~CButtonAction(void) {}
-
 // Assignment operator.
-CButtonAction &CButtonAction ::operator=(CButtonAction &baOriginal)
+CButtonAction &CButtonAction ::operator=(const CButtonAction &baOriginal)
 {
   ba_iFirstKey                  = baOriginal.ba_iFirstKey;
   ba_iSecondKey                 = baOriginal.ba_iSecondKey;
@@ -2177,7 +2177,7 @@ void CGame::GameRedrawView( CDrawPort *pdpDrawPort, ULONG ulFlags)
       _pInput->GetInput(TRUE);
     }
     // timer must not occur during prescanning
-    { CTSingleLock csTimer(&_pTimer->tm_csHooks, TRUE);
+    { //CTSingleLock csTimer(&_pTimer->tm_csHooks, TRUE);
     // for each local player
     for( INDEX i=0; i<4; i++) {
       // if local player
@@ -2443,8 +2443,8 @@ void CGame::RecordHighScore(void)
   INDEX ctScore = penpl->m_psGameStats.ps_iScore;
 
   // find entry with lower score
-  INDEX iLess=0;
-  for(; iLess<HIGHSCORE_COUNT; iLess++) {
+  INDEX iLess;
+  for(iLess=0; iLess<HIGHSCORE_COUNT; iLess++) {
     if (gm_ahseHighScores[iLess].hse_ctScore<ctScore) {
       break;
     }

@@ -1,3 +1,4 @@
+
 /* Copyright (c) 2002-2012 Croteam Ltd. 
 This program is free software; you can redistribute it and/or modify
 it under the terms of version 2 of the GNU General Public License as published by
@@ -73,7 +74,7 @@ class CButtonAction {
 public:
   // default constructor
   CButtonAction();
-  virtual ~CButtonAction();
+  virtual ~CButtonAction() {}
   CListNode ba_lnNode;
   INDEX ba_iFirstKey;
   BOOL ba_bFirstKeyDown;
@@ -83,7 +84,7 @@ public:
   CTString ba_strCommandLineWhenPressed;
   CTString ba_strCommandLineWhenReleased;
   // Assignment operator.
-  virtual CButtonAction &operator=(CButtonAction &baOriginal);
+  virtual CButtonAction &operator=(const CButtonAction &baOriginal);
   virtual void Read_t( CTStream &istrm);    // throw char*
   virtual void Write_t( CTStream &ostrm);    // throw char*
 };
