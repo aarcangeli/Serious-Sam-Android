@@ -53,7 +53,8 @@ functions:
     if (IsPredictor()) {
       penMe = GetPredicted();
     }
-    for (INDEX iPlayer=0; iPlayer<GetMaxPlayers(); iPlayer++) {
+    INDEX iPlayer;
+    for (iPlayer=0; iPlayer<GetMaxPlayers(); iPlayer++) {
       // if this is ME (this)
       if (GetPlayerEntity(iPlayer)==penMe) {
         return iPlayer;

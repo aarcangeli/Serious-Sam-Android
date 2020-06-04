@@ -174,7 +174,7 @@ static CTString MakeEmptyString(INDEX ctLen, char ch=' ')
 }
 
 // take a two line string and align into one line of minimum given length
-static INDEX _ctAlignWidth = 20;
+static int _ctAlignWidth = 20;
 static CTString AlignString(const CTString &strOrg)
 {
   // split into two lines
@@ -457,8 +457,8 @@ DECL_DLL void ctl_ComposeActionPacket(const CPlayerCharacter &pc, CPlayerAction 
   // add button movement/rotation/look actions to the axis actions
   if(pctlCurrent.bMoveForward  ) paAction.pa_vTranslation(3) -= plr_fSpeedForward;
   if(pctlCurrent.bMoveBackward ) paAction.pa_vTranslation(3) += plr_fSpeedBackward;
-  if(pctlCurrent.bMoveLeft  || pctlCurrent.bStrafe&&pctlCurrent.bTurnLeft) paAction.pa_vTranslation(1) -= plr_fSpeedSide;
-  if(pctlCurrent.bMoveRight || pctlCurrent.bStrafe&&pctlCurrent.bTurnRight) paAction.pa_vTranslation(1) += plr_fSpeedSide;
+  if(pctlCurrent.bMoveLeft  || (pctlCurrent.bStrafe&&pctlCurrent.bTurnLeft)) paAction.pa_vTranslation(1) -= plr_fSpeedSide;
+  if(pctlCurrent.bMoveRight || (pctlCurrent.bStrafe&&pctlCurrent.bTurnRight)) paAction.pa_vTranslation(1) += plr_fSpeedSide;
   if(pctlCurrent.bMoveUp       ) paAction.pa_vTranslation(2) += plr_fSpeedUp;
   if(pctlCurrent.bMoveDown     ) paAction.pa_vTranslation(2) -= plr_fSpeedUp;
 
@@ -1286,7 +1286,7 @@ functions:
     bsld.bsld_vPos = vPos;
     bsld.bsld_vG = en_vGravityDir;
     bsld.bsld_eptType=eptType;
-    bsld.bsld_iRndBase=FRnd()*123456;
+    bsld.bsld_iRndBase=(INDEX) (FRnd()*123456);
     bsld.bsld_tmLaunch = _pTimer->CurrentTick();
     bsld.bsld_vStretch=vStretch;
     // move to bullet spray position
@@ -1707,7 +1707,7 @@ functions:
     {for(INDEX iPlayer=0; iPlayer<ctPlayers; iPlayer++) {
       CTString strLine;
       CPlayer *penPlayer = _apenPlayers[iPlayer];
-      INDEX iPing = ceil(penPlayer->en_tmPing*1000.0f);
+      INDEX iPing = (INDEX) (ceil(penPlayer->en_tmPing*1000.0f));
       INDEX iScore = bFragMatch ? penPlayer->m_psLevelStats.ps_iKills : penPlayer->m_psLevelStats.ps_iScore;
       CTString strName = penPlayer->GetPlayerName();
 
@@ -2747,7 +2747,7 @@ functions:
       m_fManaFraction += 
         ClampDn( 1.0f-en_vCurrentTranslationAbsolute.Length()/20.0f, 0.0f) * 20.0f
         * _pTimer->TickQuantum;
-      INDEX iNewMana = m_fManaFraction;
+      INDEX iNewMana = (INDEX) m_fManaFraction;
       m_iMana         += iNewMana;
       m_fManaFraction -= iNewMana;
     }
@@ -4233,7 +4233,7 @@ functions:
       }
 
       // if just started swimming
-      if (m_pstState == PST_SWIM && _pTimer->CurrentTick()<m_fSwimTime+0.5f
+      if ((m_pstState == PST_SWIM && _pTimer->CurrentTick()<m_fSwimTime+0.5f)
         ||_pTimer->CurrentTick()<m_tmOutOfWater+0.5f) {
         // no up/down change
         vTranslation(2)=0;
@@ -4399,7 +4399,8 @@ functions:
   void DeathActions(const CPlayerAction &paAction) {
     // set heading, pitch and banking from the normal rotation into the camera view rotation
     if (m_penView!=NULL) {
-      ASSERT(IsPredicted()&&m_penView->IsPredicted()||IsPredictor()&&m_penView->IsPredictor()||!IsPredicted()&&!m_penView->IsPredicted()&&!IsPredictor()&&!m_penView->IsPredictor());
+      ASSERT((IsPredicted()&&m_penView->IsPredicted()) || (IsPredictor()&&m_penView->IsPredictor())
+      || (!IsPredicted()&&!m_penView->IsPredicted()&&!IsPredictor()&&!m_penView->IsPredictor()));
       en_plViewpoint.pl_PositionVector = FLOAT3D(0, 1, 0);
       en_plViewpoint.pl_OrientationAngle += (ANGLE3D(
         (ANGLE)((FLOAT)paAction.pa_aRotation(1)*_pTimer->TickQuantum),
@@ -4858,7 +4859,7 @@ functions:
     CPlayer *pen = (CPlayer*)GetPredictionTail();
     // do screen blending
     ULONG ulR=255, ulG=0, ulB=0; // red for wounding
-    ULONG ulA = pen->m_fDamageAmmount*5.0f;
+    ULONG ulA = (ULONG) (pen->m_fDamageAmmount*5.0f);
     
     // if less than few seconds elapsed since last damage
     FLOAT tmSinceWounding = _pTimer->CurrentTick() - pen->m_tmWoundedTime;
@@ -5354,8 +5355,8 @@ functions:
     TIME tmLevelTime = _pTimer->CurrentTick()-m_tmLevelStarted;
     m_psLevelStats.ps_tmTime = tmLevelTime;
     m_psGameStats.ps_tmTime += tmLevelTime;
-    FLOAT fTimeDelta = ClampDn((FLOAT)(floor(m_tmEstTime)-floor(tmLevelTime)), 0.0f);
-    m_iTimeScore = floor(fTimeDelta*100.0f);
+    FLOAT fTimeDelta = ClampDn(floorf(m_tmEstTime)-floorf(tmLevelTime), 0.0f);
+    m_iTimeScore = (INDEX) floor(fTimeDelta*100.0f);
     m_psLevelStats.ps_iScore+=m_iTimeScore;
     m_psGameStats.ps_iScore+=m_iTimeScore;
 
@@ -6684,7 +6685,7 @@ procedures:
       on (EReceiveScore eScore) : {
         m_psLevelStats.ps_iScore += eScore.iPoints;
         m_psGameStats.ps_iScore += eScore.iPoints;
-        m_iMana  += eScore.iPoints*GetSP()->sp_fManaTransferFactor;
+        m_iMana  += (INDEX) (eScore.iPoints*GetSP()->sp_fManaTransferFactor);
         CheckHighScore();
         resume;
       }
