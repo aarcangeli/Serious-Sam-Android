@@ -533,7 +533,7 @@ CPacket* CPacketBuffer::GetPacket(ULONG ulSequence)
 			return litPacketIter;
 		}
 	}
-	return NULL;
+	return FALSE;
 };
 
 // Reads the first connection request packet from the buffer

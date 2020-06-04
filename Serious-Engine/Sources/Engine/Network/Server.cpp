@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include <Engine/StdH.h>
 
 #include <Engine/Build.h>
 #include <Engine/Network/Network.h>
@@ -392,7 +392,7 @@ void CServer::SendGameStreamBlocks(INDEX iClient)
   extern INDEX cli_bPredictIfServer;
   if (iClient==0 && !cli_bPredictIfServer) {
     ctMinBytes = 0;
-    ctMaxBytes = 1E6;
+    ctMaxBytes = (INDEX) 1E6;
   }
 
 //  CPrintF("Send%d(%d, %d, %d): ", iClient, iLastSent, ctMinBytes, ctMaxBytes);
@@ -459,8 +459,8 @@ void CServer::SendGameStreamBlocks(INDEX iClient)
     nmGameStreamBlocks.PackDefault(nmPackedBlocksNew);
     // if some blocks written already and the batch is too large
     if (iBlocksOk>0) {
-      if (iStep>0 && nmPackedBlocksNew.nm_slSize>=ctMaxBytes ||
-          iStep<0 && nmPackedBlocksNew.nm_slSize>=ctMinBytes ) {
+      if ((iStep>0 && nmPackedBlocksNew.nm_slSize>=ctMaxBytes) ||
+          (iStep<0 && nmPackedBlocksNew.nm_slSize>=ctMinBytes) ) {
         // stop
 //        CPrintF("toomuch ");
         break;
@@ -539,8 +539,8 @@ void CServer::ResendGameStreamBlocks(INDEX iClient, INDEX iSequence0, INDEX ctSe
   CNetworkMessage nmPackedBlocks(MSG_GAMESTREAMBLOCKS);
 
   // for each sequence
-  INDEX iSequence = iSequence0;
-  for(; iSequence<iSequence0+ctSequences; iSequence++) {
+  INDEX iSequence;
+  for(iSequence = iSequence0; iSequence<iSequence0+ctSequences; iSequence++) {
     // get the stream block with that sequence
     CNetworkStreamBlock *pnsbBlock;
     CNetworkStream::Result res = sso.sso_nsBuffer.GetBlockBySequence(iSequence, pnsbBlock);
@@ -728,7 +728,7 @@ void CServer::ServerLoop(void)
   // handle all incoming messages
   HandleAll();
 
-  INDEX iSpeed = 1;
+  //INDEX iSpeed = 1;
   extern INDEX ser_bWaitFirstPlayer;
   // if the local session is keeping up with time and not paused
   BOOL bPaused = srv_bPause || _pNetwork->ga_bLocalPause || _pNetwork->IsWaitingForPlayers() || 
@@ -864,7 +864,8 @@ void CServer::ConnectRemoteSessionState(INDEX iClient, CNetworkMessage &nm)
   // read version info
   INDEX iTag, iMajor, iMinor;
   nm>>iTag;
-  if (iTag=='VTAG') {
+  #define VTAG 0x56544147  // Looks like 'VTAG' in ASCII.
+  if (iTag==VTAG) {
     nm>>iMajor>>iMinor;
   } else {
     iMajor = 109;
@@ -1093,8 +1094,8 @@ void CServer::SendSessionStateData(INDEX iClient)
 void CServer::HandleAll()
 {
   // clear last accepted client info
-  INDEX iClient = -1;
-/*  if (_cmiComm.GetLastAccepted(iClient)) {
+ /* INDEX iClient = -1;
+  if (_cmiComm.GetLastAccepted(iClient)) {
     CPrintF(TRANS("Server: Accepted session connection by '%s'\n"),
       _cmiComm.Server_GetClientName(iClient));
   }
@@ -1501,7 +1502,7 @@ void CServer::Handle(INDEX iClient, CNetworkMessage &nmMessage)
     // if the source has no players
     if (ulFrom==0) {
       // make it public message
-      ulTo = -1;
+      ulTo = (ULONG) -1;
     }
 
     // make the outgoing message

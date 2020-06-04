@@ -231,7 +231,7 @@ void CSessionState::Start_t(INDEX ctLocalPlayers)
   // if this computer is server
   if (_pNetwork->IsServer()) {
     // initialize local client
-    _cmiComm.Client_Init_t(0UL);
+    _cmiComm.Client_Init_t((ULONG)0);
     // connect as main session state
     try {
       Start_AtServer_t();
@@ -312,10 +312,10 @@ void CSessionState::Start_AtClient_t(INDEX ctLocalPlayers)     // throw char *
   // send one unreliable packet to server to make the connection up and running
   CNetworkMessage nmKeepAlive(MSG_KEEPALIVE);
   _pNetwork->SendToServer(nmKeepAlive);
-
+#define VTAG 0x56544147 // Looks like 'VTAG' in ASCII.
   // send registration request
   CNetworkMessage nmRegisterSessionState(MSG_REQ_CONNECTREMOTESESSIONSTATE);
-  nmRegisterSessionState<<INDEX('VTAG')<<INDEX(_SE_BUILD_MAJOR)<<INDEX(_SE_BUILD_MINOR);
+  nmRegisterSessionState<<INDEX(VTAG)<<INDEX(_SE_BUILD_MAJOR)<<INDEX(_SE_BUILD_MINOR);
   nmRegisterSessionState<<_strModName;
   extern CTString net_strConnectPassword;
   extern CTString net_strVIPPassword;

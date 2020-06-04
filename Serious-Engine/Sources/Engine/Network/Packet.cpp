@@ -109,7 +109,6 @@ BOOL CPacket::WriteToPacket(void* pv,SLONG slSize,UBYTE ubReliable,ULONG ulSeque
 {
 	UBYTE* pubData;
 
-  ASSERT(slSize % 4 == 0);
 	ASSERT(slSize <= MAX_UDP_BLOCK_SIZE && slSize > 0);
 	ASSERT(pv != NULL);
   ASSERT(slTransferSize >= slSize);

@@ -425,9 +425,11 @@ int ZEXPORT compress (dest, destLen, source, sourceLen)
     */
 
   CTSingleLock slZip(&zip_csLock, TRUE);
-  int iResult = compress(
-    (UBYTE *)pvDst, (ULONG *)&slDstSize,
-    (const UBYTE *)pvSrc, (ULONG)slSrcSize);
+  uLongf dstlen = (uLongf) slDstSize;
+  const int iResult = compress(
+    (Bytef *)pvDst, &dstlen,
+    (const Bytef *)pvSrc, (uLong)slSrcSize);
+  slDstSize = (SLONG) dstlen;
   if (iResult==Z_OK) {
     return TRUE;
   } else {
@@ -449,10 +451,11 @@ int ZEXPORT uncompress (dest, destLen, source, sourceLen)
     */
 
   CTSingleLock slZip(&zip_csLock, TRUE);
-  int iResult = uncompress(
-    (UBYTE *)pvDst, (ULONG *)&slDstSize,
-    (const UBYTE *)pvSrc, (ULONG)slSrcSize);
-
+  uLongf dstlen = (uLongf) slDstSize;
+  const int iResult = uncompress(
+    (Bytef *)pvDst, &dstlen,
+    (const Bytef *)pvSrc, (uLong)slSrcSize);
+  slDstSize = (SLONG) dstlen;
   if (iResult==Z_OK) {
     return TRUE;
   } else {

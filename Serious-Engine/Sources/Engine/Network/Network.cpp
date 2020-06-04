@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include <Engine/StdH.h>
 
 #include <Engine/Build.h>
 #include <Engine/Base/Console.h>
@@ -367,7 +367,7 @@ static void NetworkInfo(void)
   for(INDEX iplt=0; iplt<_pNetwork->ga_sesSessionState.ses_apltPlayers.Count(); iplt++) {
     CPlayerTarget &plt = _pNetwork->ga_sesSessionState.ses_apltPlayers[iplt];
     if (plt.plt_bActive) {
-      ULONG ulID = -1;
+      ULONG ulID = (ULONG) -1;
       if (plt.plt_penPlayerEntity!=NULL) {
         ulID = plt.plt_penPlayerEntity->en_ulID;
       }
@@ -488,7 +488,7 @@ static void StockInfo(void)
       }
       slUploadMemory  += slUploadSize;
       slShdBytes  += slTotalSize + sizeof(CShadowMap);
-      slSlackMemory   += slTotalSize*fSlackRatio;
+      slSlackMemory   += (SLONG) (slTotalSize*fSlackRatio);
 
       if( !bIsFlat) { // by size ...
         if(      slStaticSize>128*1024) { ct256++; sl256Memory+=slTotalSize; }
