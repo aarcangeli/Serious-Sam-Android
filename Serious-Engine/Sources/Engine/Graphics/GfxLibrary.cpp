@@ -118,7 +118,7 @@ INDEX tex_iNormalQuality    = 00;      // 0=optimal, 1=16bit, 2=32bit, 3=compres
 INDEX tex_iAnimationQuality = 11;      // 0=optimal, 1=16bit, 2=32bit, 3=compressed (1st num=opaque tex, 2nd=alpha tex)
 INDEX tex_iNormalSize     = 7;         // log2 of texture area /2 for max texture size allowed
 INDEX tex_iAnimationSize  = 5; 
-INDEX tex_iEffectSize     = 6; 
+INDEX tex_iEffectSize     = 5; 
 INDEX tex_bDynamicMipmaps = FALSE;     // how many mipmaps will be bilineary filtered (0-15)
 INDEX tex_iDithering      = 3;         // 0=none, 1-3=low, 4-7=medium, 8-10=high
 INDEX tex_bFineEffect = FALSE;         // 32bit effect? (works only if base texture hasn't been dithered)
@@ -131,9 +131,9 @@ INDEX tex_bColorizeMipmaps   = FALSE;  // DEBUG: colorize texture's mipmap level
 INDEX tex_bCompressAlphaChannel = FALSE;  // for compressed textures, compress alpha channel too   
 INDEX tex_bAlternateCompression = FALSE;  // basically, this is fix for GFs (compress opaque texture as translucent)
 
-INDEX shd_iStaticSize  = 6;    
-INDEX shd_iDynamicSize = 6;    
-INDEX shd_bFineQuality = FALSE; 
+INDEX shd_iStaticSize  = 6;
+INDEX shd_iDynamicSize = 6;
+INDEX shd_bFineQuality = FALSE;
 INDEX shd_iFiltering = 3;     // >0 = blurring, 0 = no filtering
 INDEX shd_iDithering = 1;     // 0=none, 1,2=low, 3,4=medium, 5=high
 INDEX shd_iAllowDynamic = 1;    // 0=disallow, 1=allow on polys w/o 'NoDynamicLights' flag, 2=allow unconditionally
@@ -230,13 +230,13 @@ INDEX wld_bShowDetailTextures   = FALSE;
 INDEX wld_iDetailRemovingBias   = 3;
 FLOAT wld_fEdgeOffsetI          = 0.0f; //0.125f;
 FLOAT wld_fEdgeAdjustK          = 1.0f; //1.0001f;
-                                     
+
 INDEX gfx_bRenderWorld      = TRUE;
 INDEX gfx_bRenderParticles  = TRUE;
 INDEX gfx_bRenderModels     = TRUE;
 INDEX gfx_bRenderPredicted  = FALSE;
 INDEX gfx_bRenderFog        = TRUE;
-INDEX gfx_iLensFlareQuality = 3;   // 0=none, 1=corona only, 2=corona and reflections, 3=corona, reflections and glare 
+INDEX gfx_iLensFlareQuality = 0;   // 0=none, 1=corona only, 2=corona and reflections, 3=corona, reflections and glare 
 
 INDEX gfx_bDecoratedText   = TRUE;
 INDEX gfx_bClearScreen = FALSE;
@@ -726,17 +726,17 @@ static void GAPInfo(void)
 // update console system vars
 extern void UpdateGfxSysCVars(void)
 {
-  sys_bHasTextureCompression = 0;
+  sys_bHasTextureCompression = 1;
   sys_bHasTextureAnisotropy = 0;
   sys_bHasAdjustableGamma = 0;
   sys_bHasTextureLODBias = 0;
   sys_bHasMultitexturing = 0;
   sys_bHas32bitTextures = 0;
-  sys_bHasSwapInterval = 0;
+  sys_bHasSwapInterval = 1;
   sys_bHasHardwareTnL = 1;
   sys_bHasTruform = 0;
   sys_bHasCVAs = 1;
-  sys_bUsingOpenGL = 0;
+  sys_bUsingOpenGL = 1;
   sys_bUsingDirect3D = 0;
   if( _pGfx->gl_iMaxTextureAnisotropy>1) sys_bHasTextureAnisotropy = 1;
   if( _pGfx->gl_fMaxTextureLODBias>0) sys_bHasTextureLODBias = 1;
