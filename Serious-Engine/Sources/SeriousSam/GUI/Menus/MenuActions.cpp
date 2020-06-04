@@ -862,7 +862,7 @@ extern void RefreshSoundFormat(void)
   }
 
   gmCurrent.gm_mgAudioAutoTrigger.mg_iSelected = Clamp(sam_bAutoAdjustAudio, 0, 1);
-  gmCurrent.gm_mgAudioAPITrigger.mg_iSelected = Clamp(_pShell->GetINDEX("snd_iInterface"), 0L, 2L);
+  gmCurrent.gm_mgAudioAPITrigger.mg_iSelected = Clamp(_pShell->GetINDEX("snd_iInterface"), 0, 2);
 
   gmCurrent.gm_mgWaveVolume.mg_iMinPos = 0;
   gmCurrent.gm_mgWaveVolume.mg_iMaxPos = VOLUME_STEPS;

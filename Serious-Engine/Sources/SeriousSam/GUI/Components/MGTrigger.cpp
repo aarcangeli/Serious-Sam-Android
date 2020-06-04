@@ -45,7 +45,7 @@ CMGTrigger::CMGTrigger(void)
 
 void CMGTrigger::ApplyCurrentSelection(void)
 {
-  mg_iSelected = Clamp(mg_iSelected, 0L, mg_ctTexts - 1L);
+  mg_iSelected = Clamp(mg_iSelected, 0, mg_ctTexts - 1);
   mg_strValue = mg_astrTexts[mg_iSelected];
 }
 

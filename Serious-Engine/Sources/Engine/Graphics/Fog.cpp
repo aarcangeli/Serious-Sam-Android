@@ -68,7 +68,7 @@ ULONG PrepareTexture( UBYTE *pubTexture, PIX pixSizeI, PIX pixSizeJ)
 {
   // need to upload from RGBA format
   const PIX pixTextureSize = pixSizeI * pixSizeJ;
-  UBYTE *src = pubTexture;
+  const UBYTE *src = pubTexture;
   uint32_t *dest = (uint32_t *) &pubTexture[pixTextureSize];
   for (PIX i = 0; i < pixTextureSize; i++) {
     *dest = (uint32_t) *src << 24 | 0x00FFFFFF;
@@ -123,9 +123,9 @@ void StartFog( CFogParameters &fp, const FLOAT3D &vViewPosAbs, const FLOATmatrix
 
   // calculate fog table size wanted
   extern INDEX tex_iFogSize;
-  tex_iFogSize = Clamp( tex_iFogSize, 4L, 8L); 
-  PIX pixSizeH = ClampUp( _fog_fp.fp_iSizeH, 1L<<tex_iFogSize);
-  PIX pixSizeL = ClampUp( _fog_fp.fp_iSizeL, 1L<<tex_iFogSize);
+  tex_iFogSize = Clamp( tex_iFogSize, 4, 8);
+  PIX pixSizeH = ClampUp( _fog_fp.fp_iSizeH, 1<<tex_iFogSize);
+  PIX pixSizeL = ClampUp( _fog_fp.fp_iSizeL, 1<<tex_iFogSize);
   BOOL bNoDiscard = TRUE;
 
   // if fog table is not allocated in right size
@@ -189,7 +189,7 @@ void StartFog( CFogParameters &fp, const FLOAT3D &vViewPosAbs, const FLOATmatrix
     fA1 = Clamp(fA1,0.0f,1.0f);
     FLOAT fA = fA2-fA1;
     fA = Clamp(fA,0.0f,1.0f);
-    
+
     // if not constant graduation
     if( fgt!=FGT_CONSTANT) {
       // calculate fog height for two points, limited to be inside fog
@@ -241,7 +241,7 @@ void StartFog( CFogParameters &fp, const FLOAT3D &vViewPosAbs, const FLOATmatrix
       FLOAT fTStep = 1.0f/pixSizeL *fFar*fDensity*fA *255;
       // fog is just clamped fog parameter in each pixel
       for( INDEX pixL=0; pixL<pixSizeL; pixL++) {
-        _fog_pubTable[pixH*pixSizeL+pixL] = Clamp( FloatToInt(fT), 0L, 255L);
+        _fog_pubTable[pixH*pixSizeL+pixL] = Clamp( FloatToInt(fT), 0, 255);
         fT += fTStep;
       } 
     } break;

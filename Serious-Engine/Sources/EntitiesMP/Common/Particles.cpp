@@ -1045,7 +1045,7 @@ void Particles_BeastProjectileTrail( CEntity *pen, FLOAT fSize, FLOAT fHeight, I
       vZ*(afStarsPositions[iStar][2]*time*fSize*1.5);
 
     FLOAT3D vPos = GET_POS( fT);
-    COLOR colStar = pTD->GetTexel( ClampUp(FloatToInt(fT*8192.0f),8191L), 0);
+    COLOR colStar = pTD->GetTexel( ClampUp(FloatToInt(fT*8192.0f),8191), 0);
 
     if( fT>BEAST_PROJECTILE_LINE_PARTICLES)
     {
@@ -1107,7 +1107,7 @@ void Particles_BeastBigProjectileTrail( CEntity *pen, FLOAT fSize, FLOAT fZOffse
       vZ*(afStarsPositions[iStar][2]*time*fSize*1.5);
 
     FLOAT3D vPos = GET_POS_BIG( fT);
-    COLOR colStar = pTD->GetTexel( ClampUp(FloatToInt(fT*8192.0f),8191L), 0);
+    COLOR colStar = pTD->GetTexel( ClampUp(FloatToInt(fT*8192.0f),8191), 0);
 
     if( fT>BIG_BEAST_PROJECTILE_LINE_PARTICLES)
     {
@@ -3302,7 +3302,7 @@ void Particles_LavaFlow( CEntity *pen, FLOAT fStretchAll, FLOAT fSize, FLOAT fHe
         vY*(fT*fT*-4.0f+(afStarsPositions[iStar][1]*fPowerFactor*0.1f)) +
         vZ*(afStarsPositions[iStar][2]*fPowerFactor*fT*fStretchAll);
     
-      COLOR colLava = pTD->GetTexel( ClampUp(FloatToInt(fT*2048.0f),2047L), 0);
+      COLOR colLava = pTD->GetTexel( ClampUp(FloatToInt(fT*2048.0f),2047), 0);
       ULONG ulA = FloatToInt( ((colLava&CT_AMASK)>>CT_ASHIFT) * fFade);
       colLava = (colLava&~CT_AMASK) | (ulA<<CT_ASHIFT);
       Particle_RenderSquare( vPos, fSize, 0, colLava);
@@ -4567,7 +4567,7 @@ void Particles_AfterBurner(CEntity *pen, FLOAT tmSpawn, FLOAT fStretch, INDEX iG
     FLOAT fT=(iPos+_pTimer->GetLerpFactor())*_pTimer->TickQuantum;
     FLOAT fRatio=fT/(CT_AFTERBURNER_SMOKES*_pTimer->TickQuantum);
     INDEX iIndex=fRatio*255.0f;
-    INDEX iRnd=INDEX(pvPos1)%CT_MAX_PARTICLES_TABLE;
+    INDEX iRnd=(INDEX)(size_t(pvPos1)%CT_MAX_PARTICLES_TABLE);
 
     // smoke
     FLOAT3D vPosS = *pvPos1;
@@ -5763,7 +5763,7 @@ void Particles_RunAfterBurner(CEntity *pen, FLOAT tmEnd, FLOAT fStretch, INDEX i
     FLOAT fT=(iPos+_pTimer->GetLerpFactor())*_pTimer->TickQuantum;
     FLOAT fRatio=fT/(CT_AFTERBURNER_SMOKES*_pTimer->TickQuantum);
     INDEX iIndex=fRatio*255.0f;
-    INDEX iRnd=INDEX(pvPos1)%CT_MAX_PARTICLES_TABLE;
+    INDEX iRnd=(INDEX)(size_t(pvPos1)%CT_MAX_PARTICLES_TABLE);
 
     // smoke
     FLOAT3D vPosS = *pvPos1;

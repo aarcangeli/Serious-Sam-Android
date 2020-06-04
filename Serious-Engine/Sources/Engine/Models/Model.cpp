@@ -407,7 +407,7 @@ void CModelData::GetAllFramesBBox( FLOATaabbox3D &MaxBB)
 FLOAT3D CModelData::GetCollisionBoxMin(INDEX iCollisionBox)
 {
   md_acbCollisionBox.Lock();
-  INDEX iCollisionBoxClamped = Clamp(iCollisionBox, 0L, md_acbCollisionBox.Count()-1L);
+  INDEX iCollisionBoxClamped = Clamp(iCollisionBox, 0, md_acbCollisionBox.Count()-1);
   FLOAT3D vMin = md_acbCollisionBox[ iCollisionBoxClamped].mcb_vCollisionBoxMin;
   md_acbCollisionBox.Unlock();
   return vMin;
@@ -416,7 +416,7 @@ FLOAT3D CModelData::GetCollisionBoxMin(INDEX iCollisionBox)
 FLOAT3D CModelData::GetCollisionBoxMax(INDEX iCollisionBox=0)
 {
   md_acbCollisionBox.Lock();
-  INDEX iCollisionBoxClamped = Clamp(iCollisionBox, 0L, md_acbCollisionBox.Count()-1L);
+  INDEX iCollisionBoxClamped = Clamp(iCollisionBox, 0, md_acbCollisionBox.Count()-1);
   FLOAT3D vMax = md_acbCollisionBox[ iCollisionBoxClamped].mcb_vCollisionBoxMax;
   md_acbCollisionBox.Unlock();
   return vMax;
@@ -426,7 +426,7 @@ FLOAT3D CModelData::GetCollisionBoxMax(INDEX iCollisionBox=0)
 INDEX CModelData::GetCollisionBoxDimensionEquality(INDEX iCollisionBox=0)
 {
   md_acbCollisionBox.Lock();
-  iCollisionBox = Clamp(iCollisionBox, 0L, md_acbCollisionBox.Count()-1L);
+  iCollisionBox = Clamp(iCollisionBox, 0, md_acbCollisionBox.Count()-1);
   INDEX iDimEq = md_acbCollisionBox[ iCollisionBox].mcb_iCollisionBoxDimensionEquality;
   md_acbCollisionBox.Unlock();
   return iDimEq;
@@ -481,8 +481,8 @@ ModelTextureVertex::ModelTextureVertex(void)
 //------------------------------------------ WRITE
 void ModelPolygonVertex::Write_t( CTStream *pFile)  // throw char *
 {
-  (*pFile) << (INDEX) mpv_ptvTransformedVertex;
-  (*pFile) << (INDEX) mpv_ptvTextureVertex;
+  (*pFile) << (INDEX) (size_t) mpv_ptvTransformedVertex;
+  (*pFile) << (INDEX) (size_t) mpv_ptvTextureVertex;
 }
 //------------------------------------------ READ
 void ModelPolygonVertex::Read_t( CTStream *pFile) // throw char *
@@ -490,9 +490,9 @@ void ModelPolygonVertex::Read_t( CTStream *pFile) // throw char *
   INDEX itmp;
 
   (*pFile) >> itmp;
-  mpv_ptvTransformedVertex = (struct TransformedVertexData *) itmp;
+  mpv_ptvTransformedVertex = (struct TransformedVertexData *) (size_t) itmp;
   (*pFile) >> itmp;
-  mpv_ptvTextureVertex = (ModelTextureVertex *) itmp;
+  mpv_ptvTextureVertex = (ModelTextureVertex *) (size_t) itmp;
 }
 //--------------------------------------------------------------------------------------------
 //------------------------------------------ WRITE
@@ -1063,9 +1063,9 @@ void CModelData::IndicesToPtrs()
       FOREACHINSTATICARRAY(it1.Current().mp_PolygonVertices, ModelPolygonVertex, it2)
       {
         struct ModelPolygonVertex * pMPV = &it2.Current();
-        j = (INDEX) it2.Current().mpv_ptvTransformedVertex;
+        j = (INDEX) (size_t) it2.Current().mpv_ptvTransformedVertex;
         it2.Current().mpv_ptvTransformedVertex = &md_TransformedVertices[ j];
-        j = (INDEX) it2.Current().mpv_ptvTextureVertex;
+        j = (INDEX) (size_t) it2.Current().mpv_ptvTextureVertex;
         it2.Current().mpv_ptvTextureVertex = &md_MipInfos[ i].mmpi_TextureVertices[ j];
       }
     }

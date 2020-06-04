@@ -609,8 +609,8 @@ ENGINE_API void CAnimObject::Synchronize(CAnimObject &aoOther)
   // copy animations, time and flags
   INDEX ctAnims = GetAnimsCt();
   ao_tmAnimStart  = aoOther.ao_tmAnimStart;
-  ao_iCurrentAnim = ClampUp(aoOther.ao_iCurrentAnim, ctAnims-1L);
-	ao_iLastAnim    = ClampUp(aoOther.ao_iLastAnim, ctAnims-1L);
+  ao_iCurrentAnim = ClampUp(aoOther.ao_iCurrentAnim, ctAnims-1);
+	ao_iLastAnim    = ClampUp(aoOther.ao_iLastAnim, ctAnims-1);
   ao_ulFlags      = aoOther.ao_ulFlags;
 }
 
@@ -1065,12 +1065,12 @@ void CAnimObject::GetFrame( INDEX &iFrame0, INDEX &iFrame1, FLOAT &fRatio) const
       INDEX iAnim = ao_iCurrentAnim;
       ((CAnimObject*)this)->ao_iCurrentAnim = ao_iLastAnim;
       float fFrameNow = tmCurrentRelative/pOA0->oa_SecsPerFrame+pOA0->oa_NumberOfFrames;
-	    iFrame0 = pOA0->oa_FrameIndices[ Clamp(SLONG(fFrameNow),  0L, pOA0->oa_NumberOfFrames-1L)];
+	    iFrame0 = pOA0->oa_FrameIndices[ Clamp(SLONG(fFrameNow),  0, pOA0->oa_NumberOfFrames-1)];
       INDEX iFrameNext = SLONG(fFrameNow+1);
       if (iFrameNext>=pOA0->oa_NumberOfFrames) {
 	      iFrame1 = pOA1->oa_FrameIndices[0];
       } else {
-	      iFrame1 = pOA0->oa_FrameIndices[ Clamp(iFrameNext,  0L, pOA0->oa_NumberOfFrames-1L)];
+	      iFrame1 = pOA0->oa_FrameIndices[ Clamp(iFrameNext,  0, pOA0->oa_NumberOfFrames-1)];
       }
       ((CAnimObject*)this)->ao_iCurrentAnim = iAnim;
       fRatio = fFrameNow - (float)floor(fFrameNow);

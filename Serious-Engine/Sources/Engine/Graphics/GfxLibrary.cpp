@@ -595,7 +595,7 @@ static void GAPInfo(void)
       CPrintF( "- T-Buffer effect: ");
       if( _pGfx->go_ctSampleBuffers==0) CPrintF( "disabled\n");
       else {
-        ogl_iTBufferEffect = Clamp( ogl_iTBufferEffect, 0L, 2L);
+        ogl_iTBufferEffect = Clamp( ogl_iTBufferEffect, 0, 2);
         CTString strEffect = "Partial anti-aliasing";
         if( ogl_iTBufferEffect<1) strEffect = "none";
         if( ogl_iTBufferEffect>1) strEffect = "Motion blur";
@@ -785,10 +785,10 @@ extern void UncacheShadows(void)
   // prepare new saturation factors for shadowmaps
   gfx_fSaturation  = ClampDn( gfx_fSaturation, 0.0f); 
   shd_fSaturation  = ClampDn( shd_fSaturation, 0.0f); 
-  gfx_iHueShift    = Clamp(   gfx_iHueShift, 0L, 359L); 
-  shd_iHueShift    = Clamp(   shd_iHueShift, 0L, 359L); 
+  gfx_iHueShift    = Clamp(   gfx_iHueShift, 0, 359); 
+  shd_iHueShift    = Clamp(   shd_iHueShift, 0, 359); 
   _slShdSaturation = (SLONG)( gfx_fSaturation*shd_fSaturation*256.0f);
-  _slShdHueShift   = Clamp(  (gfx_iHueShift+shd_iHueShift)*255L/359L, 0L, 255L);
+  _slShdHueShift   = Clamp(  (gfx_iHueShift+shd_iHueShift)*255/359, 0, 255);
           
   CListHead &lhOriginal = _pGfx->gl_lhCachedShadows;
   // while there is some shadow in main list
@@ -823,10 +823,10 @@ extern void ReloadTextures(void)
   // prepare new saturation factors for textures
   gfx_fSaturation  = ClampDn( gfx_fSaturation, 0.0f); 
   tex_fSaturation  = ClampDn( tex_fSaturation, 0.0f); 
-  gfx_iHueShift    = Clamp( gfx_iHueShift, 0L, 359L); 
-  tex_iHueShift    = Clamp( tex_iHueShift, 0L, 359L); 
+  gfx_iHueShift    = Clamp( gfx_iHueShift, 0, 359); 
+  tex_iHueShift    = Clamp( tex_iHueShift, 0, 359); 
   _slTexSaturation = (SLONG)( gfx_fSaturation*tex_fSaturation*256.0f);
-  _slTexHueShift   = Clamp(  (gfx_iHueShift+tex_iHueShift)*255L/359L, 0L, 255L);
+  _slTexHueShift   = Clamp(  (gfx_iHueShift+tex_iHueShift)*255/359, 0, 255);
 
   // update texture settings
   UpdateTextureSettings();
@@ -904,7 +904,7 @@ static void ReloadModels(void)
 static BOOL _bLastModelQuality = -1;
 static void MdlPostFunc(void *pvVar)
 {
-  mdl_bFineQuality = Clamp( mdl_bFineQuality, 0L, 1L);
+  mdl_bFineQuality = Clamp( mdl_bFineQuality, 0, 1);
   if( _bLastModelQuality!=mdl_bFineQuality) {
     _bLastModelQuality = mdl_bFineQuality;
     ReloadModels();
@@ -920,7 +920,7 @@ static void PrepareTables(void)
 {
   INDEX i;
   // prepare array for fast clamping to 0..255
-  for( i=-256*2; i<256*4; i++) aubClipByte[i+256*2] = (UBYTE)Clamp( i, 0L, 255L);
+  for( i=-256*2; i<256*4; i++) aubClipByte[i+256*2] = (UBYTE)Clamp( i, 0, 255);
   // prepare fast sqrt tables
   for( i=0; i<SQRTTABLESIZE; i++) aubSqrt[i]   = (UBYTE)(sqrt((FLOAT)(i*65536/SQRTTABLESIZE)));
   for( i=1; i<SQRTTABLESIZE; i++) auw1oSqrt[i] = (UWORD)(sqrt((FLOAT)(SQRTTABLESIZE-1)/i)*255.0f);
@@ -1761,12 +1761,12 @@ void CGfxLibrary::SwapBuffers(CViewPort *pvp)
   gfxSetTextureBiasing( gap_fTextureLODBias);
 
   // clamp some cvars
-  gap_iDithering = Clamp( gap_iDithering, 0L, 2L);
-  gap_iSwapInterval = Clamp( gap_iSwapInterval, 0L, 4L);
-  gap_iOptimizeClipping = Clamp( gap_iOptimizeClipping, 0L, 2L);
-  gap_iTruformLevel = Clamp( gap_iTruformLevel, 0L, _pGfx->gl_iMaxTessellationLevel);
-  ogl_iFinish = Clamp( ogl_iFinish, 0L, 3L);
-  d3d_iFinish = Clamp( d3d_iFinish, 0L, 3L);
+  gap_iDithering = Clamp( gap_iDithering, 0, 2);
+  gap_iSwapInterval = Clamp( gap_iSwapInterval, 0, 4);
+  gap_iOptimizeClipping = Clamp( gap_iOptimizeClipping, 0, 2);
+  gap_iTruformLevel = Clamp( gap_iTruformLevel, 0, _pGfx->gl_iMaxTessellationLevel);
+  ogl_iFinish = Clamp( ogl_iFinish, 0, 3);
+  d3d_iFinish = Clamp( d3d_iFinish, 0, 3);
 
   // OpenGL  
   if( gl_eCurrentAPI==GAT_OGL)
@@ -1852,8 +1852,8 @@ void CGfxLibrary::SwapBuffers(CViewPort *pvp)
   GFX_bViewMatrix = TRUE;
 
   // set maximum allowed upload ammount
-  gfx_iProbeSize = Clamp( gfx_iProbeSize, 1L, 16384L);
-  gl_slAllowedUploadBurst = gfx_iProbeSize *1024; 
+  gfx_iProbeSize = Clamp( gfx_iProbeSize, 1, 16384);
+  gl_slAllowedUploadBurst = gfx_iProbeSize *1024;
   _ctProbeTexs = 0;
   _ctProbeShdU = 0;
   _ctProbeShdB = 0;
@@ -1870,7 +1870,7 @@ void CGfxLibrary::SwapBuffers(CViewPort *pvp)
   gl_ctTotalTriangles    = 0;
 
   // re-adjust multi-texturing support
-  gap_iUseTextureUnits = Clamp( gap_iUseTextureUnits, 1L, _pGfx->gl_ctTextureUnits);
+  gap_iUseTextureUnits = Clamp( gap_iUseTextureUnits, 1, _pGfx->gl_ctTextureUnits);
   ASSERT( gap_iUseTextureUnits>=1 && gap_iUseTextureUnits<=GFX_MAXTEXUNITS);
 
   // re-get usage of compiled vertex arrays
@@ -1986,7 +1986,7 @@ static BOOL GenerateGammaTable(void)
   gfx_fBrightness = Clamp( gfx_fBrightness, -0.8f, 0.8f);
   gfx_fContrast   = Clamp( gfx_fContrast,    0.2f, 4.0f);
   gfx_fGamma      = Clamp( gfx_fGamma,  0.2f, 4.0f);    
-  gfx_iLevels = Clamp( gfx_iLevels, 2L,  256L);
+  gfx_iLevels = Clamp( gfx_iLevels, 2,  256);
   gfx_fBiasR  = Clamp( gfx_fBiasR, 0.0f, 2.0f);
   gfx_fBiasG  = Clamp( gfx_fBiasG, 0.0f, 2.0f);
   gfx_fBiasB  = Clamp( gfx_fBiasB, 0.0f, 2.0f);
@@ -2016,7 +2016,7 @@ static BOOL GenerateGammaTable(void)
   // adjust brightness
   INDEX iAdd = 256* 256*gfx_fBrightness;
   for( i=0; i<256; i++) {
-    _auwGammaTable[i] = Clamp( _auwGammaTable[i]+iAdd, 0L, 65280L);
+    _auwGammaTable[i] = Clamp( _auwGammaTable[i]+iAdd, 0, 65280);
   }
 
   // adjust levels (posterize)
@@ -2025,7 +2025,7 @@ static BOOL GenerateGammaTable(void)
     for( i=0; i<256; i++) {
       INDEX iVal = _auwGammaTable[i];
       iVal = ((INDEX)(iVal/fLevels)) *fLevels;
-      _auwGammaTable[i] = ClampUp( iVal, 0xFF00L);
+      _auwGammaTable[i] = ClampUp( iVal, 0xFF00);
     }
   }
 

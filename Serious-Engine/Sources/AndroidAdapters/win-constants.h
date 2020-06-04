@@ -9,7 +9,6 @@
 #define CONST const
 typedef char CHAR;
 typedef unsigned char BYTE;
-typedef unsigned long DWORD;
 typedef unsigned short WORD;
 typedef int INT;
 typedef LONG HRESULT;

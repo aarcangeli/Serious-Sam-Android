@@ -12,8 +12,8 @@ int64_t getTimeNsec() {
     return (int64_t) now.tv_sec * 1000000000LL + now.tv_nsec;
 }
 
-unsigned int _rotl(unsigned int value, int shift) {
-    return value << shift | value >> (32 - shift);
+uint32_t _rotl(uint32_t ul, int bits) {
+    return (ul<<bits) | (ul>>(-bits&31));
 }
 
 char *strupr(char *s) {

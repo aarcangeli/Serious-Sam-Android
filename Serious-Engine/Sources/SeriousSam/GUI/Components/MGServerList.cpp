@@ -63,13 +63,13 @@ CMGServerList::CMGServerList()
 void CMGServerList::AdjustFirstOnScreen(void)
 {
   INDEX ctSessions = _lhServers.Count();
-  mg_iSelected = Clamp(mg_iSelected, 0L, ClampDn(ctSessions - 1L, 0L));
-  mg_iFirstOnScreen = Clamp(mg_iFirstOnScreen, 0L, ClampDn(ctSessions - mg_ctOnScreen, 0L));
+  mg_iSelected = Clamp(mg_iSelected, 0, ClampDn(ctSessions - 1, 0));
+  mg_iFirstOnScreen = Clamp(mg_iFirstOnScreen, 0, ClampDn(ctSessions - mg_ctOnScreen, 0));
 
   if (mg_iSelected<mg_iFirstOnScreen) {
-    mg_iFirstOnScreen = ClampUp(mg_iSelected, ClampDn(ctSessions - mg_ctOnScreen - 1L, 0L));
+    mg_iFirstOnScreen = ClampUp(mg_iSelected, ClampDn(ctSessions - mg_ctOnScreen - 1, 0));
   } else if (mg_iSelected >= mg_iFirstOnScreen + mg_ctOnScreen) {
-    mg_iFirstOnScreen = ClampDn(mg_iSelected - mg_ctOnScreen + 1L, 0L);
+    mg_iFirstOnScreen = ClampDn(mg_iSelected - mg_ctOnScreen + 1, 0);
   }
 }
 
@@ -336,8 +336,8 @@ void CMGServerList::OnMouseOver(PIX pixI, PIX pixJ)
     INDEX ctSessions = _lhServers.Count();
     INDEX iWantedLine = mg_iDragLine +
       SliderPixToIndex(pixDelta, mg_ctOnScreen, ctSessions, GetScrollBarFullBox());
-    mg_iFirstOnScreen = Clamp(iWantedLine, 0L, ClampDn(ctSessions - mg_ctOnScreen, 0L));
-    mg_iSelected = Clamp(mg_iSelected, mg_iFirstOnScreen, mg_iFirstOnScreen + mg_ctOnScreen - 1L);
+    mg_iFirstOnScreen = Clamp(iWantedLine, 0, ClampDn(ctSessions - mg_ctOnScreen, 0));
+    mg_iSelected = Clamp(mg_iSelected, mg_iFirstOnScreen, mg_iFirstOnScreen + mg_ctOnScreen - 1);
     //    AdjustFirstOnScreen();
     return;
   }

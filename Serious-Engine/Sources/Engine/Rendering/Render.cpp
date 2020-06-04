@@ -710,8 +710,8 @@ void CRenderer::Render(void)
 
   // force finishing of all OpenGL pending operations, if required
   ChangeStatsMode(CStatForm::STI_SWAPBUFFERS);
-  extern INDEX ogl_iFinish;  ogl_iFinish = Clamp( ogl_iFinish, 0L, 3L);
-  extern INDEX d3d_iFinish;  d3d_iFinish = Clamp( d3d_iFinish, 0L, 3L);
+  extern INDEX ogl_iFinish;  ogl_iFinish = Clamp( ogl_iFinish, 0, 3);
+  extern INDEX d3d_iFinish;  d3d_iFinish = Clamp( d3d_iFinish, 0, 3);
   if( (ogl_iFinish==1 && _pGfx->gl_eCurrentAPI==GAT_OGL) 
 #ifdef SE1_D3D
    || (d3d_iFinish==1 && _pGfx->gl_eCurrentAPI==GAT_D3D)

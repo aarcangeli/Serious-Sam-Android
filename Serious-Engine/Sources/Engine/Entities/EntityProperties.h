@@ -270,7 +270,7 @@ public:
 
 inline ENGINE_API void ClearToDefault(FLOAT &f) { f = 0.0f; };
 inline ENGINE_API void ClearToDefault(INDEX &i) { i = 0; };
-inline ENGINE_API void ClearToDefault(BOOL &b) { b = FALSE; };
+//inline ENGINE_API void ClearToDefault(BOOL &b) { b = FALSE; };
 inline ENGINE_API void ClearToDefault(CEntityPointer &pen) { pen = NULL; };
 inline ENGINE_API void ClearToDefault(CTString &str) { str = ""; };
 inline ENGINE_API void ClearToDefault(FLOATplane3D &pl) { pl = FLOATplane3D(FLOAT3D(0,1,0), 0); };

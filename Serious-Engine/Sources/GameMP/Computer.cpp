@@ -269,11 +269,11 @@ void MessagesUpDn(INDEX ctLines)
 {
   INDEX ctMessages = _acmMessages.Count();
   _iWantedFirstMessageOnScreen += ctLines;
-  INDEX iMaxFirst = ClampDn(0L, ctMessages-_ctMessagesOnScreen);
-  _iWantedFirstMessageOnScreen = Clamp(_iWantedFirstMessageOnScreen, 0L, iMaxFirst);
+  INDEX iMaxFirst = ClampDn(0, ctMessages-_ctMessagesOnScreen);
+  _iWantedFirstMessageOnScreen = Clamp(_iWantedFirstMessageOnScreen, 0, iMaxFirst);
   _iActiveMessage = Clamp(_iActiveMessage, 
     _iWantedFirstMessageOnScreen,
-    _iWantedFirstMessageOnScreen+_ctMessagesOnScreen-1L);
+    _iWantedFirstMessageOnScreen+_ctMessagesOnScreen-1);
 }
 
 void SelectMessage(INDEX i)
@@ -502,7 +502,7 @@ static void UpdateSize(CDrawPort *pdp)
     _boxMsgImage= PIXaabbox2D();
   }
 
-  FLOAT fSlideSpeed = Max(_pixSizeI, _pixSizeJ*2L);
+  FLOAT fSlideSpeed = Max(_pixSizeI, _pixSizeJ*2);
   FLOAT fGroup0 = ClampDn((1-fComputerFadeValue)*fSlideSpeed-_pixSizeJ, 0.0f);
   FLOAT fGroup1 = (1-fComputerFadeValue)*fSlideSpeed;
   // animate box positions
@@ -1185,8 +1185,8 @@ void CGame::ComputerRender(CDrawPort *pdp)
   _pGfx->GetCurrentDisplayMode(dmCurrent);
   if (dmCurrent.IsFullScreen() && dmCurrent.IsDualHead()) {
     // clamp mouse pointer
-    _vpixMouse(1) = Clamp(_vpixMouse(1), 0L, dpComp.GetWidth());
-    _vpixMouse(2) = Clamp(_vpixMouse(2), 0L, dpComp.GetHeight());
+    _vpixMouse(1) = Clamp(_vpixMouse(1), 0, dpComp.GetWidth());
+    _vpixMouse(2) = Clamp(_vpixMouse(2), 0, dpComp.GetHeight());
   // if in window
   } else {
     // use same mouse pointer as windows

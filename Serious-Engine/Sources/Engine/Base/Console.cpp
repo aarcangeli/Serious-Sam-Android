@@ -124,7 +124,7 @@ INDEX CConsole::NumberOfLinesAfter(TIME tmLast)
 {
   ASSERT(this!=NULL);
   // clamp console variable
-  con_iLastLines = Clamp( con_iLastLines, 0L, (INDEX)CONSOLE_MAXLASTLINES);
+  con_iLastLines = Clamp( con_iLastLines, 0, (INDEX)CONSOLE_MAXLASTLINES);
   // find number of last console lines to be displayed on screen
   for(INDEX i=0; i<con_iLastLines; i++) {
     if (con_atmLines[con_ctLines-1-i]<tmLast) {
@@ -182,7 +182,7 @@ void CConsole::ScrollBufferUp(INDEX ctLines)
     con_atmLines, 
     con_atmLines+ctLines,
     (con_ctLines-ctLines)*sizeof(TIME));
-  con_ctLinesPrinted = ClampUp(con_ctLinesPrinted+1L, con_ctLines);
+  con_ctLinesPrinted = ClampUp(con_ctLinesPrinted+1, con_ctLines);
   // clear lines at the end
   for(INDEX iLine=con_ctLines-ctLines; iLine<con_ctLines; iLine++) {
     ClearLine(iLine);

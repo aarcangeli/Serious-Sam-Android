@@ -213,9 +213,9 @@ void shaCalculateLight(void)
   SLONG slab = colAmbient.gfxcol.ub.b;
 
   if(shaOverBrightningEnabled()) {
-    slar = ClampUp(slar,127L);
-    slag = ClampUp(slag,127L);
-    slab = ClampUp(slab,127L);
+    slar = ClampUp(slar,127);
+    slag = ClampUp(slag,127);
+    slab = ClampUp(slab,127);
     ubColShift = 8;
   } else {
     slar*=2;
@@ -232,9 +232,9 @@ void shaCalculateLight(void)
     fDot = Clamp(fDot,0.0f,1.0f);
     SLONG slDot = NormFloatToByte(fDot);
 
-    _acolVtxColors[ivx].gfxcol.ub.r = ClampUp(colModel.gfxcol.ub.r * (slar + ((colLight.gfxcol.ub.r * slDot)>>ubColShift))>>8,255L);
-    _acolVtxColors[ivx].gfxcol.ub.g = ClampUp(colModel.gfxcol.ub.g * (slag + ((colLight.gfxcol.ub.g * slDot)>>ubColShift))>>8,255L);
-    _acolVtxColors[ivx].gfxcol.ub.b = ClampUp(colModel.gfxcol.ub.b * (slab + ((colLight.gfxcol.ub.b * slDot)>>ubColShift))>>8,255L);
+    _acolVtxColors[ivx].gfxcol.ub.r = ClampUp(colModel.gfxcol.ub.r * (slar + ((colLight.gfxcol.ub.r * slDot)>>ubColShift))>>8,255);
+    _acolVtxColors[ivx].gfxcol.ub.g = ClampUp(colModel.gfxcol.ub.g * (slag + ((colLight.gfxcol.ub.g * slDot)>>ubColShift))>>8,255);
+    _acolVtxColors[ivx].gfxcol.ub.b = ClampUp(colModel.gfxcol.ub.b * (slab + ((colLight.gfxcol.ub.b * slDot)>>ubColShift))>>8,255);
     _acolVtxColors[ivx].gfxcol.ub.a = colModel.gfxcol.ub.a;//slDot;
   }
   // Set current vertex color array 
@@ -262,9 +262,9 @@ void shaCalculateLightForSpecular(void)
   SLONG slab = colAmbient.gfxcol.ub.b;
 
   if(shaOverBrightningEnabled()) {
-    slar = ClampUp(slar,127L);
-    slag = ClampUp(slag,127L);
-    slab = ClampUp(slab,127L);
+    slar = ClampUp(slar,127);
+    slag = ClampUp(slag,127);
+    slab = ClampUp(slab,127);
     ubColShift = 8;
   } else {
     slar*=2;
@@ -281,9 +281,9 @@ void shaCalculateLightForSpecular(void)
     fDot = Clamp(fDot,0.0f,1.0f);
     SLONG slDot = NormFloatToByte(fDot);
 
-    _acolVtxColors[ivx].gfxcol.ub.r = ClampUp(colModel.gfxcol.ub.r * (slar + ((colLight.gfxcol.ub.r * slDot)>>ubColShift))>>8,255L);
-    _acolVtxColors[ivx].gfxcol.ub.g = ClampUp(colModel.gfxcol.ub.g * (slag + ((colLight.gfxcol.ub.g * slDot)>>ubColShift))>>8,255L);
-    _acolVtxColors[ivx].gfxcol.ub.b = ClampUp(colModel.gfxcol.ub.b * (slab + ((colLight.gfxcol.ub.b * slDot)>>ubColShift))>>8,255L);
+    _acolVtxColors[ivx].gfxcol.ub.r = ClampUp(colModel.gfxcol.ub.r * (slar + ((colLight.gfxcol.ub.r * slDot)>>ubColShift))>>8,255);
+    _acolVtxColors[ivx].gfxcol.ub.g = ClampUp(colModel.gfxcol.ub.g * (slag + ((colLight.gfxcol.ub.g * slDot)>>ubColShift))>>8,255);
+    _acolVtxColors[ivx].gfxcol.ub.b = ClampUp(colModel.gfxcol.ub.b * (slab + ((colLight.gfxcol.ub.b * slDot)>>ubColShift))>>8,255);
     _acolVtxColors[ivx].gfxcol.ub.a = slDot;//colModel.gfxcol.ub.a;//slDot;
   }
   // Set current wertex array 

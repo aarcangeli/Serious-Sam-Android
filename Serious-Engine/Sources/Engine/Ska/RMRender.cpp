@@ -1907,8 +1907,8 @@ static void MatchAnims(RenModel &rm)
         } else {
           if(f>an.an_iFrames) f = an.an_iFrames-1;
           iCurentFrame = INDEX(f);
-          iAnimFrame = ClampUp(iCurentFrame,an.an_iFrames-1L);
-          iNextAnimFrame = ClampUp(iCurentFrame+1L,an.an_iFrames-1L);
+          iAnimFrame = ClampUp(iCurentFrame,an.an_iFrames-1);
+          iNextAnimFrame = ClampUp(iCurentFrame+1,an.an_iFrames-1);
         }
         
         // for each bone envelope

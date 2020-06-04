@@ -221,7 +221,7 @@ ULONG CDrawPort::GetID(void)
 {
   ULONG ulCRC;
   CRC_Start(   ulCRC);
-  CRC_AddLONG( ulCRC, (ULONG)dp_Raster);
+  CRC_AddLONG( ulCRC, (ULONG)(size_t)dp_Raster);
   CRC_AddLONG( ulCRC, (ULONG)dp_MinI);
   CRC_AddLONG( ulCRC, (ULONG)dp_MinJ);
   CRC_AddLONG( ulCRC, (ULONG)dp_MaxI);
@@ -306,8 +306,8 @@ void CDrawPort::RecalculateDimensions(void)
 void CDrawPort::SetOrtho(void) const
 {
   // finish all pending render-operations (if required)
-  ogl_iFinish = Clamp( ogl_iFinish, 0L, 3L);
-  d3d_iFinish = Clamp( d3d_iFinish, 0L, 3L);
+  ogl_iFinish = Clamp( ogl_iFinish, 0, 3);
+  d3d_iFinish = Clamp( d3d_iFinish, 0, 3);
   if( (ogl_iFinish==3 && _pGfx->gl_eCurrentAPI==GAT_OGL) 
 #ifdef SE1_D3D
    || (d3d_iFinish==3 && _pGfx->gl_eCurrentAPI==GAT_D3D)
@@ -337,8 +337,8 @@ void CDrawPort::SetOrtho(void) const
 void CDrawPort::SetProjection(CAnyProjection3D &apr) const
 {
   // finish all pending render-operations (if required)
-  ogl_iFinish = Clamp( ogl_iFinish, 0L, 3L);
-  d3d_iFinish = Clamp( d3d_iFinish, 0L, 3L);
+  ogl_iFinish = Clamp( ogl_iFinish, 0, 3);
+  d3d_iFinish = Clamp( d3d_iFinish, 0, 3);
   if( (ogl_iFinish==3 && _pGfx->gl_eCurrentAPI==GAT_OGL) 
 #ifdef SE1_D3D
    || (d3d_iFinish==3 && _pGfx->gl_eCurrentAPI==GAT_D3D)
@@ -1325,7 +1325,7 @@ void CDrawPort::PutText( const CTString &strText, PIX pixX0, PIX pixY0, const CO
       // flash?
       case 'f':
         chrCurrent = strText[++iChar];
-        if( bParse) iFlash = 1+ 2* Clamp( (INDEX)(chrCurrent-'0'), 0L, 9L);
+        if( bParse) iFlash = 1+ 2* Clamp( (INDEX)(chrCurrent-'0'), 0, 9);
         continue;
       // reset all?
       case 'r':
@@ -1732,9 +1732,9 @@ void CDrawPort::BlendScreen(void)
   ULONG ulRA = (dp_ulBlendingRA*fix1oA)>>16;
   ULONG ulGA = (dp_ulBlendingGA*fix1oA)>>16;
   ULONG ulBA = (dp_ulBlendingBA*fix1oA)>>16;
-  ULONG ulA  = ClampUp( dp_ulBlendingA, 255UL);
+  ULONG ulA  = ClampUp( dp_ulBlendingA, (ULONG) 255);
   COLOR colBlending = RGBAToColor( ulRA, ulGA, ulBA, ulA);
-                                    
+
   // blend drawport (thru z-buffer because of elimination of pixel artefacts)
   gfxEnableDepthTest();
   gfxDisableDepthWrite();

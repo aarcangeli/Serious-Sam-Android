@@ -152,7 +152,7 @@ void CShadowMap::Cache( INDEX iWantedMipLevel)
   }
 
   // let the higher level driver mix its layers
-  INDEX iLastMipLevelToCache = Min( sm_iLastMipLevel, sm_iFirstCachedMipLevel-1L);
+  INDEX iLastMipLevelToCache = Min( sm_iLastMipLevel, sm_iFirstCachedMipLevel-1);
   sm_iFirstCachedMipLevel = iWantedMipLevel;
   ASSERT( iWantedMipLevel <= iLastMipLevelToCache); 
 
@@ -210,7 +210,7 @@ ULONG CShadowMap::UpdateDynamicLayers(void)
   }
 
   // determine and clamp to max allowed dynamic shadow dimension
-  const INDEX iMinSize  = Max( shd_iStaticSize-2L, 5L);
+  const INDEX iMinSize  = Max( shd_iStaticSize-2, 5);
   shd_iDynamicSize      = Clamp( shd_iDynamicSize, iMinSize, shd_iStaticSize);
   PIX pixClampAreaSize  = 1L<<(shd_iDynamicSize*2);
   INDEX iFinestMipLevel = sm_iFirstCachedMipLevel + 
@@ -474,7 +474,7 @@ void CShadowMap::Prepare(void)
   BOOL bUseProbe = ProbeMode(sm_tvLastDrawn);
 
   // determine and clamp to max allowed shadow dimension
-  shd_iStaticSize = Clamp( shd_iStaticSize, 5L, 8L);
+  shd_iStaticSize = Clamp( shd_iStaticSize, 5, 8);
   PIX pixClampAreaSize = 1L<<(shd_iStaticSize*2);
   // determine largest allowed mip level
   INDEX iFinestMipLevel = sm_iFirstMipLevel + 

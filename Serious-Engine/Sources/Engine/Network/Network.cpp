@@ -147,7 +147,7 @@ INDEX net_bLerping       = TRUE;
 INDEX net_iGraphBuffer = 100;
 INDEX net_iExactTimer = 2;
 INDEX net_bDumpStreamBlocks = 0;
-INDEX net_bDumpConnectionInfo = 0;
+INDEX net_bDumpConnectionInfo = 1;
 INDEX net_iPort = 25600;
 CTString net_strLocalHost = "";
 CTString net_strLocationCode = "";
@@ -2476,7 +2476,7 @@ void CNetworkLibrary::GameInactive(void)
 void CNetworkLibrary::InitCRCGather(void)
 {
   CRCT_ResetActiveList();
-  CRCT_bGatherCRCs = TRUE;
+  CRCT_bGatherCRCs = FALSE;
   CRCT_AddFile_t(CTString("Classes\\Player.ecl"));
 }
 

@@ -22,15 +22,15 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/Base.h>
 #include <Engine/Graphics/gl_types.h>
 
-typedef signed long  int    SLONG;
-typedef signed short int    SWORD;
-typedef signed char	        SBYTE;
-typedef signed int          SINT;
+typedef int32_t   SLONG;
+typedef int16_t   SWORD;
+typedef int8_t    SBYTE;
+typedef int32_t   SINT;
 
-typedef unsigned long  int  ULONG;
-typedef unsigned short int  UWORD;
-typedef unsigned char       UBYTE;
-typedef unsigned int        UINT;
+typedef uint32_t  ULONG;
+typedef uint16_t  UWORD;
+typedef uint8_t   UBYTE;
+typedef uint32_t  UINT;
 
 
 #ifdef PLATFORM_UNIX  /* rcg10042001 */
@@ -40,8 +40,8 @@ typedef unsigned int        UINT;
       #define MAX_PATH 256
     #endif
 
-    typedef long long  __int64;
-    typedef unsigned long  int  DWORD;
+    typedef int64_t  __int64;
+    typedef uint32_t  DWORD;
     typedef signed long  int    LONG;
 
     typedef void *HWND;  /* !!! FIXME this sucks. */
@@ -64,11 +64,6 @@ typedef unsigned int        UINT;
     } RECT;
 #endif
 
-inline ULONG _rotl(ULONG ul, int bits)
-{
-   return (ul<<bits) | (ul>>(-bits&31));
-}
-
 #define MAX_SLONG ((SLONG)0x7FFFFFFFL)
 #define MAX_SWORD ((UWORD)0x7FFF)
 #define MAX_SBYTE ((SBYTE)0x7F)
@@ -85,9 +80,9 @@ inline ULONG _rotl(ULONG ul, int bits)
 #define MAX_UWORD ((UWORD)0xFFFF)
 #define MAX_UBYTE ((UBYTE)0xFF)
 
-typedef int BOOL;		        // this is for TRUE/FALSE
-typedef long int RESULT;		// for error codes
-typedef long int INDEX;     // for indexed values and quantities
+typedef int32_t BOOL;		        // this is for TRUE/FALSE
+typedef int32_t RESULT;		// for error codes
+typedef int32_t INDEX;     // for indexed values and quantities
 
 #define FALSE 0
 #define TRUE  1

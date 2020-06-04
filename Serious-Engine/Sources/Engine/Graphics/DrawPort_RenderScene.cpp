@@ -374,9 +374,9 @@ static void RSBinToGroups( ScenePolygon *pspoFirst)
             else {
               UBYTE ubR,ubG,ubB;
               ColorToRGB( colFlat, ubR,ubG,ubB);
-              ULONG ulR = ClampUp( ((ULONG)ubR)<<1, 255UL);
-              ULONG ulG = ClampUp( ((ULONG)ubG)<<1, 255UL);
-              ULONG ulB = ClampUp( ((ULONG)ubB)<<1, 255UL);
+              ULONG ulR = ClampUp( ((ULONG)ubR)<<1, (ULONG) 255);
+              ULONG ulG = ClampUp( ((ULONG)ubG)<<1, (ULONG) 255);
+              ULONG ulB = ClampUp( ((ULONG)ubB)<<1, (ULONG) 255);
               colFlat = RGBToColor(ulR,ulG,ulB);
             }
           } // mix color in the first texture layer
@@ -1416,8 +1416,8 @@ void RSRenderGroup( ScenePolygon *pspoGroup, ULONG ulGroupFlags, ULONG ulTestedF
   // render one group
   extern INDEX ogl_iMaxBurstSize;
   extern INDEX d3d_iMaxBurstSize;
-  ogl_iMaxBurstSize = Clamp( ogl_iMaxBurstSize, 0L, 9999L);
-  d3d_iMaxBurstSize = Clamp( d3d_iMaxBurstSize, 0L, 9999L);
+  ogl_iMaxBurstSize = Clamp( ogl_iMaxBurstSize, 0, 9999);
+  d3d_iMaxBurstSize = Clamp( d3d_iMaxBurstSize, 0, 9999);
   const INDEX iMaxBurstSize = (eAPI==GAT_OGL) ? ogl_iMaxBurstSize : d3d_iMaxBurstSize;
 
   // if unlimited lock count
@@ -1742,7 +1742,7 @@ void RenderScene( CDrawPort *pDP, ScenePolygon *pspoFirst, CAnyProjection3D &prP
   _bTranslucentPass = bTranslucent;
 
   // clamp detail textures LOD biasing
-  wld_iDetailRemovingBias = Clamp( wld_iDetailRemovingBias, -9L, +9L);
+  wld_iDetailRemovingBias = Clamp( wld_iDetailRemovingBias, -9, 9);
 
   // set perspective projection
   _pDP->SetProjection(prProjection);
@@ -1753,7 +1753,7 @@ void RenderScene( CDrawPort *pDP, ScenePolygon *pspoFirst, CAnyProjection3D &prP
   extern INDEX ogl_bAlternateClipPlane;
   INDEX ctMaxUsableTexUnits = _pGfx->gl_ctTextureUnits;
   if( eAPI==GAT_OGL && ogl_bAlternateClipPlane && GFX_bClipPlane && ctMaxUsableTexUnits>1) ctMaxUsableTexUnits--;
-  _ctUsableTexUnits = Clamp( gap_iUseTextureUnits, 1L, ctMaxUsableTexUnits);
+  _ctUsableTexUnits = Clamp( gap_iUseTextureUnits, 1, ctMaxUsableTexUnits);
 
   // prepare
   RSPrepare();

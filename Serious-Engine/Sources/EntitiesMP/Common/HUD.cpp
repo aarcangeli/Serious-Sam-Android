@@ -1141,7 +1141,7 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
     FLOAT fCharHeight = (_pfdDisplayFont->GetHeight()-2)*fTextScale;
     // generate and sort by mana list of active players
     BOOL bMaxScore=TRUE, bMaxMana=TRUE, bMaxFrags=TRUE, bMaxDeaths=TRUE;
-    hud_iSortPlayers = Clamp( hud_iSortPlayers, -1L, 6L);
+    hud_iSortPlayers = Clamp( hud_iSortPlayers, -1, 6);
     SortKeys eKey = (SortKeys)hud_iSortPlayers;
     if (hud_iSortPlayers==-1) {
            if (bCooperative) eKey = PSK_HEALTH;
@@ -1149,7 +1149,7 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
       else if (bFragMatch)   eKey = PSK_FRAGS;
       else { ASSERT(FALSE);  eKey = PSK_NAME; }
     }
-    if( bCooperative) eKey = (SortKeys)Clamp( (INDEX)eKey, 0L, 3L);
+    if( bCooperative) eKey = (SortKeys)Clamp( (INDEX)eKey, 0, 3);
     if( eKey==PSK_HEALTH && (bScoreMatch || bFragMatch)) { eKey = PSK_NAME; }; // prevent health snooping in deathmatch
     INDEX iPlayers = SetAllPlayersStats(eKey);
     // loop thru players 
@@ -1161,8 +1161,8 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
       const INDEX iMana   = penPlayer->m_iMana;
       const INDEX iFrags  = penPlayer->m_psGameStats.ps_iKills;
       const INDEX iDeaths = penPlayer->m_psGameStats.ps_iDeaths;
-      const INDEX iHealth = ClampDn( (INDEX)ceil( penPlayer->GetHealth()), 0L);
-      const INDEX iArmor  = ClampDn( (INDEX)ceil( penPlayer->m_fArmor),    0L);
+      const INDEX iHealth = ClampDn( (INDEX)ceil( penPlayer->GetHealth()), 0);
+      const INDEX iArmor  = ClampDn( (INDEX)ceil( penPlayer->m_fArmor),    0);
       CTString strScore, strMana, strFrags, strDeaths, strHealth, strArmor;
       strScore.PrintF(  "%d", iScore);
       strMana.PrintF(   "%d", iMana);

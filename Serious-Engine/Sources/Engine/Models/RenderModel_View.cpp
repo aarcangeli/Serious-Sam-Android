@@ -1215,9 +1215,9 @@ static void RenderOneSide( CRenderModel &rm, BOOL bBackSide, ULONG ulLayerFlags)
       GFXColor colMdlSpec;
       colMdlSpec.gfxcol.ul.abgr  = ByteSwap(AdjustColor( rm.rm_pmdModelData->md_colSpecular, _slTexHueShift, _slTexSaturation));
       colMdlSpec.AttenuateRGB( (rm.rm_colBlend&CT_AMASK)>>CT_ASHIFT);
-      colMdlSpec.gfxcol.ub.r = ClampUp((colMdlSpec.gfxcol.ub.r * _slLR) >> 8, 255L);
-      colMdlSpec.gfxcol.ub.g = ClampUp((colMdlSpec.gfxcol.ub.g * _slLG) >> 8, 255L);
-      colMdlSpec.gfxcol.ub.b = ClampUp((colMdlSpec.gfxcol.ub.b * _slLB) >> 8, 255L);
+      colMdlSpec.gfxcol.ub.r = ClampUp((colMdlSpec.gfxcol.ub.r * _slLR) >> 8, 255);
+      colMdlSpec.gfxcol.ub.g = ClampUp((colMdlSpec.gfxcol.ub.g * _slLG) >> 8, 255);
+      colMdlSpec.gfxcol.ub.b = ClampUp((colMdlSpec.gfxcol.ub.b * _slLB) >> 8, 255);
 
       GFXColor colSrfSpec;
       colSrfSpec.MultiplyRGB( AdjustColor( ms.ms_colSpecular, _slTexHueShift, _slTexSaturation), colMdlSpec);
@@ -2187,7 +2187,7 @@ colEnd:
     // generate colors from shades
     for( INDEX iMipVx=0; iMipVx<_ctAllMipVx; iMipVx++) {
       GFXColor &col = pcolMipBase[iMipVx];
-      const SLONG slShade = Clamp( (SLONG)pswMipCol[iMipVx], 0L, 255L);
+      const SLONG slShade = Clamp( (SLONG)pswMipCol[iMipVx], 0, 255);
       col.gfxcol.ub.r = pubClipByte[_slAR + ((_slLR*slShade)>>8)];
       col.gfxcol.ub.g = pubClipByte[_slAG + ((_slLG*slShade)>>8)];
       col.gfxcol.ub.b = pubClipByte[_slAB + ((_slLB*slShade)>>8)];
@@ -2310,9 +2310,9 @@ void CModelObject::RenderModel_View( CRenderModel &rm)
   _slAG = (colA & CT_GMASK)>>(CT_GSHIFT-iBright);
   _slAB = (colA & CT_BMASK)>>(CT_BSHIFT-iBright);
   if( bOverbright) {
-    _slAR = ClampUp( _slAR, 127L);
-    _slAG = ClampUp( _slAG, 127L);
-    _slAB = ClampUp( _slAB, 127L);
+    _slAR = ClampUp( _slAR, 127);
+    _slAG = ClampUp( _slAG, 127);
+    _slAB = ClampUp( _slAB, 127);
   }
 
   // set forced translucency and color mask
@@ -3268,9 +3268,9 @@ specMipLoop:
     const COLOR colS = AdjustColor( rm.rm_pmdModelData->md_colSpecular, _slTexHueShift, _slTexSaturation);
     colMdlSpec.gfxcol.ul.abgr  = ByteSwap(colS);
     colMdlSpec.AttenuateRGB( (rm.rm_colBlend&CT_AMASK)>>CT_ASHIFT);
-    colMdlSpec.gfxcol.ub.r = ClampUp( (colMdlSpec.gfxcol.ub.r *_slLR)>>8, 255L);
-    colMdlSpec.gfxcol.ub.g = ClampUp( (colMdlSpec.gfxcol.ub.g *_slLG)>>8, 255L);
-    colMdlSpec.gfxcol.ub.b = ClampUp( (colMdlSpec.gfxcol.ub.b *_slLB)>>8, 255L);
+    colMdlSpec.gfxcol.ub.r = ClampUp( (colMdlSpec.gfxcol.ub.r *_slLR)>>8, 255);
+    colMdlSpec.gfxcol.ub.g = ClampUp( (colMdlSpec.gfxcol.ub.g *_slLG)>>8, 255);
+    colMdlSpec.gfxcol.ub.b = ClampUp( (colMdlSpec.gfxcol.ub.b *_slLB)>>8, 255);
 
     // for each specular surface in current mip model
 #if not(ARRAYBUFFER_OPT)

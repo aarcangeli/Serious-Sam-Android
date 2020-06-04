@@ -177,7 +177,7 @@ CEnableUserBreak::~CEnableUserBreak() {
 static void DumpDemoProfile(void)
 {
   CTString strFragment, strAnalyzed;
-  dem_iProfileRate = Clamp( dem_iProfileRate, 0L, 60L);
+  dem_iProfileRate = Clamp( dem_iProfileRate, 0, 60);
   strFragment = _pGame->DemoReportFragmentsProfile( dem_iProfileRate);
   strAnalyzed = _pGame->DemoReportAnalyzedProfile();
   try {
@@ -201,7 +201,7 @@ static void DumpDemoProfile(void)
 static void ReportDemoProfile(void)
 {
   CTString strFragment, strAnalyzed;
-  dem_iProfileRate = Clamp( dem_iProfileRate, 0L, 60L);
+  dem_iProfileRate = Clamp( dem_iProfileRate, 0, 60);
   strFragment = _pGame->DemoReportFragmentsProfile( dem_iProfileRate);
   strAnalyzed = _pGame->DemoReportAnalyzedProfile();
   CPrintF( strFragment);
@@ -1831,7 +1831,7 @@ static void PrintStats( CDrawPort *pdpDrawPort)
       FLOAT fValue  = _pNetwork->ga_angeNetGraph[i].nge_fLatency;
       enum NetGraphEntryType nge = _pNetwork->ga_angeNetGraph[i].nge_ngetType;
       FLOAT fWidth = Clamp( fValue, 0.0f, 1.0f)*fMaxWidth;
-      COLOR colLine = C_GREEN;                 
+      COLOR colLine = C_GREEN;
            if( nge==NGET_ACTION)            colLine = C_GREEN;  // normal action (default)
       else if( nge==NGET_MISSING)           colLine = C_RED;    // missing sequence
       else if( nge==NGET_NONACTION)         colLine = C_WHITE;  // non-action sequence
@@ -1844,7 +1844,7 @@ static void PrintStats( CDrawPort *pdpDrawPort)
   }
 
   // if stats aren't required
-  hud_iStats = Clamp( hud_iStats, 0L, 2L);
+  hud_iStats = Clamp( hud_iStats, 0, 2);
   if( hud_iStats==0 || (hud_iEnableStats==0 && hud_fEnableFPS==0)) {
     // display nothing
     _iCheckNow = 0;
@@ -1927,7 +1927,7 @@ static void MakeSplitDrawports(enum CGame::SplitScreenCfg ssc, INDEX iCount, CDr
   // if observer
   if (ssc==CGame::SSC_OBSERVER) {
     // must have at least one screen
-    iCount = Clamp(iCount, 1L, 4L);
+    iCount = Clamp(iCount, 1, 4);
     // starting at first drawport
     iFirstObserver = 0;
   }
@@ -2133,10 +2133,10 @@ void CGame::GameRedrawView( CDrawPort *pdpDrawPort, ULONG ulFlags)
     && gm_CurrentSplitScreenCfg!=SSC_DEDICATED )
   {
 
-    INDEX ctObservers = Clamp(gam_iObserverConfig, 0L, 4L);
-    INDEX iObserverOffset = ClampDn(gam_iObserverOffset, 0L);
+    INDEX ctObservers = Clamp(gam_iObserverConfig, 0, 4);
+    INDEX iObserverOffset = ClampDn(gam_iObserverOffset, 0);
     if (gm_CurrentSplitScreenCfg==SSC_OBSERVER) {
-      ctObservers = ClampDn(ctObservers, 1L);
+      ctObservers = ClampDn(ctObservers, 1);
     }
     if (gm_CurrentSplitScreenCfg!=SSC_OBSERVER) {
       if (!gam_bEnableAdvancedObserving || !GetSP()->sp_bCooperative) {
@@ -2242,7 +2242,7 @@ void CGame::GameRedrawView( CDrawPort *pdpDrawPort, ULONG ulFlags)
           if (!CAM_IsOn()) {
             _bPlayerViewRendered = TRUE;
             // render it
-            apenViewers[i]->RenderGameView(pdp, (void*)ulFlags);
+            apenViewers[i]->RenderGameView(pdp, (void*)((size_t)ulFlags));
           } else {
             CAM_Render(apenViewers[i], pdp);
           }

@@ -340,8 +340,8 @@ static void CropMap(INDEX iNewWidth, INDEX iNewHeight, INDEX iOldWidth, INDEX iO
 {
   INDEX iWidth  = Min(iOldWidth,iNewWidth);
   INDEX iHeight = Min(iOldHeight,iNewHeight);
-  INDEX iNewStepX = ClampDn(iNewWidth-iOldWidth,0L);
-  INDEX iOldStepX = ClampDn(iOldWidth-iNewWidth,0L);
+  INDEX iNewStepX = ClampDn(iNewWidth-iOldWidth,0);
+  INDEX iOldStepX = ClampDn(iOldWidth-iNewWidth,0);
 
   INDEX iNew = 0;
   INDEX iOld = 0;
@@ -1066,8 +1066,8 @@ void CTerrain::UpdateTopMap(INDEX iTileIndex, Rect *prcDest/*=NULL*/)
 
     // get source texture
     CTextureData *ptdSrc = tl.tl_ptdTexture;
-    INDEX iSrcMipWidth  = ClampDn( ptdSrc->GetPixWidth() /iTiling, 1L);
-    INDEX iSrcMipHeight = ClampDn( ptdSrc->GetPixHeight()/iTiling, 1L);
+    INDEX iSrcMipWidth  = ClampDn( ptdSrc->GetPixWidth() /iTiling, 1);
+    INDEX iSrcMipHeight = ClampDn( ptdSrc->GetPixHeight()/iTiling, 1);
 
     // Get mipmap of source texture
     INDEX immW = FastLog2( ptdSrc->GetPixWidth()  / iSrcMipWidth);
@@ -1164,8 +1164,8 @@ COLOR CTerrain::GetShadeColor(CShadingInfo *psi)
   ASSERT(psi!=NULL);
   ASSERT(tr_auwShadingMap!=NULL);
 
-  PIX pixShadowU = Clamp(psi->si_pixShadowU,0L,GetShadingMapWidth()-2L);
-  PIX pixShadowV = Clamp(psi->si_pixShadowV,0L,GetShadingMapHeight()-2L);
+  PIX pixShadowU = Clamp(psi->si_pixShadowU,0,GetShadingMapWidth()-2);
+  PIX pixShadowV = Clamp(psi->si_pixShadowV,0,GetShadingMapHeight()-2);
   FLOAT fUDRatio = psi->si_fUDRatio;
   FLOAT fLRRatio = psi->si_fLRRatio;
 

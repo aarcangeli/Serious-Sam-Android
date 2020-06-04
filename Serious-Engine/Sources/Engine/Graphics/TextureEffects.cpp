@@ -138,7 +138,7 @@ inline void PutPixel9SLONG_WATER( PIX pixU, PIX pixV, INDEX iHeightMid)
 inline void PutPixelUBYTE_FIRE( PIX pixU, PIX pixV, INDEX iHeight)
 {
   PIX pixLoc = (pixV*_pixBufferWidth+pixU) & _ulBufferMask;
-  _pubDrawBuffer[pixLoc] = Clamp( _pubDrawBuffer[pixLoc] +iHeight, 0L, 255L);
+  _pubDrawBuffer[pixLoc] = Clamp( _pubDrawBuffer[pixLoc] +iHeight, 0, 255);
 }
 
 inline void PutPixel9UBYTE_FIRE( PIX pixU, PIX pixV, INDEX iHeightMid)

@@ -188,7 +188,7 @@ public:
   const INDEX &GetID();
 
   // Add animation to last anim queue
-  void AddAnimation(INDEX iAnimID, DWORD dwFlags, FLOAT fStrength, INDEX iGroupID, FLOAT fSpeedMul = 1.0f);
+  void AddAnimation(INDEX iAnimID, ULONG ulFlags, FLOAT fStrength, INDEX iGroupID, FLOAT fSpeedMul = 1.0f);
   // Remove all animations before last animation that has fully faded in
   void RemovePassedAnimsFromQueue(void);
   // Remove animation from anim queue

@@ -1142,7 +1142,7 @@ void BSPTree<Type, iDimensions>::MoveSubTreeToArray(BSPNode<Type, iDimensions> *
   bnInArray.bn_bnlLocation = pbnSubtree->bn_bnlLocation;
   bnInArray.bn_ulPlaneTag = pbnSubtree->bn_ulPlaneTag;
   // let plane tag hold pointer to node in array
-  pbnSubtree->bn_ulPlaneTag = (ULONG)&bnInArray;
+  pbnSubtree->bn_ulPlaneTag = (ULONG)(size_t)&bnInArray;
 
   // remap pointers to subnodes
   if (pbnSubtree->bn_pbnFront==NULL) {
@@ -1212,7 +1212,7 @@ void BSPTree<Type, iDimensions>::Read_t(CTStream &strm) // throw char *
   // read count of nodes and create array
   INDEX ctNodes;
   strm>>ctNodes;
-  ASSERT(slSize==(SLONG)(sizeof(INDEX)+ctNodes*sizeof(BSPNode<Type, iDimensions>)));
+  ASSERT(slSize==(SLONG)(sizeof(INDEX)+ctNodes*((sizeof(Type)*(iDimensions+1))+16)));
   bt_abnNodes.New(ctNodes);
   // for each node
   for(INDEX iNode=0; iNode<ctNodes; iNode++) {

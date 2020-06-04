@@ -185,8 +185,8 @@ void CLayerMixer::CalculateData( CBrushShadowMap *pbsm, INDEX iMipmap)
   lm_iMipShift   = lm_iMipLevel - lm_iFirstLevel;
   lm_pixCanvasSizeU  = pbsm->sm_mexWidth >>lm_iMipLevel;
   lm_pixCanvasSizeV  = pbsm->sm_mexHeight>>lm_iMipLevel;
-  lm_pixPolygonSizeU = Min( lm_pixCanvasSizeU, (PIX)(lm_pbsmShadowMap->sm_pixPolygonSizeU >>lm_iMipShift)+1L);
-  lm_pixPolygonSizeV = Min( lm_pixCanvasSizeV, (PIX)(lm_pbsmShadowMap->sm_pixPolygonSizeV >>lm_iMipShift)+1L);
+  lm_pixPolygonSizeU = Min( lm_pixCanvasSizeU, (PIX)(lm_pbsmShadowMap->sm_pixPolygonSizeU >>lm_iMipShift)+1);
+  lm_pixPolygonSizeV = Min( lm_pixCanvasSizeV, (PIX)(lm_pbsmShadowMap->sm_pixPolygonSizeV >>lm_iMipShift)+1);
 
   // determine where this mip-map is relative to the allocated shadow map memory
   PIX pixOffset = pbsm->sm_slMemoryUsed/BYTES_PER_TEXEL
@@ -1337,7 +1337,7 @@ void CLayerMixer::AddOneLayerDirectional( CBrushShadowLayer *pbsl, UBYTE *pubMas
 // clamper helper
 static INDEX GetDither(void)
 {
-  shd_iDithering = Clamp( shd_iDithering, 0L, 5L);
+  shd_iDithering = Clamp( shd_iDithering, 0, 5);
   INDEX iDither  = shd_iDithering;
   if( iDither>2) iDither++;
   return iDither;
@@ -1457,7 +1457,7 @@ void CLayerMixer::MixOneMipmap(CBrushShadowMap *pbsm, INDEX iMipmap)
   if( bHasGradient && gpGradient.gp_bDark) AddOneLayerGradient( gpGradient);
 
   // do eventual filtering of shadow layer
-  shd_iFiltering = Clamp( shd_iFiltering, 0L, +6L);
+  shd_iFiltering = Clamp( shd_iFiltering, 0, 6);
   if( shd_iFiltering>0) {
     FilterBitmap( shd_iFiltering, lm_pulShadowMap, lm_pulShadowMap,
                   lm_pixPolygonSizeU, lm_pixPolygonSizeV, lm_pixCanvasSizeU, lm_pixCanvasSizeV);

@@ -663,8 +663,8 @@ BOOL DoMenu( CDrawPort *pdp)
   _pGfx->GetCurrentDisplayMode(dmCurrent);
   if (dmCurrent.IsFullScreen()) {
     // clamp mouse pointer
-    _pixCursorPosI = Clamp(_pixCursorPosI, 0L, dpMenu.GetWidth());
-    _pixCursorPosJ = Clamp(_pixCursorPosJ, 0L, dpMenu.GetHeight());
+    _pixCursorPosI = Clamp(_pixCursorPosI, 0, dpMenu.GetWidth());
+    _pixCursorPosJ = Clamp(_pixCursorPosJ, 0, dpMenu.GetHeight());
   // if in window
   } else {
     // use same mouse pointer as windows

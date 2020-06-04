@@ -327,7 +327,7 @@ BOOL CGfxLibrary::SetupPixelFormat_OGL( HDC hdc, BOOL bReport/*=FALSE*/)
   pfd.cStencilBits = gap_iStencilBits;
 
   // must be required and works only in full screen via GDI functions
-  ogl_iTBufferEffect = Clamp( ogl_iTBufferEffect, 0L, 2L);
+  ogl_iTBufferEffect = Clamp( ogl_iTBufferEffect, 0, 2);
   if( ogl_iTBufferEffect>0 && pixResWidth>0 && pixResHeight>0)
   { // lets T-buffer ... :)
     //CPrintF( "TBuffer init...\n");
@@ -927,7 +927,7 @@ BOOL CGfxLibrary::SetCurrentViewport_OGL(CViewPort *pvp)
 extern void SetTBufferEffect( BOOL bEnable)
 {
   // adjust console vars
-  ogl_iTBufferEffect  = Clamp( ogl_iTBufferEffect, 0L, 2L);
+  ogl_iTBufferEffect  = Clamp( ogl_iTBufferEffect, 0, 2);
   ogl_iTBufferSamples = (1L) << FastLog2(ogl_iTBufferSamples);
   if( ogl_iTBufferSamples<2) ogl_iTBufferSamples = 4;
   // if supported

@@ -151,7 +151,7 @@ extern void ApplyGLSettings(BOOL bForce)
   } 
 
   // clamp rendering preferences (just to be on the safe side)
-  sam_iVideoSetup = Clamp( sam_iVideoSetup, 0L, 3L);
+  sam_iVideoSetup = Clamp( sam_iVideoSetup, 0, 3);
   CPrintF(TRANS("Mode: %s\n"), RenderingPreferencesDescription(sam_iVideoSetup));
   // if not in custom mode
   if (sam_iVideoSetup<3) {

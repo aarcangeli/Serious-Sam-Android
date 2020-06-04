@@ -128,8 +128,8 @@ void CBrushPolygon::InitializeShadowMap(void)
   PIX pixSizeU  = mexSizeU>>iMipLevel;
   PIX pixSizeV  = mexSizeV>>iMipLevel;
   INDEX iMipAdj = ClampTextureSize( MAX_SHADOWMAP_SIZE, _pGfx->gl_pixMaxTextureDimension, pixSizeU, pixSizeV);
-  pixSizeU   = ClampDn( pixSizeU>>iMipAdj, 1L);
-  pixSizeV   = ClampDn( pixSizeV>>iMipAdj, 1L);
+  pixSizeU   = ClampDn( pixSizeU>>iMipAdj, 1);
+  pixSizeV   = ClampDn( pixSizeV>>iMipAdj, 1);
   iMipLevel += iMipAdj;
 
   // move shadow map offset for the sake of dark corners
@@ -490,8 +490,8 @@ void CBrushShadowMap::FindLightRectangle(CLightSource &ls, class CLightRectangle
     // pixMaxU = PIX(sm_mexWidth >>iMipLevel);
     // pixMaxV = PIX(sm_mexHeight>>iMipLevel);
     // rectangle is around entire polygon
-    pixMaxU = Min( sm_pixPolygonSizeU+16L, sm_mexWidth >>iMipLevel);
-    pixMaxV = Min( sm_pixPolygonSizeV+16L, sm_mexHeight>>iMipLevel);
+    pixMaxU = Min( sm_pixPolygonSizeU+16, sm_mexWidth >>iMipLevel);
+    pixMaxV = Min( sm_pixPolygonSizeV+16, sm_mexHeight>>iMipLevel);
   }
   // if the light is point
   else
@@ -534,10 +534,10 @@ void CBrushShadowMap::FindLightRectangle(CLightSource &ls, class CLightRectangle
     // pixMaxU = Min( Max(pixMaxU, 0L), sm_mexWidth >>iMipLevel);
     // pixMaxV = Min( Max(pixMaxV, 0L), sm_mexHeight>>iMipLevel);
     // clamp the rectangle to the size of polygon
-    pixMinU = Min( Max(pixMinU, 0L), Min(sm_pixPolygonSizeU+16L, sm_mexWidth >>iMipLevel));
-    pixMinV = Min( Max(pixMinV, 0L), Min(sm_pixPolygonSizeV+16L, sm_mexHeight>>iMipLevel));
-    pixMaxU = Min( Max(pixMaxU, 0L), Min(sm_pixPolygonSizeU+16L, sm_mexWidth >>iMipLevel));
-    pixMaxV = Min( Max(pixMaxV, 0L), Min(sm_pixPolygonSizeV+16L, sm_mexHeight>>iMipLevel));
+    pixMinU = Min( Max(pixMinU, 0), Min(sm_pixPolygonSizeU+16, sm_mexWidth >>iMipLevel));
+    pixMinV = Min( Max(pixMinV, 0), Min(sm_pixPolygonSizeV+16, sm_mexHeight>>iMipLevel));
+    pixMaxU = Min( Max(pixMaxU, 0), Min(sm_pixPolygonSizeU+16, sm_mexWidth >>iMipLevel));
+    pixMaxV = Min( Max(pixMaxV, 0), Min(sm_pixPolygonSizeV+16, sm_mexHeight>>iMipLevel));
   }
   // all done
   lr.lr_pixMinU = pixMinU;
@@ -600,7 +600,7 @@ BOOL CBrushShadowMap::IsShadowFlat( COLOR &colFlat)
   // fail if flat shadows are not allowed
   extern INDEX shd_bAllowFlats;
   extern INDEX shd_iForceFlats;
-  shd_iForceFlats = Clamp( shd_iForceFlats, 0L, 2L);
+  shd_iForceFlats = Clamp( shd_iForceFlats, 0, 2);
   if( !shd_bAllowFlats && shd_iForceFlats<1) return FALSE;
 
   COLOR col;
@@ -712,9 +712,9 @@ BOOL CBrushShadowMap::IsShadowFlat( COLOR &colFlat)
     }
   }
   // done - phew, layer is flat
-  slR = Clamp( slR, 0L, 255L);
-  slG = Clamp( slG, 0L, 255L);
-  slB = Clamp( slB, 0L, 255L);
+  slR = Clamp( slR, 0, 255);
+  slG = Clamp( slG, 0, 255);
+  slB = Clamp( slB, 0, 255);
   colFlat = RGBToColor(slR,slG,slB);
   return TRUE;
 }

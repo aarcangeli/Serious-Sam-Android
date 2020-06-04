@@ -251,7 +251,7 @@ extern BOOL CheckDepthPoint( const CDrawPort *pdp, PIX pixI, PIX pixJ, FLOAT fOo
 extern void CheckDelayedDepthPoints( const CDrawPort *pdp, INDEX iMirrorLevel/*=0*/)
 {
   // skip if not delayed or mirror level is to high
-  gap_iOptimizeDepthReads = Clamp( gap_iOptimizeDepthReads, 0L, 2L);
+  gap_iOptimizeDepthReads = Clamp( gap_iOptimizeDepthReads, 0, 2);
   if( gap_iOptimizeDepthReads==0 || iMirrorLevel>7) return; 
   ASSERT( pdp!=NULL && iMirrorLevel>=0);
 

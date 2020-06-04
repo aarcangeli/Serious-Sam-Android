@@ -261,7 +261,7 @@ BOOL CVarSetting::Validate(void)
     return FALSE;
   }
   if (!vs_bCustom) {
-    vs_iValue = Clamp(vs_iValue, 0L, vs_ctValues-1L);
+    vs_iValue = Clamp(vs_iValue, 0, vs_ctValues-1);
   }
   return TRUE;
 }
