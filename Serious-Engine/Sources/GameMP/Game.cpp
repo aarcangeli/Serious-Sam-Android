@@ -2265,7 +2265,7 @@ void CGame::GameRedrawView( CDrawPort *pdpDrawPort, ULONG ulFlags)
       // print pause indicators
       CTString strIndicator;
       if (_pNetwork->IsDisconnected()) {
-        strIndicator.PrintF(TRANS("Disconnected: %s\nPress F9 to reconnect"), (const char *)_pNetwork->WhyDisconnected());
+        strIndicator.PrintF(TRANS("Disconnected: %s\nReconnecting in 5 sec"), (const char *)_pNetwork->WhyDisconnected());
       } else if (_pNetwork->IsWaitingForPlayers()) {
         strIndicator = TRANS("Waiting for all players to connect");
       } else if (_pNetwork->IsWaitingForServer()) {
@@ -2656,6 +2656,11 @@ void CGame::GameMainLoop(void)
   if (gm_bGameOn && !_pNetwork->IsServer() && _pNetwork->IsGameFinished() && _pNetwork->IsDisconnected()) {
     // automatically reconnect
     JoinGame(CNetworkSession(gam_strJoinAddress));
+  }
+
+  if (_pNetwork->IsDisconnected() && _pNetwork->WhyDisconnected()) {
+   Sleep(5000);
+   JoinGame(CNetworkSession(gam_strJoinAddress));
   }
 
   if (_bStartProfilingNextTime) {
