@@ -95,7 +95,7 @@ void CControlsMenu::StartMenu(void)
   if (_iLocalPlayer >= 0 && _iLocalPlayer<4) {
     iPlayer = _pGame->gm_aiMenuLocalPlayers[_iLocalPlayer];
   }
-  _fnmControlsToCustomize.PrintF("Controls\\Controls%d.ctl", iPlayer);
+  _fnmControlsToCustomize.PrintF("Controls\\00-Default.ctl");
 
   ControlsMenuOn();
 

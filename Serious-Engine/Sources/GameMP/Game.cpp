@@ -1599,16 +1599,10 @@ void LoadControls(CControls &ctrl, INDEX i)
 {
   try {
     CTFileName fnm;
-    fnm.PrintF("Controls\\Controls%d.ctl", i);
+    fnm.PrintF(CTFILENAME("Controls\\00-Default.ctl"));
     ctrl.Load_t(fnm);
   } catch ( const char *strError) {
     (void) strError; 
-    try {
-      ctrl.Load_t(CTFILENAME("Controls\\00-Default.ctl"));
-    } catch ( const char *strError) {
-      (void) strError; 
-      ctrl.SwitchToDefaults();
-    }
   }
 }
 
@@ -1666,7 +1660,7 @@ void CGame::SavePlayersAndControls( void)
     gm_apcPlayers[6].Save_t( CTString( "Players\\Player6.plr"));
     gm_apcPlayers[7].Save_t( CTString( "Players\\Player7.plr"));
     // save controls
-    gm_actrlControls[0].Save_t( CTString( "Controls\\Controls0.ctl"));
+   /* gm_actrlControls[0].Save_t( CTString( "Controls\\Controls0.ctl"));
     gm_actrlControls[1].Save_t( CTString( "Controls\\Controls1.ctl"));
     gm_actrlControls[2].Save_t( CTString( "Controls\\Controls2.ctl"));
     gm_actrlControls[3].Save_t( CTString( "Controls\\Controls3.ctl"));
@@ -1674,6 +1668,7 @@ void CGame::SavePlayersAndControls( void)
     gm_actrlControls[5].Save_t( CTString( "Controls\\Controls5.ctl"));
     gm_actrlControls[6].Save_t( CTString( "Controls\\Controls6.ctl"));
     gm_actrlControls[7].Save_t( CTString( "Controls\\Controls7.ctl"));
+  */
   }
   // catch throwed error
   catch ( const char *strError)

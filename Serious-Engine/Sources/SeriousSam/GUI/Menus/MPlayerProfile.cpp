@@ -147,7 +147,7 @@ void CPlayerProfileMenu::Initialize_t(void)
   gm_mgViewBobbing.mg_iCenterI = -1;
   gm_mgViewBobbing.mg_pOnTriggerChange = NULL;
 
-  gm_mgCustomizeControls.mg_strText = TRANS("CUSTOMIZE CONTROLS");
+ /* gm_mgCustomizeControls.mg_strText = TRANS("CUSTOMIZE CONTROLS");
   gm_mgCustomizeControls.mg_boxOnScreen = BoxMediumLeft(14.5f);
   gm_mgCustomizeControls.mg_bfsFontSize = BFS_MEDIUM;
   gm_mgCustomizeControls.mg_iCenterI = -1;
@@ -157,8 +157,8 @@ void CPlayerProfileMenu::Initialize_t(void)
   gm_mgCustomizeControls.mg_pmgRight = &gm_mgModel;
   gm_mgCustomizeControls.mg_strTip = TRANS("customize controls for this player");
   gm_lhGadgets.AddTail(gm_mgCustomizeControls.mg_lnNode);
-  gm_mgCustomizeControls.mg_bEnabled = FALSE;
-
+  gm_mgCustomizeControls.mg_bEnabled = TRUE;
+  */
   gm_mgModel.mg_boxOnScreen = BoxPlayerModel();
   gm_mgModel.mg_pmgLeft = &gm_mgNameField;
   gm_mgModel.mg_pActivatedFunction = NULL;
