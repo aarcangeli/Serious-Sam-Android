@@ -537,7 +537,7 @@ void StartCustomLoadMenu(void)
   gmCurrent.gm_fnmDirectory = CTString("Scripts\\Addons\\");
   gmCurrent.gm_fnmSelected = CTString("");
   gmCurrent.gm_fnmExt = CTString(".ini");
-  gmCurrent.gm_pAfterFileChosen = &LSLoadCustom;
+  gmCurrent.gm_pAfterFileChosen = &LSLoadAddon;
   gmCurrent.gm_mgNotes.mg_strText = "";
 
   gmCurrent.gm_pgmParentMenu = &_pGUIM->gmOptionsMenu;
