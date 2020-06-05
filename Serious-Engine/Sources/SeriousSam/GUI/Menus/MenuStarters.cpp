@@ -529,19 +529,19 @@ void StartCustomLoadMenu(void)
 {
   CLoadSaveMenu &gmCurrent = _pGUIM->gmLoadSaveMenu;
 
-  gmCurrent.gm_mgTitle.mg_strText = TRANS("ADVANCED OPTIONS");
+  gmCurrent.gm_mgTitle.mg_strText = TRANS("EXECUTE ADDON");
   gmCurrent.gm_bAllowThumbnails = FALSE;
   gmCurrent.gm_iSortType = LSSORT_NAMEUP;
   gmCurrent.gm_bSave = FALSE;
   gmCurrent.gm_bManage = FALSE;
-  gmCurrent.gm_fnmDirectory = CTString("Scripts\\CustomOptions\\");
+  gmCurrent.gm_fnmDirectory = CTString("Scripts\\Addons\\");
   gmCurrent.gm_fnmSelected = CTString("");
-  gmCurrent.gm_fnmExt = CTString(".cfg");
+  gmCurrent.gm_fnmExt = CTString(".ini");
   gmCurrent.gm_pAfterFileChosen = &LSLoadCustom;
   gmCurrent.gm_mgNotes.mg_strText = "";
 
   gmCurrent.gm_pgmParentMenu = &_pGUIM->gmOptionsMenu;
-  ChangeToMenu(&gmCurrent);
+  ChangeToMenu( &gmCurrent);
 }
 
 void StartAddonsLoadMenu(void)

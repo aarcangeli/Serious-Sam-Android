@@ -81,7 +81,7 @@ void COptionsMenu::Initialize_t(void)
   gm_mgCustomOptions.mg_boxOnScreen = BoxBigRow(5.1f);
   gm_mgCustomOptions.mg_pmgUp = &gm_mgNetworkOptions;
   gm_mgCustomOptions.mg_pmgDown = &gm_mgVideoOptions;
-  gm_mgCustomOptions.mg_strText = TRANS("ADVANCED OPTIONS");
+  gm_mgCustomOptions.mg_strText = TRANS("EXECUTE ADDON");
   gm_mgCustomOptions.mg_strTip = TRANS("for advanced users only");
   gm_lhGadgets.AddTail(gm_mgCustomOptions.mg_lnNode);
   gm_mgCustomOptions.mg_pActivatedFunction = NULL;
