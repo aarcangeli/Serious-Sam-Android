@@ -193,11 +193,19 @@ void CCommunicationInterface::PrepareForUse(BOOL bUseNetwork, BOOL bClient) {
     }
 
     // set non blocking
+    int flags = fcntl(cci_hSocket, F_GETFL);
+    int failed = flags;
+    if (failed != -1) {
+	flags |= O_NONBLOCK;
+	failed = fcntl(cci_hSocket, F_SETFL, flags);
+      }
+
+  if (failed == -1) { ThrowF_t(TRANS("Cannot set socket to non-blocking mode."));
+  }
     struct timeval read_timeout;
     read_timeout.tv_sec = 0;
     read_timeout.tv_usec = 10;
     setsockopt(cci_hSocket, SOL_SOCKET, SO_RCVTIMEO, &read_timeout, sizeof read_timeout);
-
     int flagTrue = 1;
     setsockopt(cci_hSocket, SOL_SOCKET, SO_REUSEADDR, &flagTrue, sizeof(flagTrue));
 
