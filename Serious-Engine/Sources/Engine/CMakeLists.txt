@@ -272,6 +272,7 @@ target_compile_options(Engine PRIVATE "-I${CMAKE_CURRENT_SOURCE_DIR}")
 target_compile_definitions(Engine PUBLIC ENGINE_API=)
 target_compile_definitions(Engine PUBLIC PLATFORM_UNIX)
 target_compile_definitions(Engine PUBLIC USE_PORTABLE_C)
+target_compile_options(Engine PRIVATE "-mfpu=vfpv3")
 
 # Valuate
 target_compile_definitions(Engine PUBLIC stricmp=strcasecmp)

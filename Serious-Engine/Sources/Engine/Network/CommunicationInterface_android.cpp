@@ -15,6 +15,7 @@
 
 #include <Engine/GameAgent/GameAgent.h>
 
+#include <fcntl.h>
 #include <arpa/inet.h>
 #include <netdb.h>
 
