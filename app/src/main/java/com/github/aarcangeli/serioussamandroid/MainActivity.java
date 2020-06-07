@@ -44,7 +44,6 @@ import com.hold1.keyboardheightprovider.KeyboardHeightProvider;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.OutputStream;
@@ -471,7 +470,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    @NotNull
+    @NonNull
     private static String getLibDir(Context context) {
         return context.getApplicationInfo().dataDir + "/lib";
     }

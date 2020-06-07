@@ -5,7 +5,7 @@
 .DS_Store
 /build
 /captures
-.externalNativeBuild
+.cxx
 extracted
 shots
 /signing.properties
