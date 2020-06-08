@@ -228,6 +228,8 @@ void CCommunicationInterface::PrepareForUse(BOOL bUseNetwork, BOOL bClient) {
     cci_bSocketOpen = TRUE;
     cci_bFirstByteReceived = false;
     cm_bNetworkInitialized = true;
+    cci_pbMasterInput.pb_ppbsStats = NULL;
+    cci_pbMasterOutput.pb_ppbsStats = NULL;
     cm_ciBroadcast.SetLocal(nullptr);
     CPrintF(TRANS("  opened socket: \n"));
   }
