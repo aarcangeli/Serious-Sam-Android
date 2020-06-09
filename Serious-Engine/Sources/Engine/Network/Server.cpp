@@ -477,7 +477,7 @@ void CServer::SendGameStreamBlocks(INDEX iClient)
   // if no blocks to write
   if (iBlocksOk<=0) {
     // if not sent anything for some time
-    CTimerValue tvNow = _pTimer->GetHighPrecisionTimer();
+    CTimerValue tvNow = _pTimer->GetLowPrecisionTimer();
     extern FLOAT ser_tmKeepAlive;
     if ((tvNow-sso.sso_tvLastMessageSent).GetSeconds()>ser_tmKeepAlive) {
       // send keepalive
@@ -493,7 +493,7 @@ void CServer::SendGameStreamBlocks(INDEX iClient)
 //  CPrintF("sent: %d=%dB\n", iBlocksOk, nmPackedBlocks.nm_slSize);
   _pNetwork->SendToClient(iClient, nmPackedBlocks);
   sso.sso_iLastSentSequence = Max(sso.sso_iLastSentSequence, iMaxSent);
-  sso.sso_tvLastMessageSent = _pTimer->GetHighPrecisionTimer();
+  sso.sso_tvLastMessageSent = _pTimer->GetLowPrecisionTimer();
 
   // remove the block(s) that fall out of the buffer
   extern INDEX ser_iRememberBehind;
@@ -501,7 +501,7 @@ void CServer::SendGameStreamBlocks(INDEX iClient)
 
 
   // if haven't sent pings for some time
-  CTimerValue tvNow = _pTimer->GetHighPrecisionTimer();
+  CTimerValue tvNow = _pTimer->GetLowPrecisionTimer();
   extern FLOAT ser_tmPingUpdate;
   if ((tvNow-sso.sso_tvLastPingSent).GetSeconds()>ser_tmPingUpdate) {
     // send ping info
@@ -1134,7 +1134,7 @@ void CServer::HandleAllForAClient(INDEX iClient)
   }
 
   if (iClient>0 && sso.sso_bActive && sso.sso_bSendStream && sso.sso_tvMessageReceived.tv_llValue>0 &&
-    (_pTimer->GetHighPrecisionTimer()-sso.sso_tvMessageReceived).GetSeconds()>net_tmDisconnectTimeout) {
+    (_pTimer->GetLowPrecisionTimer()-sso.sso_tvMessageReceived).GetSeconds()>net_tmDisconnectTimeout) {
     SendDisconnectMessage(iClient, TRANS("Connection timeout"));
   }
 
@@ -1229,7 +1229,7 @@ static void SendAdminResponse(INDEX iClient, const CTString &strResponse)
 void CServer::Handle(INDEX iClient, CNetworkMessage &nmMessage)
 {
   CSessionSocket &sso = srv_assoSessions[iClient];
-  sso.sso_tvMessageReceived = _pTimer->GetHighPrecisionTimer();
+  sso.sso_tvMessageReceived = _pTimer->GetLowPrecisionTimer();
 
   switch (nmMessage.GetType()) {
 
