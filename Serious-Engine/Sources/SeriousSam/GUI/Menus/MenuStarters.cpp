@@ -525,6 +525,25 @@ void StartControlsLoadMenu(void)
   ChangeToMenu(&gmCurrent);
 }
 
+void StartAdvancedLoadMenu(void)
+{
+  CLoadSaveMenu &gmCurrent = _pGUIM->gmLoadSaveMenu;
+
+  gmCurrent.gm_mgTitle.mg_strText = TRANS("ADVANCED OPTIONS");
+  gmCurrent.gm_bAllowThumbnails = FALSE;
+  gmCurrent.gm_iSortType = LSSORT_NAMEUP;
+  gmCurrent.gm_bSave = FALSE;
+  gmCurrent.gm_bManage = FALSE;
+  gmCurrent.gm_fnmDirectory = CTString("Scripts\\CustomOptions\\");
+  gmCurrent.gm_fnmSelected = CTString("");
+  gmCurrent.gm_fnmExt = CTString(".cfg");
+  gmCurrent.gm_pAfterFileChosen = &LSLoadAdvanced;
+  gmCurrent.gm_mgNotes.mg_strText = "";
+
+  gmCurrent.gm_pgmParentMenu = &_pGUIM->gmOptionsMenu;
+  ChangeToMenu(&gmCurrent);
+}
+
 void StartCustomLoadMenu(void)
 {
   CLoadSaveMenu &gmCurrent = _pGUIM->gmLoadSaveMenu;

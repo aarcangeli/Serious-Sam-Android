@@ -599,6 +599,7 @@ void InitActionsForOptionsMenu()
   gmCurrent.gm_mgAudioOptions.mg_pActivatedFunction = &StartAudioOptionsMenu;
   gmCurrent.gm_mgPlayerProfileOptions.mg_pActivatedFunction = &StartChangePlayerMenuFromOptions;
   gmCurrent.gm_mgNetworkOptions.mg_pActivatedFunction = &StartNetworkSettingsMenu;
+  gmCurrent.gm_mgAdvancedOptions.mg_pActivatedFunction = &StartAdvancedLoadMenu;
   gmCurrent.gm_mgCustomOptions.mg_pActivatedFunction = &StartCustomLoadMenu;
 }
 

@@ -32,6 +32,7 @@ public:
   CMGButton gm_mgAudioOptions;
   CMGButton gm_mgPlayerProfileOptions;
   CMGButton gm_mgNetworkOptions;
+  CMGButton gm_mgAdvancedOptions;
   CMGButton gm_mgCustomOptions;
 
 	void Initialize_t(void);
