@@ -257,7 +257,7 @@ void CPlayerProfileMenu::SelectPlayer(INDEX iPlayer)
     // ignore gender flags, if any
     strName.RemovePrefix("#female#");
     strName.RemovePrefix("#male#");
-    gm_mgModel.mg_plModel = CPlacement3D(FLOAT3D(0.1f, -1.0f, -3.5f), ANGLE3D(150, 0, 0));
+    gm_mgModel.mg_plModel = CPlacement3D(FLOAT3D(0.1f, -1.0f, -4.5f), ANGLE3D(150, 0, 0));
     gm_mgModel.mg_strText = strName;
     CPlayerSettings *pps = (CPlayerSettings *)pc.pc_aubAppearance;
     _strLastPlayerAppearance = pps->GetModelFilename();
