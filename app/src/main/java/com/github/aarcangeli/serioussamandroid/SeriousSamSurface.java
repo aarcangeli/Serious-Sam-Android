@@ -33,6 +33,8 @@ public class SeriousSamSurface extends SurfaceView implements GestureDetector.On
             scale = 1.0f;
         } else if ("Half".equalsIgnoreCase(scale_FactorSet)) {
             scale = 0.5f;
+        } else if ("Quarter".equalsIgnoreCase(scale_FactorSet)) {
+            scale = 0.25f;
         } else {
             scale = 1.0f;
         }

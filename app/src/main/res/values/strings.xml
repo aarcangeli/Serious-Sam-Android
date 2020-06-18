@@ -21,11 +21,13 @@
     <string-array name="ResolutionScaleFactorEntries">
         <item>Normal resolution</item>
         <item>Half resolution (improve performance)</item>
+	<item>Quarter resolution :)</item>
     </string-array>
 	
 	 <string-array name="FullHalf">
         <item>Full</item>
         <item>Half</item>
+	<item>Quarter</item>
     </string-array>
 
     <string-array name="DinamicUIScaleEntries">
