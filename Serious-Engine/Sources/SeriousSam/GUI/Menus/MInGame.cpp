@@ -17,7 +17,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/CurrentVersion.h>
 #include "MenuPrinting.h"
 #include "MInGame.h"
-
+#include <AndroidBindings/bindings.h>
 
 void CInGameMenu::Initialize_t(void)
 {
@@ -152,7 +152,7 @@ void CInGameMenu::StartMenu(void)
         strHostName = strHost + " (" + strAddress + ")";
       }
 
-//      gm_mgLabel1.mg_strText = TRANS("Address: ") + strHostName;
+      gm_mgLabel1.mg_strText = TRANS("Address: ") + g_cb.WifiIP;
       gm_mgLabel2.mg_strText = "";
 
     } else {

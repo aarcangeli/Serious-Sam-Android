@@ -51,6 +51,10 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.IOException;
 import java.util.Locale;
+import java.net.NetworkInterface;
+import java.net.InetAddress;
+import java.net.Inet4Address;
+import java.util.Enumeration;
 
 import static com.github.aarcangeli.serioussamandroid.NativeEvents.EditTextEvent;
 import static com.github.aarcangeli.serioussamandroid.NativeEvents.ErrorEvent;
@@ -258,6 +262,20 @@ public class MainActivity extends AppCompatActivity {
             Log.i(TAG, "Dinamic UI Enabled");
         }
     }
+
+    public String getWifiIP() {
+		try {
+			NetworkInterface wlan0 = NetworkInterface.getByName("wlan0");
+			Enumeration<InetAddress> en = wlan0.getInetAddresses();
+			while (en.hasMoreElements()) {
+				InetAddress inetAddress = en.nextElement();
+				if (!inetAddress.isLoopbackAddress() && inetAddress instanceof Inet4Address) {
+					return inetAddress.getHostAddress();
+				}
+			}
+		} catch (Exception e) {}
+		return "Wifi not working";
+	}
 
     public void updateSoftKeyboardVisible() {
         enableTouchController = false;
@@ -615,6 +633,7 @@ public class MainActivity extends AppCompatActivity {
     // ui listeners
     public void showMenu(View view) {
         executeShell("sam_bMenu=1;");
+		executeShell("net_WifiIP=\""+getWifiIP()+"\"");
     }
 
     public void doProfiling(View view) {

@@ -617,6 +617,7 @@ BOOL Init()
   _pShell->DeclareSymbol("user void ViewportResized();", (void *) &ViewportResized);
   _pShell->DeclareSymbol("INDEX input_iIsShiftPressed;", (void *) &g_cb.isShiftPressed);
   _pShell->DeclareSymbol("FLOAT input_uiScale;", (void *) &g_cb.globalScale);
+  _pShell->DeclareSymbol("CTString net_WifiIP;", (void *) &g_cb.WifiIP);
 
   InitializeGame();
   _pNetwork->md_strGameID = sam_strGameName;
