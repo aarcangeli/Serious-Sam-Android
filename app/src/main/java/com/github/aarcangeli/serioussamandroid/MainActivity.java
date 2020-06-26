@@ -633,7 +633,7 @@ public class MainActivity extends AppCompatActivity {
     // ui listeners
     public void showMenu(View view) {
         executeShell("sam_bMenu=1;");
-		executeShell("net_WifiIP=\""+getWifiIP()+"\"");
+	executeShell("net_WifiIP=\""+getWifiIP()+"\"");
     }
 
     public void doProfiling(View view) {
