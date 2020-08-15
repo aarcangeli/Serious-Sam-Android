@@ -23,6 +23,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Network/SessionState.h>
 #include <Engine/Templates/StaticArray.cpp>
 #include <Engine/Entities/InternalClasses.h>
+#include "AndroidAdapters/binding-callbacks.h"
 
 extern FLOAT net_tmConnectionTimeout;
 extern FLOAT net_tmProblemsTimeOut;
@@ -195,13 +196,13 @@ void CPlayerSource::WriteActionPacket(CNetworkMessage &nm)
 
   // determine ping
   FLOAT tmPing = ppe->en_tmPing;
-  INDEX iPing = (INDEX)ceil(tmPing*1000);
+  g_cb.ping = (INDEX)ceil(tmPing*1000);
 
   // write all in the message
   BOOL bActive = 1;
   nm.WriteBits(&bActive, 1);
   nm.WriteBits(&pls_Index, 4);  // your index
-  nm.WriteBits(&iPing, 10);     // your ping
+  nm.WriteBits(&g_cb.ping, 10);     // your ping
   nm<<pls_paAction;             // action
   //CPrintF("%.2f - written: %d\n", _pTimer->GetRealTimeTick(), SLONG(pls_paAction.pa_llCreated));
 

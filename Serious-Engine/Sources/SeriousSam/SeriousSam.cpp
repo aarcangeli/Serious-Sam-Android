@@ -38,7 +38,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #endif
 
 typedef CGame *(*GAME_Create_t)(void);
-void drawBannerFpsVersion(CDrawPort *pdp, int64_t deltaFrame, float fps);
+void drawBannerFpsVersion(CDrawPort *pdp, int64_t deltaFrame, float fps, int ping);
 
 // _pGame reused from GameMP module
 #ifndef STATIC_LINKING
@@ -910,7 +910,7 @@ void DoGame(void)
 
     // draw fps and frame time
     if (!bMenuActive && _pGame->gm_csConsoleState == CS_OFF && _pGame->gm_csComputerState == CS_OFF) {
-      drawBannerFpsVersion(pdp, deltaFrame, fps);
+      drawBannerFpsVersion(pdp, deltaFrame, fps, g_cb.ping);
     }
 
     if (_gmRunningGameMode == GM_INTRO) {
@@ -1364,8 +1364,9 @@ void seriousSubMain() {
 
 }
 
-void drawBannerFpsVersion(CDrawPort *pdp, int64_t deltaFrame, float fps) {
+void drawBannerFpsVersion(CDrawPort *pdp, int64_t deltaFrame, float fps, int ping) {
   static int textWidthMax = 0;
+  CTString str;
   static float lastGlobalScale = g_cb.globalScale;
   if (lastGlobalScale != g_cb.globalScale) {
     lastGlobalScale = g_cb.globalScale;
@@ -1376,7 +1377,11 @@ void drawBannerFpsVersion(CDrawPort *pdp, int64_t deltaFrame, float fps) {
   pdp->SetFont(_pfdDisplayFont);
   pdp->SetTextScaling(g_cb.globalScale);
   pdp->SetTextAspect(1.0f);
-  CTString str = CTString(0, SSA_VERSION " fps: %.2f; frame: %.2f ms", fps, deltaFrame / 1000000.f);
+  if( _gmRunningGameMode == GM_NETWORK) {
+  str = CTString(0, SSA_VERSION " fps: %.2f; frame: %.2f ms; \nPing: %d ms", fps, deltaFrame / 1000000.f, ping);
+  } else {
+  str = CTString(0, SSA_VERSION " fps: %.2f; frame: %.2f ms;", fps, deltaFrame / 1000000.f);
+  }
   ULONG textWidth = pdp->GetTextWidth(str);
   if (textWidth > textWidthMax) {
     textWidthMax = textWidth;
