@@ -217,7 +217,7 @@ void CCommunicationInterface::PrepareForUse(BOOL bUseNetwork, BOOL bClient) {
       servaddr.sin_addr.s_addr = INADDR_ANY;
       servaddr.sin_port = htons(net_iPort);
 
-      int res = bind(cci_hSocket, (const struct sockaddr *)&servaddr,sizeof(servaddr));
+      int res = bind(cci_hSocket, (const struct sockaddr *)&servaddr,sizeof(sockaddr_in));
       if (res < 0) {
         ThrowF_t(TRANS("Cannot bind port %li. %s (%i)"), net_iPort, std::strerror(errno), errno);
       }
