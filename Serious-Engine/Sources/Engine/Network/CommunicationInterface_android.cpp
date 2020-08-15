@@ -206,7 +206,7 @@ void CCommunicationInterface::PrepareForUse(BOOL bUseNetwork, BOOL bClient) {
     struct timeval read_timeout;
     read_timeout.tv_sec = 0;
     read_timeout.tv_usec = 10;
-    setsockopt(cci_hSocket, SOL_SOCKET, SO_RCVTIMEO, &read_timeout, sizeof read_timeout);
+    setsockopt(cci_hSocket, SOL_SOCKET, SO_RCVTIMEO, &read_timeout, sizeof(read_timeout));
     int flagTrue = 1;
     setsockopt(cci_hSocket, SOL_SOCKET, SO_REUSEADDR, &flagTrue, sizeof(flagTrue));
 
