@@ -708,26 +708,35 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public boolean onTouch(View v, MotionEvent event) {
-            if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                isTracking = true;
-                lastX = event.getRawX();
-                lastY = event.getRawY();
-                if (this.btnToBind != 0) {
-                    nDispatchKeyEvent(btnToBind, 1);
-                }
-            } else if (event.getAction() == MotionEvent.ACTION_UP) {
-                if (this.btnToBind != 0) {
-                    nDispatchKeyEvent(btnToBind, 0);
-                }
-            } else if (event.getAction() == MotionEvent.ACTION_POINTER_UP) {
-                isTracking = false;
-            } else if (event.getAction() == MotionEvent.ACTION_MOVE && isTracking) {
-                float rawX = event.getRawX();
-                float rawY = event.getRawY();
-                shiftAxisValue(AXIS_LOOK_LR, -Utils.convertPixelsToDp(rawX - lastX, MainActivity.this) * MULT_VIEW_TRACKER * aimViewSensibility);
-                shiftAxisValue(AXIS_LOOK_UD, -Utils.convertPixelsToDp(rawY - lastY, MainActivity.this) * MULT_VIEW_TRACKER * aimViewSensibility);
-                lastX = rawX;
-                lastY = rawY;
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    isTracking = true;
+                    lastX = event.getRawX();
+                    lastY = event.getRawY();
+                    if (this.btnToBind != 0) {
+                        nDispatchKeyEvent(btnToBind, 1);
+                    }
+                    break;
+                case MotionEvent.ACTION_UP:
+                    if (this.btnToBind != 0) {
+                        nDispatchKeyEvent(btnToBind, 0);
+                    }
+                    break;
+                case MotionEvent.ACTION_POINTER_UP:
+                    isTracking = false;
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                    if (isTracking) {
+                        float rawX = event.getRawX();
+                        float rawY = event.getRawY();
+                        shiftAxisValue(AXIS_LOOK_LR, -Utils.convertPixelsToDp(rawX - lastX, MainActivity.this) * MULT_VIEW_TRACKER * aimViewSensibility);
+                        shiftAxisValue(AXIS_LOOK_UD, -Utils.convertPixelsToDp(rawY - lastY, MainActivity.this) * MULT_VIEW_TRACKER * aimViewSensibility);
+                        lastX = rawX;
+                        lastY = rawY;
+                    }
+                    break;
+                default:
+                    return false;
             }
             return true;
         }
