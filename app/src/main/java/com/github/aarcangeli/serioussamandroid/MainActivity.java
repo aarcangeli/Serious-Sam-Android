@@ -36,6 +36,7 @@ import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.github.aarcangeli.serioussamandroid.input.InputProcessor;
 import com.github.aarcangeli.serioussamandroid.views.JoystickView;
@@ -98,7 +99,9 @@ public class MainActivity extends AppCompatActivity {
     private boolean enableTouchController;
     private String din_uiScale;
     public float uiScale;
-
+    public boolean test = false;
+    public boolean isTracking;
+	
     private InputProcessor processor = new InputProcessor();
     private InputMethodManager inputMethodManager;
 
@@ -302,6 +305,7 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.buttonConsole).setVisibility(gameState == GameState.NORMAL ? View.VISIBLE : View.GONE);
         findViewById(R.id.buttonSave).setVisibility(gameState == GameState.NORMAL ? View.VISIBLE : View.GONE);
         findViewById(R.id.input_SeriousBomb).setVisibility(enableTouchController && bombs > 0 ? View.VISIBLE : View.GONE);
+        findViewById(R.id.chnBut).setVisibility((gameState == GameState.NORMAL || gameState == GameState.DEMO) ? View.VISIBLE : View.GONE);
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
@@ -655,6 +659,19 @@ public class MainActivity extends AppCompatActivity {
     public void doQuickSave(View view) {
         executeShell("gam_bQuickSave=1;");
     }
+	
+    public void chnBut(View view) {
+        if (test == true){
+            test = false;
+            Toast toast = Toast.makeText(this, "Buttons mapping: false",Toast.LENGTH_SHORT);
+            toast.show();
+        } else {
+            Toast toast = Toast.makeText(this, "Buttons mapping: true",Toast.LENGTH_SHORT);
+            toast.show();
+            test = true;
+            isTracking = false;
+        }
+    }
 
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
@@ -694,7 +711,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private class MyBtnListener implements View.OnTouchListener {
-        boolean isTracking;
         float lastX, lastY;
         private int btnToBind;
 
@@ -705,16 +721,26 @@ public class MainActivity extends AppCompatActivity {
         public MyBtnListener(int btnToBind) {
             this.btnToBind = btnToBind;
         }
+		
+        float dX, dY;
 
         @Override
         public boolean onTouch(View v, MotionEvent event) {
+            String fullName = getResources().getResourceName(v.getId());
+            String name = fullName.substring(fullName.lastIndexOf("/") + 1);
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
-                    isTracking = true;
-                    lastX = event.getRawX();
-                    lastY = event.getRawY();
-                    if (this.btnToBind != 0) {
-                        nDispatchKeyEvent(btnToBind, 1);
+                    if (test && (!name.equals("bgTrackerView"))){
+                        isTracking = false;
+                        dX = v.getX() - event.getRawX();
+                        dY = v.getY() - event.getRawY();
+                    } else {
+                        isTracking = true;
+                        lastX = event.getRawX();
+                        lastY = event.getRawY();
+                        if (this.btnToBind != 0) {
+                            nDispatchKeyEvent(btnToBind, 1);
+                        }
                     }
                     break;
                 case MotionEvent.ACTION_UP:
@@ -733,6 +759,12 @@ public class MainActivity extends AppCompatActivity {
                         shiftAxisValue(AXIS_LOOK_UD, -Utils.convertPixelsToDp(rawY - lastY, MainActivity.this) * MULT_VIEW_TRACKER * aimViewSensibility);
                         lastX = rawX;
                         lastY = rawY;
+                    } else if (test) {
+                        v.animate()
+                                .x(event.getRawX() + dX - -Utils.convertPixelsToDp(v.getWidth() / 2, MainActivity.this))
+                                .y(event.getRawY() + dY - -Utils.convertPixelsToDp(v.getHeight() / 2, MainActivity.this))
+                                .setDuration(0)
+                                .start();
                     }
                     break;
                 default:
