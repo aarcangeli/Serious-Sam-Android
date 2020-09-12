@@ -101,6 +101,13 @@ public class MainActivity extends AppCompatActivity {
     public float uiScale;
     public boolean test = false;
     public boolean isTracking;
+	public float input_SeriousBombX, input_SeriousBombY;
+	public float buttonPrevX, buttonPrevY;
+	public float buttonNextX, buttonNextY;
+	public float input_useX, input_useY;
+	public float input_fireX, input_fireY;
+	public float input_jumpX, input_jumpY;
+	public float input_crunchX, input_crunchY;
 	
     private InputProcessor processor = new InputProcessor();
     private InputMethodManager inputMethodManager;
@@ -183,6 +190,7 @@ public class MainActivity extends AppCompatActivity {
                 if (gameState == GameState.NORMAL) {
                     setAxisValue(AXIS_MOVE_LR, deltaX);
                     setAxisValue(AXIS_MOVE_FB, deltaY);
+                    setupView();
                 }
             }
         });
@@ -710,10 +718,46 @@ public class MainActivity extends AppCompatActivity {
         updateSoftKeyboardVisible();
     }
 
+	public void setupView() {
+	SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+	input_fireX = preferences.getFloat("input_fireX",1);
+	input_fireY = preferences.getFloat("input_fireY",1);
+	input_SeriousBombX = preferences.getFloat("input_SeriousBombX",1);
+	input_SeriousBombY = preferences.getFloat("input_SeriousBombY",1);	
+	buttonPrevX = preferences.getFloat("buttonPrevX",1);
+	buttonPrevY = preferences.getFloat("buttonPrevY",1);	
+	buttonNextX = preferences.getFloat("buttonNextX",1);
+	buttonNextY = preferences.getFloat("buttonNextY",1);
+	input_useX = preferences.getFloat("input_useX",1);
+	input_useY = preferences.getFloat("input_useY",1);
+	input_jumpX = preferences.getFloat("input_jumpX",1);
+	input_jumpY = preferences.getFloat("input_jumpY",1);
+	input_crunchX = preferences.getFloat("input_crunchX",1);
+	input_crunchY = preferences.getFloat("input_crunchY",1);
+	
+	findViewById(R.id.input_fire).setX(input_fireX);
+	findViewById(R.id.input_fire).setY(input_fireY);
+	findViewById(R.id.input_SeriousBomb).setX(input_SeriousBombX);
+	findViewById(R.id.input_SeriousBomb).setY(input_SeriousBombY);
+	findViewById(R.id.buttonPrev).setX(buttonPrevX);
+	findViewById(R.id.buttonPrev).setY(buttonPrevY);
+	findViewById(R.id.buttonNext).setX(buttonNextX);
+	findViewById(R.id.buttonNext).setY(buttonNextY);
+	findViewById(R.id.input_use).setX(input_useX);
+	findViewById(R.id.input_use).setY(input_useY);
+	findViewById(R.id.input_jump).setX(input_jumpX);
+	findViewById(R.id.input_jump).setY(input_jumpY);
+	findViewById(R.id.input_crunch).setX(input_crunchX);
+	findViewById(R.id.input_crunch).setY(input_crunchY);
+
+	}
+	
     private class MyBtnListener implements View.OnTouchListener {
         float lastX, lastY;
         private int btnToBind;
-
+	SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+    SharedPreferences.Editor sharedPreferencesEditor = preferences.edit();
+	
         public MyBtnListener() {
             this.btnToBind = 0;
         }
@@ -760,12 +804,46 @@ public class MainActivity extends AppCompatActivity {
                         lastX = rawX;
                         lastY = rawY;
                     } else if (test) {
-                        v.animate()
-                                .x(event.getRawX() + dX - -Utils.convertPixelsToDp(v.getWidth() / 2, MainActivity.this))
-                                .y(event.getRawY() + dY - -Utils.convertPixelsToDp(v.getHeight() / 2, MainActivity.this))
-                                .setDuration(0)
-                                .start();
-                    }
+                       // v.animate()
+					if (name.equals("input_SeriousBomb")) {
+                    v.setX(event.getRawX() + dX - -Utils.convertPixelsToDp(v.getWidth() / 2, MainActivity.this));
+                    v.setY(event.getRawY() + dY - -Utils.convertPixelsToDp(v.getHeight() / 2, MainActivity.this));
+                           //     .setDuration(0)
+                             //   .start();
+					sharedPreferencesEditor.putFloat("input_SeriousBombX", v.getX()).apply();
+					sharedPreferencesEditor.putFloat("input_SeriousBombY", v.getY()).apply();
+					} else if (name.equals("buttonPrev")) {
+                    v.setX(event.getRawX() + dX - -Utils.convertPixelsToDp(v.getWidth() / 2, MainActivity.this));
+                    v.setY(event.getRawY() + dY - -Utils.convertPixelsToDp(v.getHeight() / 2, MainActivity.this));
+					sharedPreferencesEditor.putFloat("buttonPrevX", v.getX()).apply();
+					sharedPreferencesEditor.putFloat("buttonPrevY", v.getY()).apply();	
+					} else if (name.equals("buttonNext")) {
+                    v.setX(event.getRawX() + dX - -Utils.convertPixelsToDp(v.getWidth() / 2, MainActivity.this));
+                    v.setY(event.getRawY() + dY - -Utils.convertPixelsToDp(v.getHeight() / 2, MainActivity.this));
+					sharedPreferencesEditor.putFloat("buttonNextX", v.getX()).apply();
+					sharedPreferencesEditor.putFloat("buttonNextY", v.getY()).apply();	
+					} else if (name.equals("input_use")) {
+                    v.setX(event.getRawX() + dX - -Utils.convertPixelsToDp(v.getWidth() / 2, MainActivity.this));
+                    v.setY(event.getRawY() + dY - -Utils.convertPixelsToDp(v.getHeight() / 2, MainActivity.this));
+					sharedPreferencesEditor.putFloat("input_useX", v.getX()).apply();
+					sharedPreferencesEditor.putFloat("input_useY", v.getY()).apply();	
+					} else if (name.equals("input_fire")) {
+                    v.setX(event.getRawX() + dX - -Utils.convertPixelsToDp(v.getWidth() / 2, MainActivity.this));
+                    v.setY(event.getRawY() + dY - -Utils.convertPixelsToDp(v.getHeight() / 2, MainActivity.this));
+					sharedPreferencesEditor.putFloat("input_fireX", v.getX()).apply();
+					sharedPreferencesEditor.putFloat("input_fireY", v.getY()).apply();	
+					} else if (name.equals("input_jump")) {
+                    v.setX(event.getRawX() + dX - -Utils.convertPixelsToDp(v.getWidth() / 2, MainActivity.this));
+                    v.setY(event.getRawY() + dY - -Utils.convertPixelsToDp(v.getHeight() / 2, MainActivity.this));
+					sharedPreferencesEditor.putFloat("input_jumpX", v.getX()).apply();
+					sharedPreferencesEditor.putFloat("input_jumpY", v.getY()).apply();	
+					} else if (name.equals("input_crunch")) {
+                    v.setX(event.getRawX() + dX - -Utils.convertPixelsToDp(v.getWidth() / 2, MainActivity.this));
+                    v.setY(event.getRawY() + dY - -Utils.convertPixelsToDp(v.getHeight() / 2, MainActivity.this));
+					sharedPreferencesEditor.putFloat("input_crunchX", v.getX()).apply();
+					sharedPreferencesEditor.putFloat("input_crunchY", v.getY()).apply();	
+					}
+                }
                     break;
                 default:
                     return false;
