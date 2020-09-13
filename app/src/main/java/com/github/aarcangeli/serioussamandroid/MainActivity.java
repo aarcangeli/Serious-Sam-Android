@@ -804,7 +804,7 @@ public class MainActivity extends AppCompatActivity {
                         lastX = rawX;
                         lastY = rawY;
                     } else if (test) {
-					v.setX(event.getRawX() + dX - -Utils.convertPixelsToDp(v.getWidth() / 2, MainActivity.this));
+                    v.setX(event.getRawX() + dX - -Utils.convertPixelsToDp(v.getWidth() / 2, MainActivity.this));
                     v.setY(event.getRawY() + dY - -Utils.convertPixelsToDp(v.getHeight() / 2, MainActivity.this));
                        // v.animate()
 					if (name.equals("input_SeriousBomb")) {
