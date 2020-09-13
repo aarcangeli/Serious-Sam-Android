@@ -16,6 +16,10 @@ public class NativeEvents {
         EventBus.getDefault().post(new OpenSettingsEvent());
     }
 
+    public static void updateUI() {
+        EventBus.getDefault().post(new UpdateUIEvent());
+    }
+	
     public static void requestRestard() {
         EventBus.getDefault().post(new RestartEvent());
     }
@@ -45,6 +49,9 @@ public class NativeEvents {
     }
 
     public static class OpenSettingsEvent {
+    }
+	
+    public static class UpdateUIEvent {
     }
 
     public static class RestartEvent {

@@ -61,6 +61,7 @@ import static com.github.aarcangeli.serioussamandroid.NativeEvents.EditTextEvent
 import static com.github.aarcangeli.serioussamandroid.NativeEvents.ErrorEvent;
 import static com.github.aarcangeli.serioussamandroid.NativeEvents.GameState;
 import static com.github.aarcangeli.serioussamandroid.NativeEvents.OpenSettingsEvent;
+import static com.github.aarcangeli.serioussamandroid.NativeEvents.UpdateUIEvent;
 import static com.github.aarcangeli.serioussamandroid.NativeEvents.RestartEvent;
 import static com.github.aarcangeli.serioussamandroid.NativeEvents.StateChangeEvent;
 import static com.github.aarcangeli.serioussamandroid.input.VirtualKeyboard.*;
@@ -190,7 +191,6 @@ public class MainActivity extends AppCompatActivity {
                 if (gameState == GameState.NORMAL) {
                     setAxisValue(AXIS_MOVE_LR, deltaX);
                     setAxisValue(AXIS_MOVE_FB, deltaY);
-                    setupView();
                 }
             }
         });
@@ -717,8 +717,12 @@ public class MainActivity extends AppCompatActivity {
         Log.i(TAG, "uiScale: " + uiScale);
         updateSoftKeyboardVisible();
     }
-
-	public void setupView() {
+	
+    @Subscribe(threadMode = ThreadMode.MAIN)
+	public void updateUI(UpdateUIEvent event) {
+        final MainActivity context = MainActivity.this;
+        runOnUiThread(new Runnable() {
+            public void run() {
 	SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
 	input_fireX = preferences.getFloat("input_fireX",findViewById(R.id.input_fire).getX());
 	input_fireY = preferences.getFloat("input_fireY",findViewById(R.id.input_fire).getY());
@@ -749,7 +753,8 @@ public class MainActivity extends AppCompatActivity {
 	findViewById(R.id.input_jump).setY(input_jumpY);
 	findViewById(R.id.input_crunch).setX(input_crunchX);
 	findViewById(R.id.input_crunch).setY(input_crunchY);
-
+            }
+        });
 	}
 	
     private class MyBtnListener implements View.OnTouchListener {
