@@ -179,14 +179,11 @@ public class MainActivity extends AppCompatActivity {
         settingsBtn.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-			if (test == true){
-				test = false;
-				Toast toast = Toast.makeText(MainActivity.this, "Buttons mapping: OFF",Toast.LENGTH_SHORT);
-				toast.show();
-			} else {
+			if (test == false){
 				Toast toast = Toast.makeText(MainActivity.this, "Buttons mapping: ON",Toast.LENGTH_SHORT);
 				toast.show();
 				test = true;
+				findViewById(R.id.buttonApply).setVisibility(View.VISIBLE);
 				isTracking = false;
 			}
                 return true;
@@ -331,6 +328,7 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.buttonConsole).setVisibility(gameState == GameState.NORMAL ? View.VISIBLE : View.GONE);
         findViewById(R.id.buttonSave).setVisibility(gameState == GameState.NORMAL ? View.VISIBLE : View.GONE);
         findViewById(R.id.input_SeriousBomb).setVisibility(enableTouchController && bombs > 0 ? View.VISIBLE : View.GONE);
+        findViewById(R.id.buttonApply).setVisibility(enableTouchController && test == true ? View.VISIBLE : View.GONE);
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
@@ -687,6 +685,13 @@ public class MainActivity extends AppCompatActivity {
 
     public void doQuickSave(View view) {
         executeShell("gam_bQuickSave=1;");
+    }
+	
+    public void btnApply(View view) {
+		Toast toast = Toast.makeText(MainActivity.this, "Buttons mapping: OFF",Toast.LENGTH_SHORT);
+		toast.show();
+		findViewById(R.id.buttonApply).setVisibility(View.GONE);
+		test = false;
     }
 
     @Override
