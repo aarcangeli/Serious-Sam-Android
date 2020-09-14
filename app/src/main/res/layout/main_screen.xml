@@ -142,18 +142,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <Button
-            android:id="@+id/chnBut"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_marginStart="476dp"
-            android:layout_marginTop="24dp"
-            android:background="@drawable/ic_chnbut"
-            android:onClick="chnBut"
-            android:textSize="12sp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
     </android.support.constraint.ConstraintLayout>
 
 </FrameLayout>

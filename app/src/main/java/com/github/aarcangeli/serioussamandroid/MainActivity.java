@@ -175,6 +175,24 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        Button settingsBtn = findViewById(R.id.settingsBtn);
+        settingsBtn.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+			if (test == true){
+				test = false;
+				Toast toast = Toast.makeText(MainActivity.this, "Buttons mapping: OFF",Toast.LENGTH_SHORT);
+				toast.show();
+			} else {
+				Toast toast = Toast.makeText(MainActivity.this, "Buttons mapping: ON",Toast.LENGTH_SHORT);
+				toast.show();
+				test = true;
+				isTracking = false;
+			}
+                return true;
+            }
+        });
+		
         findViewById(R.id.input_use).setOnTouchListener(new MyBtnListener(KeyEvent.KEYCODE_BUTTON_R2));
         findViewById(R.id.input_crunch).setOnTouchListener(new MyBtnListener(KeyEvent.KEYCODE_BUTTON_B));
         findViewById(R.id.input_jump).setOnTouchListener(new MyBtnListener(KeyEvent.KEYCODE_BUTTON_A));
@@ -313,7 +331,6 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.buttonConsole).setVisibility(gameState == GameState.NORMAL ? View.VISIBLE : View.GONE);
         findViewById(R.id.buttonSave).setVisibility(gameState == GameState.NORMAL ? View.VISIBLE : View.GONE);
         findViewById(R.id.input_SeriousBomb).setVisibility(enableTouchController && bombs > 0 ? View.VISIBLE : View.GONE);
-        findViewById(R.id.chnBut).setVisibility((gameState == GameState.NORMAL || gameState == GameState.DEMO) ? View.VISIBLE : View.GONE);
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
@@ -670,19 +687,6 @@ public class MainActivity extends AppCompatActivity {
 
     public void doQuickSave(View view) {
         executeShell("gam_bQuickSave=1;");
-    }
-	
-    public void chnBut(View view) {
-        if (test == true){
-            test = false;
-            Toast toast = Toast.makeText(this, "Buttons mapping: false",Toast.LENGTH_SHORT);
-            toast.show();
-        } else {
-            Toast toast = Toast.makeText(this, "Buttons mapping: true",Toast.LENGTH_SHORT);
-            toast.show();
-            test = true;
-            isTracking = false;
-        }
     }
 
     @Override
