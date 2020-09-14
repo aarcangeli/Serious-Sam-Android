@@ -77,7 +77,7 @@ public class JoystickView extends View {
 
         sizePadBg2 = Math.min(width, height) * 0.3f - Utils.convertDpToPixel(4, getContext());
         sizePadBg = sizePadBg2 - Utils.convertDpToPixel(10, getContext());
-        sizePad = sizePadBg - Utils.convertDpToPixel(7, getContext());
+        sizePad = sizePadBg - Utils.convertDpToPixel(14, getContext());
 
         paintBgFill.setStyle(Paint.Style.FILL);
         paintBgFill.setAntiAlias(true);
@@ -122,12 +122,12 @@ public class JoystickView extends View {
 
         // pad bg
         c.translate(padPosX, padPosY);
-        paintBgFill.setColor(COLOR_BG2);
-        c.drawCircle(0, 0, sizePadBg2, paintBgFill);
-        paintBgFill.setColor(COLOR_BG);
-        c.drawCircle(0, 0, sizePadBg, paintBgFill);
-        c.drawCircle(0, 0, sizePadBg2, paintBgStroke);
-        c.drawCircle(0, 0, sizePadBg, paintBgStroke);
+       // paintBgFill.setColor(COLOR_BG2);
+       // c.drawCircle(0, 0, sizePadBg2, paintBgFill);
+       // paintBgFill.setColor(COLOR_BG);
+       // c.drawCircle(0, 0, sizePadBg, paintBgFill);
+       // c.drawCircle(0, 0, sizePadBg2, paintBgStroke);
+       // c.drawCircle(0, 0, sizePadBg, paintBgStroke);
 
         // pad
         c.translate(deltaX, deltaY);
