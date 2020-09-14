@@ -93,21 +93,26 @@ public class SeriousSamSurface extends SurfaceView implements GestureDetector.On
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (event.getAction() == MotionEvent.ACTION_DOWN) {
-            int x = (int) (event.getX() * scale);
-            int y = (int) (event.getY() * scale);
+        int x,y;
+        switch(event.getAction()) {
+        case MotionEvent.ACTION_DOWN:
+            x = (int) (event.getX() * scale);
+            y = (int) (event.getY() * scale);
             MainActivity.executeShell("TouchDown(" + x + ", " + y + ");");
-        }
-        if (event.getAction() == MotionEvent.ACTION_MOVE) {
-            int x = (int) (event.getX() * scale);
-            int y = (int) (event.getY() * scale);
+			break;
+        case MotionEvent.ACTION_MOVE:
+            x = (int) (event.getX() * scale);
+            y = (int) (event.getY() * scale);
             MainActivity.executeShell("TouchMove(" + x + ", " + y + ");");
-        }
-        if (event.getAction() == MotionEvent.ACTION_UP) {
-            int x = (int) (event.getX() * scale);
-            int y = (int) (event.getY() * scale);
+			break;
+        case MotionEvent.ACTION_UP:
+            x = (int) (event.getX() * scale);
+            y = (int) (event.getY() * scale);
             MainActivity.executeShell("TouchUp(" + x + ", " + y + ");");
-        }
+			break;
+		default:
+			return false;
+		}
         gestureDetector.onTouchEvent(event);
         return true;
     }
