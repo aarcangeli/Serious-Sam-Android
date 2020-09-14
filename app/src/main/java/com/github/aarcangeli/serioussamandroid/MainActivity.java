@@ -109,6 +109,7 @@ public class MainActivity extends AppCompatActivity {
 	public float input_fireX, input_fireY;
 	public float input_jumpX, input_jumpY;
 	public float input_crunchX, input_crunchY;
+	public View currentView;
 	
     private InputProcessor processor = new InputProcessor();
     private InputMethodManager inputMethodManager;
@@ -184,6 +185,9 @@ public class MainActivity extends AppCompatActivity {
 				toast.show();
 				test = true;
 				findViewById(R.id.buttonApply).setVisibility(View.VISIBLE);
+				//findViewById(R.id.buttonPlus).setVisibility(View.VISIBLE);
+				//findViewById(R.id.buttonMinus).setVisibility(View.VISIBLE);
+
 				isTracking = false;
 			}
                 return true;
@@ -329,6 +333,8 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.buttonSave).setVisibility(gameState == GameState.NORMAL ? View.VISIBLE : View.GONE);
         findViewById(R.id.input_SeriousBomb).setVisibility(enableTouchController && bombs > 0 ? View.VISIBLE : View.GONE);
         findViewById(R.id.buttonApply).setVisibility(enableTouchController && test == true ? View.VISIBLE : View.GONE);
+        findViewById(R.id.buttonPlus).setVisibility(enableTouchController && test == true ? View.VISIBLE : View.GONE);
+        findViewById(R.id.buttonMinus).setVisibility(enableTouchController && test == true ? View.VISIBLE : View.GONE);
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
@@ -691,8 +697,16 @@ public class MainActivity extends AppCompatActivity {
 		Toast toast = Toast.makeText(MainActivity.this, "Buttons mapping: OFF",Toast.LENGTH_SHORT);
 		toast.show();
 		findViewById(R.id.buttonApply).setVisibility(View.GONE);
+		findViewById(R.id.buttonPlus).setVisibility(View.GONE);
+		findViewById(R.id.buttonMinus).setVisibility(View.GONE);
 		test = false;
     }
+	
+	public void btnPlus() {		
+	}
+	
+	public void btnMinus() {	
+	}
 
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
@@ -796,6 +810,7 @@ public class MainActivity extends AppCompatActivity {
                         isTracking = false;
                         dX = v.getX() - event.getRawX();
                         dY = v.getY() - event.getRawY();
+						currentView = v;
                     } else {
                         isTracking = true;
                         lastX = event.getX();
@@ -824,7 +839,7 @@ public class MainActivity extends AppCompatActivity {
                     } else if (test) {
                     v.setX(event.getRawX() + dX - -Utils.convertPixelsToDp(v.getWidth() / 2, MainActivity.this));
                     v.setY(event.getRawY() + dY - -Utils.convertPixelsToDp(v.getHeight() / 2, MainActivity.this));
-                       // v.animate()
+                    currentView = v;
 					if (name.equals("input_SeriousBomb")) {
                            //     .setDuration(0)
                              //   .start();
