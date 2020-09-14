@@ -789,8 +789,8 @@ public class MainActivity extends AppCompatActivity {
                         dY = v.getY() - event.getRawY();
                     } else {
                         isTracking = true;
-                        lastX = event.getRawX();
-                        lastY = event.getRawY();
+                        lastX = event.getX();
+                        lastY = event.getY();
                         if (this.btnToBind != 0) {
                             nDispatchKeyEvent(btnToBind, 1);
                         }
@@ -806,8 +806,8 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 case MotionEvent.ACTION_MOVE:
                     if (isTracking) {
-                        float rawX = event.getRawX();
-                        float rawY = event.getRawY();
+                        float rawX = event.getX();
+                        float rawY = event.getY();
                         shiftAxisValue(AXIS_LOOK_LR, -Utils.convertPixelsToDp(rawX - lastX, MainActivity.this) * MULT_VIEW_TRACKER * aimViewSensibility);
                         shiftAxisValue(AXIS_LOOK_UD, -Utils.convertPixelsToDp(rawY - lastY, MainActivity.this) * MULT_VIEW_TRACKER * aimViewSensibility);
                         lastX = rawX;
