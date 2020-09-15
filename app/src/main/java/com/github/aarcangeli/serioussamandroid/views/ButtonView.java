@@ -78,7 +78,7 @@ public class ButtonView extends Button {
         float height = MeasureSpec.getSize(heightMeasureSpec);
         centerX = width / 2;
         centerY = height / 2;
-        radius = Math.min(width, height) / 2 - Utils.convertDpToPixel(3, getContext());
+        radius = Math.min(width, height) / 2 - Utils.convertDpToPixel(4, getContext());
 
         paintPadFill.setStyle(Paint.Style.FILL);
         paintPadFill.setAntiAlias(true);
