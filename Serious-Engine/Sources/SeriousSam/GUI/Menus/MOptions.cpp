@@ -53,7 +53,7 @@ void COptionsMenu::Initialize_t(void)
   gm_mgAudioOptions.mg_strTip = TRANS("set audio quality and volume");
   gm_lhGadgets.AddTail(gm_mgAudioOptions.mg_lnNode);
   gm_mgAudioOptions.mg_pActivatedFunction = NULL;
-  gm_mgAudioOptions.mg_bEnabled = FALSE;
+  gm_mgAudioOptions.mg_bEnabled = true;
 
   gm_mgPlayerProfileOptions.mg_bfsFontSize = BFS_LARGE;
   gm_mgPlayerProfileOptions.mg_boxOnScreen = BoxBigRow(3.1f);

@@ -32,16 +32,19 @@ void CAudioOptionsMenu::Initialize_t(void)
   TRIGGER_MG(gm_mgAudioAutoTrigger, 0,
     gm_mgApply, gm_mgFrequencyTrigger, TRANS("AUTO-ADJUST"), astrNoYes);
   gm_mgAudioAutoTrigger.mg_strTip = TRANS("adjust quality to fit your system");
+  gm_mgAudioAutoTrigger.mg_bEnabled = false;
 
   TRIGGER_MG(gm_mgFrequencyTrigger, 1,
     gm_mgAudioAutoTrigger, gm_mgAudioAPITrigger, TRANS("FREQUENCY"), astrFrequencyRadioTexts);
   gm_mgFrequencyTrigger.mg_strTip = TRANS("select sound quality or turn sound off");
   gm_mgFrequencyTrigger.mg_pOnTriggerChange = NULL;
+  gm_mgFrequencyTrigger.mg_bEnabled = false;
 
   TRIGGER_MG(gm_mgAudioAPITrigger, 2,
     gm_mgFrequencyTrigger, gm_mgWaveVolume, TRANS("SOUND SYSTEM"), astrSoundAPIRadioTexts);
   gm_mgAudioAPITrigger.mg_strTip = TRANS("choose sound system (API) to use");
   gm_mgAudioAPITrigger.mg_pOnTriggerChange = NULL;
+  gm_mgAudioAPITrigger.mg_bEnabled = false;
 
   gm_mgWaveVolume.mg_boxOnScreen = BoxMediumRow(3);
   gm_mgWaveVolume.mg_strText = TRANS("SOUND EFFECTS VOLUME");

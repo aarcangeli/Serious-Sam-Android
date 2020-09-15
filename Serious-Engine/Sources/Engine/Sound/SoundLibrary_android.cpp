@@ -162,7 +162,10 @@ void CSoundLibrary::Init(void) {
   CTSingleLock slHooks(&_pTimer->tm_csHooks, TRUE);
   // synchronize access to sounds
   CTSingleLock slSounds(&sl_csSound, TRUE);
-
+  
+  _pShell->DeclareSymbol( "persistent user FLOAT snd_fSoundVolume;", &snd_fSoundVolume);
+  _pShell->DeclareSymbol( "persistent user FLOAT snd_fMusicVolume;", &snd_fMusicVolume);
+  
   // print header
   CPrintF(TRANS("Initializing sound...\n"));
 
