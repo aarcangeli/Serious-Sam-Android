@@ -334,8 +334,8 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.buttonSave).setVisibility(gameState == GameState.NORMAL ? View.VISIBLE : View.GONE);
         findViewById(R.id.input_SeriousBomb).setVisibility(enableTouchController && bombs > 0 ? View.VISIBLE : View.GONE);
         findViewById(R.id.buttonApply).setVisibility(enableTouchController && test == true ? View.VISIBLE : View.GONE);
-        findViewById(R.id.buttonPlus).setVisibility(enableTouchController && test == true ? View.VISIBLE : View.GONE);
-        findViewById(R.id.buttonMinus).setVisibility(enableTouchController && test == true ? View.VISIBLE : View.GONE);
+        findViewById(R.id.buttonPlus).setVisibility(View.GONE);
+        findViewById(R.id.buttonMinus).setVisibility(View.GONE);
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
