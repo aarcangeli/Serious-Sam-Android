@@ -111,8 +111,8 @@ public class ButtonView extends Button {
         c.translate(centerX, centerY);
 
         paintPadStroke.setShadowLayer(Utils.convertDpToPixel(2, getContext()), 0, 0, Color.BLACK);
-        c.drawCircle(0, 0, radius, paintPadStroke);
-        c.drawCircle(0, 0, radius, paintPadFill);
+       // c.drawCircle(0, 0, radius, paintPadStroke);
+       // c.drawCircle(0, 0, radius, paintPadFill);
 
         paintPadStroke.setShadowLayer(0, 0, 0, Color.BLACK);
         c.drawCircle(0, 0, radius - Utils.convertDpToPixel(3, getContext()), paintPadStroke);
