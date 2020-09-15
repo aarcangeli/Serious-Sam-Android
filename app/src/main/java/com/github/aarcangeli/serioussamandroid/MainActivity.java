@@ -185,6 +185,7 @@ public class MainActivity extends AppCompatActivity {
 				toast.show();
 				test = true;
 				findViewById(R.id.buttonApply).setVisibility(View.VISIBLE);
+				findViewById(R.id.input_SeriousBomb).setVisibility(View.VISIBLE);
 				//findViewById(R.id.buttonPlus).setVisibility(View.VISIBLE);
 				//findViewById(R.id.buttonMinus).setVisibility(View.VISIBLE);
 
@@ -699,6 +700,7 @@ public class MainActivity extends AppCompatActivity {
 		findViewById(R.id.buttonApply).setVisibility(View.GONE);
 		findViewById(R.id.buttonPlus).setVisibility(View.GONE);
 		findViewById(R.id.buttonMinus).setVisibility(View.GONE);
+		findViewById(R.id.input_SeriousBomb).setVisibility(View.GONE);
 		test = false;
     }
 	
