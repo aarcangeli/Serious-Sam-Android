@@ -30,6 +30,7 @@ struct BindingCallbacks {
     float globalScale = 1;
     CTString WifiIP = "";
 	int ping = 0;
+	bool tfe;
 };
 
 extern BindingCallbacks g_cb;

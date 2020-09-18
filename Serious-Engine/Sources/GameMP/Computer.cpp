@@ -1212,7 +1212,7 @@ void CGame::ComputerRender(CDrawPort *pdp)
   _pTimer->SetCurrentTick(tmTick);
   _pTimer->SetLerp(fLerp);
 
-  LCDPrepare(1.0f);//ClampUp(fComputerFadeValue*10,1.0f));
+  LCDPrepare(1.0f);//ClampUp(fComputerFadeValue*10,1.0f);
   LCDSetDrawport(&dpComp);
   // if initial start
   if (cmp_bInitialStart) {
@@ -1238,12 +1238,17 @@ void CGame::ComputerRender(CDrawPort *pdp)
   // get current time and alpha value
   FLOAT tmNow = (FLOAT)tvNow.GetSeconds();
   ULONG ulA   = NormFloatToByte(fComputerFadeValue);
-
+if (g_cb.tfe) {
+  _colLight  = LCDFadedColor(C_WHITE|255);
+  _colMedium = LCDFadedColor(C_GREEN|255);
+  _colDark   = LCDFadedColor(LerpColor(C_dGREEN, C_GREEN, 0.5f)|255);
+  _colBoxes  = LCDFadedColor(LerpColor(C_dGREEN, C_GREEN, 0.5f)|255);
+} else {
   _colLight  = LCDFadedColor(C_WHITE|255);
   _colMedium = LCDFadedColor(SE_COL_BLUE_LIGHT|255);
   _colDark   = LCDFadedColor(LerpColor(SE_COL_BLUE_DARK, SE_COL_BLUE_LIGHT, 0.5f)|255);
   _colBoxes  = LCDFadedColor(LerpColor(SE_COL_BLUE_DARK, SE_COL_BLUE_LIGHT, 0.5f)|255);
-
+}
   // background
   LCDRenderCloudsForComp();
 //  dpComp.DrawLine( 0, pixSizeJ-1, pixSizeI, pixSizeJ-1, C_GREEN|ulA);

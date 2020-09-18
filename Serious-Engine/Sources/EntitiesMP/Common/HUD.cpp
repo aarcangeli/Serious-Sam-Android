@@ -33,7 +33,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #define TOP_ARMOR  100
 #define TOP_HEALTH 100
 
-
 // cheats
 extern INDEX cht_bEnable;
 extern INDEX cht_bGod;
@@ -54,6 +53,7 @@ extern FLOAT hud_fScaling;
 extern FLOAT hud_tmWeaponsOnScreen;
 extern INDEX hud_bShowMatchInfo;
 
+COLOR colMax, colTop, colMid, colDefault;
 // player statistics sorting keys
 enum SortKeys {
   PSK_NAME    = 1,
@@ -789,16 +789,29 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
   _pixDPHeight  = _pDP->GetHeight();
   _fCustomScaling     = hud_fScaling;
   _fResolutionScaling = (FLOAT)_pixDPWidth /640.0f;
+ if (g_cb.tfe) {
+  _colHUD     = C_GREEN;
+  _colHUDText = _colHUD;
+ } else {
   _colHUD     = 0x4C80BB00;
   _colHUDText = SE_COL_ORANGE_LIGHT;
+ }
   _ulAlphaHUD = NormFloatToByte(hud_fOpacity);
   _tmNow = _pTimer->CurrentTick();
 
   // determine hud colorization;
-  COLOR colMax = SE_COL_BLUEGREEN_LT;
-  COLOR colTop = SE_COL_ORANGE_LIGHT;
-  COLOR colMid = LerpColor(colTop, C_RED, 0.5f);
+if (g_cb.tfe) {
+  colMax = _colHUD;
+  colTop = _colHUD;
+  colMid = _colHUD;
+} else {
+  colMax = SE_COL_BLUEGREEN_LT;
+  colTop = SE_COL_ORANGE_LIGHT;
+  colMid = LerpColor(colTop, C_RED, 0.5f);  
+}
 
+
+ // 
   // adjust borders color in case of spying mode
   COLOR colBorder = _colHUD; 
   
@@ -834,8 +847,11 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
   FLOAT fNextUnit = (32+8) * _fCustomScaling;  // unit advancer
   FLOAT fHalfUnit = fOneUnit * 0.5f;
   FLOAT fMoverX, fMoverY;
-  COLOR colDefault;
-  
+  if (g_cb.tfe) {
+  colDefault = _colHUD;
+  } else {
+  colDefault;
+  }
   // prepare and draw health info
   fValue = ClampDn( _penPlayer->GetHealth(), 0.0f);  // never show negative health
   fNormValue = fValue/TOP_HEALTH;
@@ -849,8 +865,11 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
   HUD_DrawBorder( fCol, fRow, fChrUnit*3, fOneUnit, colBorder);
   HUD_DrawText( fCol, fRow, strValue, colDefault, fNormValue);
   fCol -= fAdvUnit+fChrUnit*3/2 -fHalfUnit;
-  HUD_DrawIcon( fCol+fMoverX, fRow+fMoverY, _toHealth, C_WHITE /*_colHUD*/, fNormValue, TRUE);
-
+  if (g_cb.tfe) {
+  HUD_DrawIcon( fCol+fMoverX, fRow+fMoverY, _toHealth, _colHUD, fNormValue, TRUE);
+  } else {
+  HUD_DrawIcon( fCol+fMoverX, fRow+fMoverY, _toHealth, C_WHITE /*_colHUD*/, fNormValue, TRUE);  
+  }
   // prepare and draw armor info (eventually)
   fValue = _penPlayer->m_fArmor;
   if( fValue > 0.0f) {
@@ -865,6 +884,15 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
     HUD_DrawBorder( fCol, fRow, fChrUnit*3, fOneUnit, colBorder);
     HUD_DrawText( fCol, fRow, strValue, NONE, fNormValue);
     fCol -= fAdvUnit+fChrUnit*3/2 -fHalfUnit;
+	if (g_cb.tfe) {
+    if (fValue<=50.5f) {
+      HUD_DrawIcon( fCol+fMoverX, fRow+fMoverY, _toArmorSmall, _colHUD, fNormValue, FALSE);
+    } else if (fValue<=100.5f) {
+      HUD_DrawIcon( fCol+fMoverX, fRow+fMoverY, _toArmorMedium, _colHUD, fNormValue, FALSE);
+    } else {
+      HUD_DrawIcon( fCol+fMoverX, fRow+fMoverY, _toArmorLarge, _colHUD, fNormValue, FALSE);
+    }
+	} else {
     if (fValue<=50.5f) {
       HUD_DrawIcon( fCol+fMoverX, fRow+fMoverY, _toArmorSmall, C_WHITE /*_colHUD*/, fNormValue, FALSE);
     } else if (fValue<=100.5f) {
@@ -872,6 +900,7 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
     } else {
       HUD_DrawIcon( fCol+fMoverX, fRow+fMoverY, _toArmorLarge, C_WHITE /*_colHUD*/, fNormValue, FALSE);
     }
+	}
   }
 
   // prepare and draw ammo and weapon info
@@ -904,18 +933,30 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
     if( bDrawAmmoIcon) {
       fCol += fAdvUnit+fChrUnit*3/2 -fHalfUnit;
       HUD_DrawBorder( fCol, fRow, fOneUnit, fOneUnit, colBorder);
+	if (g_cb.tfe) {
+      HUD_DrawIcon( fCol, fRow, *ptoCurrentAmmo, _colHUD, fNormValue, TRUE);
+	} else {
       HUD_DrawIcon( fCol, fRow, *ptoCurrentAmmo, C_WHITE /*_colHUD*/, fNormValue, TRUE);
+	}
       fCol -= fAdvUnit+fChrUnit*3/2 -fHalfUnit;
     }
     HUD_DrawText( fCol, fRow, strValue, NONE, fNormValue);
     fCol -= fAdvUnit+fChrUnit*3/2 -fHalfUnit;
+	if (g_cb.tfe) {
+    HUD_DrawIcon( fCol+fMoverX, fRow+fMoverY, *ptoCurrentWeapon, _colHUD, fNormValue, !bDrawAmmoIcon);
+	} else {
     HUD_DrawIcon( fCol+fMoverX, fRow+fMoverY, *ptoCurrentWeapon, C_WHITE /*_colHUD*/, fNormValue, !bDrawAmmoIcon);
+	}
   } else if( ptoCurrentWeapon!=NULL) {
     // draw only knife or colt icons (ammo is irrelevant)
     fRow = pixBottomBound-fHalfUnit;
     fCol = 205 + fHalfUnit;
     HUD_DrawBorder( fCol, fRow, fOneUnit, fOneUnit, colBorder);
+	if (g_cb.tfe) {
+    HUD_DrawIcon(   fCol, fRow, *ptoCurrentWeapon, _colHUD, fNormValue, FALSE);
+	} else {
     HUD_DrawIcon(   fCol, fRow, *ptoCurrentWeapon, C_WHITE /*_colHUD*/, fNormValue, FALSE);
+	}
   }
 
 
@@ -973,7 +1014,11 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
       ASSERT( ai.ai_iAmmoAmmount>=0);
       if( ai.ai_iAmmoAmmount==0 && !ai.ai_bHasWeapon) continue;
       // display ammo info
+	  if (g_cb.tfe) {
+      colIcon = _colHUD;
+	  } else {
       colIcon = C_WHITE /*_colHUD*/;
+	  }
       if( ai.ai_iAmmoAmmount==0) colIcon = C_mdGRAY;
       if( ptoCurrentAmmo == ai.ai_ptoAmmo) colIcon = C_WHITE; 
       fNormValue = (FLOAT)ai.ai_iAmmoAmmount / ai.ai_iMaxAmmoAmmount;
@@ -1000,7 +1045,11 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
     fNormValue = tmDelta / ptmPowerupsMax[i];
     // draw icon and a little bar
     HUD_DrawBorder( fCol,         fRow, fOneUnitS, fOneUnitS, colBorder);
+	if (g_cb.tfe) {
+    HUD_DrawIcon(   fCol,         fRow, _atoPowerups[i], _colHUD, fNormValue, TRUE);
+	} else {
     HUD_DrawIcon(   fCol,         fRow, _atoPowerups[i], C_WHITE /*_colHUD*/, fNormValue, TRUE);
+	}
     HUD_DrawBar(    fCol+fBarPos, fRow, fOneUnitS/5, fOneUnitS-2, BO_DOWN, NONE, fNormValue);
     // play sound if icon is flashing
     if(fNormValue<=(_cttHUD.ctt_fLowMedium/2)) {
@@ -1037,11 +1086,20 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
          || !_awiWeapons[i].wi_bHasWeapon) continue;
       // display weapon icon
       COLOR colBorder = _colHUD;
+	  if (g_cb.tfe) {
+      colIcon = _colHUD;
+	  } else {
       colIcon = 0xccddff00;
+	  }
       // weapon that is currently selected has different colors
       if( ptoWantedWeapon == _awiWeapons[i].wi_ptoWeapon) {
+		  if (g_cb.tfe) {
+        colIcon = _colHUD;
+        colBorder = _colHUD;
+		  } else {
         colIcon = 0xffcc0000;
         colBorder = 0xffcc0000;
+		  }
       }
       // no ammo
       if( _awiWeapons[i].wi_paiAmmo!=NULL && _awiWeapons[i].wi_paiAmmo->ai_iAmmoAmmount==0) {
@@ -1082,7 +1140,11 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
     HUD_DrawBorder( fCol,      fRow, fOneUnit,         fOneUnit, colBorder);
     HUD_DrawBorder( fCol+fAdv, fRow, fOneUnit*4,       fOneUnit, colBorder);
     HUD_DrawBar(    fCol+fAdv, fRow, fOneUnit*4*0.975, fOneUnit*0.9375, BO_LEFT, NONE, fNormValue);
+	if (g_cb.tfe) {
+    HUD_DrawIcon(   fCol,      fRow, _toOxygen, _colHUD, fNormValue, TRUE);
+	} else {
     HUD_DrawIcon(   fCol,      fRow, _toOxygen, C_WHITE /*_colHUD*/, fNormValue, TRUE);
+	}
     bOxygenOnScreen = TRUE;
   }
 
@@ -1116,7 +1178,11 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
       HUD_DrawBorder( fCol,      fRow, fOneUnit,          fOneUnit, colBorder);
       HUD_DrawBorder( fCol+fAdv, fRow, fOneUnit*16,       fOneUnit, colBorder);
       HUD_DrawBar(    fCol+fAdv, fRow, fOneUnit*16*0.995, fOneUnit*0.9375, BO_LEFT, NONE, fNormValue);
+	  if (g_cb.tfe) {
+      HUD_DrawIcon(   fCol,      fRow, _toHealth, _colHUD, fNormValue, FALSE);
+	  } else {
       HUD_DrawIcon(   fCol,      fRow, _toHealth, C_WHITE /*_colHUD*/, fNormValue, FALSE);
+	  }
     }
   }
 
@@ -1308,7 +1374,11 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
     HUD_DrawBorder( fCol,      fRow, fOneUnit,   fOneUnit, colBorder);
     HUD_DrawBorder( fCol+fAdv, fRow, fChrUnit*8, fOneUnit, colBorder);
     HUD_DrawText(   fCol+fAdv, fRow, strValue, NONE, bBeating ? 0.0f : 1.0f);
+	if (g_cb.tfe) {
+    HUD_DrawIcon(   fCol,      fRow, _toHiScore, _colHUD, 1.0f, FALSE);
+	} else {
     HUD_DrawIcon(   fCol,      fRow, _toHiScore, C_WHITE /*_colHUD*/, 1.0f, FALSE);
+	}
 
     // prepare and draw unread messages
     if( hud_bShowMessages && _penPlayer->m_ctUnreadMessages>0) {
@@ -1337,7 +1407,11 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
       HUD_DrawBorder( fCol,      fRow, fOneUnit,   fOneUnit, col);
       HUD_DrawBorder( fCol+fAdv, fRow, fChrUnit*4, fOneUnit, col);
       HUD_DrawText(   fCol+fAdv, fRow, strValue,   col, 1.0f);
+	  if (g_cb.tfe) {
+      HUD_DrawIcon(   fCol,      fRow, _toMessage, col, 0.0f, TRUE);
+	  } else {
       HUD_DrawIcon(   fCol,      fRow, _toMessage, C_WHITE /*col*/, 0.0f, TRUE);
+	  }
     }
   }
 

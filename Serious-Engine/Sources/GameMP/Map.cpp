@@ -15,6 +15,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "StdAfx.h"
 #include "LCDDrawing.h"
+#include <AndroidAdapters/binding-callbacks.h>
 
 extern BOOL map_bIsFirstEncounter;
 
@@ -427,6 +428,7 @@ PIX aPathDotsFE[][10][2] =
 BOOL ObtainMapData(void)
 {
   try {
+	  g_cb.tfe = false;
       // the second encounter
       atoIconsSE[ 0].SetData_t(CTFILENAME("TexturesMP\\Computer\\Map\\Book.tex"));
       atoIconsSE[ 1].SetData_t(CTFILENAME("TexturesMP\\Computer\\Map\\Level00.tex"));
@@ -466,6 +468,7 @@ BOOL ObtainMapData(void)
       ((CTextureData*)_toMapBcgRDSE .GetData())->Force(TEX_CONSTANT);
       ((CTextureData*)_toMapBcgRUSE .GetData())->Force(TEX_CONSTANT);
 if (map_bIsFirstEncounter) {
+	  g_cb.tfe = true;
       // the first encounter
       atoIconsFE[ 0].SetData_t(CTFILENAME("Textures\\Computer\\Map\\Level00.tex"));
       atoIconsFE[ 1].SetData_t(CTFILENAME("Textures\\Computer\\Map\\Level01.tex"));
