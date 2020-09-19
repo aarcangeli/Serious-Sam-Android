@@ -427,6 +427,7 @@ void StartNextDemo(void)
   // if intro
   if (pli->li_fnLevel==sam_strIntroLevel) {
     // start intro
+	InfoMessage("[libSeriousSam] Start intro");
     _gmRunningGameMode = GM_NONE;
     _pGame->gm_aiStartLocalPlayers[0] = 0;
     _pGame->gm_aiStartLocalPlayers[1] = -1;
@@ -542,7 +543,7 @@ BOOL Init()
 
   // this is not used in android
   _pixDesktopWidth = 0;
-
+  InfoMessage("[libSeriousSam] Initialize engine");
   // initialize engine
   SE_InitEngine(sam_strGameName);
 
@@ -679,7 +680,7 @@ BOOL Init()
   // apply application mode
   StartNewMode( (GfxAPIType)sam_iGfxAPI, sam_iDisplayAdapter, sam_iScreenSizeI, sam_iScreenSizeJ,
                 (enum DisplayDepth)sam_iDisplayDepth, sam_bFullScreenActive);
-
+  InfoMessage("[libSeriousSam] Gles adapter initializing");
   gles_adapter::gles_adp_init();
 
   // set default mode reporting
@@ -1020,6 +1021,7 @@ BOOL TryToSetDisplayMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI,
 {
   CDisplayMode dmTmp;
   dmTmp.dm_ddDepth = eColorDepth;
+  
   CPrintF( TRANS("  Starting display mode: %dx%dx%s (%s)\n"),
            pixSizeI, pixSizeJ, dmTmp.DepthString(),
            bFullScreenMode ? TRANS("fullscreen") : TRANS("window"));
@@ -1062,6 +1064,7 @@ BOOL TryToSetDisplayMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI,
   // if new mode was set
   if( bSuccess) {
     // create canvas
+	InfoMessage("[libSeriousSam] Display mode was set, creating canvas");
 #if 0
     ASSERT( pvpViewPort==NULL);
     ASSERT( pdpNormal==NULL);
@@ -1249,7 +1252,7 @@ void setControls(PlayerControls &ctrls) {
 }
 
 void seriousSamInitialize() {
-
+  InfoMessage("[libSeriousSam] Game initializing now");
   CTStream::EnableStreamHandling();
 
   if (FileExists(_modToLoadTxt)) {
@@ -1288,6 +1291,7 @@ void seriousSamInitialize() {
 void seriousSubMain() {
 
   seriousSamInitialize();
+  InfoMessage("[libSeriousSam] Game initialized");
 
   StartNextDemo();
 
@@ -1315,6 +1319,8 @@ void seriousSubMain() {
           _pGame->gm_csConsoleState = CS_TURNINGOFF;
           _iAddonExecState = 0;
         }
+		
+		InfoMessage("[libSeriousSam] Starting menu");
         // start menu
         StartMenus();
       }

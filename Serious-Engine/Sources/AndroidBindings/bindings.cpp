@@ -60,6 +60,7 @@ JNIEXPORT void JNICALL Java_com_github_aarcangeli_serioussamandroid_SeriousSamSu
   _fnmApplicationExe = CTFILENAME("Bin/SeriousSam.exe");
   env->ReleaseStringUTFChars(homeDir_, homeDir);
   env->ReleaseStringUTFChars(libDir_, libDir);
+  InfoMessage("[libSeriousSamNative] Creating SeriousSamMain thread");
 
   // start main thread
   pthread_create(&g_mySeriousThreadId, 0, &seriousMain, nullptr);
@@ -258,6 +259,7 @@ void *seriousMain(void *unused) {
   g_cb.editText = &editText;
   g_cb.restart = &requestRestard;
   g_cb.setSeriousBombCount = &setSeriousBombCount;
+  InfoMessage("[libSeriousSamNative] Starting game");
 
   // run all
   try {
