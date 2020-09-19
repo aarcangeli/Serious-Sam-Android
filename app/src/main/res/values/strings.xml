@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Serious Sam Android</string>
+    <string name="app_name">Serious Sam</string>
 
     <string-array name="AutoYesNo">
         <item>Auto</item>
