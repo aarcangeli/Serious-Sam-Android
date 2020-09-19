@@ -680,7 +680,7 @@ BOOL Init()
   // apply application mode
   StartNewMode( (GfxAPIType)sam_iGfxAPI, sam_iDisplayAdapter, sam_iScreenSizeI, sam_iScreenSizeJ,
                 (enum DisplayDepth)sam_iDisplayDepth, sam_bFullScreenActive);
-  InfoMessage("[libSeriousSam] Gles adapter initializing");
+
   gles_adapter::gles_adp_init();
 
   // set default mode reporting

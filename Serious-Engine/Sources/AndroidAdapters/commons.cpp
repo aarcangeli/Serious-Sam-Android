@@ -66,7 +66,7 @@ int WINAPI gethostname(char *name, int namelen) {
 }
 
 void reportError(const char *func) {
-//  WarningMessage("Missing OpenGL: %s", func);
+    WarningMessage("%s", func);
 }
 
 void blockingError(const char *func) {

@@ -214,10 +214,13 @@ namespace gles_adapter {
   };
 
   void gles_adp_init() {
-
+	reportError("[gles_adapter] Initializing");
     // create program
     program = glCreateProgram();
+	reportError("[gles_adapter] Start glCreateProgram");
+	reportError("[gles_adapter] Compile vertex shader");
     glAttachShader(program, compileShader(GL_VERTEX_SHADER, "vertex shader", VERTEX_SHADER));
+	reportError("[gles_adapter] Compile fragment shader");
     glAttachShader(program, compileShader(GL_FRAGMENT_SHADER, "fragment shader", FRAGMENT_SHADER));
     glBindAttribLocation(program, INDEX_POSITION, "position");
     glBindAttribLocation(program, INDEX_NORMAL, "normal");
@@ -232,7 +235,9 @@ namespace gles_adapter {
     }
     setError(glGetError());
     glUseProgram(program);
-
+	if (success) {
+	reportError("[gles_adapter] Initialized successful!");
+	}
     // get uniforms
     projMatIdx = glGetUniformLocation(program, "projMat");
     modelViewMatIdx = glGetUniformLocation(program, "modelViewMat");
