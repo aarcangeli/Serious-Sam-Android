@@ -1453,7 +1453,17 @@ extern void InitHUD(void)
     DECLARE_CTFILENAME( fnFont, "Fonts\\Numbers3.fnt");
     _fdNumbersFont.Load_t( fnFont);
     //_fdNumbersFont.SetCharSpacing(0);
-
+	if (g_cb.tfe) {
+    _toHealth.SetData_t(  CTFILENAME("Textures\\Interface\\HSuper.tex"));
+    _toArmorLarge.SetData_t(   CTFILENAME("Textures\\Interface\\ArStrong.tex"));
+    _toOxygen.SetData_t(  CTFILENAME("Textures\\Interface\\Oxygen-2.tex"));
+    _toFrags.SetData_t(   CTFILENAME("Textures\\Interface\\IBead.tex"));
+    _toDeaths.SetData_t(  CTFILENAME("Textures\\Interface\\ISkull.tex"));
+    _toScore.SetData_t(   CTFILENAME("Textures\\Interface\\IScore.tex"));
+    _toHiScore.SetData_t( CTFILENAME("Textures\\Interface\\IHiScore.tex"));
+    _toMessage.SetData_t( CTFILENAME("Textures\\Interface\\IMessage.tex"));
+    _toMana.SetData_t(    CTFILENAME("Textures\\Interface\\IValue.tex"));
+	} else {
     // initialize status bar textures
     _toHealth.SetData_t(  CTFILENAME("TexturesMP\\Interface\\HSuper.tex"));
     _toOxygen.SetData_t(  CTFILENAME("TexturesMP\\Interface\\Oxygen-2.tex"));
@@ -1463,10 +1473,20 @@ extern void InitHUD(void)
     _toHiScore.SetData_t( CTFILENAME("TexturesMP\\Interface\\IHiScore.tex"));
     _toMessage.SetData_t( CTFILENAME("TexturesMP\\Interface\\IMessage.tex"));
     _toMana.SetData_t(    CTFILENAME("TexturesMP\\Interface\\IValue.tex"));
+    _toArmorLarge.SetData_t(   CTFILENAME("TexturesMP\\Interface\\ArStrong.tex"));
+	}
     _toArmorSmall.SetData_t(  CTFILENAME("TexturesMP\\Interface\\ArSmall.tex"));
     _toArmorMedium.SetData_t(   CTFILENAME("TexturesMP\\Interface\\ArMedium.tex"));
-    _toArmorLarge.SetData_t(   CTFILENAME("TexturesMP\\Interface\\ArStrong.tex"));
 
+	if (g_cb.tfe) {
+    _toAShells.SetData_t(      CTFILENAME("Textures\\Interface\\AmShells.tex"));
+    _toABullets.SetData_t(     CTFILENAME("Textures\\Interface\\AmBullets.tex"));
+    _toARockets.SetData_t(     CTFILENAME("Textures\\Interface\\AmRockets.tex"));
+    _toAGrenades.SetData_t(    CTFILENAME("Textures\\Interface\\AmGrenades.tex"));
+    _toANapalm.SetData_t(      CTFILENAME("Textures\\Interface\\AmFuelReservoir.tex"));
+    _toAElectricity.SetData_t( CTFILENAME("Textures\\Interface\\AmElectricity.tex"));
+    _toAIronBall.SetData_t(    CTFILENAME("Textures\\Interface\\AmCannon.tex"));
+	} else {
     // initialize ammo textures                    
     _toAShells.SetData_t(        CTFILENAME("TexturesMP\\Interface\\AmShells.tex"));
     _toABullets.SetData_t(       CTFILENAME("TexturesMP\\Interface\\AmBullets.tex"));
@@ -1475,8 +1495,23 @@ extern void InitHUD(void)
     _toANapalm.SetData_t(        CTFILENAME("TexturesMP\\Interface\\AmFuelReservoir.tex"));
     _toAElectricity.SetData_t(   CTFILENAME("TexturesMP\\Interface\\AmElectricity.tex"));
     _toAIronBall.SetData_t(      CTFILENAME("TexturesMP\\Interface\\AmCannonBall.tex"));
+	}
     _toASniperBullets.SetData_t( CTFILENAME("TexturesMP\\Interface\\AmSniperBullets.tex"));
     _toASeriousBomb.SetData_t(   CTFILENAME("TexturesMP\\Interface\\AmSeriousBomb.tex"));
+	
+	if (g_cb.tfe) {
+    _toWKnife.SetData_t(           CTFILENAME("Textures\\Interface\\WKnife.tex"));
+    _toWColt.SetData_t(            CTFILENAME("Textures\\Interface\\WColt.tex"));
+    _toWSingleShotgun.SetData_t(   CTFILENAME("Textures\\Interface\\WSingleShotgun.tex"));
+    _toWDoubleShotgun.SetData_t(   CTFILENAME("Textures\\Interface\\WDoubleShotgun.tex"));
+    _toWTommygun.SetData_t(        CTFILENAME("Textures\\Interface\\WTommygun.tex"));
+    _toWMinigun.SetData_t(         CTFILENAME("Textures\\Interface\\WMinigun.tex"));
+    _toWRocketLauncher.SetData_t(  CTFILENAME("Textures\\Interface\\WRocketLauncher.tex"));
+    _toWGrenadeLauncher.SetData_t( CTFILENAME("Textures\\Interface\\WGrenadeLauncher.tex"));
+    _toWLaser.SetData_t(           CTFILENAME("Textures\\Interface\\WLaser.tex"));
+    _toWFlamer.SetData_t(          CTFILENAME("Textures\\Interface\\WFlamer.tex"));
+    _toWIronCannon.SetData_t(      CTFILENAME("Textures\\Interface\\WCannon.tex"));
+	} else {
     // initialize weapon textures
     _toWKnife.SetData_t(           CTFILENAME("TexturesMP\\Interface\\WKnife.tex"));
     _toWColt.SetData_t(            CTFILENAME("TexturesMP\\Interface\\WColt.tex"));
@@ -1487,10 +1522,11 @@ extern void InitHUD(void)
     _toWRocketLauncher.SetData_t(  CTFILENAME("TexturesMP\\Interface\\WRocketLauncher.tex"));
     _toWGrenadeLauncher.SetData_t( CTFILENAME("TexturesMP\\Interface\\WGrenadeLauncher.tex"));
     _toWLaser.SetData_t(           CTFILENAME("TexturesMP\\Interface\\WLaser.tex"));
+    _toWFlamer.SetData_t(          CTFILENAME("TexturesMP\\Interface\\WFlamer.tex"));
     _toWIronCannon.SetData_t(      CTFILENAME("TexturesMP\\Interface\\WCannon.tex"));
+	}
     _toWChainsaw.SetData_t(        CTFILENAME("TexturesMP\\Interface\\WChainsaw.tex"));
     _toWSniper.SetData_t(          CTFILENAME("TexturesMP\\Interface\\WSniper.tex"));
-    _toWFlamer.SetData_t(          CTFILENAME("TexturesMP\\Interface\\WFlamer.tex"));
         
     // initialize powerup textures (DO NOT CHANGE ORDER!)
     _atoPowerups[0].SetData_t( CTFILENAME("TexturesMP\\Interface\\PInvisibility.tex"));
