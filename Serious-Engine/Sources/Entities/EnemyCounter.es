@@ -26,7 +26,7 @@ functions:
     if (m_penMainMusicHolder==NULL) {
       m_penMainMusicHolder = _pNetwork->GetEntityWithName("MusicHolder", 0);
     }
-    return (CMusicHolder *)&*m_penMainMusicHolder;
+    return (CMusicHolder *) m_penMainMusicHolder.ep_pen;
   }
   void StartCounting(void)
   {

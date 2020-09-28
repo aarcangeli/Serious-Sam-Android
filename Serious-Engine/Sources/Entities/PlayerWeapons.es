@@ -745,7 +745,7 @@ functions:
   CPlayerAnimator *GetAnimator(void)
   {
     ASSERT(m_penPlayer!=NULL);
-    return ((CPlayerAnimator*)&*((CPlayer&)*m_penPlayer).m_penAnimator);
+    return ((CPlayerAnimator*) ((CPlayer&)*m_penPlayer).m_penAnimator.ep_pen);
   }
 
   // recoil

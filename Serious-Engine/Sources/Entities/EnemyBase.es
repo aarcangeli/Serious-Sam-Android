@@ -269,7 +269,7 @@ functions:
   class CWatcher *GetWatcher(void)
   {
     ASSERT(m_penWatcher!=NULL);
-    return (CWatcher*)&*m_penWatcher;
+    return (CWatcher*) m_penWatcher.ep_pen;
   }
   export void Copy(CEntity &enOther, ULONG ulFlags)
   {

@@ -147,7 +147,8 @@ functions:
         pcmNm1 = pcmNp0;
         pcmNp0 = pcmNp1;
         pcmNp1 = pcmNp2;
-        pcmNp2 = (CCameraMarker*)&*pcmNp2->m_penTarget;
+        pcmNp2 = (CCameraMarker*) pcmNp2->m_penTarget.ep_pen;
+
         // disable lerping
         bLerping = FALSE;
       }
@@ -326,12 +327,12 @@ procedures:
     // check all markers for correct type and numbers
     INDEX ctMarkers=1;
     INDEX ctNonSkipped=0;
-    CCameraMarker *pcm0 = (CCameraMarker*)&*m_penTarget;
-    CCameraMarker *pcm  = (CCameraMarker*)&*pcm0->m_penTarget;
+    CCameraMarker *pcm0 = (CCameraMarker*) m_penTarget.ep_pen;
+    CCameraMarker *pcm  = (CCameraMarker*) pcm0->m_penTarget.ep_pen;
     // loop thru markers
     while( pcm!=NULL && pcm->m_penTarget!=pcm0)
     {
-      pcm = (CCameraMarker*)&*pcm->m_penTarget;
+      pcm = (CCameraMarker*) pcm->m_penTarget.ep_pen;
       if (pcm==NULL) {
         WarningMessage( "Movable camera - broken link!");
         return;
@@ -363,7 +364,7 @@ procedures:
     m_bStopMoving = FALSE;
     m_penLast = pcm; // keep last marker
     ASSERT( pcm->m_penTarget == m_penTarget);
-    pcm  = (CCameraMarker*)&*m_penTarget;
+    pcm  = (CCameraMarker*) m_penTarget.ep_pen;
     m_colFade0 = m_colFade1 = pcm->m_colFade;
 
     // register camera as movable entity
@@ -392,9 +393,9 @@ procedures:
   PlayCamera()
   {
     // eventually add to movers list
-    CCameraMarker &cm = (CCameraMarker&)*m_penTarget;
+    CCameraMarker *cm = (CCameraMarker*) m_penTarget.ep_pen;
     // if we have at least one marker
-    if( &cm!=NULL) {
+    if( cm!=NULL) {
       // treat camera as movable
       jump PlayMovingCamera();
     // if there isn't any markers

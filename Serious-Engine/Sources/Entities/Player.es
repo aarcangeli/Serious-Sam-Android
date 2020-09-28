@@ -4210,7 +4210,7 @@ functions:
       // get min distance from any player
       FLOAT fMinD = UpperLimit(0.0f);
       for (INDEX iPlayer=0; iPlayer<GetMaxPlayers(); iPlayer++) {
-        CPlayer *ppl = (CPlayer *)&*GetPlayerEntity(iPlayer);
+        CPlayer *ppl = (CPlayer *) GetPlayerEntity(iPlayer);
         if (ppl==NULL) { 
           continue;
         }
@@ -4334,7 +4334,7 @@ void TeleportPlayer(enum WorldLinkType EwltType)
         bAdjustHealth = FALSE;
       // if there is coop respawn marker
       } else if (m_penMainMusicHolder!=NULL && !(m_ulFlags&PLF_CHANGINGLEVEL)) {
-        CMusicHolder *pmh = (CMusicHolder *)&*m_penMainMusicHolder;
+        CMusicHolder *pmh = (CMusicHolder *) m_penMainMusicHolder.ep_pen;
         if (pmh->m_penRespawnMarker!=NULL) {
           // get it
           pen = pmh->m_penRespawnMarker;
@@ -4435,7 +4435,7 @@ void TeleportPlayer(enum WorldLinkType EwltType)
       }
 
       // start with first message linked to the marker
-      CMessageHolder *penMessage = (CMessageHolder *)&*CpmStart.m_penMessage;
+      CMessageHolder *penMessage = (CMessageHolder *) CpmStart.m_penMessage.ep_pen;
       // while there are some messages to add
       while (penMessage!=NULL && IsOfClass(penMessage, "MessageHolder")) {
         const CTFileName &fnmMessage = penMessage->m_fnmMessage;
@@ -4445,7 +4445,7 @@ void TeleportPlayer(enum WorldLinkType EwltType)
           ReceiveComputerMessage(fnmMessage, 0);
         }
         // go to next message holder in list
-        penMessage = (CMessageHolder *)&*penMessage->m_penNext;
+        penMessage = (CMessageHolder *) penMessage->m_penNext.ep_pen;
       }
 
       // set weapons

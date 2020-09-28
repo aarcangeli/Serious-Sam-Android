@@ -1,4 +1,4 @@
-#include "../StdH/StdH.h"
+#include "Entities/StdH/StdH.h"
 #include "Entities/BloodSpray.h"
 #include "Entities/PlayerWeapons.h"
 #include "Entities/WorldSettingsController.h"
@@ -245,7 +245,7 @@ void Particles_ViewerLocal(CEntity *penView)
   if( penBcgViewer != NULL)
   {
     // obtain world settings controller 
-    pwsc = (CWorldSettingsController *) &*penBcgViewer->m_penWorldSettingsController;
+    pwsc = (CWorldSettingsController *) penBcgViewer->m_penWorldSettingsController.ep_pen;
   }
 
   // ***** Storm appearing effects
