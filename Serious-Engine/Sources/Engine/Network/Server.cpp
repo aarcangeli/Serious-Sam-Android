@@ -307,7 +307,7 @@ void CServer::SendDisconnectMessage(INDEX iClient, const char *strExplanation, B
   }
   // report that it has gone away
   CPrintF(TRANS("Client '%s' ordered to disconnect: %s\n"), 
-    _cmiComm.Server_GetClientName(iClient), strExplanation);
+    (const char *) _cmiComm.Server_GetClientName(iClient), strExplanation);
   // if not disconnected before
   if (sso.sso_iDisconnectedState==0) {
     // mark the disconnection
@@ -316,7 +316,7 @@ void CServer::SendDisconnectMessage(INDEX iClient, const char *strExplanation, B
   } else {
     // force the disconnection
     CPrintF(TRANS("Forcing client '%s' to disconnect\n"), 
-      _cmiComm.Server_GetClientName(iClient));
+      (const char *) _cmiComm.Server_GetClientName(iClient));
     sso.sso_iDisconnectedState = 2;
   }
 }
@@ -477,7 +477,7 @@ void CServer::SendGameStreamBlocks(INDEX iClient)
   // if no blocks to write
   if (iBlocksOk<=0) {
     // if not sent anything for some time
-    CTimerValue tvNow = _pTimer->GetLowPrecisionTimer();
+    CTimerValue tvNow = _pTimer->GetHighPrecisionTimer();
     extern FLOAT ser_tmKeepAlive;
     if ((tvNow-sso.sso_tvLastMessageSent).GetSeconds()>ser_tmKeepAlive) {
       // send keepalive
@@ -493,7 +493,7 @@ void CServer::SendGameStreamBlocks(INDEX iClient)
 //  CPrintF("sent: %d=%dB\n", iBlocksOk, nmPackedBlocks.nm_slSize);
   _pNetwork->SendToClient(iClient, nmPackedBlocks);
   sso.sso_iLastSentSequence = Max(sso.sso_iLastSentSequence, iMaxSent);
-  sso.sso_tvLastMessageSent = _pTimer->GetLowPrecisionTimer();
+  sso.sso_tvLastMessageSent = _pTimer->GetHighPrecisionTimer();
 
   // remove the block(s) that fall out of the buffer
   extern INDEX ser_iRememberBehind;
@@ -501,7 +501,7 @@ void CServer::SendGameStreamBlocks(INDEX iClient)
 
 
   // if haven't sent pings for some time
-  CTimerValue tvNow = _pTimer->GetLowPrecisionTimer();
+  CTimerValue tvNow = _pTimer->GetHighPrecisionTimer();
   extern FLOAT ser_tmPingUpdate;
   if ((tvNow-sso.sso_tvLastPingSent).GetSeconds()>ser_tmPingUpdate) {
     // send ping info
@@ -528,7 +528,7 @@ void CServer::ResendGameStreamBlocks(INDEX iClient, INDEX iSequence0, INDEX ctSe
   extern INDEX net_bReportMiscErrors;
   if (net_bReportMiscErrors) {
     CPrintF(TRANS("Server: Resending sequences %d-%d(%d) to '%s'..."), 
-      iSequence0, iSequence0+ctSequences-1, ctSequences, _cmiComm.Server_GetClientName(iClient));
+      iSequence0, iSequence0+ctSequences-1, ctSequences, (const char *) _cmiComm.Server_GetClientName(iClient));
   }
 
   // get corresponding session socket
@@ -722,7 +722,7 @@ void CServer::ServerLoop(void)
 
 //  try {
 //    _cmiComm.Server_Accept_t();
-//  } catch ( const char *strError) {
+//  } catch (char *strError) {
 //    CPrintF(TRANS("Accepting failed, no more clients can connect: %s\n"), strError);
 //  }
   // handle all incoming messages
@@ -897,7 +897,7 @@ void CServer::ConnectRemoteSessionState(INDEX iClient, CNetworkMessage &nm)
   if (_strModName!=strGivenMod) {
     // disconnect the client
     // NOTE: DO NOT TRANSLATE THIS STRING!
-    CTString strMod(0, "MOD:%s\\%s", _strModName.str_String, _strModURL.str_String);
+    CTString strMod(0, "MOD:%s\\%s", (const char *) _strModName, (const char *) _strModURL);
     SendDisconnectMessage(iClient, strMod, /*bStream=*/TRUE);
     return;
   }
@@ -1008,7 +1008,7 @@ void CServer::ConnectRemoteSessionState(INDEX iClient, CNetworkMessage &nm)
     CPrintF(TRANS("Server: Sent initialization info to '%s' (%dk)\n"),
       (const char*)_cmiComm.Server_GetClientName(iClient), slSize/1024);
   // if failed
-  } catch ( const char *strError) {
+  } catch (char *strError) {
     // deactivate it
     sso.Deactivate();
 
@@ -1081,7 +1081,7 @@ void CServer::SendSessionStateData(INDEX iClient)
     }
 
   // if failed
-  } catch ( const char *strError) {
+  } catch (char *strError) {
     // deactivate it
     sso.Deactivate();
 
@@ -1094,10 +1094,10 @@ void CServer::SendSessionStateData(INDEX iClient)
 void CServer::HandleAll()
 {
   // clear last accepted client info
- /* INDEX iClient = -1;
+  /* INDEX iClient = -1;
   if (_cmiComm.GetLastAccepted(iClient)) {
     CPrintF(TRANS("Server: Accepted session connection by '%s'\n"),
-      _cmiComm.Server_GetClientName(iClient));
+      (const char *) _cmiComm.Server_GetClientName(iClient));
   }
 	*/
 
@@ -1134,13 +1134,13 @@ void CServer::HandleAllForAClient(INDEX iClient)
   }
 
   if (iClient>0 && sso.sso_bActive && sso.sso_bSendStream && sso.sso_tvMessageReceived.tv_llValue>0 &&
-    (_pTimer->GetLowPrecisionTimer()-sso.sso_tvMessageReceived).GetSeconds()>net_tmDisconnectTimeout) {
+    (_pTimer->GetHighPrecisionTimer()-sso.sso_tvMessageReceived).GetSeconds()>net_tmDisconnectTimeout) {
     SendDisconnectMessage(iClient, TRANS("Connection timeout"));
   }
 
   // if the client is disconnected
   if (!_cmiComm.Server_IsClientUsed(iClient) || sso.sso_iDisconnectedState>1) {
-    CPrintF(TRANS("Server: Client '%s' disconnected.\n"), _cmiComm.Server_GetClientName(iClient));
+    CPrintF(TRANS("Server: Client '%s' disconnected.\n"), (const char *) _cmiComm.Server_GetClientName(iClient));
     // clear it
     _cmiComm.Server_ClearClient(iClient);
     // free all that data that was allocated for the client
@@ -1164,7 +1164,7 @@ void CServer::HandleAllForAClient(INDEX iClient)
 
 	// if the client has confirmed disconnect in this loop
   if (!_cmiComm.Server_IsClientUsed(iClient) || sso.sso_iDisconnectedState>1) {
-    CPrintF(TRANS("Server: Client '%s' disconnected.\n"), _cmiComm.Server_GetClientName(iClient));
+    CPrintF(TRANS("Server: Client '%s' disconnected.\n"), (const char *) _cmiComm.Server_GetClientName(iClient));
     // clear it
     _cmiComm.Server_ClearClient(iClient);
     // free all that data that was allocated for the client
@@ -1229,7 +1229,7 @@ static void SendAdminResponse(INDEX iClient, const CTString &strResponse)
 void CServer::Handle(INDEX iClient, CNetworkMessage &nmMessage)
 {
   CSessionSocket &sso = srv_assoSessions[iClient];
-  sso.sso_tvMessageReceived = _pTimer->GetLowPrecisionTimer();
+  sso.sso_tvMessageReceived = _pTimer->GetHighPrecisionTimer();
 
   switch (nmMessage.GetType()) {
 
@@ -1283,7 +1283,7 @@ void CServer::Handle(INDEX iClient, CNetworkMessage &nmMessage)
       // send refusal message
       CTString strMessage;
       strMessage.PrintF(TRANS("Player character '%s' already exists in this session."),
-        pcCharacter.GetName());
+        (const char *) pcCharacter.GetName());
       SendDisconnectMessage(iClient, strMessage);
 
     // if the max. number of clients is not reached
@@ -1411,7 +1411,7 @@ void CServer::Handle(INDEX iClient, CNetworkMessage &nmMessage)
           sso.sso_ctBadSyncs++;
           if( ser_bReportSyncBad) {
             CPrintF( TRANS("SYNCBAD: Client '%s', Sequence %d Tick %.2f - bad %d\n"), 
-              _cmiComm.Server_GetClientName(iClient), scRemote.sc_iSequence , scRemote.sc_tmTick, sso.sso_ctBadSyncs);
+              (const char *) _cmiComm.Server_GetClientName(iClient), scRemote.sc_iSequence , scRemote.sc_tmTick, sso.sso_ctBadSyncs);
           }
           if (ser_iKickOnSyncBad>0) {
             if (sso.sso_ctBadSyncs>=ser_iKickOnSyncBad) {
@@ -1424,7 +1424,7 @@ void CServer::Handle(INDEX iClient, CNetworkMessage &nmMessage)
           sso.sso_ctBadSyncs = 0;
           if (ser_bReportSyncOK) {
             CPrintF( TRANS("SYNCOK: Client '%s', Tick %.2f\n"), 
-              _cmiComm.Server_GetClientName(iClient), scRemote.sc_tmTick);
+              (const char *) _cmiComm.Server_GetClientName(iClient), scRemote.sc_tmTick);
           }
         }
         
@@ -1438,13 +1438,13 @@ void CServer::Handle(INDEX iClient, CNetworkMessage &nmMessage)
         // report only if syncs are ok now (so that we don't report a bunch of late syncs on level change
         if( ser_bReportSyncLate && srv_assoSessions[iClient].sso_tmLastSyncReceived>0) {
           CPrintF( TRANS("SYNCLATE: Client '%s', Tick %.2f\n"), 
-            _cmiComm.Server_GetClientName(iClient), scRemote.sc_tmTick);
+            (const char *) _cmiComm.Server_GetClientName(iClient), scRemote.sc_tmTick);
         }
       // if too new
       } else {
         if( ser_bReportSyncEarly) {
           CPrintF( TRANS("SYNCEARLY: Client '%s', Tick %.2f\n"), 
-            _cmiComm.Server_GetClientName(iClient), scRemote.sc_tmTick);
+            (const char *) _cmiComm.Server_GetClientName(iClient), scRemote.sc_tmTick);
         }
         // remember that this client has sent sync for that tick
         // (even though we cannot really check that it is valid)
@@ -1590,7 +1590,7 @@ void CServer::Handle(INDEX iClient, CNetworkMessage &nmMessage)
     } else {
 
       CPrintF(TRANS("Server: Client '%s', Admin cmd: %s\n"), 
-        (const char*)_cmiComm.Server_GetClientName(iClient), strCommand);
+        (const char*)_cmiComm.Server_GetClientName(iClient), (const char *) strCommand);
 
       con_bCapture = TRUE;
       con_strCapture = "";

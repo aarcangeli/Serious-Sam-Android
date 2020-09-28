@@ -136,19 +136,21 @@ set(
   "${SE_BASE}/Templates/Stock_CSoundData.cpp"
   "${SE_BASE}/Templates/Stock_CTextureData.cpp"
   "${SE_BASE}/Network/ActionBuffer.cpp"
-  "${SE_BASE}/Network/ClientInterface.cpp"
-  "${SE_BASE}/Network/Compression.cpp"
-  "${SE_BASE}/Network/CPacket.cpp"
-  "${SE_BASE}/Network/Diff.cpp"
-  "${SE_BASE}/Network/MessageDispatcher.cpp"
-  "${SE_BASE}/Network/Network.cpp"
   "${SE_BASE}/Network/NetworkMessage.cpp"
-  "${SE_BASE}/Network/NetworkProfile.cpp"
-  "${SE_BASE}/Network/PlayerBuffer.cpp"
-  "${SE_BASE}/Network/PlayerSource.cpp"
-  "${SE_BASE}/Network/PlayerTarget.cpp"
   "${SE_BASE}/Network/Server.cpp"
+  "${SE_BASE}/Network/Buffer.cpp"
+  "${SE_BASE}/Network/NetworkProfile.cpp"
   "${SE_BASE}/Network/SessionState.cpp"
+  "${SE_BASE}/Network/PlayerBuffer.cpp"
+  "${SE_BASE}/Network/MessageDispatcher.cpp"
+  "${SE_BASE}/Network/PlayerSource.cpp"
+  "${SE_BASE}/Network/Compression.cpp"
+  "${SE_BASE}/Network/Network.cpp"
+  "${SE_BASE}/Network/PlayerTarget.cpp"
+  "${SE_BASE}/Network/CPacket.cpp"
+  "${SE_BASE}/Network/ClientInterface.cpp"
+  "${SE_BASE}/Network/CommunicationInterface_android.cpp"
+  "${SE_BASE}/Network/Diff.cpp"
   "${SE_BASE}/Rendering/Render.cpp"
   "${SE_BASE}/Rendering/RenderProfile.cpp"
   "${SE_BASE}/Rendering/SelectOnRender.cpp"
@@ -225,7 +227,6 @@ set(
   ${SE_BASE}/Sound/SoundLibrary_android.cpp
   ${SE_BASE}/_android/Registry.cpp
   ${SE_BASE}/_android/MultiMonitor.cpp
-  ${SE_BASE}/Network/CommunicationInterface_android.cpp
   ${SE_BASE}/Graphics/ViewPort_android.cpp
   ${SE_BASE}/_android/CGfxLibrary.cpp
   ${SE_BASE}/_android/GameAgent.cpp
