@@ -17,6 +17,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Engine.h>
 #include <GameMP/Game.h>
 #include <GameMP/SEColors.h>
+#include <config.h>
 
 /* rcg10042001 protect against Visual C-isms. */
 #ifdef _MSC_VER

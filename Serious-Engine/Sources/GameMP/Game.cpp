@@ -31,6 +31,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <AndroidAdapters/binding-callbacks.h>
 #include "Camera.h"
 #include "LCDDrawing.h"
+#include <config.h>
 
 FLOAT con_fHeightFactor = 0.3f;
 FLOAT con_tmLastLines   = 5.0f;
