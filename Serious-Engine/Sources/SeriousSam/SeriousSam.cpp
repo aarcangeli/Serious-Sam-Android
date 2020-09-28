@@ -123,6 +123,18 @@ CTextureObject *_ptoLogoCT  = NULL;
 CTextureObject *_ptoLogoODI = NULL;
 CTextureObject *_ptoLogoEAX = NULL;
 
+#ifdef FIRST_ENCOUNTER
+CTString sam_strVersion = SSA_VERSION;
+CTString sam_strModName = TRANS("-   A N D R O I D   P O R T   ( T F E  T E S T )   -");
+CTString sam_strBackLink = TRANS("https://github.com/Skyrimus/Serious-Sam-Android");
+
+CTString sam_strFirstLevel = "Levels\\01_Hatshepsut.wld";
+CTString sam_strIntroLevel = "Levels\\Intro.wld";
+CTString sam_strGameName = "serioussamfe";
+
+CTString sam_strTechTestLevel = "Levels\\TechTest.wld";
+CTString sam_strTrainingLevel = "Levels\\KarnakDemo.wld";
+#else
 CTString sam_strVersion = SSA_VERSION;
 CTString sam_strModName = TRANS("-   A N D R O I D   P O R T   ( U N O F F I C I A L )   -");
 CTString sam_strBackLink = TRANS("https://github.com/aarcangeli/Serious-Sam-Android");
@@ -133,6 +145,7 @@ CTString sam_strGameName = "serioussamse";
 
 CTString sam_strTechTestLevel = "Levels\\LevelsMP\\Technology\\TechTest.wld";
 CTString sam_strTrainingLevel = "Levels\\KarnakDemo.wld";
+#endif
 
 ENGINE_API extern INDEX snd_iFormat;
 

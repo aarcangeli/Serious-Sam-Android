@@ -180,7 +180,11 @@ void InitStreams(void) {
     }
   }
   // find eventual extension for the mod's dlls
+  #ifdef FIRST_ENCOUNTER
+  _strModExt = ""; // default First Encounter
+  #else
   _strModExt = "MP"; // default Second Encounter
+  #endif
   LoadStringVar(CTString("ModExt.txt"), _strModExt);
 
   CPrintF(TRANS("Loading group files...\n"));

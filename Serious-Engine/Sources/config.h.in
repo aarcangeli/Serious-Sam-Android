@@ -7,5 +7,6 @@
 #cmakedefine ENABLE_NETWORK
 #cmakedefine ENABLE_SPLITSCREEN
 #cmakedefine DISABLE_NETSETTINGS
+#cmakedefine FIRST_ENCOUNTER
 
 #endif
