@@ -1015,7 +1015,7 @@ void CCommunicationInterface::UpdateMasterBuffers() {
     cliaddr.sin_port = htons(ppaNewPacket->pa_adrAddress.adr_uwPort);
 
     slSizeSent = sendto(cci_hSocket, (char *) ppaNewPacket->pa_pubPacketData,
-                        (int) ppaNewPacket->pa_slSize, 0, (const struct sockaddr *) &cliaddr, sizeof(sockaddr_in));
+                        (int) ppaNewPacket->pa_slSize, 0, (const struct sockaddr *) &cliaddr, sizeof(cliaddr));
     cci_bBound = TRUE;   // UDP socket that did a send is considered bound
     tvNow = _pTimer->GetHighPrecisionTimer();
     //CPrintF("Sent %i bytes\n", slSizeSent);
