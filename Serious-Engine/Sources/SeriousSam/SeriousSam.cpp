@@ -20,8 +20,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <dlfcn.h>
 #include <Engine/CurrentVersion.h>
 #include <GameMP/Game.h>
+#include <config.h>
 #define DECL_DLL
+#ifdef FIRST_ENCOUNTER
+#include <Entities/Global.h>
+#else
 #include <EntitiesMP/Global.h>
+#endif
 #include <SeriousSam/GUI/Menus/MenuManager.h>
 #include "resource.h"
 #include "SplashScreen.h"
@@ -31,7 +36,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "LCDDrawing.h"
 #include "CmdLine.h"
 #include "Credits.h"
-#include <config.h>
 
 #ifndef SSA_VERSION
 #define SSA_VERSION ""
