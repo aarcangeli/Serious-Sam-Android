@@ -7,7 +7,7 @@ set(SE_SOURCES "${PROJECT_ROOT}/Serious-Engine/Sources")
 set(LIBS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/libs)
 include(compilerFlags)
 
-option(FIRST_ENCOUNTER "Compile a The First Encounter version" FALSE)
+option(FIRST_ENCOUNTER "Compile a The First Encounter version" OFF)
 
 # build options
 option(STATIC_LINKING "Buils a single .so file" OFF)

@@ -244,7 +244,7 @@ functions:
       iMirror-=9;
       INDEX ctMirrorMarkers = &m_penMirror4-&m_penMirror0;
       if (iMirror<ctMirrorMarkers){
-        CMirrorMarker *pfm = (CMirrorMarker *)&*(&m_penMirror0)[iMirror];
+        CMirrorMarker *pfm = (CMirrorMarker *) (&m_penMirror0)[iMirror].ep_pen;
         if (pfm != NULL) {
           return pfm->GetMirrorName();
         } else {
@@ -269,7 +269,7 @@ functions:
     iMirror-=9;
     INDEX ctMirrorMarkers = &m_penMirror4-&m_penMirror0;
     if (iMirror<ctMirrorMarkers){
-      CMirrorMarker *pmm = (CMirrorMarker *)&*(&m_penMirror0)[iMirror];
+      CMirrorMarker *pmm = (CMirrorMarker *) (&m_penMirror0)[iMirror].ep_pen;
       if (pmm != NULL) {
         pmm->GetMirror(mpMirror);
         return TRUE;
@@ -662,10 +662,10 @@ procedures:
 
     INDEX ctMarkers=0;
     // new moving target
-    CMovingBrushMarker *pmbm = (CMovingBrushMarker *) &*m_penTarget;
+    CMovingBrushMarker *pmbm = (CMovingBrushMarker *) m_penTarget.ep_pen;
     while( pmbm!=NULL && IsOfClass(pmbm->m_penTarget, "Moving Brush Marker") && !pmbm->m_bStopMoving && ctMarkers<50)
     {      
-      pmbm = (CMovingBrushMarker *) &*pmbm->m_penTarget;
+      pmbm = (CMovingBrushMarker *) pmbm->m_penTarget.ep_pen;
       ctMarkers++;
     }
 
