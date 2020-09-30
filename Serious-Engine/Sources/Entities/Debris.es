@@ -24,7 +24,7 @@ event ESpawnDebris {
   CTextureData *ptdBump,          // bump texture
   INDEX iModelAnim,               // animation for debris model
   enum DebrisParticlesType dptParticles,   // particles type
-  int  betStain, // stain left when touching brushes
+  enum BasicEffectType  betStain, // stain left when touching brushes
   COLOR colDebris,                // multiply color for debris
 };
 
@@ -43,7 +43,7 @@ properties:
   4 FLOAT m_fFadeStartTime = 0.0f,              // fade start time
   5 FLOAT m_fFadeTime = 0.0f,                   // fade time
   6 FLOAT3D m_fLastStainHitPoint = FLOAT3D(0,0,0), // last stain hit point
-  7 INDEX m_betStain = BET_NONE, // type of stain left
+  7 enum BasicEffectType m_betStain = BET_NONE, // type of stain left
   8 INDEX m_ctLeftStains = 0,                   // count of stains already left
   9 FLOAT m_tmStarted = 0.0f,                   // time when spawned
 
@@ -66,7 +66,7 @@ functions:
   {
     // cannot be damaged immediately after spawning
     if ((_pTimer->CurrentTick()-m_tmStarted<1.0f)
-      ||(dmtType==DMT_CANNONBALL_EXPLOSION) && (_pTimer->CurrentTick()-m_tmStarted<5.0f)) {
+      ||((dmtType==DMT_CANNONBALL_EXPLOSION) && (_pTimer->CurrentTick()-m_tmStarted<5.0f))) {
       return;
     }
     CMovableModelEntity::ReceiveDamage(penInflictor, dmtType, fDamageAmmount, vHitPoint, vDirection);
@@ -121,7 +121,7 @@ functions:
         m_fLastStainHitPoint = vPoint;
         // stain
         ese.colMuliplier = C_WHITE|CT_OPAQUE;
-        ese.betType = (BasicEffectType) m_betStain;
+        ese.betType = m_betStain;
         ese.vNormal = FLOAT3D(plPlaneNormal);
         GetNormalComponent( en_vCurrentTranslationAbsolute, plPlaneNormal, ese.vDirection);
         FLOAT fLength = ese.vDirection.Length() / 7.5f;

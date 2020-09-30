@@ -3,6 +3,20 @@
 #include "Entities/StdH/StdH.h"
 %}
 
+enum SprayParticlesType {
+  0 SPT_NONE        "None",         // no particles
+  1 SPT_BLOOD       "Blood",        // blood
+  2 SPT_BONES       "Bones",        // bones
+  3 SPT_FEATHER     "Feather",      // feather
+  4 SPT_STONES      "Stones",       // stones
+  5 SPT_WOOD        "Wood",         // wood
+  6 SPT_SLIME       "Slime",        // gizmo/beast slime
+  7 SPT_LAVA_STONES "Lava Stones",  // lava stones
+  8 SPT_ELECTRICITY_SPARKS "Electricity sparks",  // electricity sparks
+  9 SPT_BEAST_PROJECTILE_SPRAY "Beast projectile spray", // beast projectile explosion sparks
+ 10 SPT_SMALL_LAVA_STONES "Small Lava Stones",  // small lava stones
+};
+
 // input parameter for spawning a blood spray
 event ESpawnSpray {
   enum SprayParticlesType sptType, // type of particles

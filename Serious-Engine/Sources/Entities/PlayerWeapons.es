@@ -559,7 +559,7 @@ components:
   2 class   CLASS_BULLET            "Classes\\Bullet.ecl",
   3 class   CLASS_WEAPONEFFECT      "Classes\\PlayerWeaponsEffects.ecl",
   4 class   CLASS_PIPEBOMB          "Classes\\Pipebomb.ecl",
-  5 class   CLASS_GHOSTBUSTERRAY    "Classes\\GhostBusterRay.ecl",
+//  5 class   CLASS_GHOSTBUSTERRAY    "Classes\\GhostBusterRay.ecl",
   6 class   CLASS_CANNONBALL        "Classes\\CannonBall.ecl",
   7 class   CLASS_WEAPONITEM        "Classes\\WeaponItem.ecl",
 
@@ -908,7 +908,7 @@ functions:
       }
     }
     // apply cannon draw
-    else if( (m_iCurrentWeapon == WEAPON_IRONCANNON) /*||
+    else if( m_iCurrentWeapon == WEAPON_IRONCANNON /*||
              (m_iCurrentWeapon == WEAPON_NUKECANNON) */)
     {
       FLOAT fLerpedMovement = Lerp(m_fWeaponDrawPowerOld, m_fWeaponDrawPower, _pTimer->GetLerpFactor());
@@ -3385,7 +3385,7 @@ procedures:
       GetAnimator()->FireAnimation(BODY_ANIM_SHOTGUN_FIRESHORT, AOF_LOOPING);
     } else if (m_iCurrentWeapon==WEAPON_TOMMYGUN) {
       autocall TommyGunStart() EEnd;
-    } else if ((m_iCurrentWeapon==WEAPON_IRONCANNON) /*|| (m_iCurrentWeapon==WEAPON_NUKECANNON)*/) {
+    } else if (m_iCurrentWeapon==WEAPON_IRONCANNON /*|| (m_iCurrentWeapon==WEAPON_NUKECANNON)*/) {
       jump CannonFireStart();
     }
 

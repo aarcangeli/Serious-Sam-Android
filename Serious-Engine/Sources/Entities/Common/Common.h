@@ -1,5 +1,8 @@
 // common headers for flesh entity classes
 
+#include <Entities/Debris.h>   /* rcg10062001 need enum definition... */
+#include <Entities/KeyItem.h>  /* rcg10062001 need enum definition... */
+
 #define SURFACE_SAND 9
 #define SURFACE_WATER 12
 #define SURFACE_RED_SAND 13
@@ -160,8 +163,8 @@ DECL_DLL const char *PrintStack(CEntity *pen);
 // debris spawning
 DECL_DLL void Debris_Begin(
   EntityInfoBodyType Eeibt, 
-  int dptParticles,
-  int  betStain,
+  enum DebrisParticlesType dptParticles,
+  enum BasicEffectType  betStain,
   FLOAT fEntitySize,             // entity size in meters
   const FLOAT3D &vSpeed,
   const FLOAT3D &vSpawnerSpeed,  // how fast was the entity moving
@@ -191,7 +194,7 @@ DECL_DLL void PrintCenterMessage(CEntity *penThis, CEntity *penTarget,
   const CTString &strMessage, TIME tmLength, enum MessageSound mssSound);
 
 // get name of a key item
-DECL_DLL const char *GetKeyName(int kit);
+DECL_DLL const char *GetKeyName(enum KeyItemType kit);
 
 // get session properties
 DECL_DLL inline const CSessionProperties *GetSP(void)

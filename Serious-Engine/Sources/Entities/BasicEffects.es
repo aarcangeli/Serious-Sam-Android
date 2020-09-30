@@ -54,6 +54,16 @@ enum BasicEffectType {
  41 BET_CANNON_NOLIGHT          "",     // cannon explosion without light witn lo sound volume
 };
 
+enum EffectParticlesType {
+  0 EPT_NONE                  "",     // no partcicles
+  1 EPT_BULLET_STONE          "",    // bullet partcicles on stone
+  2 EPT_BULLET_SAND           "",    // bullet partcicles on sand
+  3 EPT_BULLET_WATER          "",    // bullet partcicles on water
+  4 EPT_BULLET_UNDER_WATER    "",    // bullet partcicles underwater
+  5 EPT_BULLET_RED_SAND       "",    // bullet partcicles on red sand
+};
+
+
 // input parameter for spwaning a basic effect
 event ESpawnEffect {
   enum BasicEffectType betType,   // type of effect

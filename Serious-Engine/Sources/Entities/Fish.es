@@ -125,7 +125,7 @@ functions:
       // render one lightning toward enemy
       FLOAT3D vSource = GetPlacement().pl_PositionVector;
       FLOAT3D vTarget = m_penEnemy->GetPlacement().pl_PositionVector;
-      FLOAT3D vDirection = (vTarget-vSource).Normalize();
+      //FLOAT3D vDirection = (vTarget-vSource).Normalize();
       Particles_Ghostbuster(vSource, vTarget, 32, 1.0f);
 
       // random lightnings arround
@@ -268,7 +268,7 @@ procedures:
     // declare yourself as a model
     InitAsModel();
     // fish must not go upstairs, or it will get out of water
-    SetPhysicsFlags((EPF_MODEL_WALKING|EPF_HASGILLS)&~EPF_ONBLOCK_CLIMBORSLIDE|EPF_ONBLOCK_SLIDE);
+    SetPhysicsFlags(((EPF_MODEL_WALKING|EPF_HASGILLS)&~EPF_ONBLOCK_CLIMBORSLIDE)|EPF_ONBLOCK_SLIDE);
     SetCollisionFlags(ECF_MODEL);
     SetFlags(GetFlags()|ENF_ALIVE);
     SetHealth(30.0f);

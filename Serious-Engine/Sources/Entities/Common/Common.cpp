@@ -821,8 +821,8 @@ COLOR _colDebris;
 // debris spawning
 void Debris_Begin(
   EntityInfoBodyType Eeibt, 
-  int _dptParticles,
-  int _betStain,
+  enum DebrisParticlesType dptParticles,
+  enum BasicEffectType  betStain,
   FLOAT fEntitySize,                  // entity size in meters
   const FLOAT3D &vSpeed,
   const FLOAT3D &vSpawnerSpeed,       // how fast was the entity moving
@@ -831,8 +831,6 @@ void Debris_Begin(
   const COLOR colDebris /*=C_WHITE*/  // multiply color
 )
 {
-  enum DebrisParticlesType dptParticles = (enum DebrisParticlesType) _dptParticles;
-  enum BasicEffectType betStain = (enum BasicEffectType) _betStain;
   _Eeibt          = Eeibt       ;
   _dptParticles   = dptParticles;
   _betStain       = betStain    ;
@@ -1113,7 +1111,7 @@ FLOAT GetGameDamageMultiplier(void)
   FLOAT fExtraStrengthPerPlayer = GetSP()->sp_fExtraEnemyStrengthPerPlayer;
   if (fExtraStrengthPerPlayer>0) {
     INDEX ctPlayers = _pNetwork->ga_sesSessionState.GetPlayersCount();
-    fGameDamageMultiplier*=1.0f/(1+fExtraStrengthPerPlayer*ClampDn(ctPlayers-1, (INDEX)0));
+    fGameDamageMultiplier*=1.0f/(1+fExtraStrengthPerPlayer*ClampDn(ctPlayers-1, 0));
   }
   return fGameDamageMultiplier;
 }

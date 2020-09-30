@@ -148,7 +148,6 @@ functions:
         pcmNp0 = pcmNp1;
         pcmNp1 = pcmNp2;
         pcmNp2 = (CCameraMarker*) pcmNp2->m_penTarget.ep_pen;
-
         // disable lerping
         bLerping = FALSE;
       }

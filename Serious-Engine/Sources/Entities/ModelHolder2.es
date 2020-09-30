@@ -173,7 +173,7 @@ functions:
     } else {
       vDirectionFixed = FLOAT3D(0,1,0);
     }
-    FLOAT3D vDamageOld = m_vDamage;
+    //FLOAT3D vDamageOld = m_vDamage;
     m_vDamage += vDirectionFixed*fKickDamage;
 
     // NOTE: we don't receive damage here, but handle death differently
@@ -237,7 +237,7 @@ functions:
 
   class CModelDestruction *GetDestruction(void)
   {
-    ASSERT(m_penDestruction==NULL || IsOfClass(m_penDestruction, "ModelDestruction"));
+    ASSERT(m_penDestruction!=NULL && IsOfClass(m_penDestruction, "ModelDestruction"));
     return (CModelDestruction*) m_penDestruction.ep_pen;
   }
   BOOL IsTargetable(void) const

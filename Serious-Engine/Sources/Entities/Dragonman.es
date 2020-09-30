@@ -444,8 +444,8 @@ procedures:
 
   Hit(EVoid) : CEnemyBase::Hit {
     // burn enemy
-    if (m_EdtType == DT_SERGEANT && CalcDist(m_penEnemy) <= 6.0f  ||
-        m_EdtType == DT_MONSTER  && CalcDist(m_penEnemy) <= 20.0f) {
+    if ((m_EdtType == DT_SERGEANT && CalcDist(m_penEnemy) <= 6.0f)  ||
+        (m_EdtType == DT_MONSTER  && CalcDist(m_penEnemy) <= 20.0f)) {
       jump BurnEnemy();
     }
 

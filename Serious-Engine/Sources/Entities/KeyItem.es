@@ -36,9 +36,8 @@ event EKey {
 
 %{
 
-const char *GetKeyName(int _kit)
+const char *GetKeyName(enum KeyItemType kit)
 {
-  enum KeyItemType kit = (KeyItemType) _kit;
   switch(kit) {
   case KIT_ANKHWOOD :       return TRANS("Wooden ankh"); break;
   case KIT_ANKHROCK:        return TRANS("Stone ankh"); break;
