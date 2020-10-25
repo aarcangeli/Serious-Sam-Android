@@ -34,4 +34,9 @@
         <item>On</item>
         <item>Off (use if UI is so large)</item>
     </string-array>
+
+    <string-array name="DrawBannerScaleEntries">
+        <item>On (show version, fps, ping)</item>
+        <item>Off</item>
+    </string-array>
 </resources>

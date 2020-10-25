@@ -29,8 +29,9 @@ struct BindingCallbacks {
     int isShiftPressed = false;
     float globalScale = 1;
     CTString WifiIP = "";
-	int ping = 0;
-	bool tfe;
+    bool drawBanner = true;
+    int ping = 0;
+    bool tfe;
 };
 
 extern BindingCallbacks g_cb;

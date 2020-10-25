@@ -15,6 +15,13 @@
             android:key="din_uiScale"
             android:summary="%s"
             android:title="Dinamic UI Scale" />
+        <ListPreference
+            android:defaultValue="On"
+            android:entries="@array/DrawBannerScaleEntries"
+            android:entryValues="@array/OnOff"
+            android:key="ui_drawBanner"
+            android:summary="%s"
+            android:title="Draw Banner in right top of screen" />
     </PreferenceCategory>
     <PreferenceCategory android:title="Inputs">
         <ListPreference

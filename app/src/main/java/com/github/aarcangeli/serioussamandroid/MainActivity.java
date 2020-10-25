@@ -99,6 +99,7 @@ public class MainActivity extends AppCompatActivity {
     public float deadZone;
     private boolean enableTouchController;
     private String din_uiScale;
+    private String ui_drawBanner;
     public float uiScale;
     public boolean test = false;
     public boolean isTracking;
@@ -291,6 +292,19 @@ public class MainActivity extends AppCompatActivity {
         } else {
             uiScale = Utils.convertDpToPixel(1.0f, this) * glSurfaceView.getScale();
             Log.i(TAG, "Dinamic UI Enabled");
+        }
+    }
+
+    public void drawBanner() {
+        if ("On".equalsIgnoreCase(ui_drawBanner)) {
+            executeShell("ui_drawBanner=1;");
+            Log.i(TAG, "DrawBanner Enabled");
+        } else if ("Off".equalsIgnoreCase(ui_drawBanner)) {
+            executeShell("ui_drawBanner=0;");
+            Log.i(TAG, "DrawBanner Disabled");
+        } else {
+            executeShell("ui_drawBanner=1;");
+            Log.i(TAG, "DrawBanner Enabled");
         }
     }
 
@@ -740,7 +754,9 @@ public class MainActivity extends AppCompatActivity {
         ctrlAimSensibility = preferences.getInt("ctrl_aimSensibility", 100) / 100.f;
         deadZone = preferences.getInt("ctrl_deadZone", 20) / 100.f;
         din_uiScale = preferences.getString("din_uiScale", "On");
+        ui_drawBanner = preferences.getString("ui_drawBanner", "On");
         DinamicUI();
+	drawBanner();
         executeShell("hud_iStats=" + (preferences.getBoolean("hud_iStats", false) ? 2 : 0) + ";");
         executeShell("input_uiScale=" + uiScale + ";");
         Log.i(TAG, "uiScale: " + uiScale);

@@ -636,6 +636,7 @@ BOOL Init()
   _pShell->DeclareSymbol("INDEX input_iIsShiftPressed;", (void *) &g_cb.isShiftPressed);
   _pShell->DeclareSymbol("FLOAT input_uiScale;", (void *) &g_cb.globalScale);
   _pShell->DeclareSymbol("CTString net_WifiIP;", (void *) &g_cb.WifiIP);
+  _pShell->DeclareSymbol("INDEX ui_drawBanner;", (void *) &g_cb.drawBanner);
 
   InitializeGame();
   _pNetwork->md_strGameID = sam_strGameName;
@@ -928,7 +929,9 @@ void DoGame(void)
 
     // draw fps and frame time
     if (!bMenuActive && _pGame->gm_csConsoleState == CS_OFF && _pGame->gm_csComputerState == CS_OFF) {
+    if (g_cb.drawBanner) {
       drawBannerFpsVersion(pdp, deltaFrame, fps, g_cb.ping);
+     }
     }
 
     if (_gmRunningGameMode == GM_INTRO) {
