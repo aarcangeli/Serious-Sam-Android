@@ -155,12 +155,12 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
 
-        <Button
+        <com.github.aarcangeli.serioussamandroid.views.ButtonView
             android:id="@+id/input_crunch"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
             android:layout_marginEnd="4dp"
-            android:background="@drawable/ic_crunch"
+            app:btnBitmap="@drawable/ic_crunch"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 

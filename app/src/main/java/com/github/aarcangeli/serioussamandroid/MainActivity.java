@@ -309,9 +309,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public String getWifiIP() {
+			Enumeration<InetAddress> en;
 		try {
 			NetworkInterface wlan0 = NetworkInterface.getByName("wlan0");
-			Enumeration<InetAddress> en = wlan0.getInetAddresses();
+			NetworkInterface ap0 = NetworkInterface.getByName("ap0");
+			if (wlan0.isUp()) {
+			en = wlan0.getInetAddresses();
+			} else {
+			en = ap0.getInetAddresses();
+			}
 			while (en.hasMoreElements()) {
 				InetAddress inetAddress = en.nextElement();
 				if (!inetAddress.isLoopbackAddress() && inetAddress instanceof Inet4Address) {
