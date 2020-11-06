@@ -403,23 +403,23 @@ void UpdatePauseState(void)
 // limit current frame rate if neeeded
 void LimitFrameRate(void)
 {
- /* // measure passed time for each loop
+  // measure passed time for each loop
   static CTimerValue tvLast(-1.0f);
   CTimerValue tvNow   = _pTimer->GetHighPrecisionTimer();
   TIME tmCurrentDelta = (tvNow-tvLast).GetSeconds();
 
   // limit maximum frame rate
-  sam_iMaxFPSActive   = ClampDn( (INDEX)sam_iMaxFPSActive,   1L);
-  sam_iMaxFPSInactive = ClampDn( (INDEX)sam_iMaxFPSInactive, 1L);
+  sam_iMaxFPSActive   = ClampDn( (INDEX)sam_iMaxFPSActive,   1);
+  sam_iMaxFPSInactive = ClampDn( (INDEX)sam_iMaxFPSInactive, 1);
   INDEX iMaxFPS = sam_iMaxFPSActive;
   if(_pGame->gm_CurrentSplitScreenCfg==CGame::SSC_DEDICATED) {
-    iMaxFPS = ClampDn(iMaxFPS, 60L); // never go very slow if dedicated server
+    iMaxFPS = ClampDn(iMaxFPS, 60); // never go very slow if dedicated server
   }
   TIME tmWantedDelta = 1.0f / iMaxFPS;
   if( tmCurrentDelta<tmWantedDelta) Sleep( (tmWantedDelta-tmCurrentDelta)*1000.0f);
   
   // remember new time
-  tvLast = _pTimer->GetHighPrecisionTimer(); */
+  tvLast = _pTimer->GetHighPrecisionTimer(); 
 }
 
 // load first demo
@@ -1370,6 +1370,7 @@ void seriousSubMain() {
 
     // do the main game loop and render screen
     DoGame();
+    LimitFrameRate();
   }
   _bRunning = false;
 
