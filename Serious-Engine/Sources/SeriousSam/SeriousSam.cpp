@@ -37,9 +37,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "CmdLine.h"
 #include "Credits.h"
 
+
 #ifndef SSA_VERSION
 #define SSA_VERSION ""
 #endif
+
+
+
 
 typedef CGame *(*GAME_Create_t)(void);
 void drawBannerFpsVersion(CDrawPort *pdp, int64_t deltaFrame, float fps, int ping);
@@ -54,7 +58,7 @@ BOOL _bRunning = TRUE;
 BOOL _bExitQuitScreen = TRUE;
 BOOL _bQuitScreen = TRUE;
 BOOL bMenuActive = FALSE;
-BOOL bMenuRendering = FALSE;
+BOOL bMenuRendering = FALSE
 
 extern BOOL _bDefiningKey;
 static BOOL _bReconsiderInput = FALSE;

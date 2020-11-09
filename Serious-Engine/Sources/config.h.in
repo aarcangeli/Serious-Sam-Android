@@ -3,6 +3,8 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#cmakedefine SSA_VERSION "@SSA_VERSION@"
+
 #cmakedefine STATIC_LINKING
 #cmakedefine ENABLE_NETWORK
 #cmakedefine ENABLE_SPLITSCREEN

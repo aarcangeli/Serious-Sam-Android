@@ -1,0 +1,59 @@
+version: nightly-{build}-{branch}
+skip_tags: true
+
+environment:
+  ANDROID_HOME: C:\android-sdk-windows
+  ANDROID_NDK_HOME: C:\android-ndk-windows\android-ndk-r19c
+  ANDROID_TOOLS_URL: https://dl.google.com/android/repository/sdk-tools-windows-3859397.zip
+  ANDROID_NDK_URL: https://dl.google.com/android/repository/android-ndk-r19c-windows-x86_64.zip
+  # signing infos
+  STORE_FILE: ..\\serious-sam.jks
+  STORE_PASSWORD:
+    secure: 0AfQe/tOH2cahhafeHbZfyXod8sLKbXkF54aN52XInw=
+  KEY_ALIAS: alessandro arcangeli
+  KEY_PASSWORD:
+    secure: V+MTj5TxI8nQ1U5lTKIDJQ==
+
+install:
+  - cmd: |
+      rem read VERSION from version.properties
+      FOR /F "tokens=1* delims==" %%A IN (version.properties) DO (IF "%%A"=="VERSION" set VERSION=%%B)
+      set SSA_VERSION=%VERSION%-nightly-%APPVEYOR_REPO_COMMIT:~0,7%
+      echo Building SeriousSamAndroid version %SSA_VERSION%
+
+      rem Download SDK and NDK
+      appveyor DownloadFile %ANDROID_TOOLS_URL% -FileName android-tools.zip
+      appveyor DownloadFile %ANDROID_NDK_URL% -FileName android-ndk-tools.zip
+
+      rem Extract SDK and NDK
+      7z x android-tools.zip -oC:\android-sdk-windows > nul
+      7z x android-ndk-tools.zip -oC:\android-ndk-windows > nul
+
+      rem Install platforms
+      yes | C:\android-sdk-windows\tools\bin\sdkmanager.bat --licenses > nul
+      %ANDROID_HOME%\tools\bin\sdkmanager.bat "cmake;3.10.2.4988404" "platform-tools" "platforms;android-28"
+
+  # generate key
+  - if not defined STORE_PASSWORD (
+      echo Generating a random key&&
+      keytool -genkey -v -keystore C:\my-random-key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias appveyor-ci -noprompt -dname "CN=Serious-Sam-Android-appveyor-build" -storepass VerySecurePassword -keypass VerySecurePassword&&
+      set KEY_ALIAS=appveyor-ci&&
+      set STORE_FILE=C:\\my-random-key.jks&&
+      set STORE_PASSWORD=VerySecurePassword&&
+      set KEY_PASSWORD=VerySecurePassword
+    )
+
+build_script:
+  - cmd: gradlew.bat assembleRelease --no-daemon
+
+after_build:
+  - cmd: |
+      move app\build\outputs\apk\release\*.apk .
+      move app\build\intermediates\cmake\release\obj SeriousSamAndroid-V%SSA_VERSION%-symbols
+      7z a SeriousSamAndroid-V%SSA_VERSION%-symbols.zip SeriousSamAndroid-V%SSA_VERSION%-symbols
+
+artifacts:
+  - path: SeriousSamAndroid-*.apk
+    name: binaries
+  - path: SeriousSamAndroid-*.zip
+    name: symbols

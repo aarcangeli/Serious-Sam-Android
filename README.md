@@ -1,4 +1,5 @@
-# Serious Sam Android
+# Serious Sam Android [![Build status](https://ci.appveyor.com/api/projects/status/wacvajrwf2hw59jp/branch/master?svg=true)](https://ci.appveyor.com/project/aarcangeli/serious-sam-android/branch/master)
+
 ## Running the game
 1. Locate the game directory for "Serious Sam Classic The Second Encounter" ([steam](https://store.steampowered.com/app/41060/Serious_Sam_Classic_The_Second_Encounter/))
 1. [Download](https://github.com/aarcangeli/Serious-Sam-Android/releases/latest) and install the latest version of SeriousSamRelease.apk
@@ -25,7 +26,7 @@
 1. Connect an android device with debugging enabled
 1. Compile and run the game
 
-### Using Gradle script without Android Studio
+### Using command line (without Android Studio)
 1. Clone or download the repository in a directory
 2. Download Android SDK (Command line tools only) https://developer.android.com/studio
 ![alt text](https://image.prntscr.com/image/ztZ-0HbhRCSRhNwNScoJ-A.png)
@@ -35,15 +36,14 @@
 sdk.dir=C:\\androidsdk
 ndk.dir=C:\\androidsdk\\ndk-bundle
 ```
-5. Download and install [Java SE](https://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html)
-   or [OpenJDK](https://github.com/Skyrimus/openjdk-1.8.0-win/tree/master)
+5. Download and install [Java SE](https://www.oracle.com/java/technologies/javase/javase-jdk8-downloads.html)
 6. In cmd set JAVA_HOME use command
 ```cmd
     set JAVA_HOME="C:\jdk\"
 ```
 7. Download tools and NDK. Open cmd in C:\androidsdk\tools\bin\ folder and use command
 ```cmd
-    sdkmanager.bat "cmake;3.10.2.4988404" "ndk-bundle" "platform-tools" "build-tools;29.0.0" "platforms;android-28" "platforms;android-27" "platforms;android-26" "platforms;android-25" "platforms;android-24" "platforms;android-23" "platforms;android-22" "platforms;android-21" "platforms;android-20" "platforms;android-19"
+    sdkmanager.bat "cmake;3.10.2.4988404" "platform-tools" "platforms;android-28"
 ```
 8. Open cmd in C:\jdk\bin\ and generate your keystore
 ```cmd

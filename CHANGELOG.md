@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Custom resolution (Full or Half)
 - Porting of "rendering options"
 - Porting of "players and controlrs"
+- Added nightly builds with appveyor
 
 ## [1.04.0] - 2019-05-19
 ### Added
