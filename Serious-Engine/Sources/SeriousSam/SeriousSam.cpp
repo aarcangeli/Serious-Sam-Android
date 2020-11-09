@@ -58,7 +58,7 @@ BOOL _bRunning = TRUE;
 BOOL _bExitQuitScreen = TRUE;
 BOOL _bQuitScreen = TRUE;
 BOOL bMenuActive = FALSE;
-BOOL bMenuRendering = FALSE
+BOOL bMenuRendering = FALSE;
 
 extern BOOL _bDefiningKey;
 static BOOL _bReconsiderInput = FALSE;
