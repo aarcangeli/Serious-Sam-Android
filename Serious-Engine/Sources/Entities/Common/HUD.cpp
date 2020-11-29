@@ -627,7 +627,7 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
     fNormValue = fValue/TOP_ARMOR;
     strValue.PrintF( "%d", (SLONG)ceil(fValue));
     PrepareColorTransitions( colMax, colTop, colMid, C_lGRAY, 0.5f, 0.25f, FALSE);
-    fRow = pixBottomBound- (fNextUnit+fHalfUnit);//*_pDP->dp_fWideAdjustment;
+    fRow = pixBottomBound- (fNextUnit+fHalfUnit);//_pDP->dp_fWideAdjustment;
     fCol = pixLeftBound+    fHalfUnit;
     colDefault = AddShaker( 3, fValue, penLast->m_iLastArmor, penLast->m_tmArmorChanged, fMoverX, fMoverY);
     HUD_DrawBorder( fCol+fMoverX, fRow+fMoverY, fOneUnit, fOneUnit, colBorder);

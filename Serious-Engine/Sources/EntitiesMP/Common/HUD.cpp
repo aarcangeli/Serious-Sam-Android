@@ -520,18 +520,18 @@ static void HUD_DrawBar( FLOAT fCenterX, FLOAT fCenterY, PIX pixSizeX, PIX pixSi
   // determine bar position and inner size
   switch( eBarOrientation) {
   case BO_UP:
-    pixSizeJ = (pixSizeJ*fNormValue);
+    pixSizeJ *= fNormValue;
     break;
   case BO_DOWN:
     pixUpper  = pixUpper + (PIX)ceil(pixSizeJ * (1.0f-fNormValue));
-    pixSizeJ = (pixSizeJ*fNormValue);
+    pixSizeJ *= fNormValue;
     break;
   case BO_LEFT:
-    pixSizeI = (pixSizeI*fNormValue);
+    pixSizeI *= fNormValue;
     break;
   case BO_RIGHT:
     pixLeft   = pixLeft + (PIX)ceil(pixSizeI * (1.0f-fNormValue));
-    pixSizeI = (pixSizeI*fNormValue);
+    pixSizeI *= fNormValue;
     break;
   }
   // done
@@ -563,7 +563,7 @@ static void DrawAspectCorrectTextureCentered( class CTextureObject *_pTO, FLOAT 
   CTextureData *ptd = (CTextureData*)_pTO->GetData();
   FLOAT fTexSizeI = ptd->GetPixWidth();
   FLOAT fTexSizeJ = ptd->GetPixHeight();
-  FLOAT fHeight = fWidth*fTexSizeJ/fTexSizeI;
+  FLOAT fHeight = fWidth*fTexSizeJ/fTexSizeJ;
   
   _pDP->InitTexture( _pTO);
   _pDP->AddTexture( fX-fWidth*0.5f, fY-fHeight*0.5f, fX+fWidth*0.5f, fY+fHeight*0.5f, 0, 0, 1, 1, col);
@@ -876,29 +876,29 @@ if (g_cb.tfe) {
     fNormValue = fValue/TOP_ARMOR;
     strValue.PrintF( "%d", (SLONG)ceil(fValue));
     PrepareColorTransitions( colMax, colTop, colMid, C_lGRAY, 0.5f, 0.25f, FALSE);
-    fRow = pixBottomBound- (fNextUnit+fHalfUnit);//*_pDP->dp_fWideAdjustment;
+    fRow = pixBottomBound- (fNextUnit+fHalfUnit);//_pDP->dp_fWideAdjustment;
     fCol = pixLeftBound+    fHalfUnit;
     colDefault = AddShaker( 3, fValue, penLast->m_iLastArmor, penLast->m_tmArmorChanged, fMoverX, fMoverY);
-    HUD_DrawBorder( fCol+fMoverX, fRow+fMoverY, fOneUnit, fOneUnit, colBorder);
+    HUD_DrawBorder( fCol+fMoverX, fRow+fMoverY-12, fOneUnit, fOneUnit, colBorder);
     fCol += fAdvUnit+fChrUnit*3/2 -fHalfUnit;
-    HUD_DrawBorder( fCol, fRow, fChrUnit*3, fOneUnit, colBorder);
-    HUD_DrawText( fCol, fRow, strValue, NONE, fNormValue);
+    HUD_DrawBorder( fCol, fRow-12, fChrUnit*3, fOneUnit, colBorder);
+    HUD_DrawText( fCol, fRow-12, strValue, NONE, fNormValue);
     fCol -= fAdvUnit+fChrUnit*3/2 -fHalfUnit;
 	if (g_cb.tfe) {
     if (fValue<=50.5f) {
-      HUD_DrawIcon( fCol+fMoverX, fRow+fMoverY, _toArmorSmall, _colHUD, fNormValue, FALSE);
+      HUD_DrawIcon( fCol+fMoverX, fRow+fMoverY-12, _toArmorSmall, _colHUD, fNormValue, FALSE);
     } else if (fValue<=100.5f) {
-      HUD_DrawIcon( fCol+fMoverX, fRow+fMoverY, _toArmorMedium, _colHUD, fNormValue, FALSE);
+      HUD_DrawIcon( fCol+fMoverX, fRow+fMoverY-12, _toArmorMedium, _colHUD, fNormValue, FALSE);
     } else {
-      HUD_DrawIcon( fCol+fMoverX, fRow+fMoverY, _toArmorLarge, _colHUD, fNormValue, FALSE);
+      HUD_DrawIcon( fCol+fMoverX, fRow+fMoverY-12, _toArmorLarge, _colHUD, fNormValue, FALSE);
     }
 	} else {
     if (fValue<=50.5f) {
-      HUD_DrawIcon( fCol+fMoverX, fRow+fMoverY, _toArmorSmall, C_WHITE /*_colHUD*/, fNormValue, FALSE);
+      HUD_DrawIcon( fCol+fMoverX, fRow+fMoverY-12, _toArmorSmall, C_WHITE /*_colHUD*/, fNormValue, FALSE);
     } else if (fValue<=100.5f) {
-      HUD_DrawIcon( fCol+fMoverX, fRow+fMoverY, _toArmorMedium, C_WHITE /*_colHUD*/, fNormValue, FALSE);
+      HUD_DrawIcon( fCol+fMoverX, fRow+fMoverY-12, _toArmorMedium, C_WHITE /*_colHUD*/, fNormValue, FALSE);
     } else {
-      HUD_DrawIcon( fCol+fMoverX, fRow+fMoverY, _toArmorLarge, C_WHITE /*_colHUD*/, fNormValue, FALSE);
+      HUD_DrawIcon( fCol+fMoverX, fRow+fMoverY-12, _toArmorLarge, C_WHITE /*_colHUD*/, fNormValue, FALSE);
     }
 	}
   }
@@ -921,7 +921,7 @@ if (g_cb.tfe) {
     fValue = _penWeapons->GetAmmo();
     fNormValue = fValue / fMaxValue;
     strValue.PrintF( "%d", (SLONG)ceil(fValue));
-    PrepareColorTransitions( colMax, colTop, colMid, C_RED, 0.30f, 0.15f, FALSE);
+    PrepareColorTransitions( colMax, colTop, colMid, C_RED, 0.5f, 0.25f, FALSE);
     BOOL bDrawAmmoIcon = _fCustomScaling<=1.0f;
     // draw ammo, value and weapon
     fRow = pixBottomBound-fHalfUnit;
@@ -969,7 +969,7 @@ if (g_cb.tfe) {
   _fCustomScaling = ClampDn( _fCustomScaling*0.8f, 0.5f);
   const FLOAT fOneUnitS  = fOneUnit  *0.8f;
   const FLOAT fAdvUnitS  = fAdvUnit  *0.8f;
-  const FLOAT fNextUnitS = fNextUnit *0.8f;
+  //const FLOAT fNextUnitS = fNextUnit *0.8f;
   const FLOAT fHalfUnitS = fHalfUnit *0.8f;
 
   // prepare postition and ammo quantities

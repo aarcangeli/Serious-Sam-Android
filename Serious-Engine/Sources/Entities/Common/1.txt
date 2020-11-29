@@ -1,0 +1,1142 @@
+--- /root/Serious-Sam-Android/Serious-Engine/Sources/EntitiesMP/Common/HUD.cpp	2020-11-25 01:25:19.027130765 +0300
++++ /root/Serious-Sam-Android/Serious-Engine/Sources/Entities/Common/HUD.cpp	2020-10-12 03:53:35.933656674 +0300
+@@ -1,45 +1,26 @@
+-/* Copyright (c) 2002-2012 Croteam Ltd. 
+-This program is free software; you can redistribute it and/or modify
+-it under the terms of version 2 of the GNU General Public License as published by
+-the Free Software Foundation
+-
+-
+-This program is distributed in the hope that it will be useful,
+-but WITHOUT ANY WARRANTY; without even the implied warranty of
+-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-GNU General Public License for more details.
+-
+-You should have received a copy of the GNU General Public License along
+-with this program; if not, write to the Free Software Foundation, Inc.,
+-51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
+-
+- 
+-#include "EntitiesMP/StdH/StdH.h"
+-#include "GameMP/SEColors.h"
++#include "Entities/StdH/StdH.h"
+ 
+ #include <Engine/Graphics/DrawPort.h>
+-
+-#include <EntitiesMP/Player.h>
+-#include <EntitiesMP/PlayerWeapons.h>
+-#include <EntitiesMP/MusicHolder.h>
+-#include <EntitiesMP/EnemyBase.h>
+-#include <EntitiesMP/EnemyCounter.h>
++#include <Entities/Player.h>
++#include <Entities/PlayerWeapons.h>
++#include <Entities/MusicHolder.h>
++#include <Entities/EnemyBase.h>
++#include <Entities/EnemyCounter.h>
+ #include <AndroidAdapters/binding-callbacks.h>
+ 
+-#define ENTITY_DEBUG
+ 
+ // armor & health constants 
+ // NOTE: these _do not_ reflect easy/tourist maxvalue adjustments. that is by design!
+ #define TOP_ARMOR  100
+ #define TOP_HEALTH 100
+ 
++
+ // cheats
+ extern INDEX cht_bEnable;
+ extern INDEX cht_bGod;
+ extern INDEX cht_bFly;
+ extern INDEX cht_bGhost;
+ extern INDEX cht_bInvisible;
+-extern INDEX cht_bAmmo;
+ extern FLOAT cht_fTranslationMultiplier;
+ 
+ // interface control
+@@ -51,9 +32,8 @@
+ extern FLOAT hud_fOpacity;
+ extern FLOAT hud_fScaling;
+ extern FLOAT hud_tmWeaponsOnScreen;
+-extern INDEX hud_bShowMatchInfo;
+ 
+-COLOR colMax, colTop, colMid, colDefault;
++
+ // player statistics sorting keys
+ enum SortKeys {
+   PSK_NAME    = 1,
+@@ -72,7 +52,7 @@
+   BO_DOWN  = 4,
+ };
+ 
+-extern const INDEX aiWeaponsRemap[19];
++
+ 
+ // maximal mana for master status
+ #define MANA_MASTER 10000
+@@ -86,9 +66,7 @@
+ static FLOAT _fCustomScaling;
+ static ULONG _ulAlphaHUD;
+ static COLOR _colHUD;
+-static COLOR _colHUDText;
+ static TIME  _tmNow = -1.0f;
+-static TIME  _tmLast = -1.0f;
+ static CFontData _fdNumbersFont;
+ 
+ // array for pointers of all players
+@@ -96,6 +74,7 @@
+ 
+ // status bar textures
+ static CTextureObject _toHealth;
++static CTextureObject _toArmor;
+ static CTextureObject _toOxygen;
+ static CTextureObject _toScore;
+ static CTextureObject _toHiScore;
+@@ -103,10 +82,6 @@
+ static CTextureObject _toMana;
+ static CTextureObject _toFrags;
+ static CTextureObject _toDeaths;
+-static CTextureObject _toArmorSmall;
+-static CTextureObject _toArmorMedium;
+-static CTextureObject _toArmorLarge;
+-
+ // ammo textures                    
+ static CTextureObject _toAShells;
+ static CTextureObject _toABullets;
+@@ -115,34 +90,23 @@
+ static CTextureObject _toANapalm;
+ static CTextureObject _toAElectricity;
+ static CTextureObject _toAIronBall;
+-static CTextureObject _toASniperBullets;
+-static CTextureObject _toASeriousBomb;
+ // weapon textures
+ static CTextureObject _toWKnife;
+ static CTextureObject _toWColt;
+ static CTextureObject _toWSingleShotgun;
+ static CTextureObject _toWDoubleShotgun;
+ static CTextureObject _toWTommygun;
+-static CTextureObject _toWSniper;
+-static CTextureObject _toWChainsaw;
+ static CTextureObject _toWMinigun;
+ static CTextureObject _toWRocketLauncher;
+ static CTextureObject _toWGrenadeLauncher;
++static CTextureObject _toWPipeBomb;
+ static CTextureObject _toWFlamer;
++static CTextureObject _toWGhostBuster;
+ static CTextureObject _toWLaser;
+ static CTextureObject _toWIronCannon;
+-
+-// powerup textures (ORDER IS THE SAME AS IN PLAYER.ES!)
+-#define MAX_POWERUPS 4
+-static CTextureObject _atoPowerups[MAX_POWERUPS];
+ // tile texture (one has corners, edges and center)
+ static CTextureObject _toTile;
+-// sniper mask texture
+-static CTextureObject _toSniperMask;
+-static CTextureObject _toSniperWheel;
+-static CTextureObject _toSniperArrow;
+-static CTextureObject _toSniperEye;
+-static CTextureObject _toSniperLed;
++
+ 
+ // all info about color transitions
+ struct ColorTransitionTable {
+@@ -179,16 +143,15 @@
+ 
+ extern struct WeaponInfo _awiWeapons[18];
+ static struct AmmoInfo _aaiAmmo[8] = {
+-  { &_toAShells,        &_awiWeapons[4],  &_awiWeapons[5],  0, 0, 0, -9, FALSE }, //  0
+-  { &_toABullets,       &_awiWeapons[6],  &_awiWeapons[7],  0, 0, 0, -9, FALSE }, //  1
+-  { &_toARockets,       &_awiWeapons[8],  NULL,             0, 0, 0, -9, FALSE }, //  2
+-  { &_toAGrenades,      &_awiWeapons[9],  NULL,             0, 0, 0, -9, FALSE }, //  3
+-  { &_toANapalm,        &_awiWeapons[11], NULL,             0, 0, 0, -9, FALSE }, //  4
+-  { &_toAElectricity,   &_awiWeapons[12], NULL,             0, 0, 0, -9, FALSE }, //  5
+-  { &_toAIronBall,      &_awiWeapons[14], NULL,             0, 0, 0, -9, FALSE }, //  6
+-  { &_toASniperBullets, &_awiWeapons[13], NULL,             0, 0, 0, -9, FALSE }, //  7
++  { &_toAShells,      &_awiWeapons[4],  &_awiWeapons[5],  0, 0, 0, -9, FALSE },
++  { &_toABullets,     &_awiWeapons[6],  &_awiWeapons[7],  0, 0, 0, -9, FALSE },
++  { &_toARockets,     &_awiWeapons[8],  NULL,             0, 0, 0, -9, FALSE },
++  { &_toAGrenades,    &_awiWeapons[9],  &_awiWeapons[10], 0, 0, 0, -9, FALSE },
++  { &_toANapalm,      &_awiWeapons[12], NULL,             0, 0, 0, -9, FALSE },
++  { &_toAElectricity, &_awiWeapons[14], &_awiWeapons[15], 0, 0, 0, -9, FALSE },
++  { &_toAIronBall,    &_awiWeapons[16], NULL,             0, 0, 0, -9, FALSE },
++  { &_toAIronBall,    &_awiWeapons[17], NULL,             0, 0, 0, -9, FALSE },
+ };
+-static const INDEX aiAmmoRemap[8] = { 0, 1, 2, 3, 4, 7, 5, 6 };
+ 
+ struct WeaponInfo _awiWeapons[18] = {
+   { WEAPON_NONE,            NULL,                 NULL,         FALSE },   //  0
+@@ -201,17 +164,14 @@
+   { WEAPON_MINIGUN,         &_toWMinigun,         &_aaiAmmo[1], FALSE },   //  7
+   { WEAPON_ROCKETLAUNCHER,  &_toWRocketLauncher,  &_aaiAmmo[2], FALSE },   //  8
+   { WEAPON_GRENADELAUNCHER, &_toWGrenadeLauncher, &_aaiAmmo[3], FALSE },   //  9
+-  { WEAPON_CHAINSAW,        &_toWChainsaw,        NULL,         FALSE },   // 10
+-  { WEAPON_FLAMER,          &_toWFlamer,          &_aaiAmmo[4], FALSE },   // 11
+-  { WEAPON_LASER,           &_toWLaser,           &_aaiAmmo[5], FALSE },   // 12
+-  { WEAPON_SNIPER,          &_toWSniper,          &_aaiAmmo[7], FALSE },   // 13
+-  { WEAPON_IRONCANNON,      &_toWIronCannon,      &_aaiAmmo[6], FALSE },   // 14
+-//{ WEAPON_PIPEBOMB,        &_toWPipeBomb,        &_aaiAmmo[3], FALSE },   // 15
+-//{ WEAPON_GHOSTBUSTER,     &_toWGhostBuster,     &_aaiAmmo[5], FALSE },   // 16
+-//{ WEAPON_NUKECANNON,      &_toWNukeCannon,      &_aaiAmmo[7], FALSE },   // 17
+-  { WEAPON_NONE,            NULL,                 NULL,         FALSE },   // 15
+-  { WEAPON_NONE,            NULL,                 NULL,         FALSE },   // 16
+-  { WEAPON_NONE,            NULL,                 NULL,         FALSE },   // 17
++  { WEAPON_NONE,            NULL,                 NULL,         FALSE }, //{ WEAPON_PIPEBOMB,        &_toWPipeBomb,        &_aaiAmmo[3], FALSE },   // 10
++  { WEAPON_NONE,            NULL,                 NULL,         FALSE },   // 11
++  { WEAPON_NONE,            NULL,                 NULL,         FALSE }, //{ WEAPON_FLAMER,          &_toWFlamer,          &_aaiAmmo[4], FALSE },   // 12
++  { WEAPON_NONE,            NULL,                 NULL,         FALSE },   // 13
++  { WEAPON_LASER,           &_toWLaser,           &_aaiAmmo[5], FALSE },   // 14
++  { WEAPON_NONE,            NULL,                 NULL,         FALSE }, //{ WEAPON_GHOSTBUSTER,     &_toWGhostBuster,     &_aaiAmmo[5], FALSE },   // 15
++  { WEAPON_IRONCANNON,      &_toWIronCannon,      &_aaiAmmo[6], FALSE },   // 16
++  { WEAPON_NONE,            NULL,                 NULL,         FALSE }, //{ WEAPON_NUKECANNON,      &_toWNukeCannon,      &_aaiAmmo[7], FALSE },   // 17
+ };
+ 
+ 
+@@ -254,26 +214,27 @@
+   else              return  0;
+ }
+ 
+-static int qsort_CompareDeaths( const void *ppPEN0, const void *ppPEN1) {
++static int qsort_CompareFrags( const void *ppPEN0, const void *ppPEN1) {
+   CPlayer &en0 = **(CPlayer**)ppPEN0;
+   CPlayer &en1 = **(CPlayer**)ppPEN1;
+-  SLONG sl0 = en0.m_psGameStats.ps_iDeaths;
+-  SLONG sl1 = en1.m_psGameStats.ps_iDeaths;
++  SLONG sl0 = en0.m_psGameStats.ps_iKills;
++  SLONG sl1 = en1.m_psGameStats.ps_iKills;
+   if(      sl0<sl1) return +1;
+   else if( sl0>sl1) return -1;
+   else              return  0;
+ }
+ 
+-static int qsort_CompareFrags( const void *ppPEN0, const void *ppPEN1) {
++static int qsort_CompareDeaths( const void *ppPEN0, const void *ppPEN1) {
+   CPlayer &en0 = **(CPlayer**)ppPEN0;
+   CPlayer &en1 = **(CPlayer**)ppPEN1;
+-  SLONG sl0 = en0.m_psGameStats.ps_iKills;
+-  SLONG sl1 = en1.m_psGameStats.ps_iKills;
++  SLONG sl0 = en0.m_psGameStats.ps_iDeaths;
++  SLONG sl1 = en1.m_psGameStats.ps_iDeaths;
+   if(      sl0<sl1) return +1;
+   else if( sl0>sl1) return -1;
+-  else              return -qsort_CompareDeaths(ppPEN0, ppPEN1);
++  else              return  0;
+ }
+ 
++#if 0 // DG: unused
+ static int qsort_CompareLatencies( const void *ppPEN0, const void *ppPEN1) {
+   CPlayer &en0 = **(CPlayer**)ppPEN0;
+   CPlayer &en1 = **(CPlayer**)ppPEN1;
+@@ -283,6 +244,7 @@
+   else if( sl0>sl1) return -1;
+   else              return  0;
+ }
++#endif // 0 (unused)
+ 
+ // prepare color transitions
+ static void PrepareColorTransitions( COLOR colFine, COLOR colHigh, COLOR colMedium, COLOR colLow,
+@@ -520,160 +482,24 @@
+   // determine bar position and inner size
+   switch( eBarOrientation) {
+   case BO_UP:
+-    pixSizeJ = (pixSizeJ*fNormValue);
++    pixSizeJ *= fNormValue;
+     break;
+   case BO_DOWN:
+     pixUpper  = pixUpper + (PIX)ceil(pixSizeJ * (1.0f-fNormValue));
+-    pixSizeJ = (pixSizeJ*fNormValue);
++    pixSizeJ *= fNormValue;
+     break;
+   case BO_LEFT:
+-    pixSizeI = (pixSizeI*fNormValue);
++    pixSizeI *= fNormValue;
+     break;
+   case BO_RIGHT:
+     pixLeft   = pixLeft + (PIX)ceil(pixSizeI * (1.0f-fNormValue));
+-    pixSizeI = (pixSizeI*fNormValue);
++    pixSizeI *= fNormValue;
+     break;
+   }
+   // done
+   _pDP->Fill( pixLeft, pixUpper, pixSizeI, pixSizeJ, col|_ulAlphaHUD);
+ }
+ 
+-static void DrawRotatedQuad( class CTextureObject *_pTO, FLOAT fX, FLOAT fY, FLOAT fSize, ANGLE aAngle, COLOR col)
+-{
+-  FLOAT fSinA = Sin(aAngle);
+-  FLOAT fCosA = Cos(aAngle);
+-  FLOAT fSinPCos = fCosA*fSize+fSinA*fSize;
+-  FLOAT fSinMCos = fSinA*fSize-fCosA*fSize;
+-  FLOAT fI0, fJ0, fI1, fJ1, fI2, fJ2, fI3, fJ3;
+-
+-  fI0 = fX-fSinPCos;  fJ0 = fY-fSinMCos;
+-  fI1 = fX+fSinMCos;  fJ1 = fY-fSinPCos;
+-  fI2 = fX+fSinPCos;  fJ2 = fY+fSinMCos;
+-  fI3 = fX-fSinMCos;  fJ3 = fY+fSinPCos;
+-  
+-  _pDP->InitTexture( _pTO);
+-  _pDP->AddTexture( fI0, fJ0, 0, 0, col,   fI1, fJ1, 0, 1, col,
+-                    fI2, fJ2, 1, 1, col,   fI3, fJ3, 1, 0, col);
+-  _pDP->FlushRenderingQueue();  
+-
+-}
+-
+-static void DrawAspectCorrectTextureCentered( class CTextureObject *_pTO, FLOAT fX, FLOAT fY, FLOAT fWidth, COLOR col)
+-{
+-  CTextureData *ptd = (CTextureData*)_pTO->GetData();
+-  FLOAT fTexSizeI = ptd->GetPixWidth();
+-  FLOAT fTexSizeJ = ptd->GetPixHeight();
+-  FLOAT fHeight = fWidth*fTexSizeJ/fTexSizeI;
+-  
+-  _pDP->InitTexture( _pTO);
+-  _pDP->AddTexture( fX-fWidth*0.5f, fY-fHeight*0.5f, fX+fWidth*0.5f, fY+fHeight*0.5f, 0, 0, 1, 1, col);
+-  _pDP->FlushRenderingQueue();
+-}
+-
+-// draw sniper mask
+-static void HUD_DrawSniperMask( void )
+-{
+-  // determine location
+-  const FLOAT fSizeI = _pixDPWidth;
+-  const FLOAT fSizeJ = _pixDPHeight;
+-  const FLOAT fCenterI = fSizeI/2;  
+-  const FLOAT fCenterJ = fSizeJ/2;  
+-  const FLOAT fBlackStrip = (fSizeI-fSizeJ)/2;
+-
+-  COLOR colMask = C_WHITE|CT_OPAQUE;
+-  
+-  CTextureData *ptd = (CTextureData*)_toSniperMask.GetData();
+-  const FLOAT fTexSizeI = ptd->GetPixWidth();
+-  const FLOAT fTexSizeJ = ptd->GetPixHeight();
+-
+-  // main sniper mask
+-  _pDP->InitTexture( &_toSniperMask);
+-  _pDP->AddTexture( fBlackStrip, 0, fCenterI, fCenterJ, 0.98f, 0.02f, 0, 1.0f, colMask);
+-  _pDP->AddTexture( fCenterI, 0, fSizeI-fBlackStrip, fCenterJ, 0, 0.02f, 0.98f, 1.0f, colMask);
+-  _pDP->AddTexture( fBlackStrip, fCenterJ, fCenterI, fSizeJ, 0.98f, 1.0f, 0, 0.02f, colMask);
+-  _pDP->AddTexture( fCenterI, fCenterJ, fSizeI-fBlackStrip, fSizeJ, 0, 1, 0.98f, 0.02f, colMask);
+-  _pDP->FlushRenderingQueue();
+-  _pDP->Fill( 0, 0, fBlackStrip+1, fSizeJ, C_BLACK|CT_OPAQUE);
+-  _pDP->Fill( fSizeI-fBlackStrip-1, 0, fBlackStrip+1, fSizeJ, C_BLACK|CT_OPAQUE);
+-
+-  colMask = LerpColor(SE_COL_BLUE_LIGHT, C_WHITE, 0.25f);
+-
+-  FLOAT _fYResolutionScaling = (FLOAT)_pixDPHeight/480.0f;
+-
+-  FLOAT fDistance = _penWeapons->m_fRayHitDistance;
+-  FLOAT aFOV = Lerp(_penWeapons->m_fSniperFOVlast, _penWeapons->m_fSniperFOV,
+-                    _pTimer->GetLerpFactor());
+-  CTString strTmp;
+-  
+-  // wheel
+-  FLOAT fZoom = 1.0f/tan(RadAngle(aFOV)*0.5f);  // 2.0 - 8.0
+-  
+-  FLOAT fAFact = (Clamp(aFOV, 14.2f, 53.1f)-14.2f)/(53.1f-14.2f); // only for zooms 2x-4x !!!!!!
+-  ANGLE aAngle = 314.0f+fAFact*292.0f;
+-
+-  DrawRotatedQuad(&_toSniperWheel, fCenterI, fCenterJ, 40.0f*_fYResolutionScaling,
+-                  aAngle, colMask|0x44);
+-  
+-  FLOAT fTM = _pTimer->GetLerpedCurrentTick();
+-  
+-  COLOR colLED;
+-  if (_penWeapons->m_tmLastSniperFire+1.25f<fTM) { // blinking
+-    colLED = 0x44FF22BB;
+-  } else {
+-    colLED = 0xFF4422DD;
+-  }
+-
+-  // reload indicator
+-  DrawAspectCorrectTextureCentered(&_toSniperLed, fCenterI-37.0f*_fYResolutionScaling,
+-    fCenterJ+36.0f*_fYResolutionScaling, 15.0f*_fYResolutionScaling, colLED);
+-    
+-  if (_fResolutionScaling>=1.0f)
+-  {
+-    FLOAT _fIconSize;
+-    FLOAT _fLeftX,  _fLeftYU,  _fLeftYD;
+-    FLOAT _fRightX, _fRightYU, _fRightYD;
+-
+-    if (_fResolutionScaling<=1.3f) {
+-      _pDP->SetFont( _pfdConsoleFont);
+-      _pDP->SetTextAspect( 1.0f);
+-      _pDP->SetTextScaling(g_cb.globalScale);
+-      _fIconSize = 22.8f;
+-      _fLeftX = 159.0f;
+-      _fLeftYU = 8.0f;
+-      _fLeftYD = 6.0f;
+-      _fRightX = 159.0f;
+-      _fRightYU = 11.0f;
+-      _fRightYD = 6.0f;
+-    } else {
+-      _pDP->SetFont( _pfdDisplayFont);
+-      _pDP->SetTextAspect( 1.0f);
+-      _pDP->SetTextScaling(0.7f*_fYResolutionScaling);
+-      _fIconSize = 19.0f;
+-      _fLeftX = 162.0f;
+-      _fLeftYU = 8.0f;
+-      _fLeftYD = 6.0f;
+-      _fRightX = 162.0f;
+-      _fRightYU = 11.0f;
+-      _fRightYD = 6.0f;
+-    }
+-     
+-    // arrow + distance
+-    DrawAspectCorrectTextureCentered(&_toSniperArrow, fCenterI-_fLeftX*_fYResolutionScaling,
+-      fCenterJ-_fLeftYU*_fYResolutionScaling, _fIconSize*_fYResolutionScaling, 0xFFCC3399 );
+-    if (fDistance>9999.9f) { strTmp.PrintF("---.-");           }
+-    else if (TRUE)         { strTmp.PrintF("%.1f", fDistance); }
+-    _pDP->PutTextC( strTmp, fCenterI-_fLeftX*_fYResolutionScaling,
+-      fCenterJ+_fLeftYD*_fYResolutionScaling, colMask|0xaa);
+-    
+-    // eye + zoom level
+-    DrawAspectCorrectTextureCentered(&_toSniperEye,   fCenterI+_fRightX*_fYResolutionScaling,
+-      fCenterJ-_fRightYU*_fYResolutionScaling, _fIconSize*_fYResolutionScaling, 0xFFCC3399 ); //SE_COL_ORANGE_L
+-    strTmp.PrintF("%.1fx", fZoom);
+-    _pDP->PutTextC( strTmp, fCenterI+_fRightX*_fYResolutionScaling,
+-      fCenterJ+_fRightYD*_fYResolutionScaling, colMask|0xaa);
+-  }
+-}
+-
+ 
+ // helper functions
+ 
+@@ -689,14 +515,14 @@
+   _aaiAmmo[2].ai_iMaxAmmoAmmount = _penWeapons->m_iMaxRockets;
+   _aaiAmmo[3].ai_iAmmoAmmount    = _penWeapons->m_iGrenades;
+   _aaiAmmo[3].ai_iMaxAmmoAmmount = _penWeapons->m_iMaxGrenades;
+-  _aaiAmmo[4].ai_iAmmoAmmount    = _penWeapons->m_iNapalm;
+-  _aaiAmmo[4].ai_iMaxAmmoAmmount = _penWeapons->m_iMaxNapalm;
++  _aaiAmmo[4].ai_iAmmoAmmount    = 0;//_penWeapons->m_iNapalm;
++  _aaiAmmo[4].ai_iMaxAmmoAmmount = 0;//_penWeapons->m_iMaxNapalm;
+   _aaiAmmo[5].ai_iAmmoAmmount    = _penWeapons->m_iElectricity;
+   _aaiAmmo[5].ai_iMaxAmmoAmmount = _penWeapons->m_iMaxElectricity;
+   _aaiAmmo[6].ai_iAmmoAmmount    = _penWeapons->m_iIronBalls;
+   _aaiAmmo[6].ai_iMaxAmmoAmmount = _penWeapons->m_iMaxIronBalls;
+-  _aaiAmmo[7].ai_iAmmoAmmount    = _penWeapons->m_iSniperBullets;
+-  _aaiAmmo[7].ai_iMaxAmmoAmmount = _penWeapons->m_iMaxSniperBullets;
++  _aaiAmmo[7].ai_iAmmoAmmount    = 0;//_penWeapons->m_iNukeBalls;
++  _aaiAmmo[7].ai_iMaxAmmoAmmount = 0;//_penWeapons->m_iMaxNukeBalls;
+ 
+   // prepare ammo table for weapon possesion
+   INDEX i, iAvailableWeapons = _penWeapons->m_iAvailableWeapons;
+@@ -714,64 +540,15 @@
+ }
+ 
+ 
+-//<<<<<<< DEBUG FUNCTIONS >>>>>>>
+-
+-#ifdef ENTITY_DEBUG
+-CRationalEntity *DBG_prenStackOutputEntity = NULL;
+-#endif
+-void HUD_SetEntityForStackDisplay(CRationalEntity *pren)
+-{
+-#ifdef ENTITY_DEBUG
+-  DBG_prenStackOutputEntity = pren;
+-#endif
+-  return;
+-}
+-
+-#ifdef ENTITY_DEBUG
+-static void HUD_DrawEntityStack()
+-{
+-  CTString strTemp;
+-  PIX pixFontHeight;
+-  ULONG pixTextBottom;
+-
+-  if (tmp_ai[9]==12345)
+-  {
+-    if (DBG_prenStackOutputEntity!=NULL)
+-    {
+-      pixFontHeight = _pfdConsoleFont->fd_pixCharHeight;
+-      pixTextBottom = _pixDPHeight*0.83;
+-      _pDP->SetFont( _pfdConsoleFont);
+-      _pDP->SetTextScaling(g_cb.globalScale);
+-    
+-      INDEX ctStates = DBG_prenStackOutputEntity->en_stslStateStack.Count();
+-      strTemp.PrintF("-- stack of '%s'(%s)@%gs\n", DBG_prenStackOutputEntity->GetName(),
+-        DBG_prenStackOutputEntity->en_pecClass->ec_pdecDLLClass->dec_strName,
+-        _pTimer->CurrentTick());
+-      _pDP->PutText( strTemp, 1, pixTextBottom-pixFontHeight*(ctStates+1), _colHUD|_ulAlphaHUD);
+-      
+-      for(INDEX iState=ctStates-1; iState>=0; iState--) {
+-        SLONG slState = DBG_prenStackOutputEntity->en_stslStateStack[iState];
+-        strTemp.PrintF("0x%08x %s\n", slState, 
+-          DBG_prenStackOutputEntity->en_pecClass->ec_pdecDLLClass->HandlerNameForState(slState));
+-        _pDP->PutText( strTemp, 1, pixTextBottom-pixFontHeight*(iState+1), _colHUD|_ulAlphaHUD);
+-      }
+-    }
+-  }
+-}
+-#endif
+-//<<<<<<< DEBUG FUNCTIONS >>>>>>>
+ 
+ // main
+ 
+ // render interface (frontend) to drawport
+ // (units are in pixels for 640x480 resolution - for other res HUD will be scalled automatically)
+-extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOOL bSnooping, const CPlayer *penPlayerOwner)
++extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOOL bSnooping)
+ {
+   // no player - no info, sorry
+   if( penPlayerCurrent==NULL || (penPlayerCurrent->GetFlags()&ENF_DELETED)) return;
+-  
+-  // if snooping and owner player ins NULL, return
+-  if ( bSnooping && penPlayerOwner==NULL) return;
+ 
+   // find last values in case of predictor
+   CPlayer *penLast = (CPlayer*)penPlayerCurrent;
+@@ -789,47 +566,27 @@
+   _pixDPHeight  = _pDP->GetHeight();
+   _fCustomScaling     = hud_fScaling;
+   _fResolutionScaling = (FLOAT)_pixDPWidth /640.0f;
+- if (g_cb.tfe) {
+   _colHUD     = C_GREEN;
+-  _colHUDText = _colHUD;
+- } else {
+-  _colHUD     = 0x4C80BB00;
+-  _colHUDText = SE_COL_ORANGE_LIGHT;
+- }
+   _ulAlphaHUD = NormFloatToByte(hud_fOpacity);
+   _tmNow = _pTimer->CurrentTick();
+ 
+-  // determine hud colorization;
+-if (g_cb.tfe) {
+-  colMax = _colHUD;
+-  colTop = _colHUD;
+-  colMid = _colHUD;
+-} else {
+-  colMax = SE_COL_BLUEGREEN_LT;
+-  colTop = SE_COL_ORANGE_LIGHT;
+-  colMid = LerpColor(colTop, C_RED, 0.5f);  
+-}
+-
++  // set HUD colorization;
++  COLOR colMax = _colHUD;
++  COLOR colTop = _colHUD;
++  COLOR colMid = _colHUD;
+ 
+- // 
+   // adjust borders color in case of spying mode
+   COLOR colBorder = _colHUD; 
+-  
+   if( bSnooping) {
+-    colBorder = SE_COL_ORANGE_NEUTRAL;
++    UBYTE ubR,ubG,ubB;
++    ColorToRGB( colBorder, ubR,ubG,ubB);
++    colBorder = RGBToColor( ubG,ubB,ubR); // shift and xor color components
+     if( ((ULONG)(_tmNow*5))&1) {
+-      //colBorder = (colBorder>>1) & 0x7F7F7F00; // darken flash and scale
+-      colBorder = SE_COL_ORANGE_DARK;
++      colBorder = (colBorder>>1) & 0x7F7F7F00; // darken flash and scale
+       _fCustomScaling *= 0.933f;
+     }
+   }
+ 
+-  // draw sniper mask (original mask even if snooping)
+-  if (((CPlayerWeapons*)&*penPlayerOwner->m_penWeapons)->m_iCurrentWeapon==WEAPON_SNIPER
+-    &&((CPlayerWeapons*)&*penPlayerOwner->m_penWeapons)->m_bSniping) {
+-    HUD_DrawSniperMask();
+-  } 
+-   
+   // prepare font and text dimensions
+   CTString strValue;
+   PIX pixCharWidth;
+@@ -847,11 +604,8 @@
+   FLOAT fNextUnit = (32+8) * _fCustomScaling;  // unit advancer
+   FLOAT fHalfUnit = fOneUnit * 0.5f;
+   FLOAT fMoverX, fMoverY;
+-  if (g_cb.tfe) {
+-  colDefault = _colHUD;
+-  } else {
+-  colDefault;
+-  }
++  COLOR colDefault;
++
+   // prepare and draw health info
+   fValue = ClampDn( _penPlayer->GetHealth(), 0.0f);  // never show negative health
+   fNormValue = fValue/TOP_HEALTH;
+@@ -865,11 +619,8 @@
+   HUD_DrawBorder( fCol, fRow, fChrUnit*3, fOneUnit, colBorder);
+   HUD_DrawText( fCol, fRow, strValue, colDefault, fNormValue);
+   fCol -= fAdvUnit+fChrUnit*3/2 -fHalfUnit;
+-  if (g_cb.tfe) {
+   HUD_DrawIcon( fCol+fMoverX, fRow+fMoverY, _toHealth, _colHUD, fNormValue, TRUE);
+-  } else {
+-  HUD_DrawIcon( fCol+fMoverX, fRow+fMoverY, _toHealth, C_WHITE /*_colHUD*/, fNormValue, TRUE);  
+-  }
++
+   // prepare and draw armor info (eventually)
+   fValue = _penPlayer->m_fArmor;
+   if( fValue > 0.0f) {
+@@ -884,23 +635,7 @@
+     HUD_DrawBorder( fCol, fRow, fChrUnit*3, fOneUnit, colBorder);
+     HUD_DrawText( fCol, fRow, strValue, NONE, fNormValue);
+     fCol -= fAdvUnit+fChrUnit*3/2 -fHalfUnit;
+-	if (g_cb.tfe) {
+-    if (fValue<=50.5f) {
+-      HUD_DrawIcon( fCol+fMoverX, fRow+fMoverY, _toArmorSmall, _colHUD, fNormValue, FALSE);
+-    } else if (fValue<=100.5f) {
+-      HUD_DrawIcon( fCol+fMoverX, fRow+fMoverY, _toArmorMedium, _colHUD, fNormValue, FALSE);
+-    } else {
+-      HUD_DrawIcon( fCol+fMoverX, fRow+fMoverY, _toArmorLarge, _colHUD, fNormValue, FALSE);
+-    }
+-	} else {
+-    if (fValue<=50.5f) {
+-      HUD_DrawIcon( fCol+fMoverX, fRow+fMoverY, _toArmorSmall, C_WHITE /*_colHUD*/, fNormValue, FALSE);
+-    } else if (fValue<=100.5f) {
+-      HUD_DrawIcon( fCol+fMoverX, fRow+fMoverY, _toArmorMedium, C_WHITE /*_colHUD*/, fNormValue, FALSE);
+-    } else {
+-      HUD_DrawIcon( fCol+fMoverX, fRow+fMoverY, _toArmorLarge, C_WHITE /*_colHUD*/, fNormValue, FALSE);
+-    }
+-	}
++    HUD_DrawIcon( fCol+fMoverX, fRow+fMoverY, _toArmor, _colHUD, fNormValue, FALSE);
+   }
+ 
+   // prepare and draw ammo and weapon info
+@@ -921,7 +656,7 @@
+     fValue = _penWeapons->GetAmmo();
+     fNormValue = fValue / fMaxValue;
+     strValue.PrintF( "%d", (SLONG)ceil(fValue));
+-    PrepareColorTransitions( colMax, colTop, colMid, C_RED, 0.30f, 0.15f, FALSE);
++    PrepareColorTransitions( colMax, colTop, colMid, C_RED, 0.5f, 0.25f, FALSE);
+     BOOL bDrawAmmoIcon = _fCustomScaling<=1.0f;
+     // draw ammo, value and weapon
+     fRow = pixBottomBound-fHalfUnit;
+@@ -933,30 +668,18 @@
+     if( bDrawAmmoIcon) {
+       fCol += fAdvUnit+fChrUnit*3/2 -fHalfUnit;
+       HUD_DrawBorder( fCol, fRow, fOneUnit, fOneUnit, colBorder);
+-	if (g_cb.tfe) {
+       HUD_DrawIcon( fCol, fRow, *ptoCurrentAmmo, _colHUD, fNormValue, TRUE);
+-	} else {
+-      HUD_DrawIcon( fCol, fRow, *ptoCurrentAmmo, C_WHITE /*_colHUD*/, fNormValue, TRUE);
+-	}
+       fCol -= fAdvUnit+fChrUnit*3/2 -fHalfUnit;
+     }
+-    HUD_DrawText( fCol, fRow, strValue, NONE, fNormValue);
++    HUD_DrawText( fCol, fRow, strValue, colDefault, fNormValue);
+     fCol -= fAdvUnit+fChrUnit*3/2 -fHalfUnit;
+-	if (g_cb.tfe) {
+     HUD_DrawIcon( fCol+fMoverX, fRow+fMoverY, *ptoCurrentWeapon, _colHUD, fNormValue, !bDrawAmmoIcon);
+-	} else {
+-    HUD_DrawIcon( fCol+fMoverX, fRow+fMoverY, *ptoCurrentWeapon, C_WHITE /*_colHUD*/, fNormValue, !bDrawAmmoIcon);
+-	}
+   } else if( ptoCurrentWeapon!=NULL) {
+     // draw only knife or colt icons (ammo is irrelevant)
+     fRow = pixBottomBound-fHalfUnit;
+     fCol = 205 + fHalfUnit;
+     HUD_DrawBorder( fCol, fRow, fOneUnit, fOneUnit, colBorder);
+-	if (g_cb.tfe) {
+     HUD_DrawIcon(   fCol, fRow, *ptoCurrentWeapon, _colHUD, fNormValue, FALSE);
+-	} else {
+-    HUD_DrawIcon(   fCol, fRow, *ptoCurrentWeapon, C_WHITE /*_colHUD*/, fNormValue, FALSE);
+-	}
+   }
+ 
+ 
+@@ -969,7 +692,7 @@
+   _fCustomScaling = ClampDn( _fCustomScaling*0.8f, 0.5f);
+   const FLOAT fOneUnitS  = fOneUnit  *0.8f;
+   const FLOAT fAdvUnitS  = fAdvUnit  *0.8f;
+-  const FLOAT fNextUnitS = fNextUnit *0.8f;
++  //const FLOAT fNextUnitS = fNextUnit *0.8f;
+   const FLOAT fHalfUnitS = fHalfUnit *0.8f;
+ 
+   // prepare postition and ammo quantities
+@@ -978,48 +701,16 @@
+   const FLOAT fBarPos = fHalfUnitS*0.7f;
+   FillWeaponAmmoTables();
+ 
+-  FLOAT fBombCount = penPlayerCurrent->m_iSeriousBombCount;
+-  BOOL  bBombFiring = FALSE;
+-  // draw serious bomb
+-#define BOMB_FIRE_TIME 1.5f
+-  if (penPlayerCurrent->m_tmSeriousBombFired+BOMB_FIRE_TIME>_pTimer->GetLerpedCurrentTick()) {
+-    fBombCount++;
+-    if (fBombCount>3) { fBombCount = 3; }
+-    bBombFiring = TRUE;
+-  }
+-  if (fBombCount>0) {
+-    fNormValue = (FLOAT) fBombCount / 3.0f;
+-    COLOR colBombBorder = _colHUD;
+-    COLOR colBombIcon = C_WHITE;
+-    COLOR colBombBar = _colHUDText; if (fBombCount==1) { colBombBar = C_RED; }
+-    if (bBombFiring) { 
+-      FLOAT fFactor = (_pTimer->GetLerpedCurrentTick() - penPlayerCurrent->m_tmSeriousBombFired)/BOMB_FIRE_TIME;
+-      colBombBorder = LerpColor(colBombBorder, C_RED, fFactor);
+-      colBombIcon = LerpColor(colBombIcon, C_RED, fFactor);
+-      colBombBar = LerpColor(colBombBar, C_RED, fFactor);
+-    }
+-    HUD_DrawBorder( fCol,         fRow, fOneUnitS, fOneUnitS, colBombBorder);
+-    HUD_DrawIcon(   fCol,         fRow, _toASeriousBomb, colBombIcon, fNormValue, FALSE);
+-    HUD_DrawBar(    fCol+fBarPos, fRow, fOneUnitS/5, fOneUnitS-2, BO_DOWN, colBombBar, fNormValue);
+-    // make space for serious bomb
+-    fCol -= fAdvUnitS;
+-  }
+-
+   // loop thru all ammo types
+   if (!GetSP()->sp_bInfiniteAmmo) {
+-    for( INDEX ii=7; ii>=0; ii--) {
+-      i = aiAmmoRemap[ii];
++    for( i=7; i>=0; i--) {
+       // if no ammo and hasn't got that weapon - just skip this ammo
+       AmmoInfo &ai = _aaiAmmo[i];
+       ASSERT( ai.ai_iAmmoAmmount>=0);
+       if( ai.ai_iAmmoAmmount==0 && !ai.ai_bHasWeapon) continue;
+       // display ammo info
+-	  if (g_cb.tfe) {
+       colIcon = _colHUD;
+-	  } else {
+-      colIcon = C_WHITE /*_colHUD*/;
+-	  }
+-      if( ai.ai_iAmmoAmmount==0) colIcon = C_mdGRAY;
++      if( ai.ai_iAmmoAmmount==0) colIcon = C_GRAY;
+       if( ptoCurrentAmmo == ai.ai_ptoAmmo) colIcon = C_WHITE; 
+       fNormValue = (FLOAT)ai.ai_iAmmoAmmount / ai.ai_iMaxAmmoAmmount;
+       colBar = AddShaker( 4, ai.ai_iAmmoAmmount, ai.ai_iLastAmmoAmmount, ai.ai_tmAmmoChanged, fMoverX, fMoverY);
+@@ -1027,44 +718,10 @@
+       HUD_DrawIcon(   fCol,         fRow+fMoverY, *_aaiAmmo[i].ai_ptoAmmo, colIcon, fNormValue, FALSE);
+       HUD_DrawBar(    fCol+fBarPos, fRow+fMoverY, fOneUnitS/5, fOneUnitS-2, BO_DOWN, colBar, fNormValue);
+       // advance to next position
+-      fCol -= fAdvUnitS;  
++      fCol -= fAdvUnitS;
+     }
+   }
+ 
+-  // draw powerup(s) if needed
+-  PrepareColorTransitions( colMax, colTop, colMid, C_RED, 0.66f, 0.33f, FALSE);
+-  TIME *ptmPowerups = (TIME*)&_penPlayer->m_tmInvisibility;
+-  TIME *ptmPowerupsMax = (TIME*)&_penPlayer->m_tmInvisibilityMax;
+-  fRow = pixBottomBound-fOneUnitS-fAdvUnitS;
+-  fCol = pixRightBound -fHalfUnitS;
+-  for( i=0; i<MAX_POWERUPS; i++)
+-  {
+-    // skip if not active
+-    const TIME tmDelta = ptmPowerups[i] - _tmNow;
+-    if( tmDelta<=0) continue;
+-    fNormValue = tmDelta / ptmPowerupsMax[i];
+-    // draw icon and a little bar
+-    HUD_DrawBorder( fCol,         fRow, fOneUnitS, fOneUnitS, colBorder);
+-	if (g_cb.tfe) {
+-    HUD_DrawIcon(   fCol,         fRow, _atoPowerups[i], _colHUD, fNormValue, TRUE);
+-	} else {
+-    HUD_DrawIcon(   fCol,         fRow, _atoPowerups[i], C_WHITE /*_colHUD*/, fNormValue, TRUE);
+-	}
+-    HUD_DrawBar(    fCol+fBarPos, fRow, fOneUnitS/5, fOneUnitS-2, BO_DOWN, NONE, fNormValue);
+-    // play sound if icon is flashing
+-    if(fNormValue<=(_cttHUD.ctt_fLowMedium/2)) {
+-      // activate blinking only if value is <= half the low edge
+-      INDEX iLastTime = (INDEX)(_tmLast*4);
+-      INDEX iCurrentTime = (INDEX)(_tmNow*4);
+-      if(iCurrentTime&1 & !(iLastTime&1)) {
+-        ((CPlayer *)penPlayerCurrent)->PlayPowerUpSound();
+-      }
+-    }
+-    // advance to next position
+-    fCol -= fAdvUnitS;
+-  }
+-
+-
+   // if weapon change is in progress
+   _fCustomScaling = hud_fScaling;
+   hud_tmWeaponsOnScreen = Clamp( hud_tmWeaponsOnScreen, 0.0f, 10.0f);   
+@@ -1079,44 +736,21 @@
+     fRow = pixBottomBound - fHalfUnit - 3*fNextUnit;
+     fCol = 320.0f - (ctWeapons*fAdvUnit-fHalfUnit)/2.0f;
+     // display all available weapons
+-    for( INDEX ii=WEAPON_NONE+1; ii<WEAPON_LAST; ii++) {
+-      i = aiWeaponsRemap[ii];
++    for( i=WEAPON_NONE+1; i<WEAPON_LAST; i++) {
+       // skip if hasn't got this weapon
+-      if( _awiWeapons[i].wi_wtWeapon==WEAPON_NONE || _awiWeapons[i].wi_wtWeapon==WEAPON_DOUBLECOLT
+-         || !_awiWeapons[i].wi_bHasWeapon) continue;
++      if( _awiWeapons[i].wi_wtWeapon==WEAPON_NONE       ||  _awiWeapons[i].wi_wtWeapon==WEAPON_DOUBLECOLT
++       /*|| _awiWeapons[i].wi_wtWeapon==WEAPON_NUKECANNON*/ || !_awiWeapons[i].wi_bHasWeapon) continue;
+       // display weapon icon
+-      COLOR colBorder = _colHUD;
+-	  if (g_cb.tfe) {
+       colIcon = _colHUD;
+-	  } else {
+-      colIcon = 0xccddff00;
+-	  }
+-      // weapon that is currently selected has different colors
+-      if( ptoWantedWeapon == _awiWeapons[i].wi_ptoWeapon) {
+-		  if (g_cb.tfe) {
+-        colIcon = _colHUD;
+-        colBorder = _colHUD;
+-		  } else {
+-        colIcon = 0xffcc0000;
+-        colBorder = 0xffcc0000;
+-		  }
+-      }
+-      // no ammo
+-      if( _awiWeapons[i].wi_paiAmmo!=NULL && _awiWeapons[i].wi_paiAmmo->ai_iAmmoAmmount==0) {
+-        HUD_DrawBorder( fCol, fRow, fOneUnit, fOneUnit, 0x22334400);
+-        HUD_DrawIcon(   fCol, fRow, *_awiWeapons[i].wi_ptoWeapon, 0x22334400, 1.0f, FALSE);
+-      // yes ammo
+-      } else {
+-        HUD_DrawBorder( fCol, fRow, fOneUnit, fOneUnit, colBorder);
+-        HUD_DrawIcon(   fCol, fRow, *_awiWeapons[i].wi_ptoWeapon, colIcon, 1.0f, FALSE);
+-      }
++      if( _awiWeapons[i].wi_paiAmmo!=NULL && _awiWeapons[i].wi_paiAmmo->ai_iAmmoAmmount==0) colIcon = C_dGRAY;
++      if( ptoWantedWeapon == _awiWeapons[i].wi_ptoWeapon) colIcon = C_WHITE;
++      HUD_DrawBorder( fCol, fRow, fOneUnit, fOneUnit, colIcon);
++      HUD_DrawIcon(   fCol, fRow, *_awiWeapons[i].wi_ptoWeapon, colIcon, 1.0f, FALSE);
+       // advance to next position
+       fCol += fAdvUnit;
+     }
+   }
+ 
+-
+-  // reduce icon sizes a bit
+   const FLOAT fUpperSize = ClampDn(_fCustomScaling*0.5f, 0.5f)/_fCustomScaling;
+   _fCustomScaling*=fUpperSize;
+   ASSERT( _fCustomScaling>=0.5f);
+@@ -1140,11 +774,7 @@
+     HUD_DrawBorder( fCol,      fRow, fOneUnit,         fOneUnit, colBorder);
+     HUD_DrawBorder( fCol+fAdv, fRow, fOneUnit*4,       fOneUnit, colBorder);
+     HUD_DrawBar(    fCol+fAdv, fRow, fOneUnit*4*0.975, fOneUnit*0.9375, BO_LEFT, NONE, fNormValue);
+-	if (g_cb.tfe) {
+     HUD_DrawIcon(   fCol,      fRow, _toOxygen, _colHUD, fNormValue, TRUE);
+-	} else {
+-    HUD_DrawIcon(   fCol,      fRow, _toOxygen, C_WHITE /*_colHUD*/, fNormValue, TRUE);
+-	}
+     bOxygenOnScreen = TRUE;
+   }
+ 
+@@ -1166,11 +796,9 @@
+         fNormValue = fValue/ec.m_iCountFrom;
+       }
+     }
+-    if( fNormValue>0) {
++    if (fNormValue>0) {
+       // prepare and draw boss energy info
+-      //PrepareColorTransitions( colMax, colTop, colMid, C_RED, 0.5f, 0.25f, FALSE);
+-      PrepareColorTransitions( colMax, colMax, colTop, C_RED, 0.5f, 0.25f, FALSE);
+-      
++      PrepareColorTransitions( colMax, colTop, colMid, C_RED, 0.5f, 0.25f, FALSE);
+       fRow = pixTopBound + fOneUnit + fNextUnit;
+       fCol = 184.0f;
+       fAdv = fAdvUnit+ fOneUnit*16/2 -fHalfUnit;
+@@ -1178,15 +806,10 @@
+       HUD_DrawBorder( fCol,      fRow, fOneUnit,          fOneUnit, colBorder);
+       HUD_DrawBorder( fCol+fAdv, fRow, fOneUnit*16,       fOneUnit, colBorder);
+       HUD_DrawBar(    fCol+fAdv, fRow, fOneUnit*16*0.995, fOneUnit*0.9375, BO_LEFT, NONE, fNormValue);
+-	  if (g_cb.tfe) {
+       HUD_DrawIcon(   fCol,      fRow, _toHealth, _colHUD, fNormValue, FALSE);
+-	  } else {
+-      HUD_DrawIcon(   fCol,      fRow, _toHealth, C_WHITE /*_colHUD*/, fNormValue, FALSE);
+-	  }
+     }
+   }
+ 
+-
+   // determine scaling of normal text and play mode
+   const FLOAT fTextScale  = (_fResolutionScaling+1) *0.5f;
+   const BOOL bSinglePlay  =  GetSP()->sp_bSinglePlayer;
+@@ -1247,7 +870,7 @@
+       if( iHealth>25) colHealth = _colHUD;
+       if( iArmor >25) colArmor  = _colHUD;
+       // eventually print it out
+-      if( hud_iShowPlayers==1 || hud_iShowPlayers==-1 && !bSinglePlay) {
++      if( hud_iShowPlayers==1 || (hud_iShowPlayers==-1 && !bSinglePlay)) {
+         // printout location and info aren't the same for deathmatch and coop play
+         const FLOAT fCharWidth = (PIX)((_pfdDisplayFont->GetWidth()-2) *fTextScale);
+         if( bCooperative) { 
+@@ -1270,40 +893,7 @@
+       // calculate summ of scores (for coop mode)
+       iScoreSum += iScore;  
+     }
+-    // draw remaining time if time based death- or scorematch
+-    if ((bScoreMatch || bFragMatch) && hud_bShowMatchInfo){
+-      CTString strLimitsInfo="";  
+-      if (GetSP()->sp_iTimeLimit>0) {
+-        FLOAT fTimeLeft = ClampDn(GetSP()->sp_iTimeLimit*60.0f - _pNetwork->GetGameTime(), 0.0f);
+-        strLimitsInfo.PrintF("%s^cFFFFFF%s: %s\n", strLimitsInfo, TRANS("TIME LEFT"), TimeToString(fTimeLeft));
+-      }
+-      extern INDEX SetAllPlayersStats( INDEX iSortKey);
+-      // fill players table
+-      const INDEX ctPlayers = SetAllPlayersStats(bFragMatch?5:3); // sort by frags or by score
+-      // find maximum frags/score that one player has
+-      INDEX iMaxFrags = LowerLimit(INDEX(0));
+-      INDEX iMaxScore = LowerLimit(INDEX(0));
+-      {for(INDEX iPlayer=0; iPlayer<ctPlayers; iPlayer++) {
+-        CPlayer *penPlayer = _apenPlayers[iPlayer];
+-        iMaxFrags = Max(iMaxFrags, penPlayer->m_psLevelStats.ps_iKills);
+-        iMaxScore = Max(iMaxScore, penPlayer->m_psLevelStats.ps_iScore);
+-      }}
+-      if (GetSP()->sp_iFragLimit>0) {
+-        INDEX iFragsLeft = ClampDn(GetSP()->sp_iFragLimit-iMaxFrags, INDEX(0));
+-        strLimitsInfo.PrintF("%s^cFFFFFF%s: %d\n", strLimitsInfo, TRANS("FRAGS LEFT"), iFragsLeft);
+-      }
+-      if (GetSP()->sp_iScoreLimit>0) {
+-        INDEX iScoreLeft = ClampDn(GetSP()->sp_iScoreLimit-iMaxScore, INDEX(0));
+-        strLimitsInfo.PrintF("%s^cFFFFFF%s: %d\n", strLimitsInfo, TRANS("SCORE LEFT"), iScoreLeft);
+-      }
+-      _pfdDisplayFont->SetFixedWidth();
+-      _pDP->SetFont( _pfdDisplayFont);
+-      _pDP->SetTextScaling( fTextScale*0.8f );
+-      _pDP->SetTextCharSpacing( -2.0f*fTextScale);
+-      _pDP->PutText( strLimitsInfo, 5.0f*_pixDPWidth/640.0f, 48.0f*_pixDPWidth/640.0f, C_WHITE|CT_OPAQUE);
+-    }
+-        
+-
++  
+     // prepare color for local player printouts
+     bMaxScore  ? colScore  = C_WHITE : colScore  = C_lGRAY;
+     bMaxMana   ? colMana   = C_WHITE : colMana   = C_lGRAY;
+@@ -1332,7 +922,7 @@
+   INDEX iScore = _penPlayer->m_psGameStats.ps_iScore;
+   INDEX iMana  = _penPlayer->m_iMana;
+   if( bFragMatch) {
+-    if (!hud_bShowMatchInfo) { fWidthAdj = 4; }
++    fWidthAdj = 4;
+     iScore = _penPlayer->m_psGameStats.ps_iKills;
+     iMana  = _penPlayer->m_psGameStats.ps_iDeaths;
+   } else if( bCooperative) {
+@@ -1348,7 +938,7 @@
+   HUD_DrawBorder( fCol,      fRow, fOneUnit,           fOneUnit, colBorder);
+   HUD_DrawBorder( fCol+fAdv, fRow, fChrUnit*fWidthAdj, fOneUnit, colBorder);
+   HUD_DrawText(   fCol+fAdv, fRow, strValue, colScore, 1.0f);
+-  HUD_DrawIcon(   fCol,      fRow, _toFrags, C_WHITE /*colScore*/, 1.0f, FALSE);
++  HUD_DrawIcon(   fCol,      fRow, _toFrags, colScore, 1.0f, FALSE);
+ 
+   // eventually draw mana info 
+   if( bScoreMatch || bFragMatch) {
+@@ -1359,7 +949,7 @@
+     HUD_DrawBorder( fCol,      fRow, fOneUnit,           fOneUnit, colBorder);
+     HUD_DrawBorder( fCol+fAdv, fRow, fChrUnit*fWidthAdj, fOneUnit, colBorder);
+     HUD_DrawText(   fCol+fAdv, fRow, strValue,  colMana, 1.0f);
+-    HUD_DrawIcon(   fCol,      fRow, _toDeaths, C_WHITE /*colMana*/, 1.0f, FALSE);
++    HUD_DrawIcon(   fCol,      fRow, _toDeaths, colMana, 1.0f, FALSE);
+   }
+ 
+   // if single player or cooperative mode
+@@ -1374,11 +964,7 @@
+     HUD_DrawBorder( fCol,      fRow, fOneUnit,   fOneUnit, colBorder);
+     HUD_DrawBorder( fCol+fAdv, fRow, fChrUnit*8, fOneUnit, colBorder);
+     HUD_DrawText(   fCol+fAdv, fRow, strValue, NONE, bBeating ? 0.0f : 1.0f);
+-	if (g_cb.tfe) {
+     HUD_DrawIcon(   fCol,      fRow, _toHiScore, _colHUD, 1.0f, FALSE);
+-	} else {
+-    HUD_DrawIcon(   fCol,      fRow, _toHiScore, C_WHITE /*_colHUD*/, 1.0f, FALSE);
+-	}
+ 
+     // prepare and draw unread messages
+     if( hud_bShowMessages && _penPlayer->m_ctUnreadMessages>0) {
+@@ -1407,44 +993,30 @@
+       HUD_DrawBorder( fCol,      fRow, fOneUnit,   fOneUnit, col);
+       HUD_DrawBorder( fCol+fAdv, fRow, fChrUnit*4, fOneUnit, col);
+       HUD_DrawText(   fCol+fAdv, fRow, strValue,   col, 1.0f);
+-	  if (g_cb.tfe) {
+       HUD_DrawIcon(   fCol,      fRow, _toMessage, col, 0.0f, TRUE);
+-	  } else {
+-      HUD_DrawIcon(   fCol,      fRow, _toMessage, C_WHITE /*col*/, 0.0f, TRUE);
+-	  }
+     }
+   }
+ 
+-  #ifdef ENTITY_DEBUG
+-  // if entity debug is on, draw entity stack
+-  HUD_DrawEntityStack();
+-  #endif
+-
+   // draw cheat modes
+   if( GetSP()->sp_ctMaxPlayers==1) {
+     INDEX iLine=1;
+     ULONG ulAlpha = sin(_tmNow*16)*96 +128;
+     PIX pixFontHeight = _pfdConsoleFont->fd_pixCharHeight;
+-    const COLOR colCheat = _colHUDText;
++    const COLOR colCheat = _colHUD;
+     _pDP->SetFont( _pfdConsoleFont);
+-    _pDP->SetTextScaling(g_cb.globalScale);
++    _pDP->SetTextScaling( g_cb.globalScale);
+     const FLOAT fchtTM = cht_fTranslationMultiplier; // for text formatting sake :)
+     if( fchtTM > 1.0f)  { _pDP->PutTextR( "turbo",     _pixDPWidth-1, _pixDPHeight-pixFontHeight*iLine, colCheat|ulAlpha); iLine++; }
+     if( cht_bInvisible) { _pDP->PutTextR( "invisible", _pixDPWidth-1, _pixDPHeight-pixFontHeight*iLine, colCheat|ulAlpha); iLine++; }
+     if( cht_bGhost)     { _pDP->PutTextR( "ghost",     _pixDPWidth-1, _pixDPHeight-pixFontHeight*iLine, colCheat|ulAlpha); iLine++; }
+     if( cht_bFly)       { _pDP->PutTextR( "fly",       _pixDPWidth-1, _pixDPHeight-pixFontHeight*iLine, colCheat|ulAlpha); iLine++; }
+     if( cht_bGod)       { _pDP->PutTextR( "god",       _pixDPWidth-1, _pixDPHeight-pixFontHeight*iLine, colCheat|ulAlpha); iLine++; }
+-    if( cht_bAmmo)       { _pDP->PutTextR( "ammo",       _pixDPWidth-1, _pixDPHeight-pixFontHeight*iLine, colCheat|ulAlpha); iLine++; }
+   }
+-
+-  // in the end, remember the current time so it can be used in the next frame
+-  _tmLast = _tmNow;
+-
+ }
+ 
+ 
+ 
+-// initialize all that's needed for drawing the HUD
++// initialized all whats need for drawing HUD
+ extern void InitHUD(void)
+ {
+   // try to
+@@ -1453,9 +1025,10 @@
+     DECLARE_CTFILENAME( fnFont, "Fonts\\Numbers3.fnt");
+     _fdNumbersFont.Load_t( fnFont);
+     //_fdNumbersFont.SetCharSpacing(0);
+-	if (g_cb.tfe) {
++
++    // initialize status bar textures
+     _toHealth.SetData_t(  CTFILENAME("Textures\\Interface\\HSuper.tex"));
+-    _toArmorLarge.SetData_t(   CTFILENAME("Textures\\Interface\\ArStrong.tex"));
++    _toArmor.SetData_t(   CTFILENAME("Textures\\Interface\\ArStrong.tex"));
+     _toOxygen.SetData_t(  CTFILENAME("Textures\\Interface\\Oxygen-2.tex"));
+     _toFrags.SetData_t(   CTFILENAME("Textures\\Interface\\IBead.tex"));
+     _toDeaths.SetData_t(  CTFILENAME("Textures\\Interface\\ISkull.tex"));
+@@ -1463,22 +1036,7 @@
+     _toHiScore.SetData_t( CTFILENAME("Textures\\Interface\\IHiScore.tex"));
+     _toMessage.SetData_t( CTFILENAME("Textures\\Interface\\IMessage.tex"));
+     _toMana.SetData_t(    CTFILENAME("Textures\\Interface\\IValue.tex"));
+-	} else {
+-    // initialize status bar textures
+-    _toHealth.SetData_t(  CTFILENAME("TexturesMP\\Interface\\HSuper.tex"));
+-    _toOxygen.SetData_t(  CTFILENAME("TexturesMP\\Interface\\Oxygen-2.tex"));
+-    _toFrags.SetData_t(   CTFILENAME("TexturesMP\\Interface\\IBead.tex"));
+-    _toDeaths.SetData_t(  CTFILENAME("TexturesMP\\Interface\\ISkull.tex"));
+-    _toScore.SetData_t(   CTFILENAME("TexturesMP\\Interface\\IScore.tex"));
+-    _toHiScore.SetData_t( CTFILENAME("TexturesMP\\Interface\\IHiScore.tex"));
+-    _toMessage.SetData_t( CTFILENAME("TexturesMP\\Interface\\IMessage.tex"));
+-    _toMana.SetData_t(    CTFILENAME("TexturesMP\\Interface\\IValue.tex"));
+-    _toArmorLarge.SetData_t(   CTFILENAME("TexturesMP\\Interface\\ArStrong.tex"));
+-	}
+-    _toArmorSmall.SetData_t(  CTFILENAME("TexturesMP\\Interface\\ArSmall.tex"));
+-    _toArmorMedium.SetData_t(   CTFILENAME("TexturesMP\\Interface\\ArMedium.tex"));
+-
+-	if (g_cb.tfe) {
++    // initialize ammo textures                    
+     _toAShells.SetData_t(      CTFILENAME("Textures\\Interface\\AmShells.tex"));
+     _toABullets.SetData_t(     CTFILENAME("Textures\\Interface\\AmBullets.tex"));
+     _toARockets.SetData_t(     CTFILENAME("Textures\\Interface\\AmRockets.tex"));
+@@ -1486,20 +1044,7 @@
+     _toANapalm.SetData_t(      CTFILENAME("Textures\\Interface\\AmFuelReservoir.tex"));
+     _toAElectricity.SetData_t( CTFILENAME("Textures\\Interface\\AmElectricity.tex"));
+     _toAIronBall.SetData_t(    CTFILENAME("Textures\\Interface\\AmCannon.tex"));
+-	} else {
+-    // initialize ammo textures                    
+-    _toAShells.SetData_t(        CTFILENAME("TexturesMP\\Interface\\AmShells.tex"));
+-    _toABullets.SetData_t(       CTFILENAME("TexturesMP\\Interface\\AmBullets.tex"));
+-    _toARockets.SetData_t(       CTFILENAME("TexturesMP\\Interface\\AmRockets.tex"));
+-    _toAGrenades.SetData_t(      CTFILENAME("TexturesMP\\Interface\\AmGrenades.tex"));
+-    _toANapalm.SetData_t(        CTFILENAME("TexturesMP\\Interface\\AmFuelReservoir.tex"));
+-    _toAElectricity.SetData_t(   CTFILENAME("TexturesMP\\Interface\\AmElectricity.tex"));
+-    _toAIronBall.SetData_t(      CTFILENAME("TexturesMP\\Interface\\AmCannonBall.tex"));
+-	}
+-    _toASniperBullets.SetData_t( CTFILENAME("TexturesMP\\Interface\\AmSniperBullets.tex"));
+-    _toASeriousBomb.SetData_t(   CTFILENAME("TexturesMP\\Interface\\AmSeriousBomb.tex"));
+-	
+-	if (g_cb.tfe) {
++    // initialize weapon textures
+     _toWKnife.SetData_t(           CTFILENAME("Textures\\Interface\\WKnife.tex"));
+     _toWColt.SetData_t(            CTFILENAME("Textures\\Interface\\WColt.tex"));
+     _toWSingleShotgun.SetData_t(   CTFILENAME("Textures\\Interface\\WSingleShotgun.tex"));
+@@ -1508,43 +1053,17 @@
+     _toWMinigun.SetData_t(         CTFILENAME("Textures\\Interface\\WMinigun.tex"));
+     _toWRocketLauncher.SetData_t(  CTFILENAME("Textures\\Interface\\WRocketLauncher.tex"));
+     _toWGrenadeLauncher.SetData_t( CTFILENAME("Textures\\Interface\\WGrenadeLauncher.tex"));
+-    _toWLaser.SetData_t(           CTFILENAME("Textures\\Interface\\WLaser.tex"));
++    _toWPipeBomb.SetData_t(        CTFILENAME("Textures\\Interface\\WPipeBomb.tex"));
+     _toWFlamer.SetData_t(          CTFILENAME("Textures\\Interface\\WFlamer.tex"));
++    _toWGhostBuster.SetData_t(     CTFILENAME("Textures\\Interface\\WGhostBuster.tex"));
++    _toWLaser.SetData_t(           CTFILENAME("Textures\\Interface\\WLaser.tex"));
+     _toWIronCannon.SetData_t(      CTFILENAME("Textures\\Interface\\WCannon.tex"));
+-	} else {
+-    // initialize weapon textures
+-    _toWKnife.SetData_t(           CTFILENAME("TexturesMP\\Interface\\WKnife.tex"));
+-    _toWColt.SetData_t(            CTFILENAME("TexturesMP\\Interface\\WColt.tex"));
+-    _toWSingleShotgun.SetData_t(   CTFILENAME("TexturesMP\\Interface\\WSingleShotgun.tex"));
+-    _toWDoubleShotgun.SetData_t(   CTFILENAME("TexturesMP\\Interface\\WDoubleShotgun.tex"));
+-    _toWTommygun.SetData_t(        CTFILENAME("TexturesMP\\Interface\\WTommygun.tex"));
+-    _toWMinigun.SetData_t(         CTFILENAME("TexturesMP\\Interface\\WMinigun.tex"));
+-    _toWRocketLauncher.SetData_t(  CTFILENAME("TexturesMP\\Interface\\WRocketLauncher.tex"));
+-    _toWGrenadeLauncher.SetData_t( CTFILENAME("TexturesMP\\Interface\\WGrenadeLauncher.tex"));
+-    _toWLaser.SetData_t(           CTFILENAME("TexturesMP\\Interface\\WLaser.tex"));
+-    _toWFlamer.SetData_t(          CTFILENAME("TexturesMP\\Interface\\WFlamer.tex"));
+-    _toWIronCannon.SetData_t(      CTFILENAME("TexturesMP\\Interface\\WCannon.tex"));
+-	}
+-    _toWChainsaw.SetData_t(        CTFILENAME("TexturesMP\\Interface\\WChainsaw.tex"));
+-    _toWSniper.SetData_t(          CTFILENAME("TexturesMP\\Interface\\WSniper.tex"));
+-        
+-    // initialize powerup textures (DO NOT CHANGE ORDER!)
+-    _atoPowerups[0].SetData_t( CTFILENAME("TexturesMP\\Interface\\PInvisibility.tex"));
+-    _atoPowerups[1].SetData_t( CTFILENAME("TexturesMP\\Interface\\PInvulnerability.tex"));
+-    _atoPowerups[2].SetData_t( CTFILENAME("TexturesMP\\Interface\\PSeriousDamage.tex"));
+-    _atoPowerups[3].SetData_t( CTFILENAME("TexturesMP\\Interface\\PSeriousSpeed.tex"));
+-    // initialize sniper mask texture
+-    _toSniperMask.SetData_t(       CTFILENAME("TexturesMP\\Interface\\SniperMask.tex"));
+-    _toSniperWheel.SetData_t(       CTFILENAME("TexturesMP\\Interface\\SniperWheel.tex"));
+-    _toSniperArrow.SetData_t(       CTFILENAME("TexturesMP\\Interface\\SniperArrow.tex"));
+-    _toSniperEye.SetData_t(       CTFILENAME("TexturesMP\\Interface\\SniperEye.tex"));
+-    _toSniperLed.SetData_t(       CTFILENAME("TexturesMP\\Interface\\SniperLed.tex"));
+-
+     // initialize tile texture
+     _toTile.SetData_t( CTFILENAME("Textures\\Interface\\Tile.tex"));
+-    
++
+     // set all textures as constant
+     ((CTextureData*)_toHealth .GetData())->Force(TEX_CONSTANT);
++    ((CTextureData*)_toArmor  .GetData())->Force(TEX_CONSTANT);
+     ((CTextureData*)_toOxygen .GetData())->Force(TEX_CONSTANT);
+     ((CTextureData*)_toFrags  .GetData())->Force(TEX_CONSTANT);
+     ((CTextureData*)_toDeaths .GetData())->Force(TEX_CONSTANT);
+@@ -1552,47 +1071,29 @@
+     ((CTextureData*)_toHiScore.GetData())->Force(TEX_CONSTANT);
+     ((CTextureData*)_toMessage.GetData())->Force(TEX_CONSTANT);
+     ((CTextureData*)_toMana   .GetData())->Force(TEX_CONSTANT);
+-    ((CTextureData*)_toArmorSmall.GetData())->Force(TEX_CONSTANT);
+-    ((CTextureData*)_toArmorMedium.GetData())->Force(TEX_CONSTANT);
+-    ((CTextureData*)_toArmorLarge.GetData())->Force(TEX_CONSTANT);
+-
+-    ((CTextureData*)_toAShells       .GetData())->Force(TEX_CONSTANT);
+-    ((CTextureData*)_toABullets      .GetData())->Force(TEX_CONSTANT);
+-    ((CTextureData*)_toARockets      .GetData())->Force(TEX_CONSTANT);
+-    ((CTextureData*)_toAGrenades     .GetData())->Force(TEX_CONSTANT);
+-    ((CTextureData*)_toANapalm       .GetData())->Force(TEX_CONSTANT);
+-    ((CTextureData*)_toAElectricity  .GetData())->Force(TEX_CONSTANT);
+-    ((CTextureData*)_toAIronBall     .GetData())->Force(TEX_CONSTANT);
+-    ((CTextureData*)_toASniperBullets.GetData())->Force(TEX_CONSTANT);
+-    ((CTextureData*)_toASeriousBomb  .GetData())->Force(TEX_CONSTANT);
+-
++    ((CTextureData*)_toAShells     .GetData())->Force(TEX_CONSTANT);
++    ((CTextureData*)_toABullets    .GetData())->Force(TEX_CONSTANT);
++    ((CTextureData*)_toARockets    .GetData())->Force(TEX_CONSTANT);
++    ((CTextureData*)_toAGrenades   .GetData())->Force(TEX_CONSTANT);
++    ((CTextureData*)_toANapalm     .GetData())->Force(TEX_CONSTANT);
++    ((CTextureData*)_toAElectricity.GetData())->Force(TEX_CONSTANT);
++    ((CTextureData*)_toAIronBall   .GetData())->Force(TEX_CONSTANT);
+     ((CTextureData*)_toWKnife          .GetData())->Force(TEX_CONSTANT);
+     ((CTextureData*)_toWColt           .GetData())->Force(TEX_CONSTANT);
+     ((CTextureData*)_toWSingleShotgun  .GetData())->Force(TEX_CONSTANT);
+     ((CTextureData*)_toWDoubleShotgun  .GetData())->Force(TEX_CONSTANT);
+     ((CTextureData*)_toWTommygun       .GetData())->Force(TEX_CONSTANT);
++    ((CTextureData*)_toWMinigun        .GetData())->Force(TEX_CONSTANT);
+     ((CTextureData*)_toWRocketLauncher .GetData())->Force(TEX_CONSTANT);
+     ((CTextureData*)_toWGrenadeLauncher.GetData())->Force(TEX_CONSTANT);
+-    ((CTextureData*)_toWChainsaw       .GetData())->Force(TEX_CONSTANT);
++    ((CTextureData*)_toWPipeBomb       .GetData())->Force(TEX_CONSTANT);
++    ((CTextureData*)_toWFlamer         .GetData())->Force(TEX_CONSTANT);
++    ((CTextureData*)_toWGhostBuster    .GetData())->Force(TEX_CONSTANT);
+     ((CTextureData*)_toWLaser          .GetData())->Force(TEX_CONSTANT);
+     ((CTextureData*)_toWIronCannon     .GetData())->Force(TEX_CONSTANT);
+-    ((CTextureData*)_toWSniper         .GetData())->Force(TEX_CONSTANT);
+-    ((CTextureData*)_toWMinigun        .GetData())->Force(TEX_CONSTANT);
+-    ((CTextureData*)_toWFlamer         .GetData())->Force(TEX_CONSTANT);
+-    
+-    ((CTextureData*)_atoPowerups[0].GetData())->Force(TEX_CONSTANT);
+-    ((CTextureData*)_atoPowerups[1].GetData())->Force(TEX_CONSTANT);
+-    ((CTextureData*)_atoPowerups[2].GetData())->Force(TEX_CONSTANT);
+-    ((CTextureData*)_atoPowerups[3].GetData())->Force(TEX_CONSTANT);
+-    ((CTextureData*)_toTile      .GetData())->Force(TEX_CONSTANT);
+-    ((CTextureData*)_toSniperMask.GetData())->Force(TEX_CONSTANT);
+-    ((CTextureData*)_toSniperWheel.GetData())->Force(TEX_CONSTANT);
+-    ((CTextureData*)_toSniperArrow.GetData())->Force(TEX_CONSTANT);
+-    ((CTextureData*)_toSniperEye.GetData())->Force(TEX_CONSTANT);
+-    ((CTextureData*)_toSniperLed.GetData())->Force(TEX_CONSTANT);
+-
++    ((CTextureData*)_toTile            .GetData())->Force(TEX_CONSTANT);
+   }
+-  catch ( const char *strError) {
++  catch( char *strError) {
+     FatalError( strError);
+   }
+ 
