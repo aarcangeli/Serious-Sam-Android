@@ -630,12 +630,12 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
     fRow = pixBottomBound- (fNextUnit+fHalfUnit);//_pDP->dp_fWideAdjustment;
     fCol = pixLeftBound+    fHalfUnit;
     colDefault = AddShaker( 3, fValue, penLast->m_iLastArmor, penLast->m_tmArmorChanged, fMoverX, fMoverY);
-    HUD_DrawBorder( fCol+fMoverX, fRow+fMoverY, fOneUnit, fOneUnit, colBorder);
+    HUD_DrawBorder( fCol+fMoverX, fRow+fMoverY-12, fOneUnit, fOneUnit, colBorder);
     fCol += fAdvUnit+fChrUnit*3/2 -fHalfUnit;
-    HUD_DrawBorder( fCol, fRow, fChrUnit*3, fOneUnit, colBorder);
-    HUD_DrawText( fCol, fRow, strValue, NONE, fNormValue);
+    HUD_DrawBorder( fCol, fRow-12, fChrUnit*3, fOneUnit, colBorder);
+    HUD_DrawText( fCol, fRow-12, strValue, NONE, fNormValue);
     fCol -= fAdvUnit+fChrUnit*3/2 -fHalfUnit;
-    HUD_DrawIcon( fCol+fMoverX, fRow+fMoverY, _toArmor, _colHUD, fNormValue, FALSE);
+    HUD_DrawIcon( fCol+fMoverX, fRow+fMoverY-12, _toArmor, _colHUD, fNormValue, FALSE);
   }
 
   // prepare and draw ammo and weapon info

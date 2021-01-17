@@ -3,6 +3,7 @@
 
 #include <AndroidAdapters/android-adapters.h>
 #include <Engine/Base/CTString.h>
+#include <config.h>
 
 enum GameState {
     GS_LOADING,
@@ -31,7 +32,11 @@ struct BindingCallbacks {
     CTString WifiIP = "";
     bool drawBanner = true;
     int ping = 0;
-    bool tfe;
+#ifdef FIRST_ENCOUNTER
+    bool tfe = true;
+#else
+    bool tfe ;
+#endif
 };
 
 extern BindingCallbacks g_cb;

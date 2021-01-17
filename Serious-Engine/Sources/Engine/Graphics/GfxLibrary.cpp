@@ -234,9 +234,9 @@ FLOAT wld_fEdgeAdjustK          = 1.0f; //1.0001f;
 INDEX gfx_bRenderWorld      = TRUE;
 INDEX gfx_bRenderParticles  = TRUE;
 INDEX gfx_bRenderModels     = TRUE;
-INDEX gfx_bRenderPredicted  = FALSE;
+INDEX gfx_bRenderPredicted  = TRUE;
 INDEX gfx_bRenderFog        = TRUE;
-INDEX gfx_iLensFlareQuality = 0;   // 0=none, 1=corona only, 2=corona and reflections, 3=corona, reflections and glare 
+INDEX gfx_iLensFlareQuality = 3;   // 0=none, 1=corona only, 2=corona and reflections, 3=corona, reflections and glare 
 
 INDEX gfx_bDecoratedText   = TRUE;
 INDEX gfx_bClearScreen = FALSE;
