@@ -115,24 +115,24 @@ android {
     }
     flavorDimensions "version"
     productFlavors {
-        tse {
+        TSE {
 	dimension "version"
 	applicationId "com.skyrimus.serioussam.tse"
 	versionNameSuffix "-TSE"
 	buildConfigField('String','home','"SeriousSamTSE"')
 	sourceSets {
-		tse {
+		TSE {
 		res.srcDirs = ['src/main/res_tse','src/main/res']
 		}
 	}
 	}
-        tfe {
+        TFE {
 	dimension "version"
 	applicationId "com.skyrimus.serioussam.tfe"
 	versionNameSuffix "-TFE"
 	buildConfigField('String','home','"SeriousSamTFE"')
 	sourceSets {
-		tfe {
+		TFE {
 		res.srcDirs = ['src/main/res_tfe','src/main/res']
 		}
 	}
