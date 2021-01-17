@@ -113,6 +113,40 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    flavorDimensions "version"
+    productFlavors {
+        tse {
+	dimension "version"
+	applicationId "com.skyrimus.serioussam.tse"
+	versionNameSuffix "-TSE"
+	buildConfigField('String','home','"SeriousSamTSE"')
+	sourceSets {
+		tse {
+		res.srcDirs = ['src/main/res_tse','src/main/res']
+		}
+	}
+	}
+        tfe {
+	dimension "version"
+	applicationId "com.skyrimus.serioussam.tfe"
+	versionNameSuffix "-TFE"
+	buildConfigField('String','home','"SeriousSamTFE"')
+	sourceSets {
+		tfe {
+		res.srcDirs = ['src/main/res_tfe','src/main/res']
+		}
+	}
+        externalNativeBuild {
+            cmake {
+                cppFlags "-fexceptions"
+                abiFilters "armeabi-v7a"
+		arguments "-DFIRST_ENCOUNTER=1"
+            }
+        }
+
+
+	}
+    }
     externalNativeBuild {
         cmake {
             path "../CMakeLists.txt"

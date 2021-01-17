@@ -48,9 +48,12 @@ build_script:
 
 after_build:
   - cmd: |
-      move app\build\outputs\apk\release\*.apk .
-      move app\build\intermediates\cmake\release\obj SeriousSamAndroid-V%SSA_VERSION%-symbols
-      7z a SeriousSamAndroid-V%SSA_VERSION%-symbols.zip SeriousSamAndroid-V%SSA_VERSION%-symbols
+      move app\build\outputs\apk\tfe\release\*.apk .
+      move app\build\outputs\apk\tse\release\*.apk .
+      move app\build\intermediates\cmake\tfeRelease\obj SeriousSamAndroid-V%SSA_VERSION%-TFE-symbols
+      move app\build\intermediates\cmake\tseRelease\obj SeriousSamAndroid-V%SSA_VERSION%-TSE-symbols
+      7z a SeriousSamAndroid-V%SSA_VERSION%-TFE-symbols.zip SeriousSamAndroid-V%SSA_VERSION%-TFE-symbols
+      7z a SeriousSamAndroid-V%SSA_VERSION%-TSE-symbols.zip SeriousSamAndroid-V%SSA_VERSION%-TSE-symbols
 
 artifacts:
   - path: SeriousSamAndroid-*.apk

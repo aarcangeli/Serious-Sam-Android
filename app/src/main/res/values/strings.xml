@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name">Serious Sam</string>
 
     <string-array name="AutoYesNo">
         <item>Auto</item>

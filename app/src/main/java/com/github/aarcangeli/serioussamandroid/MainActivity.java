@@ -552,7 +552,7 @@ public class MainActivity extends AppCompatActivity {
 
     @NonNull
     private static File getHomeDir() {
-        return new File(Environment.getExternalStorageDirectory(), "SeriousSam").getAbsoluteFile();
+        return new File(Environment.getExternalStorageDirectory(), BuildConfig.home).getAbsoluteFile();
     }
 
     @Override
