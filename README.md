@@ -1,10 +1,28 @@
 # Serious Sam Android [![Build status](https://ci.appveyor.com/api/projects/status/wacvajrwf2hw59jp/branch/master?svg=true)](https://ci.appveyor.com/project/aarcangeli/serious-sam-android/branch/master)
 
+# Serious Sam Classic The First Encounter
+## Running the game
+1. Locate the game directory for "Serious Sam Classic The First Encounter" ([s>
+1. [Download](https://github.com/aarcangeli/Serious-Sam-Android/releases/latest>
+1. Create a directory on your sd card called "SeriousSamTFE"
+1. Copy all *.gro files and Levels folder from the game directory to SeriousSamTFE directory.
+   At the current time the files are:
+   * Levels (folder)
+   * 1_00_ExtraTools.gro
+   * 1_00_music.gro
+   * 1_00c.gro
+   * 1_00c_Logo.gro
+   * 1_00c_scripts.gro
+   * 1_04_patch.gro
+1. Start the game
+   * The first time will ask you permission to read from external storage
+
+# Serious Sam Classic The Second Encounter
 ## Running the game
 1. Locate the game directory for "Serious Sam Classic The Second Encounter" ([steam](https://store.steampowered.com/app/41060/Serious_Sam_Classic_The_Second_Encounter/))
 1. [Download](https://github.com/aarcangeli/Serious-Sam-Android/releases/latest) and install the latest version of SeriousSamRelease.apk
-1. Create a directory on your sd card called "SeriousSam"
-1. Copy all *.gro files from the game directory to SeriousSam directory.
+1. Create a directory on your sd card called "SeriousSamTSE"
+1. Copy all *.gro files from the game directory to SeriousSamTSE directory.
    At the current time the files are:
    * SE1_00.gro
    * SE1_00_Extra.gro
