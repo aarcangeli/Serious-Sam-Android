@@ -110,6 +110,7 @@ public class MainActivity extends AppCompatActivity {
 	public float input_fireX, input_fireY;
 	public float input_jumpX, input_jumpY;
 	public float input_crunchX, input_crunchY;
+	public float input_overlayX, input_overlayY;
 	public View currentView;
 	
     private InputProcessor processor = new InputProcessor();
@@ -208,10 +209,23 @@ public class MainActivity extends AppCompatActivity {
         JoystickView joystick = findViewById(R.id.input_overlay);
         joystick.setListener(new Listener() {
             @Override
-            public void onMove(float deltaX, float deltaY) {
+            public void onMove(float deltaX, float deltaY, MotionEvent ev) {
                 if (gameState == GameState.NORMAL) {
-                    setAxisValue(AXIS_MOVE_LR, deltaX);
-                    setAxisValue(AXIS_MOVE_FB, deltaY);
+                float dX, dY;
+        JoystickView joystick = findViewById(R.id.input_overlay);
+        	if (test) {
+        	SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+    		SharedPreferences.Editor sharedPreferencesEditor = preferences.edit();
+        	joystick.test = true;
+                findViewById(R.id.input_overlay).setX(ev.getRawX() + -Utils.convertPixelsToDp(joystick.padPosX, MainActivity.this));
+                findViewById(R.id.input_overlay).setY(ev.getRawY() + -Utils.convertPixelsToDp(joystick.padPosY, MainActivity.this));
+                sharedPreferencesEditor.putFloat("input_overlayX", ev.getRawX() + -Utils.convertPixelsToDp(joystick.padPosX, MainActivity.this)).apply();
+		sharedPreferencesEditor.putFloat("input_overlayY", ev.getRawY() + -Utils.convertPixelsToDp(joystick.padPosY, MainActivity.this)).apply();
+                } else {
+                joystick.test = false;
+                setAxisValue(AXIS_MOVE_LR, deltaX);
+                setAxisValue(AXIS_MOVE_FB, deltaY);
+                }
                 }
             }
         });
@@ -789,7 +803,9 @@ public class MainActivity extends AppCompatActivity {
 	input_jumpY = preferences.getFloat("input_jumpY",findViewById(R.id.input_jump).getY());
 	input_crunchX = preferences.getFloat("input_crunchX",findViewById(R.id.input_crunch).getX());
 	input_crunchY = preferences.getFloat("input_crunchY",findViewById(R.id.input_crunch).getY());
-	
+	input_overlayX = preferences.getFloat("input_overlayX",findViewById(R.id.input_overlay).getX());
+	input_overlayY = preferences.getFloat("input_overlayY",findViewById(R.id.input_overlay).getY());
+		
 	findViewById(R.id.input_fire).setX(input_fireX);
 	findViewById(R.id.input_fire).setY(input_fireY);
 	findViewById(R.id.input_SeriousBomb).setX(input_SeriousBombX);
@@ -804,6 +820,8 @@ public class MainActivity extends AppCompatActivity {
 	findViewById(R.id.input_jump).setY(input_jumpY);
 	findViewById(R.id.input_crunch).setX(input_crunchX);
 	findViewById(R.id.input_crunch).setY(input_crunchY);
+	findViewById(R.id.input_overlay).setX(input_overlayX);
+	findViewById(R.id.input_overlay).setY(input_overlayY);
             }
         });
 	}

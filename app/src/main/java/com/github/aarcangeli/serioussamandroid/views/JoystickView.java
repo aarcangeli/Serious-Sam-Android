@@ -30,7 +30,8 @@ public class JoystickView extends View {
     private Paint paintBgStroke = new Paint();
     private Paint paintPadFill = new Paint();
     private Paint paintPadStroke = new Paint();
-    private float padPosX, padPosY;
+    public float padPosX, padPosY;
+    public boolean test = false;
     private float deltaX;
     private float deltaY;
     private Listener listener;
@@ -130,7 +131,9 @@ public class JoystickView extends View {
        // c.drawCircle(0, 0, sizePadBg, paintBgStroke);
 
         // pad
+        if (!test) {
         c.translate(deltaX, deltaY);
+        }
         paintPadFill.setShader(padShader);
         c.drawCircle(0, 0, sizePad, paintPadStroke);
         c.drawCircle(0, 0, sizePad, paintPadFill);
@@ -168,7 +171,7 @@ public class JoystickView extends View {
 
                 this.deltaX = deltaX;
                 this.deltaY = deltaY;
-                listener.onMove(-deltaX / sizePx, -deltaY / sizePx);
+                listener.onMove(-deltaX / sizePx, -deltaY / sizePx, event);
 
                 invalidate();
                 return true;
@@ -178,7 +181,7 @@ public class JoystickView extends View {
                 this.deltaX = 0;
                 this.deltaY = 0;
                 invalidate();
-                listener.onMove(0, 0);
+                listener.onMove(0, 0, event);
                 return true;
         }
         return false;
@@ -189,6 +192,6 @@ public class JoystickView extends View {
     }
 
     public interface Listener {
-        void onMove(float deltaX, float deltaY);
+        void onMove(float deltaX, float deltaY, MotionEvent ev);
     }
 }
