@@ -735,15 +735,14 @@ public class MainActivity extends AppCompatActivity {
 		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
 		SharedPreferences.Editor sharedPreferencesEditor = preferences.edit();
 		int[] id = new int[] {R.id.input_use, R.id.input_crunch, R.id.input_jump, R.id.buttonPrev, R.id.buttonNext,R.id.input_fire, R.id.input_SeriousBomb};
-		String[] buttonIdH = new String[] {"input_useH", "input_crunchH", "input_jumpH", "buttonPrevH",
-										   "buttonNextH", "input_fireH", "input_SeriousBombH"};
-		String[] buttonIdW = new String[] {"input_useW", "input_crunchW", "input_jumpW", "buttonPrevW",
-										   "buttonNextW", "input_fireW", "input_SeriousBombW"};
+		String[] buttonIdName = new String[] {"input_use", "input_crunch", "input_jump", "buttonPrev",
+										   "buttonNext", "input_fire", "input_SeriousBomb"};
+
 		for(int i=0; i<id.length; i++) {
 			findViewById(id[i]).getLayoutParams().width = findViewById(id[i]).getLayoutParams().width + 5;
 			findViewById(id[i]).getLayoutParams().height = findViewById(id[i]).getLayoutParams().height + 5;
-			sharedPreferencesEditor.putInt(buttonIdH[i], findViewById(id[i]).getLayoutParams().height).apply();
-			sharedPreferencesEditor.putInt(buttonIdW[i], findViewById(id[i]).getLayoutParams().width).apply();
+			sharedPreferencesEditor.putInt(buttonIdName[i]+"H", findViewById(id[i]).getLayoutParams().height).apply();
+			sharedPreferencesEditor.putInt(buttonIdName[i]+"W", findViewById(id[i]).getLayoutParams().width).apply();
 			findViewById(id[i]).setVisibility(View.GONE);
 			findViewById(id[i]).setVisibility(View.VISIBLE);
 			
@@ -756,15 +755,14 @@ public class MainActivity extends AppCompatActivity {
 		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
 		SharedPreferences.Editor sharedPreferencesEditor = preferences.edit();
 		int[] id = new int[] {R.id.input_use, R.id.input_crunch, R.id.input_jump, R.id.buttonPrev, R.id.buttonNext,R.id.input_fire, R.id.input_SeriousBomb};
-		String[] buttonIdH = new String[] {"input_useH", "input_crunchH", "input_jumpH", "buttonPrevH",
-										   "buttonNextH", "input_fireH", "input_SeriousBombH"};
-		String[] buttonIdW = new String[] {"input_useW", "input_crunchW", "input_jumpW", "buttonPrevW",
-										   "buttonNextW", "input_fireW", "input_SeriousBombW"};
+		String[] buttonIdName = new String[] {"input_use", "input_crunch", "input_jump", "buttonPrev",
+										   "buttonNext", "input_fire", "input_SeriousBomb"};
+										   
 		for(int i=0; i<id.length; i++) {
 			findViewById(id[i]).getLayoutParams().width = findViewById(id[i]).getLayoutParams().width - 5;
 			findViewById(id[i]).getLayoutParams().height = findViewById(id[i]).getLayoutParams().height - 5;
-			sharedPreferencesEditor.putInt(buttonIdH[i], findViewById(id[i]).getLayoutParams().height).apply();
-			sharedPreferencesEditor.putInt(buttonIdW[i], findViewById(id[i]).getLayoutParams().width).apply();
+			sharedPreferencesEditor.putInt(buttonIdName[i]+"H", findViewById(id[i]).getLayoutParams().height).apply();
+			sharedPreferencesEditor.putInt(buttonIdName[i]="W", findViewById(id[i]).getLayoutParams().width).apply();
 			findViewById(id[i]).setVisibility(View.GONE);
 			findViewById(id[i]).setVisibility(View.VISIBLE);
 		}	
@@ -820,22 +818,16 @@ public class MainActivity extends AppCompatActivity {
 		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
 		
 		int[] buttonId = new int[] {R.id.input_use, R.id.input_crunch, R.id.input_jump, R.id.buttonPrev, R.id.buttonNext,R.id.input_fire, R.id.input_SeriousBomb, R.id.input_overlay};
-		String[] buttonIdX = new String[] {"input_useX", "input_crunchX", "input_jumpX", "buttonPrevX",
-										   "buttonNextX", "input_fireX", "input_SeriousBombX", "input_overlayX"};
-		String[] buttonIdY = new String[] {"input_useY", "input_crunchY", "input_jumpY", "buttonPrevY",
-										   "buttonNextY", "input_fireY", "input_SeriousBombY", "input_overlayY"};
-		String[] buttonIdH = new String[] {"input_useH", "input_crunchH", "input_jumpH", "buttonPrevH",
-										   "buttonNextH", "input_fireH", "input_SeriousBombH", "input_overlayH"};
-		String[] buttonIdW = new String[] {"input_useW", "input_crunchW", "input_jumpW", "buttonPrevW",
-										   "buttonNextW", "input_fireW", "input_SeriousBombW", "input_overlayW"};
+		String[] buttonIdName = new String[] {"input_use", "input_crunch", "input_jump", "buttonPrev",
+										   "buttonNext", "input_fire", "input_SeriousBomb", "input_overlay"};
 
 		for(int i=0; i<buttonId.length; i++) {
-			float X = preferences.getFloat(buttonIdX[i],findViewById(buttonId[i]).getX());
-			float Y = preferences.getFloat(buttonIdY[i],findViewById(buttonId[i]).getY());
+			float X = preferences.getFloat(buttonIdName[i]+"X",findViewById(buttonId[i]).getX());
+			float Y = preferences.getFloat(buttonIdName[i]+"Y",findViewById(buttonId[i]).getY());
 			findViewById(buttonId[i]).setX(X);
 			findViewById(buttonId[i]).setY(Y);
-			int H = preferences.getInt(buttonIdH[i],findViewById(buttonId[i]).getLayoutParams().height);
-			int W = preferences.getInt(buttonIdW[i],findViewById(buttonId[i]).getLayoutParams().width);
+			int H = preferences.getInt(buttonIdName[i]+"H",findViewById(buttonId[i]).getLayoutParams().height);
+			int W = preferences.getInt(buttonIdName[i]+"W",findViewById(buttonId[i]).getLayoutParams().width);
 			findViewById(buttonId[i]).getLayoutParams().height = H;
 			findViewById(buttonId[i]).getLayoutParams().width = W;
 		}
@@ -901,14 +893,10 @@ public class MainActivity extends AppCompatActivity {
                     currentView = v;
 					String[] buttonId = new String[] {"input_use", "input_crunch", "input_jump", "buttonPrev", 
 													   "buttonNext", "input_fire", "input_SeriousBomb"};
-					String[] buttonIdX = new String[] {"input_useX", "input_crunchX", "input_jumpX", "buttonPrevX", 
-													   "buttonNextX", "input_fireX", "input_SeriousBombX"};
-					String[] buttonIdY = new String[] {"input_useY", "input_crunchY", "input_jumpY", "buttonPrevY", 
-													   "buttonNextY", "input_fireY", "input_SeriousBombY"};
 					for(int i=0; i<buttonId.length; i++) {
 						if (name.equals(buttonId[i])) {
-					sharedPreferencesEditor.putFloat(buttonIdX[i], v.getX()).apply();
-					sharedPreferencesEditor.putFloat(buttonIdY[i], v.getY()).apply();
+					sharedPreferencesEditor.putFloat(buttonId[i]+"X", v.getX()).apply();
+					sharedPreferencesEditor.putFloat(buttonId[i]+"Y", v.getY()).apply();
 						}
 					}
                 }
