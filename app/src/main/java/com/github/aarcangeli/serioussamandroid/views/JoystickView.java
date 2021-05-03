@@ -31,7 +31,7 @@ public class JoystickView extends View {
     private Paint paintPadFill = new Paint();
     private Paint paintPadStroke = new Paint();
     public float padPosX, padPosY;
-    public boolean test = false;
+    public boolean ButtonsMapping = false;
     private float deltaX;
     private float deltaY;
     private Listener listener;
@@ -131,7 +131,7 @@ public class JoystickView extends View {
        // c.drawCircle(0, 0, sizePadBg, paintBgStroke);
 
         // pad
-        if (!test) {
+        if (!ButtonsMapping) {
         c.translate(deltaX, deltaY);
         }
         paintPadFill.setShader(padShader);
