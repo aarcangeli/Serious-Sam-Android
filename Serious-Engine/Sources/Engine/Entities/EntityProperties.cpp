@@ -31,7 +31,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Templates/Stock_CSoundData.h>
 #include <Engine/Templates/Stock_CEntityClass.h>
 #include <Engine/Templates/StaticArray.cpp>
-#include <Engine/Templates/DynamicContainer.cpp>
 
 #define FILTER_ALL            "All files (*.*)\0*.*\0"
 #define FILTER_END            "\0"

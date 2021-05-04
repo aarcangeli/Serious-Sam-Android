@@ -388,7 +388,7 @@ void CEntityClass::AddToCRCTable(void)
   // add the file itself
   CRCT_AddFile_t(fnm);
   // add its DLL
-  CRCT_AddFile_t(ec_fnmClassDLL);
+  //CRCT_AddFile_t(ec_fnmClassDLL);
 }
 
 /* Get pointer to entity property from its name. */

@@ -66,7 +66,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Templates/Stock_CTextureData.h>
 #include <Engine/Templates/Stock_CModelData.h>
 #include <Engine/Templates/Stock_CSoundData.h>
-#include <Engine/Templates/BSP.cpp>
 
 // a reference to a void event for use as default parameter
 const EVoid _evVoid;
@@ -2159,7 +2158,6 @@ void CEntity::SendEventInRange(const CEntityEvent &ee, const FLOATaabbox3D &boxR
 /* Handle all sent events. */
 void CEntity::HandleSentEvents(void)
 {
-  _pfPhysicsProfile.StartTimer(CPhysicsProfile::PTI_HANDLESENTEVENTS);
 
   CSetFPUPrecision FPUPrecision(FPT_24BIT);
 
@@ -2194,7 +2192,6 @@ void CEntity::HandleSentEvents(void)
   // flush all events
   _aseSentEvents.PopAll();
 
-  _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_HANDLESENTEVENTS);
 }
 
 /////////////////////////////////////////////////////////////////////

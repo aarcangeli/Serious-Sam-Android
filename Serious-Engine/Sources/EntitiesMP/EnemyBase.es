@@ -124,7 +124,7 @@ properties:
  // attack temporary -> DO NOT USE
  60 FLOAT m_fShootTime = 0.0f,                // time when entity will try to shoot on enemy
  61 FLOAT m_fDamageConfused = 0.0f,           // damage amount when entity shoot concentration is spoiled
- 62 INDEX m_iChargeHitAnimation = 0,       // charge hit (close attack) properties
+ 62 INDEX m_iChargeHitAnimation = 0.0f,       // charge hit (close attack) properties
  63 FLOAT m_fChargeHitDamage = 0.0f,
  64 FLOAT m_fChargeHitAngle = 0.0f,
  65 FLOAT m_fChargeHitSpeed = 0.0f,

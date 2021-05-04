@@ -2476,7 +2476,7 @@ void CNetworkLibrary::GameInactive(void)
 void CNetworkLibrary::InitCRCGather(void)
 {
   CRCT_ResetActiveList();
-  CRCT_bGatherCRCs = FALSE;
+  CRCT_bGatherCRCs = TRUE;
   CRCT_AddFile_t(CTString("Classes\\Player.ecl"));
 }
 

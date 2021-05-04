@@ -583,7 +583,6 @@ void CSessionState::HandleMovers(void)
 //  CPrintF("---- tick %g\n", _pTimer->CurrentTick());
 
   // put all movers in active list, pushing ones first
-  _pfPhysicsProfile.StartTimer(CPhysicsProfile::PTI_MOV_PREPARE);
   CListHead lhActiveMovers, lhDoneMovers, lhDummyMovers;
   {FORDELETELIST(CMovableEntity, en_lnInMovers, _pNetwork->ga_World.wo_lhMovers, itenMover) {
     CMovableEntity *pen = itenMover;
@@ -602,26 +601,20 @@ void CSessionState::HandleMovers(void)
       }
     }
   }}
-  _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_MOV_PREPARE);
 
   // for each active mover
-  _pfPhysicsProfile.StartTimer(CPhysicsProfile::PTI_MOV_CLEARMOVINGTEMP);
   {FORDELETELIST(CMovableEntity, en_lnInMovers, lhActiveMovers, itenMover) {
     // let it clear its temporary variables to prevent bad syncs
     itenMover->ClearMovingTemp();
   }}
-  _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_MOV_CLEARMOVINGTEMP);
 
   // for each active mover
-  _pfPhysicsProfile.StartTimer(CPhysicsProfile::PTI_MOV_PREMOVING);
   {FORDELETELIST(CMovableEntity, en_lnInMovers, lhActiveMovers, itenMover) {
     // let it calculate its wanted parameters for this tick
     itenMover->PreMoving();
   }}
-  _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_MOV_PREMOVING);
 
   // while there are some active movers
-  _pfPhysicsProfile.StartTimer(CPhysicsProfile::PTI_MOV_DOMOVING);
   while(!lhActiveMovers.IsEmpty()) {
     // get first one
     CMovableEntity *penMoving = LIST_HEAD(lhActiveMovers, CMovableEntity, en_lnInMovers);
@@ -656,10 +649,8 @@ void CSessionState::HandleMovers(void)
     // if any mover is re-added, put it to the end of active list
     lhActiveMovers.MoveList(_pNetwork->ga_World.wo_lhMovers);
   }
-  _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_MOV_DOMOVING);
 
   // for each done mover
-  _pfPhysicsProfile.StartTimer(CPhysicsProfile::PTI_MOV_POSTMOVING);
   {FORDELETELIST(CMovableEntity, en_lnInMovers, lhDoneMovers, itenMover) {
     // if predicting, and it is not a predictor
     if (ses_bPredicting && !itenMover->IsPredictor()) {
@@ -667,14 +658,11 @@ void CSessionState::HandleMovers(void)
       continue;
     }
     // let it calculate its parameters after all movement has been resolved
-    _pfPhysicsProfile.IncrementTimerAveragingCounter(CPhysicsProfile::PTI_MOV_POSTMOVING);
     itenMover->PostMoving();
   }}
-  _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_MOV_POSTMOVING);
 
   // for each done mover
 
-  _pfPhysicsProfile.StartTimer(CPhysicsProfile::PTI_MOV_CLEARMOVINGTEMP);
   {FORDELETELIST(CMovableEntity, en_lnInMovers, lhDoneMovers, itenMover) {
     CMovableEntity *pen = itenMover;
     // if predicting, and it is not a predictor
@@ -691,9 +679,6 @@ void CSessionState::HandleMovers(void)
     // let it clear its temporary variables to prevent bad syncs
     pen->ClearMovingTemp();
   }}
-  _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_MOV_CLEARMOVINGTEMP);
-
-  _pfPhysicsProfile.StartTimer(CPhysicsProfile::PTI_MOV_FINISH);
 
   // return all done movers to the world's list
   _pNetwork->ga_World.wo_lhMovers.MoveList(lhDummyMovers);
@@ -701,8 +686,6 @@ void CSessionState::HandleMovers(void)
 
   // handle all the sent events
   CEntity::HandleSentEvents();
-
-  _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_MOV_FINISH);
 
   _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_HANDLEMOVERS);
 }

@@ -42,7 +42,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Network/SessionState.h>
 #include <Engine/Terrain/TerrainMisc.h>
 #define CLEARMEM(var) memset(&var, 0, sizeof(var))
-#include <Engine/Templates/BSP.cpp>
 
 %}
 
