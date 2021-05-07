@@ -26,7 +26,7 @@ CLevelInfo::CLevelInfo(void)
 {
   li_fnLevel = CTString("Levels\\Default.wld");
   li_strName = TRANS("<invalid level>");
-  li_ulSpawnFlags = 0x0;
+  li_ulSpawnFlags = 0;
 }
 CLevelInfo::CLevelInfo(const CLevelInfo &li)
 {
