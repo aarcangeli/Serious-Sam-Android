@@ -726,17 +726,17 @@ static void GAPInfo(void)
 // update console system vars
 extern void UpdateGfxSysCVars(void)
 {
-  sys_bHasTextureCompression = 1;
+  sys_bHasTextureCompression = 0;
   sys_bHasTextureAnisotropy = 0;
   sys_bHasAdjustableGamma = 0;
   sys_bHasTextureLODBias = 0;
   sys_bHasMultitexturing = 0;
   sys_bHas32bitTextures = 0;
-  sys_bHasSwapInterval = 1;
+  sys_bHasSwapInterval = 0;
   sys_bHasHardwareTnL = 1;
   sys_bHasTruform = 0;
   sys_bHasCVAs = 1;
-  sys_bUsingOpenGL = 1;
+  sys_bUsingOpenGL = 0;
   sys_bUsingDirect3D = 0;
   if( _pGfx->gl_iMaxTextureAnisotropy>1) sys_bHasTextureAnisotropy = 1;
   if( _pGfx->gl_fMaxTextureLODBias>0) sys_bHasTextureLODBias = 1;
