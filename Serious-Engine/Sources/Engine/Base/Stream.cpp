@@ -80,9 +80,7 @@ CDynamicStackArray <CTFileName> _afnmBaseWriteInc;
 CDynamicStackArray <CTFileName> _afnmBaseWriteExc;
 CDynamicStackArray <CTFileName> _afnmBaseBrowseInc;
 CDynamicStackArray <CTFileName> _afnmBaseBrowseExc;
-// list of paths or patterns that are not included when making CRCs for network connection
-// this is used to enable connection between different localized versions
-CDynamicStackArray <CTFileName> _afnmNoCRC;
+
 // used to convert filenames from ansi format (written inside text files) into utf-8 (
 CTFileName convertWindow1251ToUtf8(const CTFileName &from) {
   static char outBuffer[10000];
@@ -246,8 +244,6 @@ void InitStreams(void) {
     CPrintF(TRANS("There were group file errors:\n%s"), strError);
   }
   CPrintF("\n");
-
-  LoadFileList(_afnmNoCRC, CTFILENAME("Data\\NoCRC.lst"));
 
 //  _pShell->SetINDEX((CTString("sys")+"_iCPU"+"Misc").str_String, 1);
 }

@@ -5824,7 +5824,7 @@ procedures:
     if (!_pNetwork->IsPlayingDemo()) {
       // record high score in single player only
       if (GetSP()->sp_bSinglePlayer) {
-        _pShell->Execute("gam_iRecordHighScore=0;");
+        _pShell->Execute("gam_iRecordHighScore=1;");
       }
     }
     // if current difficulty is serious

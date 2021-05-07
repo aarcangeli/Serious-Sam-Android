@@ -40,7 +40,6 @@ public:
   }
 };
 
-extern CDynamicStackArray<CTFileName> _afnmNoCRC;
 extern BOOL FileMatchesList(CDynamicStackArray<CTFileName> &afnm, const CTFileName &fnm);
 
 #ifndef SE_INCL_CRCTABLE_CPP
@@ -102,8 +101,13 @@ void CRCT_AddFile_t(const CTFileName &fnm, ULONG ulCRC/*=0*/) // throw char *
   } else {
     // calculate checksum
     if (ulCRC==0) {
-      
-      if (FileMatchesList(_afnmNoCRC, fnm)) {
+  // list of paths or patterns that are not included when making CRCs for network connection
+  // this is used to enable connection between different localized versions
+      if (CTFileName(fnm).FileExt() == ".so" || CTFileName(fnm).FileExt() == ".wav"
+	  || CTFileName(fnm).FileExt() == ".des" || CTFileName(fnm).FileExt() == ".txt"
+	  || CTFileName(fnm).FileExt() == ".fnt" || CTFileName(fnm).FileExt() == ".tex"
+	  || CTFileName(fnm).FileExt() == ".lst" || CTFileName(fnm).FileExt() == ".tbn"
+	  || CTFileName(fnm).FileExt() == ".ogg" || CTFileName(fnm).FileExt() == ".mp3") {
         ulCRC = 0x12345678;
       } else {
         ulCRC = GetFileCRC32_t(fnm);
@@ -183,10 +187,6 @@ ULONG CRCT_MakeCRCForFiles_t(CTStream &strmFiles)  // throw char *
     // read the name
     CTString strName;
     strmFiles>>strName;
-    if (CTFileName(strName).FileExt() == ".so") {
-      // binary files may be different between x86 and arm
-      continue;
-    }
     // try to find it in table
     CCRCEntry *pce = _ntEntries.Find(strName);
     // if not there
