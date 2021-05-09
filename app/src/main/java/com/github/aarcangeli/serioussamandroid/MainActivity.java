@@ -795,7 +795,7 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         useGyroscope = preferences.getBoolean("use_gyroscope", false);
         showTouchController = preferences.getString("showTouchController", "Auto");
-        gyroSensibility = preferences.getInt("gyro_sensibility", 100) / 100.f;
+        gyroSensibility = preferences.getInt("gyro_sensibility", 50) / 100.f;
         aimViewSensibility = preferences.getInt("aimView_sensibility", 100) / 100.f;
         ctrlAimSensibility = preferences.getInt("ctrl_aimSensibility", 100) / 100.f;
         deadZone = preferences.getInt("ctrl_deadZone", 20) / 100.f;
