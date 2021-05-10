@@ -40,7 +40,8 @@ typedef uint32_t  UINT;
       #define MAX_PATH 256
     #endif
 
-    typedef int64_t  __int64;
+	typedef uint64_t __uint64;
+    typedef int64_t __int64;
     typedef uint32_t  DWORD;
     typedef signed long  int    LONG;
 

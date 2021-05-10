@@ -30,7 +30,7 @@ inline void CRC_AddBYTE( ULONG &ulCRC, UBYTE ub)
   ulCRC = (ulCRC>>8)^crc_aulCRCTable[UBYTE(ulCRC)^ub];
 };
 
-inline void CRC_AddWORD( ULONG &ulCRC, UBYTE uw)
+inline void CRC_AddWORD( ULONG &ulCRC, UWORD uw)
 {
   CRC_AddBYTE(ulCRC, UBYTE(uw>> 8));
   CRC_AddBYTE(ulCRC, UBYTE(uw>> 0));

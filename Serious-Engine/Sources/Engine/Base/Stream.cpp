@@ -1165,7 +1165,7 @@ CTMemoryStream::CTMemoryStream(void) {
   // add this newly created memory stream into opened stream list
   (*_plhOpenedStreams)->AddTail(strm_lnListNode);
   // allocate amount of memory needed to hold maximum allowed file length (when saving)
-  mstrm_pubBuffer = (UBYTE *) malloc(_ulMaxLenghtOfSavingFile);
+  mstrm_pubBuffer = new UBYTE[_ulMaxLenghtOfSavingFile];
   mstrm_pubBufferEnd = mstrm_pubBuffer + _ulMaxLenghtOfSavingFile;
   mstrm_pubBufferMax = mstrm_pubBuffer;
 }
@@ -1182,7 +1182,7 @@ CTMemoryStream::CTMemoryStream(void *pvBuffer, SLONG slSize,
   }
 
   // allocate amount of memory needed to hold maximum allowed file length (when saving)
-  mstrm_pubBuffer = (UBYTE *) malloc(_ulMaxLenghtOfSavingFile);
+  mstrm_pubBuffer = new UBYTE[_ulMaxLenghtOfSavingFile];
   mstrm_pubBufferEnd = mstrm_pubBuffer + _ulMaxLenghtOfSavingFile;
   mstrm_pubBufferMax = mstrm_pubBuffer + slSize;
   // copy given block of memory into memory file
