@@ -26,7 +26,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/Console.h>
 
 #include <Engine/Templates/DynamicArray.cpp>
-#include <Engine/Templates/DynamicStackArray.cpp>
 
 // table of translations
 static CNameTable_CTranslationPair _nttpPairs;
@@ -192,9 +191,9 @@ ENGINE_API void AddTranslationTablesDir_t(const CTFileName &fnmDir, const CTFile
 }
 
 // translate a string
-ENGINE_API char *Translate(char *str, INDEX iOffset)
+ENGINE_API char *Translate(const char *str, INDEX iOffset)
 {
-  return (char*)TranslateConst((const char*)str, iOffset);
+  return (char*)TranslateConst(str, iOffset);
 }
 
 ENGINE_API const char *TranslateConst(const char *str, INDEX iOffset)
