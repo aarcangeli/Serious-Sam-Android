@@ -44,7 +44,7 @@ void CAudioOptionsMenu::Initialize_t(void)
     gm_mgFrequencyTrigger, gm_mgWaveVolume, TRANS("SOUND SYSTEM"), astrSoundAPIRadioTexts);
   gm_mgAudioAPITrigger.mg_strTip = TRANS("choose sound system (API) to use");
   gm_mgAudioAPITrigger.mg_pOnTriggerChange = NULL;
-  gm_mgAudioAPITrigger.mg_bEnabled = true;
+  gm_mgAudioAPITrigger.mg_bEnabled = false;
 
   gm_mgWaveVolume.mg_boxOnScreen = BoxMediumRow(3);
   gm_mgWaveVolume.mg_strText = TRANS("SOUND EFFECTS VOLUME");
