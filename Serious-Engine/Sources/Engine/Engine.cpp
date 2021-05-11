@@ -377,16 +377,16 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
   extern INDEX wld_bFastObjectOptimization;
   extern INDEX fil_bPreferZips;
   extern FLOAT mth_fCSGEpsilon;
-  _pShell->DeclareSymbol("user INDEX con_bNoWarnings;", &con_bNoWarnings);
-  _pShell->DeclareSymbol("user INDEX wld_bFastObjectOptimization;", &wld_bFastObjectOptimization);
-  _pShell->DeclareSymbol("user FLOAT mth_fCSGEpsilon;", &mth_fCSGEpsilon);
-  _pShell->DeclareSymbol("persistent user INDEX fil_bPreferZips;", &fil_bPreferZips);
+  _pShell->DeclareSymbol("user INDEX con_bNoWarnings;",(void*) &con_bNoWarnings);
+  _pShell->DeclareSymbol("user INDEX wld_bFastObjectOptimization;",(void*) &wld_bFastObjectOptimization);
+  _pShell->DeclareSymbol("user FLOAT mth_fCSGEpsilon;",(void*) &mth_fCSGEpsilon);
+  _pShell->DeclareSymbol("persistent user INDEX fil_bPreferZips;",(void*) &fil_bPreferZips);
   // OS info
-  _pShell->DeclareSymbol("user const CTString sys_strOS    ;", &sys_strOS);
-  _pShell->DeclareSymbol("user const INDEX sys_iOSMajor    ;", &sys_iOSMajor);
-  _pShell->DeclareSymbol("user const INDEX sys_iOSMinor    ;", &sys_iOSMinor);
-  _pShell->DeclareSymbol("user const INDEX sys_iOSBuild    ;", &sys_iOSBuild);
-  _pShell->DeclareSymbol("user const CTString sys_strOSMisc;", &sys_strOSMisc);
+  _pShell->DeclareSymbol("user const CTString sys_strOS    ;",(void*) &sys_strOS);
+  _pShell->DeclareSymbol("user const INDEX sys_iOSMajor    ;",(void*) &sys_iOSMajor);
+  _pShell->DeclareSymbol("user const INDEX sys_iOSMinor    ;",(void*) &sys_iOSMinor);
+  _pShell->DeclareSymbol("user const INDEX sys_iOSBuild    ;",(void*) &sys_iOSBuild);
+  _pShell->DeclareSymbol("user const CTString sys_strOSMisc;",(void*) &sys_strOSMisc);
   // CPU info
 //  _pShell->DeclareSymbol("user const CTString sys_strCPUVendor;", &sys_strCPUVendor);
 //  _pShell->DeclareSymbol("user const INDEX sys_iCPUType       ;", &sys_iCPUType    );
@@ -398,14 +398,14 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
 //  _pShell->DeclareSymbol("user const INDEX sys_iCPUMHz        ;", &sys_iCPUMHz     );
 //  _pShell->DeclareSymbol("     const INDEX sys_iCPUMisc       ;", &sys_iCPUMisc    );
   // RAM info
-  _pShell->DeclareSymbol("user const INDEX sys_iRAMPhys;", &sys_iRAMPhys);
-  _pShell->DeclareSymbol("user const INDEX sys_iRAMSwap;", &sys_iRAMSwap);
+  _pShell->DeclareSymbol("user const INDEX sys_iRAMPhys;",(void*) &sys_iRAMPhys);
+  _pShell->DeclareSymbol("user const INDEX sys_iRAMSwap;",(void*)&sys_iRAMSwap);
 //  _pShell->DeclareSymbol("user const INDEX sys_iHDDSize;", &sys_iHDDSize);
 //  _pShell->DeclareSymbol("user const INDEX sys_iHDDFree;", &sys_iHDDFree);
 //  _pShell->DeclareSymbol("     const INDEX sys_iHDDMisc;", &sys_iHDDMisc);
   // MOD info
-  _pShell->DeclareSymbol("user const CTString sys_strModName;", &sys_strModName);
-  _pShell->DeclareSymbol("user const CTString sys_strModExt;",  &sys_strModExt);
+  _pShell->DeclareSymbol("user const CTString sys_strModName;", (void*)&sys_strModName);
+  _pShell->DeclareSymbol("user const CTString sys_strModExt;", (void*) &sys_strModExt);
 
   // Stock clearing
   extern void FreeUnusedStock(void);

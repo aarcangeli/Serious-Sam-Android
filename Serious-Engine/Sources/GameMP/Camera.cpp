@@ -53,21 +53,21 @@ static INDEX cam_fSpeed            = 1.0f;
 // camera functions
 void CAM_Init(void)
 {
-  _pShell->DeclareSymbol("user INDEX cam_bRecord;",           &cam_bRecord);
-  _pShell->DeclareSymbol("user INDEX cam_bMoveForward;",      &cam_bMoveForward);
-  _pShell->DeclareSymbol("user INDEX cam_bMoveBackward;",     &cam_bMoveBackward);
-  _pShell->DeclareSymbol("user INDEX cam_bMoveLeft;",         &cam_bMoveLeft);
-  _pShell->DeclareSymbol("user INDEX cam_bMoveRight;",        &cam_bMoveRight);
-  _pShell->DeclareSymbol("user INDEX cam_bMoveUp;",           &cam_bMoveUp);
-  _pShell->DeclareSymbol("user INDEX cam_bMoveDown;",         &cam_bMoveDown);
-  _pShell->DeclareSymbol("user INDEX cam_bTurnBankingLeft;",  &cam_bTurnBankingLeft);
-  _pShell->DeclareSymbol("user INDEX cam_bTurnBankingRight;", &cam_bTurnBankingRight);
-  _pShell->DeclareSymbol("user INDEX cam_bZoomIn;",           &cam_bZoomIn);
-  _pShell->DeclareSymbol("user INDEX cam_bZoomOut;",          &cam_bZoomOut);
-  _pShell->DeclareSymbol("user INDEX cam_bZoomDefault;",      &cam_bZoomDefault);
-  _pShell->DeclareSymbol("user INDEX cam_bSnapshot;",         &cam_bSnapshot);
-  _pShell->DeclareSymbol("user INDEX cam_bResetToPlayer;",    &cam_bResetToPlayer);
-  _pShell->DeclareSymbol("user INDEX cam_fSpeed;",            &cam_fSpeed);
+  _pShell->DeclareSymbol("user INDEX cam_bRecord;",        (void*)   &cam_bRecord);
+  _pShell->DeclareSymbol("user INDEX cam_bMoveForward;",  (void*)    &cam_bMoveForward);
+  _pShell->DeclareSymbol("user INDEX cam_bMoveBackward;",  (void*)   &cam_bMoveBackward);
+  _pShell->DeclareSymbol("user INDEX cam_bMoveLeft;",     (void*)    &cam_bMoveLeft);
+  _pShell->DeclareSymbol("user INDEX cam_bMoveRight;",   (void*)     &cam_bMoveRight);
+  _pShell->DeclareSymbol("user INDEX cam_bMoveUp;",        (void*)   &cam_bMoveUp);
+  _pShell->DeclareSymbol("user INDEX cam_bMoveDown;",        (void*) &cam_bMoveDown);
+  _pShell->DeclareSymbol("user INDEX cam_bTurnBankingLeft;", (void*) &cam_bTurnBankingLeft);
+  _pShell->DeclareSymbol("user INDEX cam_bTurnBankingRight;",(void*) &cam_bTurnBankingRight);
+  _pShell->DeclareSymbol("user INDEX cam_bZoomIn;",       (void*)    &cam_bZoomIn);
+  _pShell->DeclareSymbol("user INDEX cam_bZoomOut;",     (void*)     &cam_bZoomOut);
+  _pShell->DeclareSymbol("user INDEX cam_bZoomDefault;",  (void*)    &cam_bZoomDefault);
+  _pShell->DeclareSymbol("user INDEX cam_bSnapshot;",     (void*)    &cam_bSnapshot);
+  _pShell->DeclareSymbol("user INDEX cam_bResetToPlayer;",  (void*)  &cam_bResetToPlayer);
+  _pShell->DeclareSymbol("user INDEX cam_fSpeed;",     (void*)       &cam_fSpeed);
 }
 
 BOOL CAM_IsOn(void)

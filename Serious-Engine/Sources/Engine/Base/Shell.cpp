@@ -547,11 +547,11 @@ void CShell::Initialize(void)
   DeclareSymbol("user void MakeAccessViolation(INDEX);", (void*) &MakeAccessViolation);
   DeclareSymbol("user void MakeStackOverflow(INDEX);",   (void*) &MakeStackOverflow);
   DeclareSymbol("user void MakeFatalError(INDEX);",      (void*) &MakeFatalError);
-  DeclareSymbol("persistent user INDEX con_iLastLines;", &con_iLastLines);
-  DeclareSymbol("persistent user FLOAT tmp_af[10];", &tmp_af);
-  DeclareSymbol("persistent user INDEX tmp_ai[10];", &tmp_ai);
-  DeclareSymbol("persistent user INDEX tmp_i;", &tmp_i);
-  DeclareSymbol("persistent user FLOAT tmp_fAdd;", &tmp_fAdd);
+  DeclareSymbol("persistent user INDEX con_iLastLines;",(void*) &con_iLastLines);
+  DeclareSymbol("persistent user FLOAT tmp_af[10];",(void*) &tmp_af);
+  DeclareSymbol("persistent user INDEX tmp_ai[10];",(void*) &tmp_ai);
+  DeclareSymbol("persistent user INDEX tmp_i;", (void*)&tmp_i);
+  DeclareSymbol("persistent user FLOAT tmp_fAdd;", (void*)&tmp_fAdd);
 
   DeclareSymbol("user void Echo(CTString);", (void*) &Echo);
   DeclareSymbol("user CTString UndecorateString(CTString);", (void*) &UndecorateString);

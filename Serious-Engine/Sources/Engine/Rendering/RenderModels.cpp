@@ -378,7 +378,7 @@ void CRenderer::RenderOneModel( CEntity &en, CModelObject &moModel, const CPlace
   if( IsOfClass( &en, "Player Weapons")) rm.rm_ulFlags |= RMF_WEAPON; 
 
   // set tesselation level of models
-  rm.rm_iTesselationLevel = en.GetMaxTessellationLevel();
+  rm.rm_iTesselationLevel = (INDEX) (en.GetMaxTessellationLevel());
 
   // prepare CRenderModel structure for rendering of one model
   moModel.SetupModelRendering(rm);
@@ -781,7 +781,7 @@ void CRenderer::RenderLensFlares(void)
     if( lfi.lfi_ulDrawPortID!=ulDrawPortID && lfi.lfi_iMirrorLevel==0) continue;
     // test if it is still visible
     lfi.lfi_ulFlags &= ~LFF_VISIBLE;
-    if( re_pdpDrawPort->IsPointVisible( lfi.lfi_fI, lfi.lfi_fJ, lfi.lfi_fOoK, lfi.lfi_iID, lfi.lfi_iMirrorLevel)) {
+    if( re_pdpDrawPort->IsPointVisible( (PIX) lfi.lfi_fI, (PIX) lfi.lfi_fJ, lfi.lfi_fOoK, lfi.lfi_iID, lfi.lfi_iMirrorLevel)) {
       lfi.lfi_ulFlags |= LFF_VISIBLE;
     }
   }}
@@ -916,9 +916,9 @@ void CRenderer::RenderLensFlares(void)
       FLOAT fThisR  = (ubR + (FLOAT(ubI)-ubR)*olf.olf_fLightDesaturation)*fIntensityFactor;
       FLOAT fThisG  = (ubG + (FLOAT(ubI)-ubG)*olf.olf_fLightDesaturation)*fIntensityFactor;
       FLOAT fThisB  = (ubB + (FLOAT(ubI)-ubB)*olf.olf_fLightDesaturation)*fIntensityFactor;
-      UBYTE ubThisR = Min( fThisR, 255.0f);
-      UBYTE ubThisG = Min( fThisG, 255.0f);
-      UBYTE ubThisB = Min( fThisB, 255.0f);
+      UBYTE ubThisR = (UBYTE) (Min( fThisR, 255.0f));
+      UBYTE ubThisG = (UBYTE) (Min( fThisG, 255.0f));
+      UBYTE ubThisB = (UBYTE)(Min( fThisB, 255.0f));
       COLOR colBlending = RGBToColor( ubThisR,ubThisG,ubThisB);
 
       // render the flare
@@ -943,8 +943,8 @@ void CRenderer::RenderLensFlares(void)
                                               lfi.lfi_fDistance);
       const FLOAT fCenterFactor = (1-fOfCenterFadeFactor);
       const FLOAT fGlare = lft.lft_fGlareIntensity*fIntensity
-                   * (exp(1.0f/(1.0f+fGlearCompression*fCenterFactor*fCenterFactor)) -1.0f) / (exp(1.0f)-1.0f);
-      const ULONG ulGlareA = ClampUp( NormFloatToByte(fGlare), (ULONG) 255);
+                   * (exp(1/(1+fGlearCompression*fCenterFactor*fCenterFactor)) -1) / (exp(1)-1);
+      const ULONG ulGlareA = ClampUp( (ULONG) NormFloatToByte(fGlare), (ULONG) 255);
       // if there is any relevant glare
       if( ulGlareA>1) {
         // calculate glare color
