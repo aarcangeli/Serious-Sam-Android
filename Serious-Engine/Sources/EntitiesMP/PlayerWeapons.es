@@ -1101,7 +1101,7 @@ functions:
           }
           // keep player name, mana and health for eventual printout or coloring
           m_fEnemyHealth = ((CPlayer*)pen)->GetHealth() / ((CPlayer*)pen)->m_fMaxHealth;
-          m_strLastTarget.PrintF( "%s", ((CPlayer*)pen)->GetPlayerName());
+          m_strLastTarget.PrintF( "%s", (const char *) ((CPlayer*)pen)->GetPlayerName());
           if( GetSP()->sp_gmGameMode==CSessionProperties::GM_SCOREMATCH) {
             // add mana to player name
             CTString strMana="";
@@ -1281,7 +1281,7 @@ functions:
       pdp->SetTextScaling( fScaling);
       pdp->SetTextAspect( 1.0f);
       // do faded printout
-      ULONG ulA = (FLOAT)ulAlpha * Clamp( 2*tmDelta, 0.0f, 1.0f);
+      ULONG ulA = (ULONG) ((FLOAT)ulAlpha * Clamp( 2*tmDelta, 0.0f, 1.0f));
       pdp->PutTextC( m_strLastTarget, slDPWidth*0.5f, slDPHeight*0.75f, SE_COL_BLUE_NEUTRAL|ulA);
     }
 
@@ -1839,7 +1839,7 @@ functions:
     FLOATmatrix3D m;
     MakeRotationMatrixFast(m, plKnife.pl_OrientationAngle);
     FLOAT3D vRight = m.GetColumn(1)*fWide;
-    FLOAT3D vUp    = m.GetColumn(2)*fWide;
+    //FLOAT3D vUp    = m.GetColumn(2)*fWide;
     FLOAT3D vFront = -m.GetColumn(3)*fRange;
 
     FLOAT3D vDest[3];
@@ -2407,70 +2407,70 @@ functions:
         break;
       // shells
       case WEAPON_SINGLESHOTGUN:
-        iAmmoPicked = Max(10.0f, m_iMaxShells*fMaxAmmoRatio);
+        iAmmoPicked = (INDEX) Max(10.0f, m_iMaxShells*fMaxAmmoRatio);
         m_iShells += iAmmoPicked;
         AddManaToPlayer(iAmmoPicked*70.0f*MANA_AMMO);
         break;
       case WEAPON_DOUBLESHOTGUN:
-        iAmmoPicked = Max(20.0f, m_iMaxShells*fMaxAmmoRatio);
+        iAmmoPicked = (INDEX) Max(20.0f, m_iMaxShells*fMaxAmmoRatio);
         m_iShells += iAmmoPicked;
         AddManaToPlayer(iAmmoPicked*70.0f*MANA_AMMO);
         break;
       // bullets
       case WEAPON_TOMMYGUN:
-        iAmmoPicked = Max(50.0f, m_iMaxBullets*fMaxAmmoRatio);
+        iAmmoPicked = (INDEX) Max(50.0f, m_iMaxBullets*fMaxAmmoRatio);
         m_iBullets += iAmmoPicked;
         AddManaToPlayer( iAmmoPicked*10.0f*MANA_AMMO);
         break;
       case WEAPON_SNIPER:
-        iAmmoPicked = Max(15.0f, m_iMaxSniperBullets*fMaxAmmoRatio);
+        iAmmoPicked = (INDEX) Max(15.0f, m_iMaxSniperBullets*fMaxAmmoRatio);
         m_iSniperBullets += iAmmoPicked;
         AddManaToPlayer( iAmmoPicked*10.0f*MANA_AMMO);
         break;
       case WEAPON_MINIGUN:
-        iAmmoPicked = Max(100.0f, m_iMaxBullets*fMaxAmmoRatio);
+        iAmmoPicked = (INDEX) Max(100.0f, m_iMaxBullets*fMaxAmmoRatio);
         m_iBullets += iAmmoPicked;
         AddManaToPlayer( iAmmoPicked*10.0f*MANA_AMMO);
         break;
       // rockets
       case WEAPON_ROCKETLAUNCHER:
-        iAmmoPicked = Max(5.0f, m_iMaxRockets*fMaxAmmoRatio);
+        iAmmoPicked = (INDEX) Max(5.0f, m_iMaxRockets*fMaxAmmoRatio);
         m_iRockets += iAmmoPicked;
         AddManaToPlayer( iAmmoPicked*150.0f*MANA_AMMO);
         break;
       // grenades
       case WEAPON_GRENADELAUNCHER:
-        iAmmoPicked = Max(5.0f, m_iMaxGrenades*fMaxAmmoRatio);
+        iAmmoPicked = (INDEX) Max(5.0f, m_iMaxGrenades*fMaxAmmoRatio);
         m_iGrenades += iAmmoPicked;
         AddManaToPlayer( iAmmoPicked*100.0f*MANA_AMMO);
         break;
       // electricity
       case WEAPON_LASER:
-        iAmmoPicked = Max(50.0f, m_iMaxElectricity*fMaxAmmoRatio);
+        iAmmoPicked = (INDEX) Max(50.0f, m_iMaxElectricity*fMaxAmmoRatio);
         m_iElectricity += iAmmoPicked;
         AddManaToPlayer( iAmmoPicked*15.0f*MANA_AMMO);
         break;
       // cannon balls
       case WEAPON_IRONCANNON:
         // for iron ball
-        iAmmoPicked = Max(1.0f, m_iMaxIronBalls*fMaxAmmoRatio);
+        iAmmoPicked = (INDEX) Max(1.0f, m_iMaxIronBalls*fMaxAmmoRatio);
         m_iIronBalls += iAmmoPicked;
         AddManaToPlayer( iAmmoPicked*700.0f*MANA_AMMO);
         break;
 /*      // for nuke ball
       case WEAPON_NUKECANNON:
-        iAmmoPicked = Max(1.0f, m_iMaxNukeBalls*fMaxAmmoRatio);
+        iAmmoPicked = (INDEX) Max(1.0f, m_iMaxNukeBalls*fMaxAmmoRatio);
         m_iNukeBalls += iAmmoPicked;
         AddManaToPlayer( iAmmoPicked*1000.0f*MANA_AMMO);
         break;*/
       // flamer // !!!! how much mana exactly?
       case WEAPON_FLAMER:
-        iAmmoPicked = Max(50.0f, m_iMaxNapalm*fMaxAmmoRatio);
+        iAmmoPicked = (INDEX) Max(50.0f, m_iMaxNapalm*fMaxAmmoRatio);
         m_iNapalm += iAmmoPicked;
         AddManaToPlayer( iAmmoPicked*15.0f*MANA_AMMO);
         break;
       case WEAPON_CHAINSAW:
-        /*iAmmoPicked = Max(50.0f, m_iMaxNapalm*fMaxAmmoRatio);
+        /*iAmmoPicked = (INDEX) Max(50.0f, m_iMaxNapalm*fMaxAmmoRatio);
         m_iNapalm += iAmmoPicked;
         AddManaToPlayer( iAmmoPicked*15.0f*MANA_AMMO);*/
         break;
@@ -2722,20 +2722,20 @@ functions:
         AddManaToPlayer(Eai.iQuantity*AV_NAPALM*MANA_AMMO);
         break;
       case AIT_BACKPACK:
-        m_iShells  += 20*GetSP()->sp_fAmmoQuantity;
-        m_iBullets += 200*GetSP()->sp_fAmmoQuantity;
-        m_iRockets += 5*GetSP()->sp_fAmmoQuantity;
+        m_iShells  += (INDEX) (20*GetSP()->sp_fAmmoQuantity);
+        m_iBullets += (INDEX) (200*GetSP()->sp_fAmmoQuantity);
+        m_iRockets += (INDEX) (5*GetSP()->sp_fAmmoQuantity);
         ((CPlayer&)*m_penPlayer).ItemPicked(TRANS("Ammo pack"), 0);
         AddManaToPlayer(100000000.0f *MANA_AMMO); // adjust mana value!!!!
         break;
       case AIT_SERIOUSPACK:
-        m_iShells   += MAX_SHELLS*GetSP()->sp_fAmmoQuantity;
-        m_iBullets  += MAX_BULLETS*GetSP()->sp_fAmmoQuantity;
-        m_iGrenades += MAX_GRENADES*GetSP()->sp_fAmmoQuantity;
-        m_iRockets  += MAX_ROCKETS*GetSP()->sp_fAmmoQuantity;
-        m_iElectricity += MAX_ELECTRICITY*GetSP()->sp_fAmmoQuantity;
-        m_iIronBalls += MAX_IRONBALLS*GetSP()->sp_fAmmoQuantity;
-//      m_iNukeBalls += MAX_NUKEBALLS*GetSP()->sp_fAmmoQuantity;
+        m_iShells   += (INDEX) (MAX_SHELLS*GetSP()->sp_fAmmoQuantity);
+        m_iBullets  += (INDEX) (MAX_BULLETS*GetSP()->sp_fAmmoQuantity);
+        m_iGrenades += (INDEX) (MAX_GRENADES*GetSP()->sp_fAmmoQuantity);
+        m_iRockets  += (INDEX) (MAX_ROCKETS*GetSP()->sp_fAmmoQuantity);
+        m_iElectricity += (INDEX) (MAX_ELECTRICITY*GetSP()->sp_fAmmoQuantity);
+        m_iIronBalls += (INDEX) (MAX_IRONBALLS*GetSP()->sp_fAmmoQuantity);
+//      m_iNukeBalls += (INDEX) (MAX_NUKEBALLS*GetSP()->sp_fAmmoQuantity);
       case AIT_SNIPERBULLETS:
         if (m_iSniperBullets>=m_iMaxSniperBullets) { m_iSniperBullets = m_iMaxSniperBullets; return FALSE; }
         m_iSniperBullets+= Eai.iQuantity;
@@ -2793,14 +2793,14 @@ functions:
       // preapare message string and count different types of ammo
       INDEX iAmmoTypes = 0;
       CTString strMessage;
-      if( eapi.iShells != 0)        { strMessage.PrintF("%s %d %s,", strMessage, eapi.iShells, TRANS("Shells")); iAmmoTypes++; }
-      if( eapi.iBullets != 0)       { strMessage.PrintF("%s %d %s,", strMessage, eapi.iBullets, TRANS("Bullets")); iAmmoTypes++; }
-      if( eapi.iRockets != 0)       { strMessage.PrintF("%s %d %s,", strMessage, eapi.iRockets, TRANS("Rockets")); iAmmoTypes++; }
-      if( eapi.iGrenades != 0)      { strMessage.PrintF("%s %d %s,", strMessage, eapi.iGrenades, TRANS("Grenades")); iAmmoTypes++; }
-      if( eapi.iNapalm != 0)        { strMessage.PrintF("%s %d %s,", strMessage, eapi.iNapalm, TRANS("Napalm")); iAmmoTypes++; }
-      if( eapi.iElectricity != 0)   { strMessage.PrintF("%s %d %s,", strMessage, eapi.iElectricity, TRANS("Cells")); iAmmoTypes++; }
-      if( eapi.iIronBalls != 0)     { strMessage.PrintF("%s %d %s,", strMessage, eapi.iIronBalls, TRANS("Cannonballs")); iAmmoTypes++; }
-      if( eapi.iSniperBullets != 0) { strMessage.PrintF("%s %d %s,", strMessage, eapi.iSniperBullets, TRANS("Sniper bullets")); iAmmoTypes++; }
+      if( eapi.iShells != 0)        { strMessage.PrintF("%s %d %s,", (const char *) strMessage, eapi.iShells, TRANS("Shells")); iAmmoTypes++; }
+      if( eapi.iBullets != 0)       { strMessage.PrintF("%s %d %s,", (const char *) strMessage, eapi.iBullets, TRANS("Bullets")); iAmmoTypes++; }
+      if( eapi.iRockets != 0)       { strMessage.PrintF("%s %d %s,", (const char *) strMessage, eapi.iRockets, TRANS("Rockets")); iAmmoTypes++; }
+      if( eapi.iGrenades != 0)      { strMessage.PrintF("%s %d %s,", (const char *) strMessage, eapi.iGrenades, TRANS("Grenades")); iAmmoTypes++; }
+      if( eapi.iNapalm != 0)        { strMessage.PrintF("%s %d %s,", (const char *) strMessage, eapi.iNapalm, TRANS("Napalm")); iAmmoTypes++; }
+      if( eapi.iElectricity != 0)   { strMessage.PrintF("%s %d %s,", (const char *) strMessage, eapi.iElectricity, TRANS("Cells")); iAmmoTypes++; }
+      if( eapi.iIronBalls != 0)     { strMessage.PrintF("%s %d %s,", (const char *) strMessage, eapi.iIronBalls, TRANS("Cannonballs")); iAmmoTypes++; }
+      if( eapi.iSniperBullets != 0) { strMessage.PrintF("%s %d %s,", (const char *) strMessage, eapi.iSniperBullets, TRANS("Sniper bullets")); iAmmoTypes++; }
 
       INDEX iLen = strlen(strMessage);
       if( iLen>0 && strMessage[iLen-1]==',')

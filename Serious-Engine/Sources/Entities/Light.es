@@ -64,7 +64,7 @@ properties:
    14 FLOAT m_fFarClip                    "Clip far" = 0.01f,
    15 BOOL m_bSubstractSectorAmbient      "Substract sector ambient" 'S' = FALSE,
    16 BOOL m_bRenderAsSmallLight          "Render as small" 'R' = FALSE,
-   17 enum LensFlareType m_lftLensFlare   "Lens flare" 'L' = LFT_STANDARD,
+   17 enum LensFlareType m_lftLensFlare   "Lens flare" 'L' = LFT_NONE,
    18 BOOL m_bBackground                  "Background" 'B' = FALSE,
    19 BOOL m_bLensFlareOnly               "Lens flare only" 'O' = FALSE,
    20 CTFileName m_fnmLightAnimation      "Light animation file" = CTString(""),

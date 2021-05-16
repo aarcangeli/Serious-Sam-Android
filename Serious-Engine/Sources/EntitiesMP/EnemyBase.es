@@ -124,7 +124,7 @@ properties:
  // attack temporary -> DO NOT USE
  60 FLOAT m_fShootTime = 0.0f,                // time when entity will try to shoot on enemy
  61 FLOAT m_fDamageConfused = 0.0f,           // damage amount when entity shoot concentration is spoiled
- 62 INDEX m_iChargeHitAnimation = 0.0f,       // charge hit (close attack) properties
+ 62 INDEX m_iChargeHitAnimation = 0,       // charge hit (close attack) properties
  63 FLOAT m_fChargeHitDamage = 0.0f,
  64 FLOAT m_fChargeHitAngle = 0.0f,
  65 FLOAT m_fChargeHitSpeed = 0.0f,
@@ -557,7 +557,7 @@ functions:
   const CTString &GetDescription(void) const {
     ((CTString&)m_strDescription).PrintF("-><none>");
     if (m_penMarker!=NULL) {
-      ((CTString&)m_strDescription).PrintF("->%s", m_penMarker->GetName());
+      ((CTString&)m_strDescription).PrintF("->%s", (const char *) m_penMarker->GetName());
     }
     return m_strDescription;
   }
@@ -1586,7 +1586,7 @@ functions:
   };
 
   // prepare propelled projectile
-  void PreparePropelledProjectile(CPlacement3D &plProjectile, FLOAT3D vShootTarget,
+  void PreparePropelledProjectile(CPlacement3D &plProjectile, const FLOAT3D vShootTarget,
     const FLOAT3D &vOffset, const ANGLE3D &aOffset)
   {
     FLOAT3D vDiff = (vShootTarget - (GetPlacement().pl_PositionVector + vOffset*GetRotationMatrix())).SafeNormalize();
@@ -1610,7 +1610,7 @@ functions:
   };
 
   // prepare free flying projectile
-  void PrepareFreeFlyingProjectile(CPlacement3D &plProjectile, FLOAT3D vShootTarget,
+  void PrepareFreeFlyingProjectile(CPlacement3D &plProjectile, const FLOAT3D vShootTarget,
     const FLOAT3D &vOffset, const ANGLE3D &aOffset)
   {
     FLOAT3D vDiff = (vShootTarget - (GetPlacement().pl_PositionVector + vOffset*GetRotationMatrix())).SafeNormalize();
@@ -1671,7 +1671,7 @@ functions:
   };
 
   // shoot projectile on enemy
-  CEntity *ShootPredictedProjectile(enum ProjectileType pt, FLOAT3D vPredictedPos, const FLOAT3D &vOffset, const ANGLE3D &aOffset) {
+  CEntity *ShootPredictedProjectile(enum ProjectileType pt, const FLOAT3D vPredictedPos, const FLOAT3D &vOffset, const ANGLE3D &aOffset) {
     ASSERT(m_penEnemy != NULL);
 
     // target enemy body (predicted)

@@ -477,7 +477,7 @@ procedures:
     }
 
     m_strDescription.PrintF("%s:%g-%g", 
-      strType,  m_rHotSpotRange, m_rFallOffRange);
+      (const char *) strType,  m_rHotSpotRange, m_rFallOffRange);
 
     return;
   };

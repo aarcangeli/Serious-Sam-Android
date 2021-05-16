@@ -99,7 +99,7 @@ static void MakeWorldStatistics(void)
       EntityStats &es = *ites;
       CTString strLine;
       strLine.PrintF("%-40s: %8d %8d %10g %10d", 
-        es.es_strName, es.es_ctCount, es.es_ctAmmount, es.es_fValue, es.es_iScore);
+        (const char *) es.es_strName, es.es_ctCount, es.es_ctAmmount, es.es_fValue, es.es_iScore);
       strm.PutLine_t(strLine);
     }}
     CPrintF("Dumped to '%s'\n", CTString(fnm));
@@ -154,7 +154,7 @@ static void DoLevelSafetyChecks()
       CModelHolder2 *mh = (CModelHolder2*)&*iten;
       FLOAT3D vPos = mh->GetPlacement().pl_PositionVector;
       if (mh->m_penDestruction == NULL) {
-        CPrintF("  model holder '%s' at (%2.2f, %2.2f, %2.2f) has no destruction\n", mh->m_strName, vPos(1), vPos(2), vPos(3));
+        CPrintF("  model holder '%s' at (%2.2f, %2.2f, %2.2f) has no destruction\n", (const char *) mh->m_strName, vPos(1), vPos(2), vPos(3));
       }
     }
   }}
@@ -166,7 +166,7 @@ static void DoLevelSafetyChecks()
       CSoundHolder *sh = (CSoundHolder *)&*iten;
       FLOAT3D vPos = sh->GetPlacement().pl_PositionVector;
       if (sh->m_fnSound == CTFILENAME("Sounds\\Default.wav")) {
-        CPrintF("  sound holder '%s' at (%2.2f, %2.2f, %2.2f) has default sound!\n", sh->m_strName, vPos(1), vPos(2), vPos(3));
+        CPrintF("  sound holder '%s' at (%2.2f, %2.2f, %2.2f) has default sound!\n", (const char *) sh->m_strName, vPos(1), vPos(2), vPos(3));
       }
     }
   }}
@@ -791,9 +791,9 @@ void CWorldBase_OnWorldRender(CWorld *pwo)
   pwo->wo_attTextureTransformations[35].tt_mdTransformation.FromUI(mdui);
 // blendings
   FLOAT f = Abs(Sin(tmNow*AngleDeg(180.0f)));
-  pwo->wo_atbTextureBlendings[4].tb_colMultiply = RGBAToColor(f*255, f*255, f*255, 255);
+  pwo->wo_atbTextureBlendings[4].tb_colMultiply = RGBAToColor((UBYTE) (f*255), (UBYTE) (f*255), (UBYTE) (f*255), (UBYTE) (255));
   pwo->wo_atbTextureBlendings[5].tb_colMultiply = C_WHITE|UBYTE(255*f);
-  pwo->wo_atbTextureBlendings[6].tb_colMultiply = RGBAToColor(f*255, f*255, f*255, 255);
+  pwo->wo_atbTextureBlendings[6].tb_colMultiply = RGBAToColor((UBYTE) (f*255), (UBYTE) (f*255), (UBYTE) (f*255), (UBYTE) (255));
   pwo->wo_atbTextureBlendings[7].tb_colMultiply = C_WHITE|UBYTE(255*Lerp(0.5f, 1.0f, f));
 
   pwo->wo_attTextureTransformations[11].tt_mdTransformation.md_fUOffset=Sin( tmNow*22)/30;

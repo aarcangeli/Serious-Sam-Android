@@ -274,6 +274,7 @@ static int qsort_CompareFrags( const void *ppPEN0, const void *ppPEN1) {
   else              return -qsort_CompareDeaths(ppPEN0, ppPEN1);
 }
 
+#if 0 // DG: unused.
 static int qsort_CompareLatencies( const void *ppPEN0, const void *ppPEN1) {
   CPlayer &en0 = **(CPlayer**)ppPEN0;
   CPlayer &en1 = **(CPlayer**)ppPEN1;
@@ -283,6 +284,7 @@ static int qsort_CompareLatencies( const void *ppPEN0, const void *ppPEN1) {
   else if( sl0>sl1) return -1;
   else              return  0;
 }
+#endif // 0 (unused)
 
 // prepare color transitions
 static void PrepareColorTransitions( COLOR colFine, COLOR colHigh, COLOR colMedium, COLOR colLow,
@@ -322,7 +324,7 @@ static COLOR AddShaker( PIX const pixAmmount, INDEX const iCurrentValue, INDEX &
   // shake, baby shake!
   const FLOAT fAmmount    = _fResolutionScaling * _fCustomScaling * pixAmmount;
   const FLOAT fMultiplier = (SHAKE_TIME-tmDelta)/SHAKE_TIME *fAmmount;
-  const INDEX iRandomizer = (INDEX)(tmNow*511.0f)*fAmmount*iCurrentValue;
+  const INDEX iRandomizer = (INDEX)((tmNow*511.0f)*fAmmount*iCurrentValue);
   const FLOAT fNormRnd1   = (FLOAT)((iRandomizer ^ (iRandomizer>>9)) & 1023) * 0.0009775f;  // 1/1023 - normalized
   const FLOAT fNormRnd2   = (FLOAT)((iRandomizer ^ (iRandomizer>>7)) & 1023) * 0.0009775f;  // 1/1023 - normalized
   fMoverX = (fNormRnd1 -0.5f) * fMultiplier;
@@ -520,18 +522,18 @@ static void HUD_DrawBar( FLOAT fCenterX, FLOAT fCenterY, PIX pixSizeX, PIX pixSi
   // determine bar position and inner size
   switch( eBarOrientation) {
   case BO_UP:
-    pixSizeJ *= fNormValue;
+    pixSizeJ = (PIX) (pixSizeJ*fNormValue);
     break;
   case BO_DOWN:
     pixUpper  = pixUpper + (PIX)ceil(pixSizeJ * (1.0f-fNormValue));
-    pixSizeJ *= fNormValue;
+    pixSizeJ = (PIX) (pixSizeJ*fNormValue);
     break;
   case BO_LEFT:
-    pixSizeI *= fNormValue;
+    pixSizeI = (PIX) (pixSizeI*fNormValue);
     break;
   case BO_RIGHT:
     pixLeft   = pixLeft + (PIX)ceil(pixSizeI * (1.0f-fNormValue));
-    pixSizeI *= fNormValue;
+    pixSizeI = (PIX) (pixSizeI*fNormValue);
     break;
   }
   // done
@@ -563,7 +565,7 @@ static void DrawAspectCorrectTextureCentered( class CTextureObject *_pTO, FLOAT 
   CTextureData *ptd = (CTextureData*)_pTO->GetData();
   FLOAT fTexSizeI = ptd->GetPixWidth();
   FLOAT fTexSizeJ = ptd->GetPixHeight();
-  FLOAT fHeight = fWidth*fTexSizeJ/fTexSizeJ;
+  FLOAT fHeight = fWidth*fTexSizeJ/fTexSizeI;
   
   _pDP->InitTexture( _pTO);
   _pDP->AddTexture( fX-fWidth*0.5f, fY-fHeight*0.5f, fX+fWidth*0.5f, fY+fHeight*0.5f, 0, 0, 1, 1, col);
@@ -583,8 +585,8 @@ static void HUD_DrawSniperMask( void )
   COLOR colMask = C_WHITE|CT_OPAQUE;
   
   CTextureData *ptd = (CTextureData*)_toSniperMask.GetData();
-  const FLOAT fTexSizeI = ptd->GetPixWidth();
-  const FLOAT fTexSizeJ = ptd->GetPixHeight();
+  //const FLOAT fTexSizeI = ptd->GetPixWidth();
+  //const FLOAT fTexSizeJ = ptd->GetPixHeight();
 
   // main sniper mask
   _pDP->InitTexture( &_toSniperMask);
@@ -739,13 +741,13 @@ static void HUD_DrawEntityStack()
     if (DBG_prenStackOutputEntity!=NULL)
     {
       pixFontHeight = _pfdConsoleFont->fd_pixCharHeight;
-      pixTextBottom = _pixDPHeight*0.83;
+      pixTextBottom = (ULONG) (_pixDPHeight*0.83);
       _pDP->SetFont( _pfdConsoleFont);
       _pDP->SetTextScaling(g_cb.globalScale);
     
       INDEX ctStates = DBG_prenStackOutputEntity->en_stslStateStack.Count();
-      strTemp.PrintF("-- stack of '%s'(%s)@%gs\n", DBG_prenStackOutputEntity->GetName(),
-        DBG_prenStackOutputEntity->en_pecClass->ec_pdecDLLClass->dec_strName,
+      strTemp.PrintF("-- stack of '%s'(%s)@%gs\n", (const char *) DBG_prenStackOutputEntity->GetName(),
+        (const char *) DBG_prenStackOutputEntity->en_pecClass->ec_pdecDLLClass->dec_strName,
         _pTimer->CurrentTick());
       _pDP->PutText( strTemp, 1, pixTextBottom-pixFontHeight*(ctStates+1), _colHUD|_ulAlphaHUD);
       
@@ -840,7 +842,7 @@ if (g_cb.tfe) {
 
   const PIX pixTopBound    = 6;
   const PIX pixLeftBound   = 6;
-  const PIX pixBottomBound = (480 * _pDP->dp_fWideAdjustment) -pixTopBound;
+  const PIX pixBottomBound = (PIX) ((480 * _pDP->dp_fWideAdjustment) -pixTopBound);
   const PIX pixRightBound  = 640-pixLeftBound;
   FLOAT fOneUnit  = (32+0) * _fCustomScaling;  // unit size
   FLOAT fAdvUnit  = (32+4) * _fCustomScaling;  // unit advancer
@@ -859,7 +861,7 @@ if (g_cb.tfe) {
   PrepareColorTransitions( colMax, colTop, colMid, C_RED, 0.5f, 0.25f, FALSE);
   fRow = pixBottomBound-fHalfUnit;
   fCol = pixLeftBound+fHalfUnit;
-  colDefault = AddShaker( 5, fValue, penLast->m_iLastHealth, penLast->m_tmHealthChanged, fMoverX, fMoverY);
+  colDefault = AddShaker( 5, (INDEX) fValue, penLast->m_iLastHealth, penLast->m_tmHealthChanged, fMoverX, fMoverY);
   HUD_DrawBorder( fCol+fMoverX, fRow+fMoverY, fOneUnit, fOneUnit, colBorder);
   fCol += fAdvUnit+fChrUnit*3/2 -fHalfUnit;
   HUD_DrawBorder( fCol, fRow, fChrUnit*3, fOneUnit, colBorder);
@@ -876,9 +878,9 @@ if (g_cb.tfe) {
     fNormValue = fValue/TOP_ARMOR;
     strValue.PrintF( "%d", (SLONG)ceil(fValue));
     PrepareColorTransitions( colMax, colTop, colMid, C_lGRAY, 0.5f, 0.25f, FALSE);
-    fRow = pixBottomBound- (fNextUnit+fHalfUnit);//_pDP->dp_fWideAdjustment;
+    fRow = pixBottomBound- (fNextUnit+fHalfUnit);//*_pDP->dp_fWideAdjustment;
     fCol = pixLeftBound+    fHalfUnit;
-    colDefault = AddShaker( 3, fValue, penLast->m_iLastArmor, penLast->m_tmArmorChanged, fMoverX, fMoverY);
+    colDefault = AddShaker( 3, (INDEX) fValue, penLast->m_iLastArmor, penLast->m_tmArmorChanged, fMoverX, fMoverY);
     HUD_DrawBorder( fCol+fMoverX, fRow+fMoverY-12, fOneUnit, fOneUnit, colBorder);
     fCol += fAdvUnit+fChrUnit*3/2 -fHalfUnit;
     HUD_DrawBorder( fCol, fRow-12, fChrUnit*3, fOneUnit, colBorder);
@@ -921,12 +923,12 @@ if (g_cb.tfe) {
     fValue = _penWeapons->GetAmmo();
     fNormValue = fValue / fMaxValue;
     strValue.PrintF( "%d", (SLONG)ceil(fValue));
-    PrepareColorTransitions( colMax, colTop, colMid, C_RED, 0.5f, 0.25f, FALSE);
+    PrepareColorTransitions( colMax, colTop, colMid, C_RED, 0.30f, 0.15f, FALSE);
     BOOL bDrawAmmoIcon = _fCustomScaling<=1.0f;
     // draw ammo, value and weapon
     fRow = pixBottomBound-fHalfUnit;
     fCol = 175 + fHalfUnit;
-    colDefault = AddShaker( 4, fValue, penLast->m_iLastAmmo, penLast->m_tmAmmoChanged, fMoverX, fMoverY);
+    colDefault = AddShaker( 4, (INDEX) fValue, penLast->m_iLastAmmo, penLast->m_tmAmmoChanged, fMoverX, fMoverY);
     HUD_DrawBorder( fCol+fMoverX, fRow+fMoverY, fOneUnit, fOneUnit, colBorder);
     fCol += fAdvUnit+fChrUnit*3/2 -fHalfUnit;
     HUD_DrawBorder( fCol, fRow, fChrUnit*3, fOneUnit, colBorder);
@@ -1000,7 +1002,7 @@ if (g_cb.tfe) {
     }
     HUD_DrawBorder( fCol,         fRow, fOneUnitS, fOneUnitS, colBombBorder);
     HUD_DrawIcon(   fCol,         fRow, _toASeriousBomb, colBombIcon, fNormValue, FALSE);
-    HUD_DrawBar(    fCol+fBarPos, fRow, fOneUnitS/5, fOneUnitS-2, BO_DOWN, colBombBar, fNormValue);
+    HUD_DrawBar(    fCol+fBarPos, fRow, (INDEX) (fOneUnitS/5), (INDEX) (fOneUnitS-2), BO_DOWN, colBombBar, fNormValue);
     // make space for serious bomb
     fCol -= fAdvUnitS;
   }
@@ -1025,7 +1027,7 @@ if (g_cb.tfe) {
       colBar = AddShaker( 4, ai.ai_iAmmoAmmount, ai.ai_iLastAmmoAmmount, ai.ai_tmAmmoChanged, fMoverX, fMoverY);
       HUD_DrawBorder( fCol,         fRow+fMoverY, fOneUnitS, fOneUnitS, colBorder);
       HUD_DrawIcon(   fCol,         fRow+fMoverY, *_aaiAmmo[i].ai_ptoAmmo, colIcon, fNormValue, FALSE);
-      HUD_DrawBar(    fCol+fBarPos, fRow+fMoverY, fOneUnitS/5, fOneUnitS-2, BO_DOWN, colBar, fNormValue);
+      HUD_DrawBar(    fCol+fBarPos, fRow+fMoverY, (INDEX) (fOneUnitS/5), (INDEX) (fOneUnitS-2), BO_DOWN, colBar, fNormValue);
       // advance to next position
       fCol -= fAdvUnitS;  
     }
@@ -1247,7 +1249,7 @@ if (g_cb.tfe) {
       if( iHealth>25) colHealth = _colHUD;
       if( iArmor >25) colArmor  = _colHUD;
       // eventually print it out
-      if( hud_iShowPlayers==1 || hud_iShowPlayers==-1 && !bSinglePlay) {
+      if( hud_iShowPlayers==1 || (hud_iShowPlayers==-1 && !bSinglePlay)) {
         // printout location and info aren't the same for deathmatch and coop play
         const FLOAT fCharWidth = (PIX)((_pfdDisplayFont->GetWidth()-2) *fTextScale);
         if( bCooperative) { 
@@ -1275,7 +1277,7 @@ if (g_cb.tfe) {
       CTString strLimitsInfo="";  
       if (GetSP()->sp_iTimeLimit>0) {
         FLOAT fTimeLeft = ClampDn(GetSP()->sp_iTimeLimit*60.0f - _pNetwork->GetGameTime(), 0.0f);
-        strLimitsInfo.PrintF("%s^cFFFFFF%s: %s\n", strLimitsInfo, TRANS("TIME LEFT"), TimeToString(fTimeLeft));
+        strLimitsInfo.PrintF("%s^cFFFFFF%s: %s\n", (const char *) strLimitsInfo, TRANS("TIME LEFT"), (const char *) TimeToString(fTimeLeft));
       }
       extern INDEX SetAllPlayersStats( INDEX iSortKey);
       // fill players table
@@ -1290,11 +1292,11 @@ if (g_cb.tfe) {
       }}
       if (GetSP()->sp_iFragLimit>0) {
         INDEX iFragsLeft = ClampDn(GetSP()->sp_iFragLimit-iMaxFrags, INDEX(0));
-        strLimitsInfo.PrintF("%s^cFFFFFF%s: %d\n", strLimitsInfo, TRANS("FRAGS LEFT"), iFragsLeft);
+        strLimitsInfo.PrintF("%s^cFFFFFF%s: %d\n", (const char *) strLimitsInfo, TRANS("FRAGS LEFT"), iFragsLeft);
       }
       if (GetSP()->sp_iScoreLimit>0) {
         INDEX iScoreLeft = ClampDn(GetSP()->sp_iScoreLimit-iMaxScore, INDEX(0));
-        strLimitsInfo.PrintF("%s^cFFFFFF%s: %d\n", strLimitsInfo, TRANS("SCORE LEFT"), iScoreLeft);
+        strLimitsInfo.PrintF("%s^cFFFFFF%s: %d\n", (const char *) strLimitsInfo, TRANS("SCORE LEFT"), iScoreLeft);
       }
       _pfdDisplayFont->SetFixedWidth();
       _pDP->SetFont( _pfdDisplayFont);
@@ -1423,7 +1425,7 @@ if (g_cb.tfe) {
   // draw cheat modes
   if( GetSP()->sp_ctMaxPlayers==1) {
     INDEX iLine=1;
-    ULONG ulAlpha = sin(_tmNow*16)*96 +128;
+    ULONG ulAlpha = (ULONG) (sin(_tmNow*16)*96 +128);
     PIX pixFontHeight = _pfdConsoleFont->fd_pixCharHeight;
     const COLOR colCheat = _colHUDText;
     _pDP->SetFont( _pfdConsoleFont);

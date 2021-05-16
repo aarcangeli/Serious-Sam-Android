@@ -1054,7 +1054,7 @@ functions:
     FLOAT3D vDesiredTranslation = pl.en_vDesiredTranslationRelative;
     FLOAT3D vCurrentTranslation = pl.en_vCurrentTranslationAbsolute * !pl.en_mRotation;
     ANGLE3D aDesiredRotation = pl.en_aDesiredRotationRelative;
-    ANGLE3D aCurrentRotation = pl.en_aCurrentRotationAbsolute;
+    //ANGLE3D aCurrentRotation = pl.en_aCurrentRotationAbsolute;
 
     // if player is moving
     if (vDesiredTranslation.ManhattanNorm()>0.01f
@@ -1172,7 +1172,7 @@ functions:
 
     // moving view change
     // translating -> change banking
-    if (m_bReference != FALSE && vDesiredTranslation.Length()>1.0f && vCurrentTranslation.Length()>1.0f) {
+    if (m_bReference && vDesiredTranslation.Length()>1.0f && vCurrentTranslation.Length()>1.0f) {
       m_bMoving = TRUE;
       // sidestep banking
       FLOAT vSidestepSpeedDesired = vDesiredTranslation(1);

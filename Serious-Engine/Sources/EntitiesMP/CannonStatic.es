@@ -337,7 +337,7 @@ procedures:
     if (penKiller!=NULL) {
       // give him score
       EReceiveScore eScore;
-      eScore.iPoints = m_iScore;
+      eScore.iPoints = (INDEX) m_iScore;
       penKiller->SendEvent(eScore);
       if( CountAsKill())
       {

@@ -70,7 +70,7 @@ components:
 
 functions:
   const CTString &GetDescription(void) const {
-    ((CTString&)m_strDescription).PrintF("%s", m_fnmMessage.FileName());
+    ((CTString&)m_strDescription).PrintF("%s", (const char *) m_fnmMessage.FileName());
     return m_strDescription;
   }
   
@@ -198,7 +198,7 @@ functions:
       return 1;
     }
     
-    PIX pixW = 0;
+    //PIX pixW = 0;
     PIX pixH = 0;
     //FLOAT fResolutionScaling;
     CTString strEmpty;
@@ -209,7 +209,7 @@ functions:
     pdp->Unlock();
     pdpCurr->Lock();
     
-    pixW = pdpCurr->GetWidth();
+    //pixW = pdpCurr->GetWidth();
     pixH = pdpCurr->GetHeight();
 
     FLOAT fResFactor = pixH/480.0f;
@@ -362,7 +362,7 @@ procedures:
 
     if( !Credits_On(m_fnmMessage))
     {
-      CPrintF("Error loading credits file '%s'!\n", m_fnmMessage);
+      CPrintF("Error loading credits file '%s'!\n", (const char *) m_fnmMessage);
       Credits_Off();
       return;
     }

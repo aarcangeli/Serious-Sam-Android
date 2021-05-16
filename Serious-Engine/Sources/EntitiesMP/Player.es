@@ -392,7 +392,7 @@ DECL_DLL BOOL cmp_bUpdateInBackground = FALSE;
 DECL_DLL BOOL cmp_bInitialStart = FALSE;
 
 // game sets this for player hud and statistics and hiscore sound playing
-DECL_DLL INDEX plr_iHiScore = 0.0f;
+DECL_DLL INDEX plr_iHiScore = 0;
 
 // these define address and size of player controls structure
 DECL_DLL void *ctl_pvPlayerControls = &pctlCurrent;
@@ -1600,7 +1600,8 @@ functions:
   CTString GetStatsRealWorldStarted(void)
   {
     struct tm *newtime;
-    newtime = localtime((const time_t*)&m_iStartTime);
+    time_t t = (time_t) m_iStartTime;
+    newtime = localtime(&t);
 
     setlocale(LC_ALL, "");
     CTString strTimeline;
@@ -1640,7 +1641,7 @@ functions:
   void GetShortStats(CTString &strStats)
   {
     strStats.PrintF( TRANS("%s %s Score: %d Kills: %d/%d"), 
-                     GetDifficultyString(), TimeToString(GetStatsInGameTimeLevel()), 
+                     (const char *) GetDifficultyString(), (const char *) TimeToString(GetStatsInGameTimeLevel()),
                      m_psLevelStats.ps_iScore, m_psLevelStats.ps_iKills, m_psLevelTotal.ps_iKills);
   }
 
@@ -1656,7 +1657,7 @@ functions:
     const INDEX ctPlayers = SetAllPlayersStats(bFragMatch?5:3); // sort by frags or by score
 
     // get time elapsed since the game start
-    strStats+=AlignString(CTString(0, "^cFFFFFF%s:^r\n%s", TRANS("TIME"), TimeToString(_pNetwork->GetGameTime())));
+    strStats+=AlignString(CTString(0, "^cFFFFFF%s:^r\n%s", (const char *) TRANS("TIME"), (const char *) TimeToString(_pNetwork->GetGameTime())));
     strStats+="\n";
 
     // find maximum frags/score that one player has
@@ -1672,7 +1673,7 @@ functions:
     const CSessionProperties &sp = *GetSP();
     if (sp.sp_iTimeLimit>0) {
       FLOAT fTimeLeft = ClampDn(sp.sp_iTimeLimit*60.0f - _pNetwork->GetGameTime(), 0.0f);
-      strStats+=AlignString(CTString(0, "^cFFFFFF%s:^r\n%s", TRANS("TIME LEFT"), TimeToString(fTimeLeft)));
+      strStats+=AlignString(CTString(0, "^cFFFFFF%s:^r\n%s", (const char *) TRANS("TIME LEFT"), (const char *) TimeToString(fTimeLeft)));
       strStats+="\n";
     }
     if (bFragMatch && sp.sp_iFragLimit>0) {
@@ -1812,13 +1813,13 @@ functions:
 
     if (iCoopType<=1) {
       // report total score info
-      strStats+=AlignString(CTString(0, "^cFFFFFF%s:^r\n%d", TRANS("TOTAL SCORE"), m_psGameStats.ps_iScore));
+      strStats+=AlignString(CTString(0, "^cFFFFFF%s:^r\n%d", (const char *) TRANS("TOTAL SCORE"), m_psGameStats.ps_iScore));
       strStats+="\n";
-      strStats+=AlignString(CTString(0, "^cFFFFFF%s:^r\n%s", TRANS("DIFFICULTY"), GetDifficultyString()));
+      strStats+=AlignString(CTString(0, "^cFFFFFF%s:^r\n%s", (const char *) TRANS("DIFFICULTY"), (const char *) GetDifficultyString()));
       strStats+="\n";
-      strStats+=AlignString(CTString(0, "^cFFFFFF%s:^r\n%s", TRANS("STARTED"), GetStatsRealWorldStarted()));
+      strStats+=AlignString(CTString(0, "^cFFFFFF%s:^r\n%s", (const char *) TRANS("STARTED"), (const char *) GetStatsRealWorldStarted()));
       strStats+="\n";
-      strStats+=AlignString(CTString(0, "^cFFFFFF%s:^r\n%s", TRANS("PLAYING TIME"), TimeToString(GetStatsRealWorldTime())));
+      strStats+=AlignString(CTString(0, "^cFFFFFF%s:^r\n%s", (const char *) TRANS("PLAYING TIME"), (const char *) TimeToString(GetStatsRealWorldTime())));
       strStats+="\n";
       if( m_psGameStats.ps_iScore<=plr_iHiScore) {
         strStats+=AlignString(CTString(0, "^cFFFFFF%s:^r\n%d", TRANS("HI-SCORE"), plr_iHiScore));
@@ -1833,9 +1834,9 @@ functions:
     strStats+="\n";
     if (iCoopType<=1) {
       if( m_bEndOfLevel) {
-        strStats+=AlignString(CTString(0, "  %s:\n%s", TRANS("ESTIMATED TIME"), TimeToString(m_tmEstTime)));
+        strStats+=AlignString(CTString(0, "  %s:\n%s", (const char *) TRANS("ESTIMATED TIME"), (const char *) TimeToString(m_tmEstTime)));
         strStats+="\n";
-        strStats+=AlignString(CTString(0, "  %s:\n%d", TRANS("TIME BONUS"), m_iTimeScore));
+        strStats+=AlignString(CTString(0, "  %s:\n%d", (const char *) TRANS("TIME BONUS"), m_iTimeScore));
         strStats+="\n";
         strStats+="\n";
       }
@@ -1853,7 +1854,7 @@ functions:
     strStats+=AlignString(CTString(0, "  %s:\n%d/%d", TRANS("SECRETS"), m_psLevelStats.ps_iSecrets, m_psLevelTotal.ps_iSecrets));
     strStats+="\n";
     if (iCoopType<=1) {
-      strStats+=AlignString(CTString(0, "  %s:\n%s", TRANS("TIME"), TimeToString(GetStatsInGameTimeLevel())));
+      strStats+=AlignString(CTString(0, "  %s:\n%s", TRANS("TIME"), (const char *) TimeToString(GetStatsInGameTimeLevel())));
       strStats+="\n";
     }
     strStats+="\n";
@@ -1872,7 +1873,7 @@ functions:
     strStats+=AlignString(CTString(0, "  %s:\n%d/%d", TRANS("SECRETS"), m_psGameStats.ps_iSecrets, m_psGameTotal.ps_iSecrets));
     strStats+="\n";
     if (iCoopType<=1) {
-      strStats+=AlignString(CTString(0, "  %s:\n%s", TRANS("GAME TIME"), TimeToString(GetStatsInGameTimeGame())));
+      strStats+=AlignString(CTString(0, "  %s:\n%s", TRANS("GAME TIME"), (const char *) TimeToString(GetStatsInGameTimeGame())));
       strStats+="\n";
     }
     strStats+="\n";
@@ -2517,7 +2518,7 @@ functions:
       if (m_fPickedAmmount==0) {
         strPicked = m_strPickedName;
       } else {
-        strPicked.PrintF("%s +%d", m_strPickedName, int(m_fPickedAmmount));
+        strPicked.PrintF("%s +%d", (const char *) m_strPickedName, int(m_fPickedAmmount));
       }
       pdp->PutTextCXY( strPicked, pixDPWidth*0.5f, pixDPHeight*0.82f, C_WHITE|0xDD);
       if (!GetSP()->sp_bCooperative && !GetSP()->sp_bUseFrags && m_fPickedMana>=1) {
@@ -2631,7 +2632,7 @@ functions:
 
   void RenderGameView(CDrawPort *pdp, void *pvUserData)
   {
-    BOOL bShowExtras = (size_t(pvUserData)&GRV_SHOWEXTRAS) !=0;
+    BOOL bShowExtras = (size_t(pvUserData)&GRV_SHOWEXTRAS) != 0;
     pdp->Unlock();
 
     // if not yet initialized
@@ -5162,7 +5163,7 @@ functions:
       if (pen==NULL) {
         // try to find normal start marker
         CTString strPlayerStart;
-        strPlayerStart.PrintF("Player Start - %s", m_strGroup);
+        strPlayerStart.PrintF("Player Start - %s", (const char *) m_strGroup);
         pen = _pNetwork->GetEntityWithName(strPlayerStart, 0);
         if (m_strGroup=="") {
           bSetHealth = TRUE;
@@ -5348,7 +5349,9 @@ functions:
     m_iMayRespawn = 0;
     m_bEndOfLevel = TRUE;
     // remember end time
-    time((time_t*)&m_iEndTime);
+    time_t t;
+    time(&t);
+    m_iEndTime = (INDEX) t;
     // add time score
     TIME tmLevelTime = _pTimer->CurrentTick()-m_tmLevelStarted;
     m_psLevelStats.ps_tmTime = tmLevelTime;
@@ -6530,8 +6533,9 @@ procedures:
   Main(EVoid evoid)
   {
     // remember start time
-    time((time_t*)&m_iStartTime);
-
+    time_t t;
+    time(&t);
+    m_iStartTime = (INDEX) t;
     m_ctUnreadMessages = 0;
     SetFlags(GetFlags()|ENF_CROSSESLEVELS|ENF_NOTIFYLEVELCHANGE);
     InitAsEditorModel();

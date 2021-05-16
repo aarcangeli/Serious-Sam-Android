@@ -83,10 +83,11 @@ functions:
     pen->Initialize();
     
     // adjust circle radii to account for enemy size
+    /* unused
     FLOAT fEntityR = 0;
     if (pen->en_pciCollisionInfo!=NULL) {
       fEntityR = pen->en_pciCollisionInfo->GetMaxFloorRadius();
-    }
+    } */
     
     // teleport back
     pen->Teleport(GetPlacement(), FALSE);

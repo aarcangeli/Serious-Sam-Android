@@ -424,6 +424,7 @@ functions:
         default: iAnim = ELEMENTALLAVA_ANIM_WOUND03; break;
       }
     } else {
+        iAnim=0; // DG: not sure this makes sense, but at least it has a deterministic value
 /*      switch (IRnd()%3) {
         case 0: iAnim = STONEMAN_ANIM_WOUND01; break;
         case 1: iAnim = STONEMAN_ANIM_WOUND02; break;
@@ -493,6 +494,7 @@ functions:
     if (m_EetType == ELT_LAVA) {
       iAnim = ELEMENTALLAVA_ANIM_DEATH03;
     } else {
+      iAnim = 0; // DG: set to deterministic value
 //      iAnim = STONEMAN_ANIM_DEATH03;
     }
     StartModelAnim(iAnim, 0);
@@ -826,20 +828,20 @@ functions:
     GetBoundingBox(box);
     FLOAT fEntitySize = box.Size().MaxNorm()/2;
 
-    INDEX iCount = 1;
+    FLOAT3D vNormalizedDamage = m_vDamage-m_vDamage*(m_fBlowUpAmount/m_vDamage.Length());
+    vNormalizedDamage /= Sqrt(vNormalizedDamage.Length());
+    vNormalizedDamage *= 1.75f;
+/*
+    FLOAT3D vBodySpeed = en_vCurrentTranslationAbsolute-en_vGravityDir*(en_vGravityDir%en_vCurrentTranslationAbsolute);
+
+    // spawn debris
+
+	INDEX iCount = 1;
     switch (m_EecChar) {
       case ELC_SMALL: iCount = 3; break;
       case ELC_BIG: iCount = 5; break;
       case ELC_LARGE: iCount = 7; break;
     }
-
-    FLOAT3D vNormalizedDamage = m_vDamage-m_vDamage*(m_fBlowUpAmount/m_vDamage.Length());
-    vNormalizedDamage /= Sqrt(vNormalizedDamage.Length());
-    vNormalizedDamage *= 1.75f;
-    FLOAT3D vBodySpeed = en_vCurrentTranslationAbsolute-en_vGravityDir*(en_vGravityDir%en_vCurrentTranslationAbsolute);
-
-    // spawn debris
-/*
     switch (m_EetType) {
       case ELT_ICE: {
         Debris_Begin(EIBT_ICE, DPT_NONE, BET_NONE, fEntitySize, vNormalizedDamage, vBodySpeed, 1.0f, 0.0f);
@@ -1220,6 +1222,7 @@ procedures:
     if (m_EetType == ELT_LAVA) {
       iAnim = ELEMENTALLAVA_ANIM_MELTUP;
     } else {
+      iAnim = 0; // DG: initialize to deterministic value
 //      iAnim = STONEMAN_ANIM_MORPHPLANEUP;
     }
     StartModelAnim(iAnim, 0);
@@ -1325,7 +1328,7 @@ procedures:
       autocall FallOnFloor() EReturn;
     }
 
-    if (m_EecChar==ELC_LARGE || m_EecChar==ELC_BIG && m_EetType==ELT_LAVA)
+    if ((m_EecChar==ELC_LARGE || m_EecChar==ELC_BIG) && m_EetType==ELT_LAVA)
     {
       PlaySound(m_soBackground, SOUND_LAVA_LAVABURN, SOF_3D|SOF_LOOP);
     }
@@ -1470,7 +1473,7 @@ procedures:
       // fire count
       if (m_iFireCount <= 0)
       {
-        WarningMessage("Entity: %s - Fire count must be greater than zero", GetName());
+        WarningMessage("Entity: %s - Fire count must be greater than zero", (const char *) GetName());
         m_iFireCount = 1;
       }
     }

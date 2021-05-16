@@ -104,7 +104,7 @@ procedures:
     ModelChangeNotify();
 
     if( m_penTarget!=NULL && !IsOfClass( m_penTarget, "Pyramid Space Ship Marker")) {
-      WarningMessage( "Entity '%s' is not of Pyramid Space Ship Marker class!", m_penTarget);
+      WarningMessage( "Entity '%s' is not of Pyramid Space Ship Marker class!", (const char *) m_penTarget->GetName());
       m_penTarget = NULL;
     }
 

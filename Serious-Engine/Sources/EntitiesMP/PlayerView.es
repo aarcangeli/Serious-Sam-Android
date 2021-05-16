@@ -100,11 +100,10 @@ functions:
 
   void SetCameraPosition() 
   {
-    _pfPhysicsProfile.StartTimer(CPhysicsProfile::PTI_SETCAMERAPOSITION);
     // 3rd person view
     FLOAT fDistance = 1.0f;
     CPlacement3D pl = ((CPlayerEntity&) *m_penOwner).en_plViewpoint;
-    BOOL bFollowCrossHair;
+    BOOL bFollowCrossHair = TRUE;
 
     if (m_iViewType == VT_3RDPERSONVIEW) {
       // little above player eyes so it can be seen where he is firing
@@ -143,7 +142,6 @@ functions:
 
     FLOAT fBack = 0;
     // for each ray
-    _pfPhysicsProfile.StartTimer(CPhysicsProfile::PTI_SETCAMERAPOSITION_RAY);
     for (INDEX i=0; i<5; i++) {
       // cast a ray to find if any brush is hit
       CCastRay crRay( m_penOwner, vBase, vDest[i]);
@@ -165,7 +163,6 @@ functions:
       }
 
     }
-    _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_SETCAMERAPOSITION_RAY);
     fDistance = ClampDn(fDistance-fBack, 0.0f);
     m_fDistance = fDistance;
     vBase += vFront*fDistance;
@@ -212,7 +209,6 @@ functions:
 
     // set camera placement
     SetPlacement_internal(pl, m, TRUE); // TRUE = try to optimize for small movements
-    _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_SETCAMERAPOSITION);
   };
 
   /*void SetCameraPosition() 

@@ -251,7 +251,7 @@ functions:
   const CTString &GetDescription(void) const {
     ((CTString&)m_strDescription).PrintF("-><none>");
     if (m_penTarget!=NULL) {
-      ((CTString&)m_strDescription).PrintF("->%s", m_penTarget->GetName());
+      ((CTString&)m_strDescription).PrintF("->%s", (const char *) m_penTarget->GetName());
     }
     return m_strDescription;
   }
@@ -408,7 +408,7 @@ functions:
     }
 
     if (!IsOfClass(m_penTarget, "Moving Brush Marker")) {
-      WarningMessage("Entity '%s' is not of Moving Brush Marker class!", m_penTarget->GetName());
+      WarningMessage("Entity '%s' is not of Moving Brush Marker class!", (const char *) m_penTarget->GetName());
       return FALSE;
     }
 

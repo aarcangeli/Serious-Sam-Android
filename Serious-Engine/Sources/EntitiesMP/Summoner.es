@@ -926,7 +926,7 @@ procedures:
         } else {
           fToSpawn = 1.0f;
         }
-        INDEX iToSpawn = ceilf(fToSpawn);
+        INDEX iToSpawn = (INDEX) ceilf(fToSpawn);
         
         CMusicHolder *penMusicHolder = GetMusicHolder();
 //CPrintF("spawning %d from %d group\n", iToSpawn, iScheme);

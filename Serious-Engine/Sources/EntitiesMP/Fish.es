@@ -140,7 +140,7 @@ functions:
       // render one lightning toward enemy
       FLOAT3D vSource = GetPlacement().pl_PositionVector;
       FLOAT3D vTarget = m_penEnemy->GetPlacement().pl_PositionVector;
-      FLOAT3D vDirection = (vTarget-vSource).Normalize();
+      //FLOAT3D vDirection = (vTarget-vSource).Normalize();
       Particles_Ghostbuster(vSource, vTarget, 32, 1.0f);
 
       // random lightnings arround
@@ -218,7 +218,7 @@ functions:
       FLOAT fR = 0.7f+0.1f*(FLOAT(rand())/RAND_MAX);
       FLOAT fG = 0.7f+0.2f*(FLOAT(rand())/RAND_MAX);
       FLOAT fB = 0.7f+0.3f*(FLOAT(rand())/RAND_MAX);
-      colAmbient = RGBToColor( fR*128*fDieFactor, fG*128*fDieFactor, fB*128*fDieFactor);
+      colAmbient = RGBToColor( (UBYTE) (fR*128*fDieFactor), (UBYTE) (fG*128*fDieFactor), (UBYTE) (fB*128*fDieFactor));
       colLight = C_WHITE;
       return CEnemyBase::AdjustShadingParameters(vLightDirection, colLight, colAmbient);
     }
@@ -283,7 +283,7 @@ procedures:
     // declare yourself as a model
     InitAsModel();
     // fish must not go upstairs, or it will get out of water
-    SetPhysicsFlags((EPF_MODEL_WALKING|EPF_HASGILLS)&~EPF_ONBLOCK_CLIMBORSLIDE|EPF_ONBLOCK_SLIDE);
+    SetPhysicsFlags(((EPF_MODEL_WALKING|EPF_HASGILLS)&~EPF_ONBLOCK_CLIMBORSLIDE)|EPF_ONBLOCK_SLIDE);
     SetCollisionFlags(ECF_MODEL);
     SetFlags(GetFlags()|ENF_ALIVE);
     SetHealth(30.0f);
