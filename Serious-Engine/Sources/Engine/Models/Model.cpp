@@ -1035,14 +1035,14 @@ void CModelData::PtrsToIndices()
           if( it2.Current().mpv_ptvTransformedVertex == &md_TransformedVertices[ j])
             break;
         }
-        it2.Current().mpv_ptvTransformedVertex = (struct TransformedVertexData *) j;
+        it2.Current().mpv_ptvTransformedVertex = (struct TransformedVertexData *)(size_t)j;
 
         for( j=0; j<md_MipInfos[ i].mmpi_TextureVertices.Count(); j++)
         {
           if( it2.Current().mpv_ptvTextureVertex == &md_MipInfos[ i].mmpi_TextureVertices[ j])
             break;
         }
-        it2.Current().mpv_ptvTextureVertex = (ModelTextureVertex *) j;
+        it2.Current().mpv_ptvTextureVertex = (ModelTextureVertex *)(size_t)j;
       }
     }
   }

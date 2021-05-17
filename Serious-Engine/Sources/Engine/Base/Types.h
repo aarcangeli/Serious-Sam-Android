@@ -43,7 +43,7 @@ typedef uint32_t  UINT;
 	typedef uint64_t __uint64;
     typedef int64_t __int64;
     typedef uint32_t  DWORD;
-    typedef signed long  int    LONG;
+    typedef int32_t    LONG;
 
     typedef void *HWND;  /* !!! FIXME this sucks. */
     typedef void *HINSTANCE;  /* !!! FIXME this sucks. */

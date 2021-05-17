@@ -372,6 +372,8 @@ public:
   /* Create a BSP polygon from this polygon. */
   void CreateBSPPolygon(BSPPolygon<DOUBLE, 3> &bspo);
   void CreateBSPPolygonNonPrecise(BSPPolygon<DOUBLE, 3> &bspo);
+  void CreateBSPPolygon(BSPPolygon<FLOAT, 3> &bspo);
+  void CreateBSPPolygonNonPrecise(BSPPolygon<FLOAT, 3> &bspo);
   /* Create shadow map for the polygon. */
   void MakeShadowMap(CWorld *pwoWorld, BOOL bDoDirectionalLights);
   /* Initialize shadow map for the polygon. */
