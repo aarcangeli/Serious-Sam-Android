@@ -163,7 +163,7 @@ void CGame::ConsoleRender(CDrawPort *pdp)
   //LCDRenderGrid();
   LCDRenderClouds2();
   dpConsole.DrawLine( 0, pixSizeJ-1, pixSizeI, pixSizeJ-1, LCDFadedColor(SE_COL_BLUE_NEUTRAL|255));
-  const COLOR colFill = (colDark & ~CT_AMASK) | 0x2F;
+  const ULONG colFill = (colDark & ~CT_AMASK) | 0x2F;
   dpConsole.Fill( 0, pixSizeJ-pixLineSpacing*1.6f, pixSizeI, pixLineSpacing*1.6f, colFill);
 
   // setup font
@@ -188,7 +188,7 @@ void CGame::ConsoleRender(CDrawPort *pdp)
   if( ((ULONG)(_pTimer->GetRealTimeTick()*2)) & 1) {
     CTString strCursor="_";
     FLOAT fTextScalingX = dpConsole.dp_fTextScaling * dpConsole.dp_fTextAspect;
-    PIX pixCellSize = _pfdConsoleFont->fd_pixCharWidth * fTextScalingX + dpConsole.dp_pixTextCharSpacing;
+    PIX pixCellSize = (PIX) (_pfdConsoleFont->fd_pixCharWidth * fTextScalingX + dpConsole.dp_pixTextCharSpacing);
     PIX pixCursorX  = pixTextX + (iCursorPos+strlen(strPrompt))*pixCellSize;
     dpConsole.PutText( strCursor, pixCursorX, pixYLine+2, colDark);
   }
@@ -310,7 +310,7 @@ void DoCheat(const CTString &strCommand, const CTString &strVar)
 {
   _pShell->SetINDEX(strVar, !_pShell->GetINDEX(strVar));
   BOOL bNew = _pShell->GetINDEX(strVar);
-  CPrintF("%s: %s\n", strCommand, bNew?"ON":"OFF");
+  CPrintF("%s: %s\n", (const char *) strCommand, bNew?"ON":"OFF");
 }
 
 static void Key_Return(void)
@@ -377,13 +377,13 @@ static void Key_Return(void)
   // parse editing line
   } else if( strEditingLine[0]=='/') {
     // add to output and execute
-    CPrintF( "-> %s\n", strEditingLine);
+    CPrintF( "-> %s\n", (const char *) strEditingLine);
       strEditingLine+=";";
       _pShell->Execute(strEditingLine+1);
   } 
   else if( !_pGame->gm_bGameOn) {
     // add to output and execute
-    CPrintF( "-> %s\n", strEditingLine);
+    CPrintF( "-> %s\n", (const char *) strEditingLine);
     strEditingLine+=";";
     _pShell->Execute(strEditingLine);
   }
@@ -446,7 +446,7 @@ static void Key_Tab( BOOL bShift)
         // can we print last found symbol ?
         if( strLastMatched!="") {
           if( !bFirstFound) CPrintF( "  -\n");
-          CPrintF( "  %s\n", strLastMatched);
+          CPrintF( "  %s\n", (const char *) strLastMatched);
           bFirstFound = TRUE;
         }
         strLastMatched = strSymbol;
@@ -454,7 +454,7 @@ static void Key_Tab( BOOL bShift)
       }
     }}
     // print last symbol
-    if( ctSymbolsFound>1) CPrintF( "  %s\n", strLastMatched);
+    if( ctSymbolsFound>1) CPrintF( "  %s\n", (const char *) strLastMatched);
   }
 
   // for each of symbols in the shell

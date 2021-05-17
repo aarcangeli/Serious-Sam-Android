@@ -81,7 +81,7 @@ static void LoadingHook_t(CProgressHookInfo *pphi)
 #endif
 
   // measure time since last call
-  static CTimerValue tvLast(0.0);
+  static CTimerValue tvLast((__int64) 0);
   CTimerValue tvNow = _pTimer->GetHighPrecisionTimer();
 
   // if not first or final update, and not enough time passed
@@ -179,7 +179,8 @@ static void LoadingHook_t(CProgressHookInfo *pphi)
   dpHook.SetTextAspect( 1.0f);
   // print status text
   setlocale(LC_ALL, "");
-  CTString strDesc(0, "%s", pphi->phi_strDescription);  strupr((char*)(const char*)strDesc);
+  CTString strDesc(0, "%s", (const char *) pphi->phi_strDescription);
+  strupr((char*)(const char*)strDesc);
   setlocale(LC_ALL, "C");
   CTString strPerc(0, "%3.0f%%", pphi->phi_fCompleted*100);
   //dpHook.PutText(strDesc, pixCharSizeI/2, pixSizeJ-pixBarSizeJ-2-pixCharSizeJ, C_GREEN|255);
@@ -232,7 +233,7 @@ static void LoadingHook_t(CProgressHookInfo *pphi)
   dpBox.SetTextAspect( 1.0f);
   // print status text
   CTString strRes;
-  strRes.PrintF( "%s", pphi->phi_strDescription);
+  strRes.PrintF( "%s", (const char *) pphi->phi_strDescription);
   //strupr((char*)(const char*)strRes);
   dpBox.PutTextC( strRes, 160, 17, C_GREEN|255);
   strRes.PrintF( "%3.0f%%", pphi->phi_fCompleted*100);

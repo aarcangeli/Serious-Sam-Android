@@ -13,8 +13,12 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
-#include "LevelInfo.h"
+#include "SeriousSam/StdH.h"
+#include "SeriousSam/LevelInfo.h"
+
+#ifdef PLATFORM_WIN32
+#include <io.h>
+#endif
 
 CListHead _lhAutoDemos;
 CListHead _lhAllLevels;

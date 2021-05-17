@@ -293,7 +293,7 @@ public:
   virtual void LCDEnd(void);
   virtual void LCDPrepare(FLOAT fFade);
   virtual void LCDSetDrawport(CDrawPort *pdp);
-  virtual void LCDDrawBox(PIX pixUL, PIX pixDR, PIXaabbox2D &box, COLOR col);
+  virtual void LCDDrawBox(PIX pixUL, PIX pixDR, const PIXaabbox2D &box, COLOR col);
   virtual void LCDScreenBox(COLOR col);
   virtual void LCDScreenBoxOpenLeft(COLOR col);
   virtual void LCDScreenBoxOpenRight(COLOR col);

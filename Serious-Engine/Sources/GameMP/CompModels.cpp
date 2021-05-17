@@ -18,9 +18,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <config.h>
 #define DECL_DLL
 #ifdef FIRST_ENCOUNTER
-  #include "Entities/Common/Particles.h"
+#include "Entities/Common/Particles.h"
 #else
-  #include "EntitiesMP/Common/Particles.h"
+#include "EntitiesMP/Common/Particles.h"
 #endif
 
 #include "Models/Enemies/Headman/Headman.h"
@@ -88,7 +88,7 @@ static BOOL _bModelOK = FALSE;
 
 extern FLOAT _fMsgAppearFade;
 
-CModelObject *AddAttachment_t(CModelObject *pmoParent, INDEX iPosition,
+static CModelObject *AddAttachment_t(CModelObject *pmoParent, INDEX iPosition,
    const CTFileName &fnmModel, INDEX iAnim,
    const CTFileName &fnmTexture,
    const CTFileName &fnmReflection=CTFILENAME(""),
@@ -730,7 +730,7 @@ extern void SetupCompModel_t(const CTString &strName)
       CTFILENAME("ModelsMP\\Weapons\\Chainsaw\\Blade.tex"),
       CTFILENAME("Models\\ReflectionTextures\\LightMetal01.tex"),
       CTFILENAME("Models\\SpecularTextures\\Medium.tex"));
-    CAttachmentModelObject *amo = pmo->GetAttachmentModel(CHAINSAWITEM_ATTACHMENT_BLADE);
+    //CAttachmentModelObject *amo = pmo->GetAttachmentModel(CHAINSAWITEM_ATTACHMENT_BLADE);
     AddAttachment_t(pmo, BLADEFORPLAYER_ATTACHMENT_TEETH, 
       CTFILENAME("ModelsMP\\Weapons\\Chainsaw\\Teeth.mdl"), 0,
       CTFILENAME("ModelsMP\\Weapons\\Chainsaw\\Teeth.tex"),
@@ -919,7 +919,7 @@ extern void SetupCompModel_t(const CTString &strName)
     _fFloorY = -1.0f;
 
   } else {
-    ThrowF_t(TRANS("Unknown model '%s'"), strName);
+    ThrowF_t(TRANS("Unknown model '%s'"), (const char *) strName);
   }
 }
 
@@ -937,7 +937,7 @@ void RenderMessageModel(CDrawPort *pdp, const CTString &strModel)
     // if failed
     } catch ( const char *strError) {
       // report error
-      CPrintF("Cannot setup model '%s':\n%s\n", strModel, strError);
+      CPrintF("Cannot setup model '%s':\n%s\n", (const char *) strModel, strError);
       // do nothing
       return;
     }
@@ -974,7 +974,7 @@ void RenderMessageModel(CDrawPort *pdp, const CTString &strModel)
     apr = pr;
     BeginModelRenderingView(apr, pdp);
     rm.rm_vLightDirection = _vLightDir;
-    const FLOAT fDistance = 1+ 10*(1/(_fMsgAppearFade+0.01) - 1/(1+0.01));
+    const FLOAT fDistance = 1.0f+ 10.f*(1.0f/(_fMsgAppearFade+0.01f) - 1.0f/(1.0f+0.01f));
 
     // if model needs floor
     if( _bHasFloor) {
