@@ -136,6 +136,7 @@ set(
   "${SE_BASE}/Templates/Stock_CSoundData.cpp"
   "${SE_BASE}/Templates/Stock_CTextureData.cpp"
   "${SE_BASE}/Network/ActionBuffer.cpp"
+  "${SE_BASE}/Network/Buffer.cpp"
   "${SE_BASE}/Network/CPacket.cpp"
   "${SE_BASE}/Network/Compression.cpp"
   "${SE_BASE}/Network/ClientInterface.cpp"
