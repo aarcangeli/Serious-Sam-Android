@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include <Engine/StdH.h>
 
 #include <Engine/Base/Console.h>
 #include <Engine/World/World.h>
@@ -470,9 +470,15 @@ void CCastRay::TestBrushSector(CBrushSector *pbscSector)
     // don't cast ray
     return;
   }
+
+  const CEntity *l_cr_penOrigin = cr_penOrigin;
+
   // for each polygon in the sector
-  FOREACHINSTATICARRAY(pbscSector->bsc_abpoPolygons, CBrushPolygon, itpoPolygon) {
-    CBrushPolygon &bpoPolygon = itpoPolygon.Current();
+  // FOREACHINSTATICARRAY(pbscSector->bsc_abpoPolygons, CBrushPolygon, itpoPolygon) {
+  CBrushPolygon *itpoPolygon = pbscSector->bsc_abpoPolygons.sa_Array;
+  int i;
+  for (i = 0; i < pbscSector->bsc_abpoPolygons.sa_Count; i++, itpoPolygon++) {
+    CBrushPolygon &bpoPolygon = *itpoPolygon;
 
     if (&bpoPolygon==cr_pbpoIgnore) {
       continue;
@@ -480,7 +486,7 @@ void CCastRay::TestBrushSector(CBrushSector *pbscSector)
 
     ULONG ulFlags = bpoPolygon.bpo_ulFlags;
     // if not testing recursively
-    if (cr_penOrigin==NULL) {
+    if (l_cr_penOrigin==NULL) {
       // if the polygon is portal
       if (ulFlags&BPOF_PORTAL) {
         // if it is translucent or selected
@@ -506,13 +512,13 @@ void CCastRay::TestBrushSector(CBrushSector *pbscSector)
         continue;
       }
     }
-    // get distances of ray points from the polygon plane
+
     FLOAT fDistance0 = bpoPolygon.bpo_pbplPlane->bpl_plAbsolute.PointDistance(cr_vOrigin);
     FLOAT fDistance1 = bpoPolygon.bpo_pbplPlane->bpl_plAbsolute.PointDistance(cr_vTarget);
-
     // if the ray hits the polygon plane
     if (fDistance0>=0 && fDistance0>=fDistance1) {
       // calculate fraction of line before intersection
+
       FLOAT fFraction = fDistance0/((fDistance0-fDistance1) + 0.0000001f/*correction*/);
       // calculate intersection coordinate
       FLOAT3D vHitPoint = cr_vOrigin+(cr_vTarget-cr_vOrigin)*fFraction;

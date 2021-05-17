@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 #include <Engine/Terrain/Terrain.h>
 #include <Engine/Terrain/TerrainRender.h>
 #include <Engine/Terrain/TerrainEditing.h>
@@ -39,7 +39,7 @@ static FLOATaabbox3D CalculateAABBoxFromRect(CTerrain *ptrTerrain, Rect rcExtrac
   ASSERT(ptrTerrain->tr_penEntity!=NULL);
 
   // Get entity that holds this terrain
-  CEntity *penEntity = ptrTerrain->tr_penEntity;
+  //CEntity *penEntity = ptrTerrain->tr_penEntity;
 
   FLOATaabbox3D bboxExtract;
   FLOATaabbox3D bboxAllTerrain;
@@ -60,7 +60,7 @@ static INDEX GetFirstTileInMidLod(CTerrain *ptrTerrain, Rect &rcExtract)
   // for each terrain tile
   for(INDEX itt=0;itt<ptrTerrain->tr_ctTiles;itt++) {
     QuadTreeNode &qtn = ptrTerrain->tr_aqtnQuadTreeNodes[itt];
-    CTerrainTile &tt =  ptrTerrain->tr_attTiles[itt];
+    //CTerrainTile &tt =  ptrTerrain->tr_attTiles[itt];
     // if it is coliding with given box
     if(qtn.qtn_aabbox.HasContactWith(bboxExtract)) {
       // calculate its real distance factor
@@ -184,7 +184,7 @@ void ShowSelectionInternal(CTerrain *ptrTerrain, Rect &rcExtract, CTextureData *
   GFXColor *pacolBrush = (GFXColor*)&ptdBrush->td_pulFrames[iFirst];
 
   // Fill vertex colors for selection preview
-  SLONG slStrength = Clamp(Abs(fStrenght),0.0f,1.0f) * 256.0f;
+  SLONG slStrength = (SLONG) (Clamp(Abs(fStrenght),0.0f,1.0f) * 256.0f);
   // for each row
   for(INDEX iy=0;iy<pixHeight;iy++) {
     // for each col
@@ -367,8 +367,8 @@ void SetBufferForEditing(CTerrain *ptrTerrain, UWORD *puwEditedBuffer, Rect &rcE
   PIX pixTop    = rcExtract.rc_iTop;
   PIX pixBottom = rcExtract.rc_iBottom;
 
-  PIX pixWidht  = pixRight-pixLeft;
-  PIX pixHeight = pixBottom-pixTop;
+  //PIX pixWidht  = pixRight-pixLeft;
+  //PIX pixHeight = pixBottom-pixTop;
   PIX pixMaxWidth  = ptrTerrain->tr_pixHeightMapWidth;
   PIX pixMaxHeight = ptrTerrain->tr_pixHeightMapHeight;
 

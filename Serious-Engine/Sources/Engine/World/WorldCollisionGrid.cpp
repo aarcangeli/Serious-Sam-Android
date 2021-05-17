@@ -13,8 +13,8 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
-
+#include <Engine/StdH.h>
+//#pragma GCC optimize 0
 #include <Engine/World/World.h>
 #include <Engine/World/PhysicsProfile.h>
 #include <Engine/Templates/StaticStackArray.cpp>
@@ -78,10 +78,10 @@ static inline INDEX MakeKey(INDEX iX, INDEX iZ)
   //INDEX iKey = (iX+iZ)&(GRID_HASHTABLESIZE-1);  // x+z
   // use absolute x and z, swap upper and lower bits in z, xor x and z
   INDEX iZ2 = abs(iZ);
-  INDEX iKey = (iZ2>>(GRID_HASHTABLESIZE_LOG2/2)) | (
-    (iZ2&(GRID_HASHTABLESIZE/2-1))<<(GRID_HASHTABLESIZE_LOG2/2));
-  iKey = iKey^abs(iX);
-  iKey = iKey&(GRID_HASHTABLESIZE-1);
+  INDEX iKey = (iZ2>>(GRID_HASHTABLESIZE_LOG2/2));
+  iKey |= ((iZ2&(GRID_HASHTABLESIZE/2-1))<<(GRID_HASHTABLESIZE_LOG2/2));
+  iKey ^= abs(iX);
+  iKey &= (GRID_HASHTABLESIZE-1);
   return iKey;
 }
 

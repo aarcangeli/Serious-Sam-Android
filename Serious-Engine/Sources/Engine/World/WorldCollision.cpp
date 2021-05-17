@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include <Engine/StdH.h>
 
 #include <Engine/World/World.h>
 #include <Engine/World/WorldCollision.h>
@@ -350,8 +350,12 @@ void CClipMove::ClipMovingSphereToBrushPolygon(const CMovingSphere &msMoving,
       // create an intersector
       CIntersector isIntersector(vHitPoint(iMajorAxis1), vHitPoint(iMajorAxis2));
       // for all edges in the polygon
-      FOREACHINSTATICARRAY(pbpoPolygon->bpo_abpePolygonEdges, CBrushPolygonEdge,
-        itbpePolygonEdge) {
+      /*FOREACHINSTATICARRAY(pbpoPolygon->bpo_abpePolygonEdges, CBrushPolygonEdge,
+        itbpePolygonEdge) {*/
+      CBrushPolygonEdge *itbpePolygonEdge = pbpoPolygon->bpo_abpePolygonEdges.sa_Array;
+      int i;
+      const int count = pbpoPolygon->bpo_abpePolygonEdges.sa_Count;
+      for (i = 0; i < count; i++, itbpePolygonEdge++) {
         // get edge vertices (edge direction is irrelevant here!)
         const FLOAT3D &vVertex0 = itbpePolygonEdge->bpe_pbedEdge->bed_pbvxVertex0->bvx_vRelative;
         const FLOAT3D &vVertex1 = itbpePolygonEdge->bpe_pbedEdge->bed_pbvxVertex1->bvx_vRelative;
@@ -380,7 +384,11 @@ void CClipMove::ClipMovingSphereToBrushPolygon(const CMovingSphere &msMoving,
   }
 
   // for each edge in polygon
-  FOREACHINSTATICARRAY(pbpoPolygon->bpo_abpePolygonEdges, CBrushPolygonEdge, itbpe) {
+  //FOREACHINSTATICARRAY(pbpoPolygon->bpo_abpePolygonEdges, CBrushPolygonEdge, itbpe) {
+  CBrushPolygonEdge *itbpe = pbpoPolygon->bpo_abpePolygonEdges.sa_Array;
+  int i;
+  const int count = pbpoPolygon->bpo_abpePolygonEdges.sa_Count;
+  for (i = 0; i < count; i++, itbpe++) {
     // get edge vertices (edge direction is important here!)
     FLOAT3D vVertex0, vVertex1;
     itbpe->GetVertexCoordinatesRelative(vVertex0, vVertex1);
@@ -509,8 +517,12 @@ void CClipMove::ClipMoveToTerrainPolygon(const FLOAT3D &v0, const FLOAT3D &v1, c
 {
   _pfPhysicsProfile.StartTimer(CPhysicsProfile::PTI_CLIPMOVETOBRUSHPOLYGON);
   // for each sphere of entity A
-  FOREACHINSTATICARRAY(*cm_pamsA, CMovingSphere, itmsMoving) {
-    // clip moving sphere to the polygon
+  //FOREACHINSTATICARRAY(*cm_pamsA, CMovingSphere, itmsMoving) {
+    CMovingSphere *itmsMoving = cm_pamsA->sa_Array;
+  int i;
+  const int count = cm_pamsA->sa_Count;
+  for (i = 0; i < count; i++, itmsMoving++) {
+  // clip moving sphere to the polygon
     ClipMovingSphereToTerrainPolygon(*itmsMoving, v0, v1, v2);
   }
   _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_CLIPMOVETOBRUSHPOLYGON);
@@ -523,7 +535,11 @@ void CClipMove::ClipMoveToBrushPolygon(CBrushPolygon *pbpoPolygon)
 {
   _pfPhysicsProfile.StartTimer(CPhysicsProfile::PTI_CLIPMOVETOBRUSHPOLYGON);
   // for each sphere of entity A
-  FOREACHINSTATICARRAY(*cm_pamsA, CMovingSphere, itmsMoving) {
+  //FOREACHINSTATICARRAY(*cm_pamsA, CMovingSphere, itmsMoving) {
+  CMovingSphere *itmsMoving = cm_pamsA->sa_Array;
+  int i;
+  const int count = cm_pamsA->sa_Count;
+  for (i = 0; i < count; i++, itmsMoving++) {
     // clip moving sphere to the polygon
     ClipMovingSphereToBrushPolygon(*itmsMoving, pbpoPolygon);
   }
@@ -815,8 +831,6 @@ void CClipMove::CacheNearPolygons(void)
       _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_CACHENEARPOLYGONS_MAINLOOPFOUND);
     }
 
-    _pfPhysicsProfile.StartTimer(CPhysicsProfile::PTI_CLIPMOVETOBRUSHES_FINDNONZONING);
-
     // for non-zoning non-movable brush entities in the sector
     {FOREACHDSTOFSRC(itbsc->bsc_rsEntities, CEntity, en_rdSectors, pen)
       if (pen->en_RenderType==CEntity::RT_TERRAIN) {
@@ -871,10 +885,15 @@ void CClipMove::ClipToNonZoningSector(CBrushSector *pbsc)
     CPhysicsProfile::PTI_CLIPTONONZONINGSECTOR, pbsc->bsc_abpoPolygons.Count());
 
   // for each polygon in the sector
-  FOREACHINSTATICARRAY(pbsc->bsc_abpoPolygons, CBrushPolygon, itbpo) {
+  //FOREACHINSTATICARRAY(pbsc->bsc_abpoPolygons, CBrushPolygon, itbpo) {
+  CBrushPolygon *itbpo = pbsc->bsc_abpoPolygons.sa_Array;
+  int i;
+  const int count = pbsc->bsc_abpoPolygons.sa_Count;
+  for (i = 0; i < count; i++, itbpo++) {
     // if its bbox has no contact with bbox of movement path, or it is passable
-    if (!itbpo->bpo_boxBoundingBox.HasContactWith(cm_boxMovementPath)
-      ||(itbpo->bpo_ulFlags&BPOF_PASSABLE)) {
+    __builtin_prefetch(&itbpo[1].bpo_ulFlags);
+    if ((itbpo->bpo_ulFlags&BPOF_PASSABLE)
+      ||!itbpo->bpo_boxBoundingBox.HasContactWith(cm_boxMovementPath)) {
       // skip it
       continue;
     }

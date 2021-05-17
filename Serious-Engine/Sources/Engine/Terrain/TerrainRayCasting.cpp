@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 #include <Engine/Terrain/Terrain.h>
 #include <Engine/Math/Plane.h>
 #include <Engine/Math/Clipping.inl>
@@ -379,16 +379,16 @@ static FLOAT GetExactHitLocation(CTerrain *ptrTerrain, const FLOAT3D &vHitBegin,
   // Chech quad where ray starts
   _fMinHeight = vHitBegin(2)-fEpsilonH;
   _fMaxHeight = vHitBegin(2)+fEpsilonH;
-  FLOAT fDistanceStart = HitCheckQuad(floor(fX0),floor(fY0));
+  FLOAT fDistanceStart = HitCheckQuad((SLONG) floor(fX0),(SLONG) floor(fY0));
   if(fDistanceStart<fOldDistance) {
     return fDistanceStart;
   }
 
   // for each iteration
-  INDEX ctit = ceil(fIterator);
+  INDEX ctit = (INDEX) ceil(fIterator);
   for(INDEX iit=0;iit<ctit;iit++) {
-    PIX pixX = floor(fX);
-    PIX pixY = floor(fY);
+    PIX pixX = (PIX) floor(fX);
+    PIX pixY = (PIX) floor(fY);
 
     FLOAT fDistance0;
     FLOAT fDistance1;
@@ -425,7 +425,7 @@ static FLOAT GetExactHitLocation(CTerrain *ptrTerrain, const FLOAT3D &vHitBegin,
   // Chech quad where ray ends
   _fMinHeight = vHitEnd(2)-fEpsilonH;
   _fMaxHeight = vHitEnd(2)+fEpsilonH;
-  FLOAT fDistanceEnd = HitCheckQuad(floor(fX1),floor(fY1));
+  FLOAT fDistanceEnd = HitCheckQuad((SLONG) floor(fX1), (SLONG) floor(fY1));
   if(fDistanceEnd<fOldDistance) {
     return fDistanceEnd;
   }

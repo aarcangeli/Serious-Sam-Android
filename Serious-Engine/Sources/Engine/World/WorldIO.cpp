@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include <Engine/StdH.h>
 
 #include <Engine/Base/Stream.h>
 #include <Engine/Math/Float.h>
@@ -35,10 +35,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #define WORLDSTATEVERSION_SHADOWSPERMIP 7
 #define WORLDSTATEVERSION_CURRENT WORLDSTATEVERSION_NOCLASSCONTAINER
 CWorld *_pwoCurrentLoading = NULL;  // world that is currently loading
+BOOL _bReadEntitiesByID = FALSE;
+
 extern BOOL _bPortalSectorLinksPreLoaded;
 extern BOOL _bEntitySectorLinksPreLoaded;
 extern BOOL _bFileReplacingApplied;
-BOOL _bReadEntitiesByID = FALSE;
 
 /*
  * Save entire world (both brushes  current state).
@@ -382,7 +383,7 @@ void CWorld::ReadState_veryold_t( CTStream *istr) // throw char *
     // read entity class index and entity placement
     (*istr)>>iEntityClass>>plPlacement;
     // create an entity of that class
-    CEntity *penNew = CreateEntity_t(plPlacement, cecClasses[iEntityClass]);
+    /* CEntity *penNew = */ CreateEntity_t(plPlacement, cecClasses[iEntityClass]);
   }}
 
   // for each entity
@@ -496,7 +497,7 @@ void CWorld::ReadState_old_t( CTStream *istr) // throw char *
     // read entity class index and entity placement
     (*istr)>>iEntityClass>>plPlacement;
     // create an entity of that class
-    CEntity *penNew = CreateEntity_t(plPlacement, cecClasses[iEntityClass]);
+    /* CEntity *penNew = */ CreateEntity_t(plPlacement, cecClasses[iEntityClass]);
   }}
 
   // for each entity

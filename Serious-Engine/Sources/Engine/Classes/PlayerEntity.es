@@ -18,7 +18,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
  */
 4
 %{
-#include "StdH.h"
+#include <Engine/StdH.h>
 #include <Engine/Entities/InternalClasses.h>
 #include <Engine/Base/Stream.h>
 #include <Engine/Base/CRC.h>
@@ -127,7 +127,7 @@ functions:
   {
     CMovableModelEntity::DumpSync_t(strm, iExtensiveSyncCheck);
     strm.FPrintF_t("player: %s\n", 
-      en_pcCharacter.GetName());
+      (const char *) en_pcCharacter.GetName());
     strm.FPrintF_t("GUID: ");
     {for (INDEX i=0; i<sizeof(en_pcCharacter.pc_aubGUID); i++) {
       strm.FPrintF_t("%02X", en_pcCharacter.pc_aubGUID[i]);

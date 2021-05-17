@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include <Engine/StdH.h>
 
 #include <Engine/Base/Anim.h>
 
@@ -30,7 +30,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 /*
  * One animation of an animateable object
  */
-class COneAnim {
+class COneAnim
+{
 public:
   COneAnim();
   ~COneAnim();
@@ -74,20 +75,20 @@ CTmpListHead::~CTmpListHead()
 {
 	FORDELETELIST(COneAnimNode, coan_Node, *this, it)
 		delete &it.Current();
-};
+}
 
 // Remember ptr to animation and add this node at the end of given animation list
 COneAnimNode::COneAnimNode(COneAnim *AnimToInsert, CListHead *LH)
 {
 	coan_OneAnim = AnimToInsert;
 	LH->AddTail( coan_Node);
-};
+}
 
 // Constructor sets invalid data
 COneAnim::COneAnim()
 {
 	oa_FrameIndices = NULL;
-};
+}
 
 // Free allocated frame indices array for this animation
 COneAnim::~COneAnim()
@@ -95,7 +96,7 @@ COneAnim::~COneAnim()
 	ASSERT(oa_FrameIndices != NULL);
 	FreeMemory( oa_FrameIndices);
   oa_FrameIndices = NULL;
-};
+}
 
 /*
  * Copy constructor.
@@ -126,18 +127,18 @@ CFileNameNode::CFileNameNode(const char *NewFileName, CListHead *LH)
 	ASSERT(strlen(NewFileName)>0);
 	strcpy( cfnn_FileName, NewFileName);
 	LH->AddTail( cfnn_Node);
-};
+}
 
 CAnimData::CAnimData()
 {
 	ad_Anims = NULL;
   ad_NumberOfAnims = 0;
-};
+}
 
 CAnimData::~CAnimData()
 {
   Clear();
-};
+}
 
 void CAnimData::Clear()
 {
@@ -148,7 +149,7 @@ void CAnimData::Clear()
 
   // clear serial object
   CSerial::Clear();
-};
+}
 
 // get amount of memory used by this object
 SLONG CAnimData::GetUsedMemory(void)
@@ -170,17 +171,22 @@ BOOL CAnimData::IsAutoFreed(void)
 
 /////////////////////////////////////////////////////////////////////
 // Reference counting functions
-void CAnimData::AddReference(void) {
-    ASSERT(this!=NULL);
-    MarkUsed();
-};
-void CAnimData::RemReference(void) {
-    ASSERT(this!=NULL);
-    RemReference_internal();
-};
-void CAnimData::RemReference_internal(void) {
+void CAnimData::AddReference(void)
+{
+  ASSERT(this!=NULL);
+  MarkUsed();
+}
+
+void CAnimData::RemReference(void)
+{
+  ASSERT(this!=NULL);
+  RemReference_internal();
+}
+
+void CAnimData::RemReference_internal(void)
+{
   _pAnimStock->Release(this);
-};
+}
 
 // creates given number of default animations (1 frame, given name and speed)
 void CAnimData::CreateAnimations( INDEX ctAnimations, CTString strName/*="None"*/,
@@ -239,7 +245,7 @@ void CAnimData::DefaultAnimation()
 	ad_Anims->oa_NumberOfFrames = 1;
 	ad_Anims->oa_FrameIndices = (INDEX *) AllocMemory( sizeof(INDEX));
 	ad_Anims->oa_FrameIndices[0] = 0;
-};
+}
 
 // Returns index of given frame name in global frame names list. If it is not found
 // new CFileNameObject is added into frames list
@@ -254,7 +260,7 @@ INDEX FindFrameIndex( CListHead *pFrameFileList, const char *pFileName)
 	}
 	new CFileNameNode( pFileName, pFrameFileList);
 	return( i);
-};
+}
 
 CTString GetFrameFileName( CListHead *pFrameFileList, INDEX iMemberInList)
 {
@@ -288,13 +294,13 @@ void CAnimData::LoadFromScript_t( CTStream *File, CListHead *pFrameFileList) // 
 	char ld_line[ 128];
 	CTmpListHead TempAnimationList;
 	SLONG lc;
-	BOOL ret_val;
+	//BOOL ret_val;
 
 	//ASSERT( ad_Anims == NULL);
   // clears possible animations
   CAnimData::Clear();
 
-	ret_val = TRUE;
+	//ret_val = TRUE;
 	FOREVER
 	{
 		// Repeat reading of one line of script file until it is not empty or comment
@@ -317,8 +323,11 @@ void CAnimData::LoadFromScript_t( CTStream *File, CListHead *pFrameFileList) // 
 		// if it is not yet there
 		else if( EQUAL_SUB_STR( "DIRECTORY"))
 		{
-			_strupr( ld_line);
-      sscanf( ld_line, "DIRECTORY %s", base_path);
+			// !!! FIXME : rcg10092001 You can't uppercase filenames!
+			//_strupr( ld_line);
+			sscanf( ld_line, "DIRECTORY %s", base_path);
+
+			// !!! FIXME : rcg10092001 Use CFileSystem::GetDirSeparator().
 			if( base_path[ strlen( base_path) - 1] != '\\')
 				strcat( base_path,"\\");
 		}
@@ -441,7 +450,7 @@ void CAnimData::LoadFromScript_t( CTStream *File, CListHead *pFrameFileList) // 
   FORDELETELIST( COneAnimNode, coan_Node, TempAnimationList, litDel)
     delete &litDel.Current();
 
-};
+}
 
 void CAnimData::Write_t( CTStream *ostrFile)  // throw char *
 {
@@ -459,7 +468,7 @@ void CAnimData::Write_t( CTStream *ostrFile)  // throw char *
 		ostrFile->Write_t( ad_Anims[i].oa_FrameIndices,
 							ad_Anims[i].oa_NumberOfFrames * sizeof( INDEX));
 	}
-};
+}
 
 // print #define <animation name> lines for all animations into given file
 void CAnimData::ExportAnimationNames_t( CTStream *ostrFile, CTString strAnimationPrefix) // throw char *
@@ -469,7 +478,7 @@ void CAnimData::ExportAnimationNames_t( CTStream *ostrFile, CTString strAnimatio
   for( INDEX iAnimation=0; iAnimation<ad_NumberOfAnims; iAnimation++)
   {
     // prepare one #define line (add prefix)
-    sprintf( chrLine, "#define %s%s %d", strAnimationPrefix.str_String, ad_Anims[ iAnimation].oa_Name,
+    sprintf( chrLine, "#define %s%s %d", (const char *) strAnimationPrefix, ad_Anims[ iAnimation].oa_Name,
              iAnimation);
     // put it into file
     ostrFile->PutLine_t( chrLine);
@@ -511,22 +520,37 @@ void CAnimData::AddAnimation(void)
 }
 
 // replaces requested animation's name with given one
-void CAnimData::SetName( INDEX iAnimation, CTString strNewName){
+void CAnimData::SetName( INDEX iAnimation, CTString strNewName)
+{
   ASSERT(strlen(strNewName)<NAME_SIZE);
-  strcpy( ad_Anims[iAnimation].oa_Name, strNewName);};
+  strcpy( ad_Anims[iAnimation].oa_Name, strNewName);
+}
+
 // replaces requested animation's speed with given one
-void CAnimData::SetSpeed( INDEX iAnimation, TIME tmSpeed){
-  ad_Anims[iAnimation].oa_SecsPerFrame = tmSpeed;};
+void CAnimData::SetSpeed( INDEX iAnimation, TIME tmSpeed)
+{
+  ad_Anims[iAnimation].oa_SecsPerFrame = tmSpeed;
+}
+
 // obtains frame index for given place in array representing given animation
-INDEX CAnimData::GetFrame( INDEX iAnimation, INDEX iFramePlace) {
+INDEX CAnimData::GetFrame( INDEX iAnimation, INDEX iFramePlace)
+{
   ASSERT( iFramePlace<ad_Anims[iAnimation].oa_NumberOfFrames);
-  return ad_Anims[iAnimation].oa_FrameIndices[iFramePlace];};
+  return ad_Anims[iAnimation].oa_FrameIndices[iFramePlace];
+}
+
 // sets frame index for given place in array representing given animation
-void CAnimData::SetFrame( INDEX iAnimation, INDEX iFramePlace, INDEX iNewFrame) {
+void CAnimData::SetFrame( INDEX iAnimation, INDEX iFramePlace, INDEX iNewFrame)
+{
   ASSERT( iFramePlace<ad_Anims[iAnimation].oa_NumberOfFrames);
-  ad_Anims[iAnimation].oa_FrameIndices[iFramePlace] = iNewFrame;};
+  ad_Anims[iAnimation].oa_FrameIndices[iFramePlace] = iNewFrame;
+}
+
 /* Get number of animations. */
-INDEX CAnimData::GetAnimsCt(void) const {return ad_NumberOfAnims;};
+INDEX CAnimData::GetAnimsCt(void) const
+{
+  return ad_NumberOfAnims;
+}
 
 // Delete animation
 void CAnimData::DeleteAnimation(INDEX iAnim)
@@ -586,13 +610,13 @@ CAnimObject::CAnimObject(void)
 	ao_iCurrentAnim = -1;
 	ao_iLastAnim = -1;
   ao_ulFlags = AOF_PAUSED;
-};
+}
 
 /* Destructor. */
 CAnimObject::~CAnimObject(void)
 {
   if(ao_AnimData != NULL) ao_AnimData->RemReference();
-};
+}
 
 // copy from another object of same class
 ENGINE_API void CAnimObject::Copy(CAnimObject &aoOther)
@@ -627,7 +651,7 @@ FLOAT CAnimObject::GetAnimLength(INDEX iAnim) const
 	ASSERT( (iAnim >= 0) && (iAnim < ao_AnimData->ad_NumberOfAnims) );
 	COneAnim *pCOA = &ao_AnimData->ad_Anims[iAnim];
   return pCOA->oa_NumberOfFrames*pCOA->oa_SecsPerFrame;
-};
+}
 
 FLOAT CAnimObject::GetCurrentAnimLength(void) const
 {
@@ -670,7 +694,8 @@ void CAnimObject::PauseAnim(void)
 /*
  * Continues paused animation
  */
-void CAnimObject::ContinueAnim(void){
+void CAnimObject::ContinueAnim(void)
+{
   if( !(ao_ulFlags&AOF_PAUSED)) return;
   // calculate freezed frame index inside current animation (not in global list of frames!)
   COneAnim *pCOA = &ao_AnimData->ad_Anims[ao_iCurrentAnim];
@@ -688,7 +713,8 @@ void CAnimObject::ContinueAnim(void){
 /*
  * Offsets the animation phase
  */
-void CAnimObject::OffsetPhase(TIME tm){
+void CAnimObject::OffsetPhase(TIME tm)
+{
   ao_tmAnimStart += tm;
 }
 
@@ -696,19 +722,21 @@ void CAnimObject::OffsetPhase(TIME tm){
 /*
  * Loop anims forward
  */
-void CAnimObject::NextAnim(){
+void CAnimObject::NextAnim()
+{
 	ASSERT( ao_iCurrentAnim != -1);
 	ASSERT( ao_AnimData != NULL);
 	ao_iCurrentAnim = (ao_iCurrentAnim + 1) % ao_AnimData->ad_NumberOfAnims;
   ao_iLastAnim = ao_iCurrentAnim;
 	ao_tmAnimStart = _pTimer->CurrentTick();
   MarkChanged();
-};
+}
 
 /*
  * Loop anims backward
  */
-void CAnimObject::PrevAnim(){
+void CAnimObject::PrevAnim()
+{
 	ASSERT( ao_iCurrentAnim != -1);
 	ASSERT( ao_AnimData != NULL);
 	ao_iCurrentAnim = (ao_AnimData->ad_NumberOfAnims + ao_iCurrentAnim - 1) %
@@ -716,7 +744,7 @@ void CAnimObject::PrevAnim(){
   ao_iLastAnim = ao_iCurrentAnim;
 	ao_tmAnimStart = _pTimer->CurrentTick();
   MarkChanged();
-};
+}
 
 /*
  * Selects frame for given time offset from animation start (0)
@@ -741,31 +769,34 @@ void CAnimObject::LastFrame(void)
 /*
  * Loop frames forward
  */
-void CAnimObject::NextFrame(){
+void CAnimObject::NextFrame()
+{
 	ASSERT( ao_iCurrentAnim != -1);
 	ASSERT( ao_AnimData != NULL);
   ASSERT( ao_ulFlags&AOF_PAUSED);
 	ao_tmAnimStart += ao_AnimData->ad_Anims[ ao_iCurrentAnim].oa_SecsPerFrame;
   MarkChanged();
-};
+}
 
 /*
  * Loop frames backward
  */
-void CAnimObject::PrevFrame(){
+void CAnimObject::PrevFrame()
+{
 	ASSERT( ao_iCurrentAnim != -1);
 	ASSERT( ao_AnimData != NULL);
   ASSERT( ao_ulFlags&AOF_PAUSED);
 	ao_tmAnimStart -= ao_AnimData->ad_Anims[ ao_iCurrentAnim].oa_SecsPerFrame;
   MarkChanged();
-};
+}
 
 /*
  * Retrieves paused flag
  */
-BOOL CAnimObject::IsPaused(){
+BOOL CAnimObject::IsPaused()
+{
   return ao_ulFlags&AOF_PAUSED;
-};
+}
 
 /*
  * Test if some updateable object is up to date with this anim object.
@@ -784,7 +815,8 @@ BOOL CAnimObject::IsUpToDate(const CUpdateable &ud) const
 /*
  * Attach data to this object.
  */
-void CAnimObject::SetData(CAnimData *pAD) {
+void CAnimObject::SetData(CAnimData *pAD)
+{
   // mark new data as referenced once more
   if(pAD != NULL) pAD->AddReference();
   // mark old data as referenced once less
@@ -820,7 +852,8 @@ void CAnimObject::SetData_t(const CTFileName &fnmAnim) // throw char *
 /*
  * Sets new animation (but doesn't starts it).
  */
-void CAnimObject::SetAnim(INDEX iNew) {
+void CAnimObject::SetAnim(INDEX iNew)
+{
   if(ao_AnimData == NULL) return;
   // clamp animation
   if( iNew >= GetAnimsCt() )
@@ -837,18 +870,19 @@ void CAnimObject::SetAnim(INDEX iNew) {
   ao_iLastAnim=iNew;
   // mark that something has changed
   MarkChanged();
-};
+}
 
 /*
  * Start new animation.
  */
-void CAnimObject::StartAnim(INDEX iNew) {
+void CAnimObject::StartAnim(INDEX iNew)
+{
   if(ao_AnimData == NULL) return;
   // set new animation
   SetAnim( iNew);
   // set pause off, looping on
   ao_ulFlags = AOF_LOOPING;
-};
+}
 
 /* Start playing an animation. */
 void CAnimObject::PlayAnim(INDEX iNew, ULONG ulFlags)
@@ -868,14 +902,14 @@ void CAnimObject::PlayAnim(INDEX iNew, ULONG ulFlags)
     	class COneAnim *pCOA = &ao_AnimData->ad_Anims[ao_iCurrentAnim];
       TIME tmNow = _pTimer->CurrentTick();
       TIME tmLength = GetCurrentAnimLength();
-      FLOAT fFrame = ((_pTimer->CurrentTick() - ao_tmAnimStart)/pCOA->oa_SecsPerFrame);
+      FLOAT fFrame = ((tmNow - ao_tmAnimStart)/pCOA->oa_SecsPerFrame);
       INDEX iFrame = INDEX(fFrame);
       FLOAT fFract = fFrame-iFrame;
       iFrame = ClipFrame(iFrame);
       TIME tmPassed = (iFrame+fFract)*pCOA->oa_SecsPerFrame;
       TIME tmLeft = tmLength-tmPassed;
       // set time ahead to end of the current animation
-	    ao_tmAnimStart = _pTimer->CurrentTick()+tmLeft;
+	    ao_tmAnimStart = tmNow+tmLeft;
       // remember last animation
       ao_iLastAnim = ao_iCurrentAnim;
       // set new animation number
@@ -898,7 +932,7 @@ void CAnimObject::PlayAnim(INDEX iNew, ULONG ulFlags)
 
   // mark that something has changed
   MarkChanged();
-};
+}
 
 /* Seamlessly continue playing another animation from same point. */
 void CAnimObject::SwitchToAnim(INDEX iNew)
@@ -917,13 +951,14 @@ void CAnimObject::SwitchToAnim(INDEX iNew)
 /*
  * Reset anim (restart)
  */
-void CAnimObject::ResetAnim() {
+void CAnimObject::ResetAnim()
+{
   if(ao_AnimData == NULL) return;
   // remember starting time
 	ao_tmAnimStart = _pTimer->CurrentTick();
   // mark that something has changed
   MarkChanged();
-};
+}
 
 // Get info about some animation
 void CAnimObject::GetAnimInfo(INDEX iAnimNo, CAnimInfo &aiInfo) const
@@ -1000,14 +1035,13 @@ INDEX CAnimObject::GetAnimsCt(void) const
   if(ao_AnimData == NULL) return 1;
   ASSERT( ao_AnimData != NULL);
   return( ao_AnimData->ad_NumberOfAnims);
-};
+}
 
 // get index of current animation
 INDEX CAnimObject::GetAnim(void) const
 {
 	return( ao_iCurrentAnim);
-};
-
+}
 
 /*
  * Gets the number of current frame.
@@ -1018,10 +1052,11 @@ INDEX CAnimObject::GetFrame(void) const
 }
 
 /* Gets number of frames in current anim. */
-INDEX CAnimObject::GetFramesInCurrentAnim(void) const {
+INDEX CAnimObject::GetFramesInCurrentAnim(void) const
+{
   ASSERT( ao_AnimData != NULL);
   return ao_AnimData->ad_Anims[ao_iCurrentAnim].oa_NumberOfFrames;
-};
+}
 
 /*
  * Get  information for linear interpolation beetween frames.
@@ -1112,4 +1147,5 @@ void CAnimObject::Read_t( CTStream *pstr) // throw char *
   {
     ao_iLastAnim = 0;
   }
-};
+}
+
