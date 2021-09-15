@@ -85,7 +85,7 @@ extern void UpdateTextureSettings(void)
 {
   // determine API
   const GfxAPIType eAPI = _pGfx->gl_eCurrentAPI;
-  ASSERT(GfxValidApi(eAPI));
+  ASSERT( eAPI==GAT_OGL || eAPI==GAT_NONE);
 
   // set texture formats and compression
   TS.ts_tfRGB8 = TS.ts_tfRGBA8 = NONE;
@@ -679,7 +679,7 @@ void CTextureData::Read_t( CTStream *inFile)
 
   // determine API
   const GfxAPIType eAPI = _pGfx->gl_eCurrentAPI;
-  ASSERT(GfxValidApi(eAPI));
+  ASSERT( eAPI==GAT_OGL || eAPI==GAT_NONE);
 
   // determine driver context presence (must have at least 1 texture unit!)
   const BOOL bHasContext = (_pGfx->gl_ctRealTextureUnits>0);
@@ -1175,7 +1175,7 @@ void CTextureData::SetAsCurrent( INDEX iFrameNo/*=0*/, BOOL bForceUpload/*=FALSE
 {
   // check API
   const GfxAPIType eAPI = _pGfx->gl_eCurrentAPI;
-  ASSERT(GfxValidApi(eAPI));
+  ASSERT( eAPI==GAT_OGL || eAPI==GAT_NONE);
   ASSERT( iFrameNo<td_ctFrames);
   BOOL bNeedUpload = bForceUpload;
   BOOL bNoDiscard  = TRUE;
