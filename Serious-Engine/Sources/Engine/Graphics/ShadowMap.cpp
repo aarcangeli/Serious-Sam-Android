@@ -252,7 +252,7 @@ void CShadowMap::MarkDrawn(void)
   ASSERT( sm_lnInGfx.IsLinked());
   sm_lnInGfx.Remove();
   // set time stamp
-  sm_tvLastDrawn = _pTimer->GetLowPrecisionTimer();
+  sm_tvLastDrawn = _pTimer->GetHighPrecisionTimer();
   // put at the end of the list
   _pGfx->gl_lhCachedShadows.AddTail(sm_lnInGfx);
 }

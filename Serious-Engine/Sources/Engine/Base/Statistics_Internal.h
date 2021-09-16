@@ -77,7 +77,6 @@ public:
   CStaticArray<class CStatCounter> sf_ascCounters;   // profiling counters
   CStaticArray<class CStatTimer>   sf_astTimers;     // profiling timers
   CStaticArray<class CStatLabel>   sf_aslLabels;     // profiling labels
-  BOOL sf_enabled;
 
 // interface:
   enum StatLabelIndex
@@ -158,15 +157,13 @@ public:
   inline void StartTimer(INDEX iTimer) {
     CStatTimer &st = sf_astTimers[iTimer];
     ASSERT( sf_astTimers[iTimer].st_tvStarted.tv_llValue == -1);
-  if (sf_enabled)
-     st.st_tvStarted = _pTimer->GetHighPrecisionTimer();
+    st.st_tvStarted = _pTimer->GetHighPrecisionTimer();
   };
   /* Stop a timer. */
   inline void StopTimer(INDEX iTimer) {
     CStatTimer &st = sf_astTimers[iTimer];
     ASSERT( sf_astTimers[iTimer].st_tvStarted.tv_llValue != -1);
-  if (sf_enabled)
-     st.st_tvElapsed += _pTimer->GetHighPrecisionTimer()-st.st_tvStarted;
+    st.st_tvElapsed += _pTimer->GetHighPrecisionTimer()-st.st_tvStarted;
     st.st_tvStarted.tv_llValue = -1;
   };
 

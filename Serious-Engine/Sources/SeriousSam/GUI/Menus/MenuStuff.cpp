@@ -141,7 +141,9 @@ CTString astrFrequencyRadioTexts[] = {
 };
 
 CTString astrSoundAPIRadioTexts[] = {
-  RADIOTRANS("Android Audio"),
+  RADIOTRANS("WaveOut"),
+  RADIOTRANS("DirectSound"),
+  RADIOTRANS("EAX"),
 };
 
 namespace SeriousSam {

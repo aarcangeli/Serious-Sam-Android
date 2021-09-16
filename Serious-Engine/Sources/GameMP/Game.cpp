@@ -1850,7 +1850,6 @@ static void PrintStats( CDrawPort *pdpDrawPort)
     // display nothing
     _iCheckNow = 0;
     _iCheckMax = 0;
-    STAT_Enable(FALSE);
     return;
   }
 
@@ -1891,7 +1890,6 @@ static void PrintStats( CDrawPort *pdpDrawPort)
   if( hud_iStats==2 && hud_iEnableStats)
   { // display extensive statistics
     CTString strReport;
-    STAT_Enable(TRUE);
     STAT_Report(strReport);
     STAT_Reset();
 
@@ -1907,7 +1905,6 @@ static void PrintStats( CDrawPort *pdpDrawPort)
     pdpDrawPort->PutText( strFPS,    0, 40, C_WHITE|CT_OPAQUE);
     pdpDrawPort->PutText( strReport, 4, 65, C_GREEN|CT_OPAQUE);
   }
-   else STAT_Enable(FALSE);
 }
 
 

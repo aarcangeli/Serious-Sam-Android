@@ -78,7 +78,7 @@ public:
 
   CTimerValue tm_tvLastTimeOnTime;  // last time when timer was on time
   TIME        tm_tmLastTickOnTime;  // last tick when timer was on time
-  CTimerValue tm_tvLowPrecisionTimer;
+
   TIME tm_RealTimeTimer;  // this really ticks at 1/TickQuantum frequency
   FLOAT tm_fLerpFactor;   // factor used for lerping between frames
   FLOAT tm_fLerpFactor2;  // secondary lerp-factor used for unpredicted movement
@@ -131,7 +131,7 @@ public:
   inline FLOAT GetLerpFactor(void) const { return tm_fLerpFactor; };
   // Get current factor used for lerping between game ticks.
   inline FLOAT GetLerpFactor2(void) const { return tm_fLerpFactor2; };
-  inline CTimerValue GetLowPrecisionTimer(void) const { return tm_tvLowPrecisionTimer; };
+
   /* Get current timer value of high precision timer. */
   inline CTimerValue GetHighPrecisionTimer(void) {
 //   __int64 mmRet;

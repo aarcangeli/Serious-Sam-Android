@@ -136,8 +136,7 @@ public:
 // increment a byte without overflowing it
 static inline void IncrementByteWithClip( UBYTE &ub, SLONG slAdd)
 {
-  SLONG t = (SLONG)ub+slAdd;
-  ub = (t<0)?0:pubClipByte[t];
+  ub = pubClipByte[(SLONG)ub+slAdd];
 }
 
 // increment a color without overflowing it

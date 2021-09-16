@@ -24,7 +24,6 @@ ENGINE_API void STAT_Reset(void);
 // make a new report
 ENGINE_API void STAT_Report(CTString &strReport);
 
-ENGINE_API void STAT_Enable(BOOL enable);
 
 #endif  /* include-once check. */
 
