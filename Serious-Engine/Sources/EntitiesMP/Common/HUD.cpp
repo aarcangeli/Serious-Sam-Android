@@ -13,7 +13,6 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
- 
 #include "EntitiesMP/StdH/StdH.h"
 #include "GameMP/SEColors.h"
 
@@ -32,6 +31,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 // NOTE: these _do not_ reflect easy/tourist maxvalue adjustments. that is by design!
 #define TOP_ARMOR  100
 #define TOP_HEALTH 100
+
 
 // cheats
 extern INDEX cht_bEnable;

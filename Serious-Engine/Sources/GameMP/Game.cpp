@@ -144,8 +144,8 @@ static INDEX ctl_iCurrentPlayerLocal = -1;
 static INDEX ctl_iCurrentPlayer = -1;
 static FLOAT gam_fChatSoundVolume = 0.25f;
 
-BOOL _bUserBreakEnabled = FALSE;
 BOOL map_bIsFirstEncounter = FALSE;
+BOOL _bUserBreakEnabled = FALSE;
 
 // make sure that console doesn't show last lines if not playing in network
 void MaybeDiscardLastLines(void)
@@ -229,7 +229,7 @@ static void PlayScriptSound(INDEX iChannel, const CTString &strSound, FLOAT fVol
     CPrintF("%s\n", strError);
   }
 }
-#if 0
+#if 0 // DG: unused.
 static void PlayScriptSoundCfunc(void* pArgs)
 {
   INDEX iChannel = NEXTARGUMENT(INDEX);
@@ -239,7 +239,7 @@ static void PlayScriptSoundCfunc(void* pArgs)
   BOOL bLooping = NEXTARGUMENT(INDEX);
   PlayScriptSound(iChannel, strSound, fVolume, fPitch, bLooping);
 }
-#endif
+#endif // 0 (unused)
 static void StopScriptSound(void* pArgs)
 {
   INDEX iChannel = NEXTARGUMENT(INDEX);
@@ -1832,7 +1832,7 @@ static void PrintStats( CDrawPort *pdpDrawPort)
       FLOAT fValue  = _pNetwork->ga_angeNetGraph[i].nge_fLatency;
       enum NetGraphEntryType nge = _pNetwork->ga_angeNetGraph[i].nge_ngetType;
       FLOAT fWidth = Clamp( fValue, 0.0f, 1.0f)*fMaxWidth;
-      COLOR colLine = C_GREEN;
+      COLOR colLine = C_GREEN;                 
            if( nge==NGET_ACTION)            colLine = C_GREEN;  // normal action (default)
       else if( nge==NGET_MISSING)           colLine = C_RED;    // missing sequence
       else if( nge==NGET_NONACTION)         colLine = C_WHITE;  // non-action sequence
@@ -2277,7 +2277,7 @@ void CGame::GameRedrawView( CDrawPort *pdpDrawPort, ULONG ulFlags)
         strIndicator = TRANS("Game finished");
       } else if (_pNetwork->IsPaused() || _pNetwork->GetLocalPause()) {
         strIndicator = TRANS("Paused");
-      } else if (_tvMenuQuickSave.tv_llValue!=0 &&
+      } else if (_tvMenuQuickSave.tv_llValue!=0 && 
         (_pTimer->GetHighPrecisionTimer()-_tvMenuQuickSave).GetSeconds()<3) {
 //        strIndicator = TRANS("Use F6 for QuickSave during game!");
       } else if (_pNetwork->ga_sesSessionState.ses_strMOTD!="") {

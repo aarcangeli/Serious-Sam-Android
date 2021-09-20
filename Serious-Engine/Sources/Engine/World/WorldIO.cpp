@@ -34,6 +34,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #define WORLDSTATEVERSION_MULTITEXTURING 8
 #define WORLDSTATEVERSION_SHADOWSPERMIP 7
 #define WORLDSTATEVERSION_CURRENT WORLDSTATEVERSION_NOCLASSCONTAINER
+
 CWorld *_pwoCurrentLoading = NULL;  // world that is currently loading
 BOOL _bReadEntitiesByID = FALSE;
 

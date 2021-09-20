@@ -16,6 +16,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "StdAfx.h"
 #include "LCDDrawing.h"
 #include <config.h>
+#ifdef DECL_DLL
+#undef DECL_DLL
+#endif
 #define DECL_DLL
 #ifdef FIRST_ENCOUNTER
 #include "Entities/Common/Particles.h"

@@ -527,7 +527,7 @@ void Particles_ViewerLocal(CEntity *penView)
         break;
         
       default:
-        ASSERT("Unknown environment particle type!");
+        ASSERTALWAYS("Unknown environment particle type!");
         break;
       }
     // for those EPHs that are not rendered, clear possible
@@ -1589,6 +1589,7 @@ INDEX Particles_Regeneration(CEntity *pen, FLOAT tmStart, FLOAT tmStop, FLOAT fY
       vPos2 = Lerp( vSource, vDestination, fT2);
     }
     
+    // DG: changed indices from 1-3 to 0-2 so they're not out of bounds
     UBYTE ubR = (UBYTE) (192+afStarsPositions[iRnd][0]*64);
     UBYTE ubG = (UBYTE) (192+afStarsPositions[iRnd][1]*64);
     UBYTE ubB = (UBYTE) (192+afStarsPositions[iRnd][2]*64);

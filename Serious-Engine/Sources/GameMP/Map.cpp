@@ -1011,8 +1011,8 @@ void RenderMap( CDrawPort *pdp, ULONG ulLevelMask, CProgressHookInfo *pphi)
     _toMapBcgRU = &_toMapBcgRUFE;
   }
 
-  PIX pixdpw = pdp->GetWidth();
-  PIX pixdph = pdp->GetHeight();
+  PIX pixdpw = (PIX) pdp->GetWidth();
+  PIX pixdph = (PIX) pdp->GetHeight();
   PIX imgw = 512;
   PIX imgh = 480;
   FLOAT fStretch = 0.25f;
@@ -1026,25 +1026,26 @@ void RenderMap( CDrawPort *pdp, ULONG ulLevelMask, CProgressHookInfo *pphi)
     fStretch = 0.5f;
   }
 
-  // calculate LU offset so picture would be centerd in dp
-  PIX pixSX = (pixdpw-imgw*fStretch)/2;
+  // calculate LU offset so picture would be centered in dp
+  PIX pixSX = (PIX) ((pixdpw-imgw*fStretch)/2);
   PIX pixSY = Max( PIX((pixdph-imgh*fStretch)/2), PIX(0));
 
   PIX pixC1S = pixSX;                  // column 1 start pixel
   PIX pixR1S = pixSY;                  // raw 1 start pixel
-  PIX pixC1E = pixSX+256*fStretch;     // column 1 end pixel
-  PIX pixR1E = pixSY+256*fStretch;     // raw 1 end pixel
-  PIX pixC2S = pixC1E-fStretch;        // column 2 start pixel
-  PIX pixR2S = pixR1E-fStretch;        // raw 2 start pixel
-  PIX pixC2E = pixC2S+256*fStretch;    // column 2 end pixel
-  PIX pixR2E = pixR2S+256*fStretch;    // raw 2 end pixel
+  PIX pixC1E = (PIX) (pixSX+256*fStretch);     // column 1 end pixel
+  PIX pixR1E = (PIX) (pixSY+256*fStretch);     // raw 1 end pixel
+  PIX pixC2S = (PIX) (pixC1E-fStretch);        // column 2 start pixel
+  PIX pixR2S = (PIX) (pixR1E-fStretch);        // raw 2 start pixel
+  PIX pixC2E = (PIX) (pixC2S+256*fStretch);    // column 2 end pixel
+  PIX pixR2E = (PIX) (pixR2S+256*fStretch);    // raw 2 end pixel
 
   if (ulLevelMask == 0x00000001 && !map_bIsFirstEncounter) {
 
     // render the book
-    PIX pixX = aIconCoords[0][0]*fStretch+pixC1S;
-    PIX pixY = aIconCoords[0][1]*fStretch+pixR1S;
+    PIX pixX = (PIX) (aIconCoords[0][0]*fStretch+pixC1S);
+    PIX pixY = (PIX) (aIconCoords[0][1]*fStretch+pixR1S);
     CTextureObject *pto = &atoIcons[0];
+    // FIXME: DG: or was the line below supposed to use pixX and pixY?
     pdp->PutTexture( pto, PIXaabbox2D( PIX2D(pixC1S,pixR1S), PIX2D(pixC2E,pixR2E)), C_WHITE|255);
 
   } else {
@@ -1061,11 +1062,11 @@ void RenderMap( CDrawPort *pdp, ULONG ulLevelMask, CProgressHookInfo *pphi)
       // if level's icon should be rendered
       if( ulLevelMask & (1UL<<iIcon))
       {
-        PIX pixX = aIconCoords[iIcon][0]*fStretch+pixC1S;
-        PIX pixY = aIconCoords[iIcon][1]*fStretch+pixR1S;
+        PIX pixX = (PIX) (aIconCoords[iIcon][0]*fStretch+pixC1S);
+        PIX pixY = (PIX) (aIconCoords[iIcon][1]*fStretch+pixR1S);
         CTextureObject *pto = &atoIcons[iIcon];
-        PIX pixImgW = ((CTextureData *)pto->GetData())->GetPixWidth()*fStretch;
-        PIX pixImgH = ((CTextureData *)pto->GetData())->GetPixHeight()*fStretch;
+        PIX pixImgW = (PIX) (((CTextureData *)pto->GetData())->GetPixWidth()*fStretch);
+        PIX pixImgH = (PIX) (((CTextureData *)pto->GetData())->GetPixHeight()*fStretch);
         pdp->PutTexture( pto, PIXaabbox2D( PIX2D(pixX, pixY), PIX2D(pixX+pixImgW, pixY+pixImgH)), C_WHITE|255);
       }
     }
@@ -1085,8 +1086,8 @@ void RenderMap( CDrawPort *pdp, ULONG ulLevelMask, CProgressHookInfo *pphi)
     {
       for( INDEX iDot=0; iDot<10; iDot++)
       {
-        PIX pixDotX=pixC1S+aPathDots[iPath][iDot][0]*fStretch;
-        PIX pixDotY=pixR1S+aPathDots[iPath][iDot][1]*fStretch;
+        PIX pixDotX=(PIX) (pixC1S+aPathDots[iPath][iDot][0]*fStretch);
+        PIX pixDotY=(PIX) (pixR1S+aPathDots[iPath][iDot][1]*fStretch);
         if(aPathDots[iPath][iDot][0]==-1) break;
         pdp->PutTexture( &_toPathDot, PIXaabbox2D( PIX2D(pixDotX, pixDotY), PIX2D(pixDotX+8*fStretch, pixDotY+8*fStretch)),
           (map_bIsFirstEncounter ? C_WHITE : C_BLACK)|255);
@@ -1117,8 +1118,8 @@ void RenderMap( CDrawPort *pdp, ULONG ulLevelMask, CProgressHookInfo *pphi)
       }
     }
 
-    PIX pixhtcx = pixC1S+iPosX*fStretch;
-    PIX pixhtcy = pixR1S+iPosY*fStretch;
+    PIX pixhtcx = (PIX) (pixC1S+iPosX*fStretch);
+    PIX pixhtcy = (PIX) (pixR1S+iPosY*fStretch);
 
     if(map_bIsFirstEncounter) {
       pixhtcx = pixC1S+116*fStretch;
@@ -1129,8 +1130,8 @@ void RenderMap( CDrawPort *pdp, ULONG ulLevelMask, CProgressHookInfo *pphi)
     for( INDEX iProgresDot=0; iProgresDot<16; iProgresDot+=1)
     {
       if(map_bIsFirstEncounter) {
-        PIX pixDotX=pixC1S+(48+iProgresDot*8)*fStretch;
-        PIX pixDotY=pixR1S+249*fStretch;
+        PIX pixDotX=(PIX) (pixC1S+(48+iProgresDot*8)*fStretch);
+        PIX pixDotY=(PIX) (pixR1S+249*fStretch);
 
         COLOR colDot = C_WHITE|255;
         if(iProgresDot>pphi->phi_fCompleted*16) {
@@ -1139,8 +1140,8 @@ void RenderMap( CDrawPort *pdp, ULONG ulLevelMask, CProgressHookInfo *pphi)
         pdp->PutTexture( &_toPathDot, PIXaabbox2D( PIX2D(pixDotX, pixDotY),
           PIX2D(pixDotX+8*fStretch, pixDotY+8*fStretch)), colDot);
       } else {
-        PIX pixDotX=pixC1S+((iPosX-68)+iProgresDot*8)*fStretch;
-        PIX pixDotY=pixR1S+(iPosY+19)*fStretch;
+        PIX pixDotX=(PIX) (pixC1S+((iPosX-68)+iProgresDot*8)*fStretch);
+        PIX pixDotY=(PIX) (pixR1S+(iPosY+19)*fStretch);
 
         COLOR colDot = colText|255;
         if(iProgresDot>pphi->phi_fCompleted*16) {

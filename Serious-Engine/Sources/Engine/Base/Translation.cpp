@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 
 #include <Engine/Base/CTString.h>
 #include <Engine/Base/Translation.h>
@@ -190,6 +190,7 @@ ENGINE_API void AddTranslationTablesDir_t(const CTFileName &fnmDir, const CTFile
   }
 }
 
+// !!! FIXME: clean these out.
 // translate a string
 ENGINE_API char *Translate(const char *str, INDEX iOffset)
 {

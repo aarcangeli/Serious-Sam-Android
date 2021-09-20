@@ -1004,6 +1004,9 @@ void CWorld::DeleteSectors(CBrushSectorSelection &selbscSectorsToDelete, BOOL bC
 
 void CheckOnePolygon(CBrushSector &bsc, CBrushPolygon &bpo)
 {
+  // NOTE: This function has no side effects, but I think "Check" means
+  //       "try to access stuff and make sure it doesn't segfault", so keep it
+  //       like it is even if the compiler complains about unused values?
   CBrushPlane *pbplPlane=bpo.bpo_pbplPlane;
   (void)pbplPlane; // shut up, compiler - I know this is unused, but I think it's intended like that.
   INDEX ctEdges=bpo.bpo_abpePolygonEdges.Count();

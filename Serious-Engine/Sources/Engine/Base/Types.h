@@ -21,7 +21,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <Engine/Base/Base.h>
 #include <Engine/Graphics/gl_types.h>
-
+#include <stdint.h>
 typedef int32_t   SLONG;
 typedef int16_t   SWORD;
 typedef int8_t    SBYTE;

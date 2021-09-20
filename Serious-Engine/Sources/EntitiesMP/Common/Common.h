@@ -15,6 +15,17 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 // common headers for flesh entity classes
 
+#ifndef SE_INCL_ENTITIESMP_COMMON_H
+#define SE_INCL_ENTITIESMP_COMMON_H
+#ifdef PRAGMA_ONCE
+#pragma once
+#endif
+
+#if 0
+#include <EntitiesMP/Debris.h>   /* rcg01202003 need enum definition... */
+#include <EntitiesMP/KeyItem.h>  /* rcg01202003 need enum definition... */
+#endif
+
 #define SURFACE_SAND 9
 #define SURFACE_WATER 12
 #define SURFACE_RED_SAND 13
@@ -134,8 +145,7 @@ struct EntityStats {
   INDEX es_ctAmmount;
   FLOAT es_fValue;
   INDEX es_iScore;
-
-  inline void Clear() {es_strName.Clear();};
+  inline void Clear() { es_strName.Clear(); }
 };
 
 // statistics data for player stats management
@@ -339,3 +349,7 @@ void SpawnHitTypeEffect(CEntity *pen, enum BulletHitType bhtType, BOOL bSound, F
   FLOAT3D vIncommingBulletDir, FLOAT3D vDistance);
 
 #define FRndIn(a, b) (a + FRnd()*(b - a))
+
+#endif  // include-once blocker.
+
+
