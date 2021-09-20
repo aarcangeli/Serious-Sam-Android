@@ -13,8 +13,6 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include <Engine/Templates/BSP.cpp>
-
 #define OFFSET_DN (0.0625f)
 
 #define CStaticArray_sa_Count 0
@@ -120,7 +118,7 @@ void CRenderer::PreClipPlanes(void)
       const FLOAT fx = wpl.wpl_plRelative(1);
       const FLOAT fy = wpl.wpl_plRelative(2);
       const FLOAT fz = wpl.wpl_plRelative(3);
-      const FLOAT fd = wpl.wpl_plRelative.Distance();
+      //const FLOAT fd = wpl.wpl_plRelative.Distance();
       wpl.wpl_plView(1) = fx*m(1, 1)+fy*m(1, 2)+fz*m(1, 3);
       wpl.wpl_plView(2) = fx*m(2, 1)+fy*m(2, 2)+fz*m(2, 3);
       wpl.wpl_plView(3) = fx*m(3, 1)+fy*m(3, 2)+fz*m(3, 3);
@@ -181,8 +179,8 @@ void CRenderer::PreClipPlanes(void)
 void CRenderer::PostClipVertices(void)
 {
   _pfRenderProfile.StartTimer(CRenderProfile::PTI_PROJECTVERTICES);
-  const FLOATmatrix3D &m = re_pbrCurrent->br_prProjection->pr_RotationMatrix;
-  const FLOAT3D       &v = re_pbrCurrent->br_prProjection->pr_TranslationVector;
+  //const FLOATmatrix3D &m = re_pbrCurrent->br_prProjection->pr_RotationMatrix;
+  //const FLOAT3D       &v = re_pbrCurrent->br_prProjection->pr_TranslationVector;
 
   // if the projection is perspective
   if (re_pbrCurrent->br_prProjection.IsPerspective()) {
@@ -264,7 +262,7 @@ void CRenderer::SetupFogAndHaze(void)
       // if viewer is not in haze
       if( !re_bViewerInHaze) {
         // if viewer is in this sector
-        if( bsc.bsc_bspBSPTree.TestSphere(re_vdViewSphere, 0.01)>=0) {
+        if( bsc.bsc_bspBSPTree.TestSphere(re_vdViewSphere, 0.01f)>=0) {
           // mark that viewer is in haze
           re_bViewerInHaze = TRUE;
         }
@@ -451,8 +449,8 @@ inline void CRenderer::MakeScreenEdge(
     sed.sed_xI = (FIX16_16) (fI0 + ((FLOAT)sed.sed_pixTopJ-fJ0) * fDIoDJ );
   }
 
-  ASSERT( sed.sed_xI > FIX16_16(-1.0f)
-       && sed.sed_xI < FIX16_16(re_fbbClipBox.Max()(1) + SENTINELEDGE_EPSILON)
+  ASSERT( (sed.sed_xI > FIX16_16(-1.0f)
+       && sed.sed_xI < FIX16_16(re_fbbClipBox.Max()(1) + SENTINELEDGE_EPSILON))
        || (sed.sed_pixTopJ >= sed.sed_pixBottomJ));
 
   // return the screen edge
@@ -751,7 +749,7 @@ CScreenPolygon *CRenderer::MakeScreenPolygon(CBrushPolygon &bpo)
           sppo.spo_aubTextureFlags[0] = STXF_BLEND_ALPHA;
         }
         // get its mapping gradients from shadowmap and stretch
-        CWorkingPlane &wpl  = *bpo.bpo_pbplPlane->bpl_pwplWorking;
+        //CWorkingPlane &wpl  = *bpo.bpo_pbplPlane->bpl_pwplWorking;
         sppo.spo_amvMapping[0] = sppo.spo_amvMapping[3];
         FLOAT fStretch = bpo.bpo_boxBoundingBox.Size().Length()/1000;
         sppo.spo_amvMapping[0].mv_vU *= fStretch;
@@ -872,7 +870,7 @@ void CRenderer::AddSpansToScene(void)
     return;
   }
 
-  FLOAT fpixLastScanJOffseted = re_pixCurrentScanJ-1 +OFFSET_DN;
+  //FLOAT fpixLastScanJOffseted = re_pixCurrentScanJ-1 +OFFSET_DN;
   // first, little safety check - quit if zero spans in line!
   INDEX ctSpans = re_aspSpans.Count();
   if( ctSpans==0) {

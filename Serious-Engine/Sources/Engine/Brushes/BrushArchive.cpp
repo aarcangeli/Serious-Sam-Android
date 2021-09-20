@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 
 #include <Engine/Brushes/Brush.h>
 #include <Engine/Brushes/BrushArchive.h>
@@ -29,9 +29,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Templates/BSP_internal.h>
 #include <Engine/Templates/DynamicArray.cpp>
 #include <Engine/Templates/StaticArray.cpp>
-#include <Engine/Templates/BSP.cpp>
 
-template class CDynamicArray<CBrush3D>;
+// !!! FIXME: This confuses GCC, since CDynamicArray is a #included
+// !!! FIXME:  source file, and it ends up compiling the template more than
+// !!! FIXME:  once.  :(   --ryan.
+#ifdef _MSC_VER
+template CDynamicArray<CBrush3D>;
+#endif
 
 BOOL _bPortalSectorLinksPreLoaded = FALSE;
 BOOL _bEntitySectorLinksPreLoaded = FALSE;

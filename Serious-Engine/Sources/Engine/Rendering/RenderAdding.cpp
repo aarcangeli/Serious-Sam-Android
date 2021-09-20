@@ -125,7 +125,7 @@ void CRenderer::AddModelEntity(CEntity *penModel)
         CreateModelOBBox( penModel, vHandle, pprProjection->pr_ViewerRotationMatrix, boxEntity);
         bModelHasBox = TRUE;
       } // test it to mirror/warp plane
-      iMirrorPlaneTest = boxEntity.TestAgainstPlane(pprProjection->pr_plMirrorView);
+      iMirrorPlaneTest = (INDEX) (boxEntity.TestAgainstPlane(pprProjection->pr_plMirrorView));
     }
     // if not in mirror
     if( iMirrorPlaneTest<0) {
@@ -262,7 +262,7 @@ void CRenderer::AddSkaModelEntity(CEntity *penModel)
         CreateModelOBBox( penModel, vHandle, pprProjection->pr_ViewerRotationMatrix, boxEntity);
         bModelHasBox = TRUE;
       } // test it to mirror/warp plane
-      iMirrorPlaneTest = boxEntity.TestAgainstPlane(pprProjection->pr_plMirrorView);
+      iMirrorPlaneTest = (INDEX) boxEntity.TestAgainstPlane(pprProjection->pr_plMirrorView);
     }
     // if not in mirror
     if( iMirrorPlaneTest<0) {
@@ -762,7 +762,7 @@ void CRenderer::AddZoningSectorsAroundBox(const FLOATaabbox3D &boxNear)
       continue;
     }
     // if it is not zoning brush
-    if (iten->en_RenderType!=CEntity::RT_BRUSH && iten->en_RenderType!=CEntity::RT_FIELDBRUSH
+    if ((iten->en_RenderType!=CEntity::RT_BRUSH && iten->en_RenderType!=CEntity::RT_FIELDBRUSH)
       ||!(iten->en_ulFlags&ENF_ZONING)) {
       // skip it
       continue;

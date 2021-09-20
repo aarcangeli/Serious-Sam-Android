@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 
 #include <Engine/Base/Statistics_Internal.h>
 #include <Engine/Math/Float.h>
@@ -28,7 +28,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <Engine/Base/ListIterator.inl>
 #include <Engine/Templates/StaticStackArray.cpp>
-#include <Engine/Templates/DynamicArray.cpp>
 
 CStaticStackArray<CRenderModel> _armRenderModels;
 
@@ -241,7 +240,7 @@ BOOL CModelObject::CreateAttachment( CRenderModel &rmMain, CAttachmentModelObjec
   _pfModelProfile.StartTimer( CModelProfile::PTI_CREATEATTACHMENT);
   _pfModelProfile.IncrementTimerAveragingCounter( CModelProfile::PTI_CREATEATTACHMENT);
   CRenderModel &rmAttached = *amo.amo_prm;
-  rmAttached.rm_ulFlags = rmMain.rm_ulFlags&(RMF_FOG|RMF_HAZE|RMF_WEAPON) | RMF_ATTACHMENT;
+  rmAttached.rm_ulFlags = (rmMain.rm_ulFlags & (RMF_FOG|RMF_HAZE|RMF_WEAPON)) | RMF_ATTACHMENT;
 
   // get the position
   rmMain.rm_pmdModelData->md_aampAttachedPosition.Lock();
@@ -336,7 +335,7 @@ BOOL CModelObject::CreateAttachment( CRenderModel &rmMain, CAttachmentModelObjec
          if( fPlaneDistance < -fR) iMirrorPlaneTest = -1;
     else if( fPlaneDistance > +fR) iMirrorPlaneTest = +1;
     else { // test box if sphere cut mirror plane
-      iMirrorPlaneTest = boxEntity.TestAgainstPlane(_aprProjection->pr_plMirrorView);
+      iMirrorPlaneTest = (INDEX) (boxEntity.TestAgainstPlane(_aprProjection->pr_plMirrorView));
     }
     // mark if attachment is fully inside mirror
          if( iMirrorPlaneTest>0) rmAttached.rm_ulFlags |= RMF_INMIRROR; 
@@ -494,7 +493,7 @@ void CModelObject::SetupModelRendering( CRenderModel &rm)
   BOOL bYInverted = rm.rm_vStretch(2) < 0;
   BOOL bZInverted = rm.rm_vStretch(3) < 0;
   rm.rm_ulFlags &= ~RMF_INVERTED;
-  if( bXInverted != bYInverted != bZInverted != _aprProjection->pr_bInverted) rm.rm_ulFlags |= RMF_INVERTED;
+  if( ((bXInverted != bYInverted) != bZInverted) != _aprProjection->pr_bInverted) rm.rm_ulFlags |= RMF_INVERTED;
 
   // prepare projections
   _pfModelProfile.StartTimer( CModelProfile::PTI_INITPROJECTION);

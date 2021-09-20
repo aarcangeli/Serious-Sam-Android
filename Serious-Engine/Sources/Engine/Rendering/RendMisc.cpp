@@ -102,6 +102,7 @@ CScreenPolygon::~CScreenPolygon(void) {
 static FLOAT fDiff;
 static SLONG slTmp;
 
+
 static inline PIX PIXCoord(FLOAT f) // (f+0.9999f) or (ceil(f))
 {
 //  PIX pixRet;
@@ -468,6 +469,7 @@ void CRenderer::RenderEntityNames(void)
     PIX pixH=re_pdpDrawPort->GetHeight();
     re_pdpDrawPort->SetFont( _pfdConsoleFont);
     UBYTE ubAlpha=UBYTE(fPower*255.0f);
-    re_pdpDrawPort->PutTextC( strName, vProjected(1), pixH-vProjected(2), C_RED|ubAlpha);
+    re_pdpDrawPort->PutTextC( strName, (PIX) (vProjected(1)), (PIX) (pixH-vProjected(2)), C_RED|ubAlpha);
   }
 }
+

@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 
 #include <Engine/Brushes/Brush.h>
 #include <Engine/Brushes/BrushTransformed.h>
@@ -195,9 +195,9 @@ BOOL IsVertexInLasso( CProjection3D &prProjection, const FLOAT3D &vtx, FLOATmatr
   prProjection.ProjectCoordinate( vAbsolute, vtxProjected);
 
   PIX2D vpix;
-  vpix(1) = vtxProjected(1);
+  vpix(1) = (PIX) vtxProjected(1);
   // convert coordinate into screen representation
-  vpix(2) = _pixSizeJ-vtxProjected(2);
+  vpix(2) = (PIX) (_pixSizeJ-vtxProjected(2));
 
   // if the vertex is out of screen
   if (vpix(1)<0 || vpix(1)>=_pixSizeI

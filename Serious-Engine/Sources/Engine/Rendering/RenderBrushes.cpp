@@ -20,8 +20,8 @@ void CRenderer::DrawBrushPolygonVerticesAndEdges(CBrushPolygon &bpo)
   CBrushSector &bsc = *bpo.bpo_pbscSector;
   CBrushMip *pbm = bsc.bsc_pbmBrushMip;
   CBrush3D &br = *pbm->bm_pbrBrush;
-  INDEX iMinVx = bsc.bsc_ivvx0;
-  INDEX iMaxVx = bsc.bsc_ivvx0+bsc.bsc_awvxVertices.Count();
+  //INDEX iMinVx = bsc.bsc_ivvx0;
+  //INDEX iMaxVx = bsc.bsc_ivvx0+bsc.bsc_awvxVertices.Count();
 
   // set line type and color for edges and vertices
   ULONG ulEdgesLineType = EdgeLineType(wplPolygonPlane.wpl_bVisible);
@@ -154,8 +154,8 @@ void CRenderer::DrawBrushPolygonVerticesAndEdges(CBrushPolygon &bpo)
  */
 void CRenderer::DrawBrushSectorVerticesAndEdges(CBrushSector &bscSector)
 {
-  CBrushMip *pbm = bscSector.bsc_pbmBrushMip;
-  CBrush3D &br = *pbm->bm_pbrBrush;
+  //CBrushMip *pbm = bscSector.bsc_pbmBrushMip;
+  //CBrush3D &br = *pbm->bm_pbrBrush;
 
   // clear all vertex drawn flags
   FOREACHINSTATICARRAY(bscSector.bsc_abvxVertices, CBrushVertex, itbvx) {
@@ -275,7 +275,7 @@ void CRenderer::PrepareBrush(CEntity *penBrush)
     // for static brushes
     CProjection3D &pr = *brBrush.br_prProjection;
     const FLOATmatrix3D &mRot = penBrush->en_mRotation;
-    const FLOAT3D       &vRot = penBrush->en_plPlacement.pl_PositionVector;
+    //const FLOAT3D       &vRot = penBrush->en_plPlacement.pl_PositionVector;
     // fixup projection to use placement of this brush
     pr.pr_mDirectionRotation = pr.pr_ViewerRotationMatrix*mRot;
     pr.pr_RotationMatrix     = pr.pr_mDirectionRotation;

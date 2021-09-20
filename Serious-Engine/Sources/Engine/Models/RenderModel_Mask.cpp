@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 
 #include <Engine/Models/ModelObject.h>
 #include <Engine/Base/Translation.h>
@@ -43,7 +43,7 @@ static FLOAT fZoomI, fZoomJ;
 static FLOAT fFrontClipDistance, f1oFrontClipDistance;
 static FLOAT fBackClipDistance, f1oBackClipDistance;
 static FLOAT fDepthBufferFactor;
-static BOOL  bBackFaced, bDoubleSided;
+//static BOOL  bBackFaced, bDoubleSided;
 static BOOL  bPerspective;
 static BOOL  b16BitCompression;
 static ULONG ulColorMask;
@@ -360,7 +360,7 @@ void CModelObject::RenderModel_Mask( CRenderModel &rm)
   CTextureData *ptd = (CTextureData*)mo_toTexture.GetData();
   if( ptd!=NULL && ptd->td_ptegEffect!=NULL) {
     // report to console
-    CPrintF( TRANS("WARNING: model '%s' cast cluster shadows but has an effect texture.\n"), GetData()->GetName());
+    CPrintF( TRANS("WARNING: model '%s' cast cluster shadows but has an effect texture.\n"), (const char *) GetData()->GetName());
     return;
   }
 

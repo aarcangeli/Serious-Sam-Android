@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 
 #include <Engine/Models/ModelObject.h>
 #include <Engine/Models/ModelData.h>
@@ -1984,8 +1984,8 @@ INDEX CModelObject::GetMipModel( FLOAT fMipFactor)
   ASSERT( pMD != NULL);
   if( !mo_AutoMipModeling) return mo_iManualMipLevel;
   // calculate current mip model
-  INDEX i=0;
-  for( ; i<pMD->md_MipCt; i++) {
+  INDEX i;
+  for( i=0; i<pMD->md_MipCt; i++) {
     if( fMipFactor < pMD->md_MipSwitchFactors[i]) return i;
   }
   return i-1;
@@ -2129,7 +2129,7 @@ COLOR CModelObject::GetSurfaceColor( INDEX iCurrentMip, INDEX iCurrentSurface)
   if( (iCurrentMip>=pMD->md_MipCt) ||
       (iCurrentSurface>=pMD->md_MipInfos[ iCurrentMip].mmpi_MappingSurfaces.Count()) )
   {
-    return -1;
+    return (COLOR) -1;  // !!! FIXME COLOR is unsigned, right?
   }
   for( INDEX i=0; i<pMD->md_MipInfos[ iCurrentMip].mmpi_PolygonsCt; i++)
   {
@@ -2628,7 +2628,7 @@ INDEX CModelObject::PickVertexIndex( CDrawPort *pDP, CProjection3D *pProjection,
       }
     }
   }
-  return iClosest;
+  return ((INDEX) iClosest);
 }
 
 /*
