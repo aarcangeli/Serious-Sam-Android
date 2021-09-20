@@ -97,7 +97,7 @@ public:
   inline CBrushEdge(void) : bed_pwedWorking(NULL) {};
   /* Constructor with two vertices. */
   inline CBrushEdge(CBrushVertex *pbvx0, CBrushVertex *pbvx1)
-    : bed_pwedWorking(NULL), bed_pbvxVertex0(pbvx0), bed_pbvxVertex1(pbvx1) {};
+    : bed_pbvxVertex0(pbvx0), bed_pbvxVertex1(pbvx1), bed_pwedWorking(NULL) {};
   /* Clear the object. */
   inline void Clear(void) {};
   /* Test if this edge touches another one. */

@@ -69,12 +69,12 @@ public:
   inline FixInt<iInt, iFrac> &operator-=(FixInt<iInt, iFrac> x) { slHolder -= x.slHolder; return *this;};
   inline FixInt<iInt, iFrac> operator-(FixInt<iInt, iFrac> x) const { return FixInt<iInt, iFrac>(slHolder-x.slHolder, 1); };
   /* Multiplication. */
-  inline FixInt<iInt, iFrac> operator*(FixInt<iInt, iFrac> x) const { return FixInt<iInt, iFrac>( (SLONG)((__int64(slHolder)*x.slHolder) >>iFrac), 1); };
+  inline FixInt<iInt, iFrac> operator*(FixInt<iInt, iFrac> x) const { return FixInt<iInt, iFrac>( (SLONG)((((__int64) slHolder)*x.slHolder) >>iFrac), 1); };
   inline FixInt<iInt, iFrac> operator*(SLONG sl) const { return FixInt<iInt, iFrac>(slHolder*sl, 1); };
   friend inline FixInt<iInt, iFrac> operator*(SLONG sl, FixInt<iInt, iFrac> x){ return FixInt<iInt, iFrac>(x.slHolder*sl, 1); };
   inline FixInt<iInt, iFrac> &operator*=(FixInt<iInt, iFrac> x) { return *this = *this*x; };
   /* Division. */
-  inline FixInt<iInt, iFrac> operator/(FixInt<iInt, iFrac> x) const { return FixInt<iInt, iFrac>( (SLONG) ( (__int64(slHolder)<<iFrac) / x.slHolder ) , 1); };
+  inline FixInt<iInt, iFrac> operator/(FixInt<iInt, iFrac> x) const { return FixInt<iInt, iFrac>( (SLONG) ( (((__int64)slHolder)<<iFrac) / x.slHolder ) , 1); };
   inline FixInt<iInt, iFrac> &operator/=(FixInt<iInt, iFrac> x) { return *this = *this/x; };
 
   /* Relational operators. */

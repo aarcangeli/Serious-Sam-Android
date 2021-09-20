@@ -1,3 +1,8 @@
+#ifndef SE_INCL_CLIPPING_INL
+#define SE_INCL_CLIPPING_INL
+#ifdef PRAGMA_ONCE
+  #pragma once
+#endif
 
 /*
  * Line clipping flags
@@ -404,3 +409,6 @@ static inline void MakeClipPlane(const FLOAT3D &vN, FLOAT fD, FLOATplane3D &pl)
 #undef D
 #undef W
 #undef B
+
+#endif /* include-once blocker. */
+

@@ -23,7 +23,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Math/Matrix.h>
 #include <Engine/Math/Functions.h>
 #include <Engine/Math/Plane.h>
-#include <Engine/Math/OBBox.h>
 
 /*
  * Template for oriented bounding box of arbitrary type in 3D
