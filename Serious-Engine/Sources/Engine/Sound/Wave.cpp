@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 
 #include <Engine/Base/Stream.h>
 #include <Engine/Base/ErrorReporting.h>
@@ -26,7 +26,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
  */
 
 // check wave format
-void PCMWaveInput::CheckWaveFormat_t(WAVEFORMATEX wfeCheck, char *pcErrorString)
+void PCMWaveInput::CheckWaveFormat_t(WAVEFORMATEX wfeCheck, const char *pcErrorString)
 {
   // check format tag
   if (wfeCheck.wFormatTag != 1) {
@@ -196,7 +196,9 @@ WAVEFORMATEX PCMWaveInput::LoadInfo_t(CTStream *pCstrInput)
   // read Format Chunk length
   SLONG  slFmtLength;
   (*pCstrInput) >> slFmtLength;
-  ULONG ul =0;
+
+  ULONG ul = 0;
+
   // read WAVE format
   (*pCstrInput) >> pwi_wfeWave.wFormatTag;
   (*pCstrInput) >> pwi_wfeWave.nChannels;

@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 #include <Engine/Ska/AnimSet.h>
 #include <Engine/Templates/StaticArray.h>
 #include <Engine/Base/CTString.h>
@@ -176,9 +176,9 @@ void CAnimSet::OptimizeAnimation(Animation &an, FLOAT fTreshold)
       be.be_arRot[im].ar_qRot.ToMatrix(mat);
       DecomposeRotationMatrixNoSnap(aangAngles[im],mat);
     }
-    // try to remove rotations, steping by 2
-    INDEX iloop=0;
-    for(;iloop<ctfn;iloop++)
+    // try to remove rotations, stepping by 2
+    INDEX iloop;
+    for(iloop=0;iloop<ctfn;iloop++)
     {
       INDEX ctRemoved=0;
       // for each frame in bone envelope
@@ -223,8 +223,8 @@ void CAnimSet::OptimizeAnimation(Animation &an, FLOAT fTreshold)
     be.be_arRot.Clear();
     be.be_arRot.New(ctfl);
     // copy array of rotaions
-    INDEX fl=0;
-    for(;fl<ctfl;fl++)
+    INDEX fl;
+    for(fl=0;fl<ctfl;fl++)
     {
       be.be_arRot[fl] = arRot[fl];
     }
@@ -233,7 +233,7 @@ void CAnimSet::OptimizeAnimation(Animation &an, FLOAT fTreshold)
     // do same thing for positions
     // clear table for removed frames
     memset(&aiRemFrameTable[0],0,sizeof(BOOL)*ctfn);
-    // try to remove translations steping by 2
+    // try to remove translations stepping by 2
     for(iloop=0;iloop<ctfn;iloop++)
     {
       INDEX ctRemoved=0;
@@ -380,7 +380,7 @@ void CAnimSet::Write_t(CTStream *ostrFile)
     (*ostrFile)<<an.an_fTreshold;
     // write if compresion is used
     (*ostrFile)<<an.an_bCompresed;
-    // write bool if animstion uses custom speed
+    // write bool if animation uses custom speed
     (*ostrFile)<<an.an_bCustomSpeed;
     
     INDEX ctbe = an.an_abeBones.Count();
@@ -479,7 +479,7 @@ void CAnimSet::Read_t(CTStream *istrFile)
     (*istrFile)>>an.an_fTreshold;
     // read if compresion is used
     (*istrFile)>>an.an_bCompresed;
-    // read bool if animstion uses custom speed
+    // read bool if animation uses custom speed
     (*istrFile)>>an.an_bCustomSpeed;
     
     INDEX ctbe;

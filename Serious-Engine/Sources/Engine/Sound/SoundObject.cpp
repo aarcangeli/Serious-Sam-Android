@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 
 #include <Engine/Base/Stream.h>
 #include <Engine/Base/Console.h>
@@ -50,7 +50,8 @@ extern BOOL _bPredictionActive;
 // console variables for volume
 extern FLOAT snd_fSoundVolume;
 extern FLOAT snd_fMusicVolume;
-#if 0
+
+#if 0 // DG: unused.
 static CTString GetPred(CEntity*pen)
 {
   CTString str1;
@@ -64,10 +65,10 @@ static CTString GetPred(CEntity*pen)
     str1 = "???";
   }
   CTString str;
-  str.PrintF("%08x-%s", pen, str1);
+  str.PrintF("%08x-%s", pen, (const char *) str1);
   return str;
 }
-#endif
+#endif // 0 (unused)
 /* ====================================================
  *
  *  Class global methods
@@ -81,7 +82,7 @@ CSoundObject::CSoundObject()
   so_pCsdLink = NULL;
   so_psdcDecoder = NULL;
   so_penEntity = NULL;
-  so_slFlags = 0;
+  so_slFlags = SOF_NONE;
 
   // clear sound settings
   so_spNew.sp_fLeftVolume   = 1.0f;
@@ -361,7 +362,7 @@ void CSoundObject::Stop(void)
 }
 void CSoundObject::Stop_internal(void)
 {
-  // sound is stoped
+  // sound is stopped
   so_slFlags &= ~(SOF_PLAY|SOF_PREPARE|SOF_PAUSED);
 
   // destroy decoder if exists
@@ -390,7 +391,7 @@ void CSoundObject::Update3DEffects(void)
     // do nothing;
     return;
   }
-//
+
 //  if (!(so_slFlags&SOF_PREPARE)) {
     // if the sound's entity is a predictor
 /*    if (so_penEntity!=NULL && so_penEntity->IsPredictor()) {
@@ -409,7 +410,7 @@ void CSoundObject::Update3DEffects(void)
   FLOAT fTLFilter = UpperLimit(0.0f), fTRFilter = UpperLimit(0.0f);
   FLOAT fTLDelay  = UpperLimit(0.0f), fTRDelay  = UpperLimit(0.0f);
   FLOAT fTPitchShift = 0;
- 
+
   // get your position parameters
   FLOAT3D vPosition(0,0,0);
   FLOAT3D vSpeed(0,0,0);
@@ -460,7 +461,7 @@ void CSoundObject::Update3DEffects(void)
     ASSERT(fDistanceFactor>=0 && fDistanceFactor<=+1);
 
     // calculate volumetric influence
-    // NOTE: decoded sounds must be threated as volumetric
+    // NOTE: decoded sounds must be treated as volumetric
     FLOAT fNonVolumetric = 1.0f;
     FLOAT fNonVolumetricAdvanced = 1.0f;
     if( (so_slFlags & SOF_VOLUMETRIC) || so_psdcDecoder!=NULL) {
@@ -564,7 +565,7 @@ void CSoundObject::Update3DEffects(void)
   FLOAT fPhaseShift = fTLDelay-fTRDelay;
   FLOAT fDelay      = Min( fTRDelay,fTLDelay);
 
-//  CPrintF("V:%f %f F:%f %f P:%f S:%f\n",
+//  CPrintF("V:%f %f F:%f %f P:%f S:%f\n", 
 //    fTLVolume, fTRVolume,
 //    fTLFilter, fTRFilter,
 //    fPhaseShift,
@@ -707,3 +708,4 @@ void CSoundObject::Write_t(CTStream *pistr) // throw char *
   *pistr << so_sp3.sp3_fMaxVolume;
   *pistr << so_sp3.sp3_fPitch;
 }
+
