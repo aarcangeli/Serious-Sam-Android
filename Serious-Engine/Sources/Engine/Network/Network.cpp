@@ -72,7 +72,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Templates/Stock_CSkeleton.h>
 
 #include <Engine/GameAgent/GameAgent.h>
-#include <Engine/Templates/Selection.cpp>
 
 
 // pointer to global instance of the only game object in the application
@@ -331,7 +330,7 @@ static void NetworkInfo(void)
       CPlayerBuffer &plb = _pNetwork->ga_srvServer.srv_aplbPlayers[iplb];
       if (plb.plb_Active) {
         CPrintF("    %2d(%2d):'%s'@client%2d: (%dact)\n",
-          iplb, plb.plb_Index, plb.plb_pcCharacter.GetNameForPrinting(),
+          iplb, plb.plb_Index, (const char *) plb.plb_pcCharacter.GetNameForPrinting(),
           plb.plb_iClient, plb.plb_abReceived.GetCount());
       }
     }
@@ -339,7 +338,7 @@ static void NetworkInfo(void)
     for(INDEX iSession=0; iSession<_pNetwork->ga_srvServer.srv_assoSessions.Count(); iSession++) {
       CSessionSocket &sso = _pNetwork->ga_srvServer.srv_assoSessions[iSession];
       if (sso.sso_bActive) {
-        CPrintF("  %2d:'%s'\n", iSession, _cmiComm.Server_GetClientName(iSession)),
+        CPrintF("  %2d:'%s'\n", iSession, (const char *) _cmiComm.Server_GetClientName(iSession)),
         CPrintF("    buffer: %dblk=%dk\n",
           sso.sso_nsBuffer.GetUsedBlocks(),
           sso.sso_nsBuffer.GetUsedMemory()/1024);
@@ -396,7 +395,7 @@ static void ListPlayers(void)
   for(INDEX iplb=0; iplb<_pNetwork->ga_srvServer.srv_aplbPlayers.Count(); iplb++) {
     CPlayerBuffer &plb = _pNetwork->ga_srvServer.srv_aplbPlayers[iplb];
     if (plb.plb_Active) {
-      CPrintF("     %-2d   %s\n", plb.plb_iClient, plb.plb_pcCharacter.GetNameForPrinting());
+      CPrintF("     %-2d   %s\n", plb.plb_iClient, (const char *) plb.plb_pcCharacter.GetNameForPrinting());
     }
   }
   CPrintF("  ----------------------\n");
@@ -671,11 +670,11 @@ void CNetworkTimerHandler::HandleTimer(void)
  */
 CNetworkLibrary::CNetworkLibrary(void) :
   ga_IsServer(FALSE),               // is not server
+  ga_srvServer(*new CServer),
+  ga_sesSessionState(*new CSessionState),
   ga_bDemoRec(FALSE),               // not recording demo
   ga_bDemoPlay(FALSE),              // not playing demo
-  ga_bDemoPlayFinished(FALSE),      // demo not finished
-  ga_srvServer(*new CServer),
-  ga_sesSessionState(*new CSessionState)
+  ga_bDemoPlayFinished(FALSE)      // demo not finished
 {
   ga_aplsPlayers.New(NET_MAXLOCALPLAYERS);
 
@@ -982,7 +981,7 @@ void CNetworkLibrary::StartPeerToPeer_t(const CTString &strSessionName,
   _pSound->Mute();
 
   // go on
-  CPrintF( TRANS("Starting session: '%s'\n"), strSessionName);
+  CPrintF( TRANS("Starting session: '%s'\n"), (const char *) strSessionName);
   CPrintF( TRANS("  level: '%s'\n"), (const char*) fnmWorld);
   CPrintF( TRANS("  spawnflags: %08x\n"), ulSpawnFlags);
   CPrintF( TRANS("  max players: %d\n"), ctMaxPlayers);
@@ -1234,7 +1233,7 @@ void CNetworkLibrary::JoinSession_t(const CNetworkSession &nsSesssion, INDEX ctL
   _pSound->Mute();
 
   // report session addres
-  CPrintF( TRANS("Joining session at: '%s'\n"), nsSesssion.ns_strAddress);
+  CPrintF( TRANS("Joining session at: '%s'\n"), (const char *) nsSesssion.ns_strAddress);
 
   ga_bLocalPause = FALSE;
 
@@ -2205,7 +2204,7 @@ CPlayerSource *CNetworkLibrary::AddPlayer_t(CPlayerCharacter &pcCharacter)  // t
 {
   // synchronize access to network
   CTSingleLock slNetwork(&ga_csNetwork, TRUE);
-  CPrintF( TRANS("Adding player: '%s'\n"), pcCharacter.GetNameForPrinting());
+  CPrintF( TRANS("Adding player: '%s'\n"), (const char *) pcCharacter.GetNameForPrinting());
 
   // for all local clients on this machine
   FOREACHINSTATICARRAY(ga_aplsPlayers, CPlayerSource, itcls) {
@@ -2281,7 +2280,7 @@ void CNetworkLibrary::CheckVersion_t(CTStream &strm, BOOL bAllowReinit, BOOL &bN
   if (iCurrent<iSaved) {
     // it cannot be reinitialized
     ThrowF_t(TRANS("File '%s' was saved by a newer version of engine, it cannot be loaded"),
-      strm.GetDescription());
+      (const char *) strm.GetDescription());
     return;
   }
 
@@ -2300,7 +2299,7 @@ void CNetworkLibrary::CheckVersion_t(CTStream &strm, BOOL bAllowReinit, BOOL &bN
     // if it may not be reinitialized
     if (!bAllowReinit) {
       ThrowF_t(TRANS("File '%s' was saved by an older version of engine, it cannot be loaded"),
-        strm.GetDescription());
+        (const char *) strm.GetDescription());
     }
     return;
   }

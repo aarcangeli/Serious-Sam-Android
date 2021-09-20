@@ -53,6 +53,7 @@ functions:
     if (IsPredictor()) {
       penMe = GetPredicted();
     }
+
     INDEX iPlayer;
     for (iPlayer=0; iPlayer<GetMaxPlayers(); iPlayer++) {
       // if this is ME (this)

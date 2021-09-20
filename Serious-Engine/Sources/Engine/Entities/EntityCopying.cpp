@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include <Engine/StdH.h>
 
 #include <Engine/Entities/Entity.h>
 #include <Engine/Entities/LastPositions.h>
@@ -38,7 +38,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Templates/DynamicContainer.cpp>
 #include <Engine/Templates/StaticArray.cpp>
 #include <Engine/Templates/Selection.cpp>
-#include <Engine/Templates/DynamicArray.cpp>
 
 class CPointerRemapping {
 public:
@@ -453,7 +452,7 @@ void CWorld::CopyEntities(CWorld &woOther, CDynamicContainer<CEntity> &cenToCopy
 
   // for each of the created entities
   {FOREACHINSTATICARRAY(_aprRemaps, CPointerRemapping, itpr) {
-    CEntity *penOriginal = itpr->pr_penOriginal;
+    //CEntity *penOriginal = itpr->pr_penOriginal;
     CEntity *penCopy = itpr->pr_penCopy;
     if (_bReinitEntitiesWhileCopying) {
       // init the new copy
@@ -470,7 +469,7 @@ void CWorld::CopyEntities(CWorld &woOther, CDynamicContainer<CEntity> &cenToCopy
 
   // for each of the created entities
   {FOREACHINSTATICARRAY(_aprRemaps, CPointerRemapping, itpr) {
-    CEntity *penOriginal = itpr->pr_penOriginal;
+    //CEntity *penOriginal = itpr->pr_penOriginal;
     CEntity *penCopy = itpr->pr_penCopy;
 
     // if this is a brush
@@ -719,7 +718,7 @@ void CWorld::CopyEntitiesToPredictors(CDynamicContainer<CEntity> &cenToCopy)
 
   // for each of the created entities
   {FOREACHINSTATICARRAY(_aprRemaps, CPointerRemapping, itpr) {
-    CEntity *penOriginal = itpr->pr_penOriginal;
+    //CEntity *penOriginal = itpr->pr_penOriginal;
     CEntity *penCopy = itpr->pr_penCopy;
 
     // if this is a brush

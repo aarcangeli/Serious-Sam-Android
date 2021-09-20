@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include <Engine/StdH.h>
 
 #include <Engine/Build.h>
 #include <Engine/Network/Network.h>
@@ -231,7 +231,7 @@ void CSessionState::Start_t(INDEX ctLocalPlayers)
   // if this computer is server
   if (_pNetwork->IsServer()) {
     // initialize local client
-    _cmiComm.Client_Init_t((ULONG)0);
+    _cmiComm.Client_Init_t((ULONG) 0);
     // connect as main session state
     try {
       Start_AtServer_t();
@@ -312,9 +312,10 @@ void CSessionState::Start_AtClient_t(INDEX ctLocalPlayers)     // throw char *
   // send one unreliable packet to server to make the connection up and running
   CNetworkMessage nmKeepAlive(MSG_KEEPALIVE);
   _pNetwork->SendToServer(nmKeepAlive);
-#define VTAG 0x56544147 // Looks like 'VTAG' in ASCII.
+
   // send registration request
   CNetworkMessage nmRegisterSessionState(MSG_REQ_CONNECTREMOTESESSIONSTATE);
+  #define VTAG 0x56544147  // Looks like 'VTAG' in ASCII.
   nmRegisterSessionState<<INDEX(VTAG)<<INDEX(_SE_BUILD_MAJOR)<<INDEX(_SE_BUILD_MINOR);
   nmRegisterSessionState<<_strModName;
   extern CTString net_strConnectPassword;
@@ -491,13 +492,13 @@ void CSessionState::WaitStream_t(CTMemoryStream &strmMessage, const CTString &st
       ses_strDisconnected = strReason;
       // no more client/server updates in the progres hook
       _bRunNetUpdates = FALSE;
-      ThrowF_t(TRANS("Disconnected: %s\n"), strReason);
+      ThrowF_t(TRANS("Disconnected: %s\n"), (const char *) strReason);
 	  // otherwise
     } else {
       // no more client/server updates in the progres hook
       _bRunNetUpdates = FALSE;
       // it is invalid message
-      ThrowF_t(TRANS("Invalid stream while waiting for %s"), strName);
+      ThrowF_t(TRANS("Invalid stream while waiting for %s"), (const char *) strName);
     }
 
     // if client is disconnected
@@ -516,7 +517,7 @@ void CSessionState::WaitStream_t(CTMemoryStream &strmMessage, const CTString &st
 //	_pNetwork->SendToServerReliable(nmConfirmDisconnect);
 
   
-  ThrowF_t(TRANS("Timeout while waiting for %s"), strName);
+  ThrowF_t(TRANS("Timeout while waiting for %s"), (const char *) strName);
 }
 
 // check if disconnected
@@ -694,7 +695,7 @@ void CSessionState::HandleMovers(void)
 void CSessionState::HandleTimers(TIME tmCurrentTick)
 {
 #define TIME_EPSILON 0.0001f
-  IFDEBUG(TIME tmLast = 0.0f);
+  //IFDEBUG(TIME tmLast = 0.0f);
 
   _pfPhysicsProfile.StartTimer(CPhysicsProfile::PTI_HANDLETIMERS);
   // repeat
@@ -728,7 +729,7 @@ void CSessionState::HandleTimers(TIME tmCurrentTick)
     // check that timers are propertly handled
     ASSERT(penTimer->en_timeTimer>tmCurrentTick-_pTimer->TickQuantum-TIME_EPSILON);
     //ASSERT(penTimer->en_timeTimer>=tmLast);
-    IFDEBUG(tmLast=penTimer->en_timeTimer);
+    //IFDEBUG(tmLast=penTimer->en_timeTimer);
 
     // remove the timer from the list
     penTimer->en_timeTimer = THINKTIME_NEVER;
@@ -1644,8 +1645,8 @@ void CSessionState::ReadWorldAndState_t(CTStream *pstr)   // throw char *
     ThrowF_t(
       TRANS("Cannot play demo because file '%s'\n"
       "is older than file '%s'!\n"),
-      CTString(pstr->GetDescription()),
-      CTString(_pNetwork->ga_fnmWorld));
+      (const char *) CTString(pstr->GetDescription()),
+      (const char *) CTString(_pNetwork->ga_fnmWorld));
   }
 
   // prepare the world for loading
@@ -2051,7 +2052,7 @@ void CSessionState::SessionStateLoop(void)
         // just print it
         CTString strResponse;
         nmReliable>>strResponse;
-        CPrintF("%s", "|"+strResponse+"\n");
+        CPrintF("%s", (const char *) ("|"+strResponse+"\n"));
       // otherwise
       } else {
         CPrintF(TRANS("Session state: Unexpected reliable message during game: %s(%d)\n"),
@@ -2105,11 +2106,11 @@ void CSessionState::SessionStateLoop(void)
         DumpSyncToFile_t(strmFile, ses_iExtensiveSyncCheck);
       }
       // inform user
-      CPrintF("Sync data dumped to '%s'\n", strFileName);
+      CPrintF("Sync data dumped to '%s'\n", (const char *) strFileName);
     }
     catch ( const char *strError)
     {
-      CPrintF("Cannot dump sync data: %s\n", strError);
+      CPrintF("Cannot dump sync data: %s\n", (const char *) strError);
     }
   }
 

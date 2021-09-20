@@ -223,6 +223,15 @@ public:
 };
 
 /*
+ * !!! FIXME: R_OK is used with the unix access() API...
+ * !!! FIXME:  we're lucky...on Linux, it's a macro, but it could be an
+ * !!! FIXME:  enum just as easily.  --ryan.
+ */
+#ifdef R_OK
+#undef R_OK
+#endif
+
+/*
  * Stream of message blocks that can be sent across network.
  */
 class CNetworkStream {

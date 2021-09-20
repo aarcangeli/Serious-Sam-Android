@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 
 #include <Engine/Network/NetworkMessage.h>
 #include <Engine/Network/Compression.h>
@@ -974,8 +974,8 @@ CNetworkMessage &operator>>(CNetworkMessage &nm, CPlayerAction &pa)
   }
 
   // find number of zero bits for flags
-  INDEX iZeros=0;
-  for(; iZeros<6; iZeros++) {
+  INDEX iZeros;
+  for(iZeros=0; iZeros<6; iZeros++) {
     UBYTE ub=0;
     nm.ReadBits(&ub, 1);
     if (ub!=0) {

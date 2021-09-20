@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include <Engine/StdH.h>
 
 #include <Engine/Entities/EntityProperties.h>
 #include <Engine/Entities/Precaching.h>
@@ -96,7 +96,7 @@ void CEntity::WriteEntityPointer_t(CTStream *ostrm, CEntityPointer pen)
 void CEntity::ReadProperties_t(CTStream &istrm) // throw char *
 {
   istrm.ExpectID_t("PRPS");  // 'properties'
-  CDLLEntityClass *pdecDLLClass = en_pecClass->ec_pdecDLLClass;
+  //CDLLEntityClass *pdecDLLClass = en_pecClass->ec_pdecDLLClass;
   INDEX ctProperties;
   // read number of properties (note that this doesn't have to be same as number
   // of properties in the class (class might have changed))
@@ -104,7 +104,7 @@ void CEntity::ReadProperties_t(CTStream &istrm) // throw char *
 
   // for all saved properties
   for(INDEX iProperty=0; iProperty<ctProperties; iProperty++) {
-    // pdecDLLClass->dec_ctProperties;
+    //pdecDLLClass->dec_ctProperties;
     // read packed identifier
     ULONG ulIDAndType;
     istrm>>ulIDAndType;
@@ -598,7 +598,7 @@ void CEntityComponent::Obtain_t(void)  // throw char *
     // if something else
     default:
       // error
-      ThrowF_t(TRANS("Component '%s'(%d) is of unknown type!"), (CTString&)ec_fnmComponent, ec_slID);
+      ThrowF_t(TRANS("Component '%s'(%d) is of unknown type!"), (const char *) (CTString&)ec_fnmComponent, ec_slID);
   }
 
   // if not already loaded and should not be precaching now

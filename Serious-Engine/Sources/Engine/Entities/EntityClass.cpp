@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 
 #include <Engine/Base/Stream.h>
 #include <Engine/Entities/EntityClass.h>
@@ -69,12 +69,12 @@ CEntityClass::~CEntityClass(void)
 /////////////////////////////////////////////////////////////////////
 // Reference counting functions
 void CEntityClass::AddReference(void) {
-    ASSERT(this!=NULL);
-    MarkUsed();
+  ASSERT(this!=NULL);
+  MarkUsed();
 };
 void CEntityClass::RemReference(void) {
-    ASSERT(this!=NULL);
-    _pEntityClassStock->Release(this);
+  ASSERT(this!=NULL);
+  _pEntityClassStock->Release(this);
 };
 
 /*
@@ -94,8 +94,8 @@ void CEntityClass::Clear(void)
      * must stay avaliable, since they cannot be undeclared.
      */
     // free it
-    int result = dlclose(ec_hiClassDLL);
-    ASSERT(!result); // opposite of FreeLibrary
+    //BOOL bSuccess = FreeLibrary(ec_hiClassDLL);
+    //ASSERT(bSuccess);
   }
   ec_pdecDLLClass = NULL;
   ec_hiClassDLL = NULL;
@@ -408,7 +408,7 @@ CEntity::pEventHandler CEntityClass::HandlerForStateAndEvent(SLONG slState, SLON
 
 /* Get pointer to component from its identifier. */
 class CEntityComponent *CEntityClass::ComponentForTypeAndID(
-  EntityComponentType ectType, SLONG slID) {
+  enum EntityComponentType ectType, SLONG slID) {
   return ec_pdecDLLClass->ComponentForTypeAndID(ectType, slID);
 }
 /* Get pointer to component from the component. */

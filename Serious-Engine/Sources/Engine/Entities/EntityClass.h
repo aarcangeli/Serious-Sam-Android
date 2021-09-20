@@ -63,9 +63,10 @@ public:
   /* Get event handler for given state and event code. */
   CEntity::pEventHandler HandlerForStateAndEvent(SLONG slState, SLONG slEvent);
   /* Get pointer to component from its type and identifier. */
-  class CEntityComponent *ComponentForTypeAndID(enum EntityComponentType ectType, SLONG slID);
+  class CEntityComponent *ComponentForTypeAndID(
+    enum EntityComponentType ectType, SLONG slID);
   /* Get pointer to component from the component. */
-  class CEntityComponent *ComponentForPointer(void *pv);
+  inline class CEntityComponent *ComponentForPointer(void *pv);
 
   // overrides from CSerial
   /* Read from stream. */

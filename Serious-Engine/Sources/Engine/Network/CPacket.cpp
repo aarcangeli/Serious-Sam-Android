@@ -533,7 +533,7 @@ CPacket* CPacketBuffer::GetPacket(ULONG ulSequence)
 			return litPacketIter;
 		}
 	}
-	return FALSE;
+	return NULL;
 };
 
 // Reads the first connection request packet from the buffer
@@ -620,7 +620,7 @@ BOOL CPacketBuffer::RemoveConnectResponsePackets() {
 			delete litPacketIter;
 		}
 	}
-	return NULL;
+	return FALSE;
 };
 
 

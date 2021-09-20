@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include <Engine/StdH.h>
 
 #include <Engine/Base/Console.h>
 #include <Engine/Network/Network.h>
@@ -100,7 +100,7 @@ void CPlayerSource::Start_t(CPlayerCharacter &pcCharacter) // throw char *
       CTString strReason;
       nmReceived>>strReason;
       _pNetwork->ga_sesSessionState.ses_strDisconnected = strReason;
-      ThrowF_t(TRANS("Cannot add player because: %s\n"), strReason);
+      ThrowF_t(TRANS("Cannot add player because: %s\n"), (const char *) strReason);
 
     // otherwise
     } else {
