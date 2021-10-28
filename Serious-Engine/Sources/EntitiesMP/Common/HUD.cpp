@@ -706,11 +706,15 @@ static void FillWeaponAmmoTables(void)
   // weapon possesion
   for( i=WEAPON_NONE+1; i<WEAPON_LAST; i++)
   {
-    if( _awiWeapons[i].wi_wtWeapon!=WEAPON_NONE)
-    {
-      // regular weapons
-      _awiWeapons[i].wi_bHasWeapon = (iAvailableWeapons&(1<<(_awiWeapons[i].wi_wtWeapon-1)));
-      if( _awiWeapons[i].wi_paiAmmo!=NULL) _awiWeapons[i].wi_paiAmmo->ai_bHasWeapon |= _awiWeapons[i].wi_bHasWeapon;
+    if ( _awiWeapons[i].wi_wtWeapon == WEAPON_NONE) {
+      continue;
+    }
+
+    // regular weapons
+    _awiWeapons[i].wi_bHasWeapon = (iAvailableWeapons&(1<<(_awiWeapons[i].wi_wtWeapon-1)));
+
+    if (_awiWeapons[i].wi_paiAmmo != NULL) {
+      _awiWeapons[i].wi_paiAmmo->ai_bHasWeapon |= _awiWeapons[i].wi_bHasWeapon;
     }
   }
 }
@@ -1021,7 +1025,7 @@ if (g_cb.tfe) {
 	  } else {
       colIcon = C_WHITE /*_colHUD*/;
 	  }
-      if( ai.ai_iAmmoAmmount==0) colIcon = C_mdGRAY;
+      if( ai.ai_iAmmoAmmount <= 0) colIcon = C_mdGRAY;
       if( ptoCurrentAmmo == ai.ai_ptoAmmo) colIcon = C_WHITE; 
       fNormValue = (FLOAT)ai.ai_iAmmoAmmount / ai.ai_iMaxAmmoAmmount;
       colBar = AddShaker( 4, ai.ai_iAmmoAmmount, ai.ai_iLastAmmoAmmount, ai.ai_tmAmmoChanged, fMoverX, fMoverY);

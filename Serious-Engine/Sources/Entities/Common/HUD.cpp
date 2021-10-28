@@ -530,11 +530,15 @@ static void FillWeaponAmmoTables(void)
   // weapon possesion
   for( i=WEAPON_NONE+1; i<WEAPON_LAST; i++)
   {
-    if( _awiWeapons[i].wi_wtWeapon!=WEAPON_NONE)
-    {
-      // regular weapons
-      _awiWeapons[i].wi_bHasWeapon = (iAvailableWeapons&(1<<(_awiWeapons[i].wi_wtWeapon-1)));
-      if( _awiWeapons[i].wi_paiAmmo!=NULL) _awiWeapons[i].wi_paiAmmo->ai_bHasWeapon |= _awiWeapons[i].wi_bHasWeapon;
+    if ( _awiWeapons[i].wi_wtWeapon == WEAPON_NONE) {
+      continue;
+    }
+
+    // regular weapons
+    _awiWeapons[i].wi_bHasWeapon = (iAvailableWeapons&(1<<(_awiWeapons[i].wi_wtWeapon-1)));
+
+    if (_awiWeapons[i].wi_paiAmmo != NULL) {
+      _awiWeapons[i].wi_paiAmmo->ai_bHasWeapon |= _awiWeapons[i].wi_bHasWeapon;
     }
   }
 }

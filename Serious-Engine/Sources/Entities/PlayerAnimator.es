@@ -1135,6 +1135,7 @@ functions:
     SpawnReminder(this, pl.GetModelObject()->GetAnimLength(PLAYER_ANIM_CROUCH), (INDEX) AA_CROUCH);
     m_iCrouchDownWait++;
     m_bCrouch = TRUE;
+	m_bSwim = FALSE;
   };
 
   // rise
@@ -1147,6 +1148,7 @@ functions:
     SpawnReminder(this, pl.GetModelObject()->GetAnimLength(PLAYER_ANIM_RISE), (INDEX) AA_RISE);
     m_iRiseUpWait++;
     m_bCrouch = FALSE;
+	m_bSwim = FALSE;
   };
 
   // fall
@@ -1225,8 +1227,6 @@ functions:
     INDEX iWeapon = ((CPlayerWeapons&)*(((CPlayer&)*m_penPlayer).m_penWeapons)).m_iCurrentWeapon;
     switch (iWeapon) {
       case WEAPON_NONE:
-        SetBodyAnimation(iNone, ulFlags);
-        break;
       case WEAPON_KNIFE: case WEAPON_COLT: case WEAPON_DOUBLECOLT: // case WEAPON_PIPEBOMB:
         if (m_bSwim) { iColt += BODY_ANIM_COLT_SWIM_STAND-BODY_ANIM_COLT_STAND; }
         SetBodyAnimation(iColt, ulFlags);

@@ -3395,6 +3395,73 @@ functions:
     }
   }
 
+  void DoStand() {
+    // If can't stand here don't stand!
+    if (!ChangeCollisionBoxIndexNow(PLAYER_COLLISION_BOX_STAND)) { return; }
+
+    en_plViewpoint.pl_PositionVector(2) = plr_fViewHeightStand;
+
+    if (m_pstState == PST_CROUCH) {
+      ((CPlayerAnimator&)*m_penAnimator).Rise();
+    } else {
+      ((CPlayerAnimator&)*m_penAnimator).Stand();
+    }
+
+    m_pstState = PST_STAND;
+  }
+
+  void DoCrouch() {
+    // try to prevent swim bug by forcing a stand
+    // after you come out of the water. this doesn't
+    // solve the problem, but it makes it a little harder.
+    if(m_pstState == PST_SWIM || m_pstState == PST_DIVE) {
+      DoStand();
+      return;
+    }
+
+    // if can't crouch here don't crouch!
+    if (!ChangeCollisionBoxIndexNow(PLAYER_COLLISION_BOX_CROUCH)) { return; }
+
+    m_pstState = PST_CROUCH;
+    en_plViewpoint.pl_PositionVector(2) = plr_fViewHeightCrouch;
+
+    ((CPlayerAnimator&)*m_penAnimator).Crouch();
+  }
+
+  void DoSwim() {
+    // If can't swim here don't swim!
+    if (!ChangeCollisionBoxIndexNow(PLAYER_COLLISION_BOX_SWIMSMALL)) { return; }
+
+    ChangeCollisionBoxIndexWhenPossible(PLAYER_COLLISION_BOX_SWIM);
+    m_pstState = PST_SWIM;
+    en_plViewpoint.pl_PositionVector(2) = plr_fViewHeightSwim;
+
+    ((CPlayerAnimator&)*m_penAnimator).Swim();
+
+    m_fSwimTime = _pTimer->CurrentTick();
+  }
+
+  void DoDive() {
+    // if can't dive here don't dive!
+    if (!ChangeCollisionBoxIndexNow(PLAYER_COLLISION_BOX_SWIMSMALL)) { return; }
+
+    ChangeCollisionBoxIndexWhenPossible(PLAYER_COLLISION_BOX_SWIM);
+    m_pstState = PST_DIVE;
+    en_plViewpoint.pl_PositionVector(2) = plr_fViewHeightDive;
+
+    ((CPlayerAnimator&)*m_penAnimator).Swim();
+  }
+
+  void DoFall() {
+    // if can fall here
+    if (!ChangeCollisionBoxIndexNow(PLAYER_COLLISION_BOX_STAND)) { return; }
+
+    m_pstState = PST_FALL;
+    en_plViewpoint.pl_PositionVector(2) = plr_fViewHeightStand;
+
+    ((CPlayerAnimator&)*m_penAnimator).Fall();
+  }
+
   void ActiveActions(const CPlayerAction &paAction)
   {
     // translation
@@ -3405,9 +3472,8 @@ functions:
     }
 
     // enable faster moving if holding knife in DM
-    if( ((CPlayerWeapons&)*m_penWeapons).m_iCurrentWeapon==WEAPON_KNIFE &&
-         !GetSP()->sp_bCooperative)          
-    {
+    INDEX iCurrentWeapon = ((CPlayerWeapons&)*m_penWeapons).m_iCurrentWeapon;
+    if( (iCurrentWeapon == WEAPON_NONE || iCurrentWeapon == WEAPON_KNIFE) && !GetSP()->sp_bCooperative) {
       vTranslation*=1.30f;
     }
     
@@ -3489,61 +3555,19 @@ functions:
       PlayerState pstOld = m_pstState; 
 
       // if different state needed
-      if (pstWanted!=m_pstState) {
+      if (pstWanted != m_pstState) {
         // check state wanted
         switch(pstWanted) {
         // if wanting to stand
-        case PST_STAND: {
-          // if can stand here
-          if (ChangeCollisionBoxIndexNow(PLAYER_COLLISION_BOX_STAND)) {
-            en_plViewpoint.pl_PositionVector(2) = plr_fViewHeightStand;
-            if (m_pstState==PST_CROUCH) {
-              ((CPlayerAnimator&)*m_penAnimator).Rise();
-            } else {
-              ((CPlayerAnimator&)*m_penAnimator).Stand();
-            }
-            m_pstState = PST_STAND;
-          }
-                        } break;
-        // if wanting to crouch
-        case PST_CROUCH: {
-          // if can crouch here
-          if (ChangeCollisionBoxIndexNow(PLAYER_COLLISION_BOX_CROUCH)) {
-            m_pstState = PST_CROUCH;
-            en_plViewpoint.pl_PositionVector(2) = plr_fViewHeightCrouch;
-            ((CPlayerAnimator&)*m_penAnimator).Crouch();
-          }
-                        } break;
-        // if wanting to swim
-        case PST_SWIM: {
-          // if can swim here
-          if (ChangeCollisionBoxIndexNow(PLAYER_COLLISION_BOX_SWIMSMALL)) {
-            ChangeCollisionBoxIndexWhenPossible(PLAYER_COLLISION_BOX_SWIM);
-            m_pstState = PST_SWIM;
-            en_plViewpoint.pl_PositionVector(2) = plr_fViewHeightSwim;
-            ((CPlayerAnimator&)*m_penAnimator).Swim();                   
-            m_fSwimTime = _pTimer->CurrentTick();
-          }
-                        } break;
-        // if wanting to dive
-        case PST_DIVE: {
-          // if can dive here
-          if (ChangeCollisionBoxIndexNow(PLAYER_COLLISION_BOX_SWIMSMALL)) {
-            ChangeCollisionBoxIndexWhenPossible(PLAYER_COLLISION_BOX_SWIM);
-            m_pstState = PST_DIVE;
-            en_plViewpoint.pl_PositionVector(2) = plr_fViewHeightDive;
-            ((CPlayerAnimator&)*m_penAnimator).Swim();
-          }
-                        } break;
-        // if wanting to fall
-        case PST_FALL: {
-          // if can fall here
-          if (ChangeCollisionBoxIndexNow(PLAYER_COLLISION_BOX_STAND)) {
-            m_pstState = PST_FALL;
-            en_plViewpoint.pl_PositionVector(2) = plr_fViewHeightStand;
-            ((CPlayerAnimator&)*m_penAnimator).Fall();
-          }
-                        } break;
+          case PST_STAND:  { DoStand(); } break;
+          // if wanting to crouch
+          case PST_CROUCH: { DoCrouch(); } break;
+          // if wanting to swim
+          case PST_SWIM:   { DoSwim(); } break;
+          // if wanting to dive
+          case PST_DIVE:   { DoDive(); } break;
+          // if wanting to fall
+          case PST_FALL:   { DoFall(); } break;
         }
       }
 

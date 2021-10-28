@@ -78,6 +78,7 @@ typedef enum NetworkMessageType {
   MSG_SEQ_ALLACTIONS,    // packed actions of all players from server to clients
   MSG_SEQ_ADDPLAYER,     // instructions for adding a new player to session states
   MSG_SEQ_REMPLAYER,     // instructions for removing a new player from session states
+  MSG_SEQ_DETACHPLAYER,
   MSG_SEQ_PAUSE,         // game was paused/unpaused
   MSG_SEQ_CHARACTERCHANGE, // a player has changed character
 

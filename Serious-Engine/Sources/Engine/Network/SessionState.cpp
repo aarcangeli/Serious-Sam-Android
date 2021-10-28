@@ -1378,10 +1378,14 @@ void CSessionState::ProcessGameStreamBlock(CNetworkMessage &nmMessage)
       // delete all predictors
       _pNetwork->ga_World.DeletePredictors();
 
-      // inform entity of disconnnection
-      CPrintF(TRANS("%s left\n"), ses_apltPlayers[iPlayer].plt_penPlayerEntity->GetPlayerName());
-      ses_apltPlayers[iPlayer].plt_penPlayerEntity->Disconnect();
-      // deactivate the player
+      // receive a pointer to player entity
+      CPlayerEntity *penPlayerEntity = ses_apltPlayers[iPlayer].plt_penPlayerEntity;
+
+      // NOTE: [SSE] Netcode Update - Just a check for safety!
+      if (penPlayerEntity != NULL) {
+        CPrintF(TRANS("%s left\n"), penPlayerEntity->GetPlayerName());
+        penPlayerEntity->Disconnect();
+      }      // deactivate the player
       ses_apltPlayers[iPlayer].Deactivate();
       // handle all the sent events
       ses_bAllowRandom = TRUE;
@@ -1389,6 +1393,33 @@ void CSessionState::ProcessGameStreamBlock(CNetworkMessage &nmMessage)
       ses_bAllowRandom = FALSE;
 
     } break;
+
+  // [SSE] Netcode Update - Detaching player from client
+  case MSG_SEQ_DETACHPLAYER: {
+    _pNetwork->AddNetGraphValue(NGET_NONACTION, 1.0f); // non-action sequence
+    INDEX iPlayer;
+    nmMessage >> iPlayer;      // player index
+
+    // delete all predictors
+    _pNetwork->ga_World.DeletePredictors();
+
+    // receive a pointer to player entity
+    CPlayerEntity *penPlayerEntity = ses_apltPlayers[iPlayer].plt_penPlayerEntity;
+
+    // NOTE: [SSE] Netcode Update - Just a check for safety!
+    if (penPlayerEntity != NULL) {
+      CPrintF(TRANS("%s detached\n"), penPlayerEntity->GetPlayerName());
+      //penPlayerEntity->Disconnect();
+    }
+
+    // deactivate the player
+    ses_apltPlayers[iPlayer].Deactivate();
+
+    // handle all the sent events
+    //ses_bAllowRandom = TRUE;
+    //CEntity::HandleSentEvents();
+    //ses_bAllowRandom = FALSE;
+  } break;
 
   // if changing character
   case MSG_SEQ_CHARACTERCHANGE: {

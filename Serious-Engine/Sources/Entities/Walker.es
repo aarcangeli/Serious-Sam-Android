@@ -311,7 +311,7 @@ procedures:
     // sergeant 4 rockets
     if (m_EwcChar==WLC_SERGEANT) {
       StartModelAnim(WALKER_ANIM_FIRERIGHT, AOF_LOOPING);
-      ShootProjectile(PRT_WALKER_ROCKET, FIRE_RIGHT_ARM*m_fSize, ANGLE3D(0, 0, 0));
+      ShootProjectile(PRT_WALKER_ROCKET, FIRE_RIGHT_ARM*m_fSize*m_fStretchMultiplier, ANGLE3D(0, 0, 0));
       PlaySound(m_soFire1, SOUND_SERGEANT_FIRE_ROCKET, SOF_3D);
       if (GetSP()->sp_gdGameDifficulty<=CSessionProperties::GD_EASY) {
         m_fLockOnEnemyTime = 1.0f;
@@ -320,7 +320,7 @@ procedures:
       }
       autocall CEnemyBase::LockOnEnemy() EReturn;
       StartModelAnim(WALKER_ANIM_FIRELEFT, AOF_LOOPING);
-      ShootProjectile(PRT_WALKER_ROCKET, FIRE_LEFT_ARM*m_fSize, ANGLE3D(0, 0, 0));
+      ShootProjectile(PRT_WALKER_ROCKET, FIRE_LEFT_ARM*m_fSize*m_fStretchMultiplier, ANGLE3D(0, 0, 0));
       PlaySound(m_soFire2, SOUND_SERGEANT_FIRE_ROCKET, SOF_3D);
 
 //      m_fLockOnEnemyTime = 0.25f;
@@ -335,10 +335,10 @@ procedures:
       while(m_iLoopCounter>0) {
         if (m_iLoopCounter%2) {
           StartModelAnim(WALKER_ANIM_FIRELEFT, AOF_LOOPING);
-          ShootProjectile(PRT_CYBORG_LASER, FIRE_LEFT_ARM*m_fSize, ANGLE3D(0, 0, 0));
+          ShootProjectile(PRT_CYBORG_LASER, FIRE_LEFT_ARM*m_fSize*m_fStretchMultiplier, ANGLE3D(0, 0, 0));
         } else {
           StartModelAnim(WALKER_ANIM_FIRERIGHT, AOF_LOOPING);
-          ShootProjectile(PRT_CYBORG_LASER, FIRE_RIGHT_ARM*m_fSize, ANGLE3D(0, 0, 0));
+          ShootProjectile(PRT_CYBORG_LASER, FIRE_RIGHT_ARM*m_fSize*m_fStretchMultiplier, ANGLE3D(0, 0, 0));
         }
         INDEX iChannel = m_iLoopCounter%4;
         if (iChannel==0) {
@@ -401,17 +401,17 @@ procedures:
     // one rocket/laser from left or right arm
     if (m_EwcChar==WLC_SERGEANT) {
       if (IRnd()&1) {
-        FireDeathRocket(FIRE_DEATH_RIGHT*m_fSize);
+        FireDeathRocket(FIRE_DEATH_RIGHT*m_fSize*m_fStretchMultiplier);
       } else {
-        FireDeathRocket(FIRE_DEATH_LEFT*m_fSize);
+        FireDeathRocket(FIRE_DEATH_LEFT*m_fSize*m_fStretchMultiplier);
       }
       PlaySound(m_soSound, SOUND_SERGEANT_FIRE_ROCKET, SOF_3D);
     }
     if (m_EwcChar==WLC_SOLDIER) {
       if (IRnd()&1) {
-        FireDeathLaser(FIRE_DEATH_RIGHT*m_fSize);
+        FireDeathLaser(FIRE_DEATH_RIGHT*m_fSize*m_fStretchMultiplier);
       } else {
-        FireDeathLaser(FIRE_DEATH_LEFT*m_fSize);
+        FireDeathLaser(FIRE_DEATH_LEFT*m_fSize*m_fStretchMultiplier);
       }
       PlaySound(m_soFire2, SOUND_SOLDIER_FIRE_LASER, SOF_3D);
     }

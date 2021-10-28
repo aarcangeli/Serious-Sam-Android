@@ -173,6 +173,9 @@ CTString cmd_strChatMessage = "";
 CTString cmd_cmdOnChat = "";
 INDEX net_ctChatMessages = 0;  // counter for incoming chat messages
 
+// [SSE] Netcode Update - For Debugging Player Detaching
+extern INDEX ser_bReportMsgActionsWrongClient = FALSE;
+
 extern CPacketBufferStats _pbsSend;
 extern CPacketBufferStats _pbsRecv;
 
@@ -747,6 +750,9 @@ void CNetworkLibrary::Init(const CTString &strGameID)
   _pShell->DeclareSymbol("user void AddNameMask(CTString);", (void*) &AddNameMask);
   _pShell->DeclareSymbol("user void RemNameMask(CTString);", (void*) &RemNameMask);
 
+  // [SSE] Netcode Update - For Debugging Player Detaching
+  _pShell->DeclareSymbol("user INDEX ser_bReportMsgActionsWrongClient;", &ser_bReportMsgActionsWrongClient);
+  //
 
   _pShell->DeclareSymbol("user FLOAT dem_tmTimer;",(void*)&ga_fDemoTimer);
   _pShell->DeclareSymbol("user FLOAT dem_fSyncRate;", (void*)      &ga_fDemoSyncRate);

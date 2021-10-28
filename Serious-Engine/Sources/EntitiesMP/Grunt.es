@@ -244,12 +244,12 @@ procedures:
     autowait(0.2f + FRnd()*0.25f);
 
     StartModelAnim(GRUNT_ANIM_FIRE, 0);
-    ShootProjectile(PRT_GRUNT_PROJECTILE_SOL, FIREPOS_SOLDIER, ANGLE3D(0, 0, 0));
+    ShootProjectile(PRT_GRUNT_PROJECTILE_SOL, FIREPOS_SOLDIER*m_fStretchMultiplier, ANGLE3D(0, 0, 0));
     PlaySound(m_soFire1, SOUND_FIRE, SOF_3D);
 
     autowait(0.15f + FRnd()*0.1f);
     StartModelAnim(GRUNT_ANIM_FIRE, 0);
-    ShootProjectile(PRT_GRUNT_PROJECTILE_SOL, FIREPOS_SOLDIER, ANGLE3D(0, 0, 0));
+    ShootProjectile(PRT_GRUNT_PROJECTILE_SOL, FIREPOS_SOLDIER*m_fStretchMultiplier, ANGLE3D(0, 0, 0));
     PlaySound(m_soFire2, SOUND_FIRE, SOF_3D);
     
 
@@ -271,27 +271,27 @@ procedures:
     ShootPredictedProjectile(PRT_GRUNT_LASER, vPredictedEnemyPosition, FLOAT3D(0.0f, 1.0f, 0.0f), ANGLE3D(0, 0, 0));*/
 
     StartModelAnim(GRUNT_ANIM_FIRE, 0);
-    ShootProjectile(PRT_GRUNT_PROJECTILE_COM, FIREPOS_COMMANDER_DN, ANGLE3D(-20, 0, 0));
+    ShootProjectile(PRT_GRUNT_PROJECTILE_COM, FIREPOS_COMMANDER_DN*m_fStretchMultiplier, ANGLE3D(-20, 0, 0));
     PlaySound(m_soFire1, SOUND_FIRE, SOF_3D);
 
     autowait(0.035f);
     StartModelAnim(GRUNT_ANIM_FIRE, 0);
-    ShootProjectile(PRT_GRUNT_PROJECTILE_COM, FIREPOS_COMMANDER_DN, ANGLE3D(-10, 0, 0));
+    ShootProjectile(PRT_GRUNT_PROJECTILE_COM, FIREPOS_COMMANDER_DN*m_fStretchMultiplier, ANGLE3D(-10, 0, 0));
     PlaySound(m_soFire2, SOUND_FIRE, SOF_3D);
 
     autowait(0.035f);
     StartModelAnim(GRUNT_ANIM_FIRE, 0);
-    ShootProjectile(PRT_GRUNT_PROJECTILE_COM, FIREPOS_COMMANDER_DN, ANGLE3D(0, 0, 0));
+    ShootProjectile(PRT_GRUNT_PROJECTILE_COM, FIREPOS_COMMANDER_DN*m_fStretchMultiplier, ANGLE3D(0, 0, 0));
     PlaySound(m_soFire1, SOUND_FIRE, SOF_3D);
 
     autowait(0.035f);
     StartModelAnim(GRUNT_ANIM_FIRE, 0);
-    ShootProjectile(PRT_GRUNT_PROJECTILE_COM, FIREPOS_COMMANDER_DN, ANGLE3D(10, 0, 0));
+    ShootProjectile(PRT_GRUNT_PROJECTILE_COM, FIREPOS_COMMANDER_DN*m_fStretchMultiplier, ANGLE3D(10, 0, 0));
     PlaySound(m_soFire2, SOUND_FIRE, SOF_3D);
 
     autowait(0.035f);
     StartModelAnim(GRUNT_ANIM_FIRE, 0);
-    ShootProjectile(PRT_GRUNT_PROJECTILE_COM, FIREPOS_COMMANDER_DN, ANGLE3D(20, 0, 0));
+    ShootProjectile(PRT_GRUNT_PROJECTILE_COM, FIREPOS_COMMANDER_DN*m_fStretchMultiplier, ANGLE3D(20, 0, 0));
     PlaySound(m_soFire2, SOUND_FIRE, SOF_3D);
 
     autowait(FRnd()*0.5f);

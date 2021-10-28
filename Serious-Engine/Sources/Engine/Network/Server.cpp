@@ -1195,7 +1195,7 @@ void CServer::HandleClientDisconected(INDEX iClient)
   INDEX iPlayer = 0;
   FOREACHINSTATICARRAY(srv_aplbPlayers, CPlayerBuffer, itplb) {
     // if player is on that client
-    if (itplb->plb_iClient==iClient) {
+    if (itplb->plb_iClient == iClient /* [SSE] Netcode update */&& itplb->IsActive() /* END */) {
       // create message for removing player from all session
       CNetworkStreamBlock nsbRemPlayerData(MSG_SEQ_REMPLAYER, ++srv_iLastProcessedSequence);
       nsbRemPlayerData<<iPlayer;      // player index
@@ -1361,9 +1361,14 @@ void CServer::Handle(INDEX iClient, CNetworkMessage &nmMessage)
         nmMessage.ReadBits(&iPlayer, 4);
         CPlayerBuffer &plb = srv_aplbPlayers[iPlayer];
         // if the player is not on that client
-        if (plb.plb_iClient!=iClient) {
-          // consider the entire message invalid
-          CPrintF("Wrong Client!\n");
+        if (plb.plb_iClient != iClient) {
+          extern INDEX ser_bReportMsgActionsWrongClient;
+
+          if (ser_bReportMsgActionsWrongClient) {
+            // consider the entire message invalid
+            CPrintF("MSG_ACTION: Received From Wrong Client!\n");
+          }
+		  
           break;
         }
         // read ping
