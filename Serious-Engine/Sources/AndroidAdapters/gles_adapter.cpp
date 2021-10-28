@@ -81,10 +81,10 @@ namespace gles_adapter {
 
   // used in glDrawArrays to convert GL_QUADS into GL_TRIANGLES
   GLuint INDEX_DUMMY_ELEMENT_BUFFER = 10;
-  std::vector<uint16_t> dummyElementBuffer;
+  std::vector<uint32_t> dummyElementBuffer;
 
   // Used to convert GL_UNSIGNED_INT into GL_UNSIGNED_SHORT in glDrawElements
-  std::vector<uint16_t> dummyIndexBuffer;
+  std::vector<uint32_t> dummyIndexBuffer;
 
   GLuint program;
   GLenum lastError = 0;
@@ -635,7 +635,7 @@ namespace gles_adapter {
     }
 
     // index buffer
-    std::vector<uint16_t> &buffer = dummyElementBuffer;
+    std::vector<uint32_t> &buffer = dummyElementBuffer;
 
     GLsizei vertices = count / 4 * 6;
     if (vertices > buffer.size()) {
@@ -681,9 +681,9 @@ namespace gles_adapter {
       }
       uint32_t *bf = (uint32_t *) indices;
       for (uint32_t i = 0; i < count; i++) {
-        dummyIndexBuffer[i] = (uint16_t) bf[i];
+        dummyIndexBuffer[i] = (uint32_t) bf[i];
         if (dummyIndexBuffer[i] != bf[i]) {
-          blockingError("Panic!: uint16_t overflow");
+          blockingError("Panic!: uint32_t overflow");
         }
       }
       if (USE_BUFFER_DATA) {
@@ -693,11 +693,11 @@ namespace gles_adapter {
           }
         }
       }
-      indices = (void*) dummyIndexBuffer.data();
+      indices = (size_t *) dummyIndexBuffer.data();
       type = GL_UNSIGNED_SHORT;
       bytePerElement = 2;
     } else if (type == GL_UNSIGNED_SHORT) {
-      uint16_t *bf = (uint16_t *) indices;
+      uint32_t *bf = (uint32_t *) indices;
       if (USE_BUFFER_DATA) {
         for (uint32_t i = 0; i < count; i++) {
           if (bf[i] >= totalVertices) {

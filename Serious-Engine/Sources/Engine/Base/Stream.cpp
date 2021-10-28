@@ -182,7 +182,7 @@ void InitStreams(void) {
   #ifdef FIRST_ENCOUNTER
   _strModExt = ""; // default First Encounter
   #else
-  _strModExt = "MP"; // default Second Encounter
+  _strModExt = ""; // default Second Encounter
   #endif
   LoadStringVar(CTString("ModExt.txt"), _strModExt);
 

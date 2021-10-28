@@ -1123,7 +1123,7 @@ static void ogl_SetConstantColor( COLOR col)
 
 
 // draw prepared arrays
-static void ogl_DrawElements( INDEX ctElem, INDEX *pidx)
+static void ogl_DrawElements( INDEX ctElem, INDEX_T *pidx)
 {
   ASSERT( _pGfx->gl_eCurrentAPI==GAT_OGL);
 #ifndef NDEBUG

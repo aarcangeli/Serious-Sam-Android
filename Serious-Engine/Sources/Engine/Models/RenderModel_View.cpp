@@ -429,7 +429,7 @@ static void PrepareSurfaceElements( ModelMipInfo &mmi, MappingSurface &ms)
 
   // create elements
   ms.ms_ctSrfEl = ctTriangles*3;
-  INDEX *paiElements = mmi.mmpi_aiElements.Push(ms.ms_ctSrfEl);
+  INDEX_T *paiElements = mmi.mmpi_aiElements.Push(ms.ms_ctSrfEl);
   // dump all triangles
   //_RPT0(_CRT_WARN, "Result:\n");
   INDEX iel = 0;
@@ -765,7 +765,7 @@ static void SetCol(void)
   _icol = (_icol+1)%_ctcol;
 }
 
-static void DrawStrips( const INDEX ct, const INDEX *pai)
+static void DrawStrips( const INDEX ct, const INDEX_T *pai)
 {
   // set strip color
   pglDisableClientState( GL_COLOR_ARRAY);
@@ -781,9 +781,9 @@ static void DrawStrips( const INDEX ct, const INDEX *pai)
 
   while( i<ct/3)
   {
-    INDEX i0 = pai[i*3+0];
-    INDEX i1 = pai[i*3+1];
-    INDEX i2 = pai[i*3+2];
+    INDEX_T i0 = pai[i*3+0];
+    INDEX_T i1 = pai[i*3+1];
+    INDEX_T i2 = pai[i*3+2];
     ctMaxTriPerStrip = Max( ctMaxTriPerStrip, INDEX(iInStrip));
 
     if( iInStrip==0) {
@@ -937,7 +937,7 @@ static BOOL IsModelInHaze( FLOAT3D &vMin, FLOAT3D &vMax)
 
 
 // render all pending elements
-static void FlushElements( INDEX ctElem, INDEX *pai)
+static void FlushElements( INDEX ctElem, INDEX_T *pai)
 {
   ASSERT(ctElem>0);
   // choose rendering mode

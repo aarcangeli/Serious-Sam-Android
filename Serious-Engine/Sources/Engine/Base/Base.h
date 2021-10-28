@@ -58,3 +58,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
   #define ENGINE_API
 #endif
 
+#if defined(__arm__)
+#define INDEX_T uint16_t
+#else
+#define INDEX_T INDEX
+#endif

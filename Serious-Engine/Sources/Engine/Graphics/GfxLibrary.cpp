@@ -56,8 +56,8 @@ BOOL CVA_bModels = FALSE;
 CStaticStackArray<GFXVertex>   _avtxCommon;      
 CStaticStackArray<GFXTexCoord> _atexCommon;   
 CStaticStackArray<GFXColor>    _acolCommon;      
-CStaticStackArray<INDEX>       _aiCommonElements;
-CStaticStackArray<INDEX>       _aiCommonQuads;   // predefined array for rendering quads thru triangles in glDrawElements()
+CStaticStackArray<INDEX_T>     _aiCommonElements;
+CStaticStackArray<INDEX_T>     _aiCommonQuads;   // predefined array for rendering quads thru triangles in glDrawElements()
 
 // global texture parameters
 CTexParams _tpGlobal[GFX_MAXTEXUNITS];  
@@ -181,7 +181,7 @@ INDEX gap_iOptimizeClipping   = 2;        // 0=no, 1=mirror plane only, 2=mirror
 INDEX gap_bAllowGrayTextures = TRUE;
 INDEX gap_bAllowSingleMipmap = TRUE;
 INDEX gap_iSwapInterval = 0;
-INDEX gap_iRefreshRate  = 0;
+INDEX gap_iRefreshRate  = 60;
 INDEX gap_iDithering = 2;        // 16-bit dithering: 0=none, 1=no alpha, 2=all
 INDEX gap_bForceTruform = 0;     // 0 = only for models that allow truform, 1=for every model
 INDEX gap_iTruformLevel = 3;     // 0 = no tesselation
