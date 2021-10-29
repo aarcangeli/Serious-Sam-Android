@@ -1663,8 +1663,10 @@ void CNetworkLibrary::Load_t(const CTFileName &fnmGame) // throw char *
   // start the timer loop
   AddTimerHandler();
 
-  strmFile.ExpectID_t("GAME"); 
-  
+  if ( strmFile.PeekID_t() == CChunkID("GAME")) {
+	strmFile.ExpectID_t("GAME"); 
+  }
+
   // read session state
   try {
     ga_sesSessionState.Start_t(-1);
