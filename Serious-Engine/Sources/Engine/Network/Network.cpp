@@ -1618,8 +1618,8 @@ void CNetworkLibrary::Save_t(const CTFileName &fnmGame) // throw char *
   strmFile.Create_t(fnmGame);
 
   // write game to stream
-  strmFile.WriteID_t("ESAV"); // [SSE] GAME tag changed to ESAV to have way detect which saved game you try to load.
-
+  strmFile.WriteID_t("GAME"); 
+  
   ga_sesSessionState.Write_t(&strmFile);
 
   strmFile.WriteID_t("GEND");   // game end
@@ -1663,17 +1663,8 @@ void CNetworkLibrary::Load_t(const CTFileName &fnmGame) // throw char *
   // start the timer loop
   AddTimerHandler();
 
-  // [SSE]
-  if ( strmFile.PeekID_t() == CChunkID("GAME")) {
-    RemoveTimerHandler();
-    ga_srvServer.Stop();
-    ga_IsServer = FALSE;
-
-    ThrowF_t(TRANS("Saved games from classics are incompatible with SSE!"));
-  }
-
-  strmFile.ExpectID_t("ESAV"); // [SSE] GAME tag changed to ESAV to have way detect which saved game you try to load.
-
+  strmFile.ExpectID_t("GAME"); 
+  
   // read session state
   try {
     ga_sesSessionState.Start_t(-1);
@@ -1849,17 +1840,15 @@ void CNetworkLibrary::StartDemoPlay_t(const CTFileName &fnDemo)  // throw char *
   // initialize server
   try {
     // Read initial info to stream.
-    CChunkID cidPeek = ga_strmDemoPlay.PeekID_t();
-
-    // [SSE]
-    if (cidPeek == CChunkID("DEMO")) {
-      ThrowF_t(TRANS("Demos from classics are incompatible with SSE!"));
-    }
-    
-    ga_strmDemoPlay.ExpectID_t("EDEM"); // [SSE] DEMO tag changed to EDEM to have way detect which demo you try to load.
-
-    if (ga_strmDemoPlay.PeekID_t() == CChunkID("MVER")) {
-      ga_strmDemoPlay.ExpectID_t("MVER");
+	
+	CChunkID cidPeek = ga_strmDemoPlay.PeekID_t();
+	
+	if (cidPeek == CChunkID("DEMO")) {
+		ga_strmDemoPlay.ExpectID_t("DEMO");    
+	}
+	
+    if (ga_strmDemoPlay.PeekID_t()==CChunkID("MVER")) { 
+    ga_strmDemoPlay.ExpectID_t("MVER");
       ga_strmDemoPlay >> ga_ulDemoMinorVersion;
     } else {
       ga_ulDemoMinorVersion = 2;
@@ -2311,7 +2300,7 @@ void CNetworkLibrary::StartDemoRec_t(const CTFileName &fnDemo) // throw char *
   ga_strmDemoRec.Create_t(fnDemo);
 
   // write initial info to stream
-  ga_strmDemoRec.WriteID_t("EDEM"); // [SSE] DEMO tag changed to EDEM to have way detect which demo you try to load.
+  ga_strmDemoRec.WriteID_t("DEMO");
   ga_strmDemoRec.WriteID_t("MVER");
   ga_strmDemoRec<<ULONG(_SE_BUILD_MINOR);
   ga_sesSessionState.Write_t(&ga_strmDemoRec);
