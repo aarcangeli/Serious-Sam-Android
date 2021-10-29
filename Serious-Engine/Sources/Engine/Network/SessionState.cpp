@@ -84,7 +84,7 @@ void CSessionState::ResetRND(void)
   // random must start at a number different than zero!
   ses_ulRandomSeed = 0x87654321;
   // run rnd a few times to make it go random
-  for(INDEX i=0; i<32; i++) {
+  for(INDEX i=0; i < 32; i++) {
     Rnd();
   }
   ses_bAllowRandom = bOldAllow;
@@ -108,6 +108,7 @@ CSessionState::CSessionState(void)
   ses_bGameFinished = FALSE;
   ses_bWaitingForServer = FALSE;
   ses_strDisconnected = "";
+  ses_ctMinPlayers = 1; // [SSE] Minimum Players
   ses_ctMaxPlayers = 1;
   ses_bWaitAllPlayers = FALSE;
   ses_iLevel = 0;
@@ -149,6 +150,7 @@ void CSessionState::Stop(void)
   ses_bGameFinished = FALSE;
   ses_bWaitingForServer = FALSE;
   ses_strDisconnected = "";
+  ses_ctMinPlayers = 1; // [SSE] Minimum Players
   ses_ctMaxPlayers = 1;
   ses_fRealTimeFactor = 1.0f;
   ses_bWaitAllPlayers = FALSE;
@@ -205,6 +207,7 @@ void CSessionState::Start_t(INDEX ctLocalPlayers)
   ses_bWaitingForServer = FALSE;
   ses_bGameFinished = FALSE;
   ses_strDisconnected = "";
+  ses_ctMinPlayers = 1; // [SSE] Minimum Players
   ses_ctMaxPlayers = 1;
   ses_fRealTimeFactor = 1.0f;
   ses_bWaitAllPlayers = FALSE;
@@ -312,12 +315,17 @@ void CSessionState::Start_AtClient_t(INDEX ctLocalPlayers)     // throw char *
   // send one unreliable packet to server to make the connection up and running
   CNetworkMessage nmKeepAlive(MSG_KEEPALIVE);
   _pNetwork->SendToServer(nmKeepAlive);
+  
+  extern ULONG _ulEngineRevision;
+  extern ULONG _ulEngineBuildYear;
+  extern ULONG _ulEngineBuildMonth;
+  extern ULONG _ulEngineBuildDay;
 
   // send registration request
   CNetworkMessage nmRegisterSessionState(MSG_REQ_CONNECTREMOTESESSIONSTATE);
-  #define VTAG 0x56544147  // Looks like 'VTAG' in ASCII.
-  nmRegisterSessionState<<INDEX(VTAG)<<INDEX(_SE_BUILD_MAJOR)<<INDEX(_SE_BUILD_MINOR);
-  nmRegisterSessionState<<_strModName;
+  nmRegisterSessionState << INDEX('EVT0') << INDEX(_SE_BUILD_MAJOR) << INDEX(_SE_BUILD_MINOR) << _ulEngineRevision << _ulEngineBuildYear << _ulEngineBuildMonth << _ulEngineBuildDay;
+  nmRegisterSessionState << _strModName;
+
   extern CTString net_strConnectPassword;
   extern CTString net_strVIPPassword;
   CTString strPasw = net_strConnectPassword;
@@ -371,9 +379,11 @@ void CSessionState::Start_AtClient_t(INDEX ctLocalPlayers)     // throw char *
     // wait for server's response
     CTMemoryStream strmMessage;
     WaitStream_t(strmMessage, "data", MSG_REP_STATEDELTA);
+    CPrintF(TRANS("Received DIFF stream\n"));
     // decompress saved session state
     CTMemoryStream strmDelta;
     CzlibCompressor comp;
+    CPrintF(TRANS("Unpacking DIFF stream\n"));
     comp.UnpackStream_t(strmMessage, strmDelta);
     CTMemoryStream strmNew;
     DIFF_Undiff_t(pstrmState, &strmDelta, &strmNew);
@@ -1385,8 +1395,11 @@ void CSessionState::ProcessGameStreamBlock(CNetworkMessage &nmMessage)
       if (penPlayerEntity != NULL) {
         CPrintF(TRANS("%s left\n"), penPlayerEntity->GetPlayerName());
         penPlayerEntity->Disconnect();
-      }      // deactivate the player
+      }
+
+      // deactivate the player
       ses_apltPlayers[iPlayer].Deactivate();
+
       // handle all the sent events
       ses_bAllowRandom = TRUE;
       CEntity::HandleSentEvents();
@@ -1394,54 +1407,195 @@ void CSessionState::ProcessGameStreamBlock(CNetworkMessage &nmMessage)
 
     } break;
 
+  // [SSE] Netcode Update - Attaching player to client
+  case MSG_SEQ_ATTACHPLAYER:
+  {
+    _pNetwork->AddNetGraphValue(NGET_NONACTION, 1.0f); // non-action sequence
+
+    INDEX iNewPlayerIndex, iEntity;
+    
+    nmMessage>>iNewPlayerIndex;
+    nmMessage>>iEntity;      // entity id
+    
+    // delete all predictors
+    _pNetwork->ga_World.DeletePredictors();
+    
+    CEntity *pen = _pNetwork->ga_World.EntityFromID(iEntity);
+
+    // Ignore if target entity is NULL!
+    if (pen == NULL) {
+      break;
+    }
+
+    // Ignore if target entity isn't player entity!
+    if (!IsDerivedFromClass(pen, "PlayerEntity")) {
+      break;
+    }
+    
+    // activate the player
+    ses_apltPlayers[iNewPlayerIndex].Activate();
+    
+    CPlayerEntity *penNewPlayer = (CPlayerEntity*)pen;
+    
+    // Atach entity to client data.
+    ses_apltPlayers[iNewPlayerIndex].AttachEntity(penNewPlayer);
+
+    //if (!_pNetwork->IsPlayerLocal(penNewPlayer)) {
+    CPrintF(TRANS("%s attached\n"), penNewPlayer->GetPlayerName());
+    //}
+    
+  } break;
+    
   // [SSE] Netcode Update - Detaching player from client
-  case MSG_SEQ_DETACHPLAYER: {
+  case MSG_SEQ_DETACHPLAYER:
+  {
     _pNetwork->AddNetGraphValue(NGET_NONACTION, 1.0f); // non-action sequence
     INDEX iPlayer;
     nmMessage >> iPlayer;      // player index
-
+    
     // delete all predictors
     _pNetwork->ga_World.DeletePredictors();
-
+    
     // receive a pointer to player entity
     CPlayerEntity *penPlayerEntity = ses_apltPlayers[iPlayer].plt_penPlayerEntity;
-
-    // NOTE: [SSE] Netcode Update - Just a check for safety!
+    
+    // Just a check for safety!
     if (penPlayerEntity != NULL) {
       CPrintF(TRANS("%s detached\n"), penPlayerEntity->GetPlayerName());
       //penPlayerEntity->Disconnect();
     }
-
+    
+    FOREACHINSTATICARRAY(_pNetwork->ga_aplsPlayers, CPlayerSource, itcls)
+    {
+      if (itcls->IsActive()) {
+        if (itcls->pls_Index == iPlayer) {
+          itcls->Stop();
+        }
+      }
+    }
+    
     // deactivate the player
     ses_apltPlayers[iPlayer].Deactivate();
-
+    
     // handle all the sent events
     //ses_bAllowRandom = TRUE;
     //CEntity::HandleSentEvents();
     //ses_bAllowRandom = FALSE;
   } break;
+  
+  // [SSE] Netcode Update - Swap two active players between.
+  case MSG_SEQ_SWAPPLAYERENTITIES:
+  {
+    _pNetwork->AddNetGraphValue(NGET_NONACTION, 1.0f); // non-action sequence
+
+    INDEX iFirstPlayer, iSecondPlayer;
+    nmMessage >> iFirstPlayer >> iSecondPlayer; // player indexes
+
+    // If same player indexes then skip this block!
+    if (iFirstPlayer == iSecondPlayer) {
+      break;
+    }
+
+    // If less than zero then skip this stream block!
+    if (iFirstPlayer < 0 || iSecondPlayer < 0) {
+      break;
+    }
+
+    INDEX ctMax = CEntity::GetMaxPlayers();
+
+    // If more than limit then skip this stream block!
+    if (iFirstPlayer >= ctMax || iSecondPlayer >= ctMax) {
+      break;
+    }
+
+    CPlayerTarget &pltFirst = _pNetwork->ga_sesSessionState.ses_apltPlayers[iFirstPlayer];
+    CPlayerTarget &pltSecond = _pNetwork->ga_sesSessionState.ses_apltPlayers[iSecondPlayer];
+
+    // If one of player inactive then skip this stream block!
+    if (!pltFirst.plt_bActive || !pltSecond.plt_bActive) {
+      break;
+    }
+
+    CPlayerEntity *penFirst = pltFirst.plt_penPlayerEntity;
+    pltFirst.AttachEntity(pltSecond.plt_penPlayerEntity);
+    pltSecond.AttachEntity(penFirst);
+
+    // handle all the sent events
+    ses_bAllowRandom = TRUE;
+    CEntity::HandleSentEvents();
+    ses_bAllowRandom = FALSE;
+  } break;
+  
+  // [SSE] Netcode Update - Destroy entity.
+  case MSG_SEQ_DESTROYENTITY:
+  {
+    _pNetwork->AddNetGraphValue(NGET_NONACTION, 1.0f); // non-action sequence
+
+    INDEX iEntity;
+    nmMessage >> iEntity;
+
+    CEntity *penEntity = _pNetwork->ga_World.EntityFromID(iEntity);
+
+    if (penEntity == NULL) {
+      break;
+    }
+    
+    penEntity->Destroy();
+
+    // handle all the sent events
+    ses_bAllowRandom = TRUE;
+    CEntity::HandleSentEvents();
+    ses_bAllowRandom = FALSE;
+  } break;
+  
+  // [SSE] Netcode Update - Entity RPC.
+  case MSG_SEQ_ENTITYRPC:
+  {
+    _pNetwork->AddNetGraphValue(NGET_NONACTION, 1.0f); // non-action sequence
+
+    INDEX iEntity;
+    nmMessage >> iEntity;
+
+    CEntity *penEntity = _pNetwork->ga_World.EntityFromID(iEntity);
+
+    if (penEntity == NULL) {
+      break;
+    }
+    
+    // delete all predictors
+    _pNetwork->ga_World.DeletePredictors();
+    
+    //penEntity->ReceiveRPC(nmMessage);
+
+    // handle all the sent events
+    ses_bAllowRandom = TRUE;
+    CEntity::HandleSentEvents();
+    ses_bAllowRandom = FALSE;
+  } break;
 
   // if changing character
-  case MSG_SEQ_CHARACTERCHANGE: {
-      _pNetwork->AddNetGraphValue(NGET_NONACTION, 1.0f); // non-action sequence
-      INDEX iPlayer;
-      CPlayerCharacter pcCharacter;
-      nmMessage>>iPlayer>>pcCharacter;
+  case MSG_SEQ_CHARACTERCHANGE:
+  {
+    _pNetwork->AddNetGraphValue(NGET_NONACTION, 1.0f); // non-action sequence
+    INDEX iPlayer;
+    CPlayerCharacter pcCharacter;
+    nmMessage>>iPlayer>>pcCharacter;
 
-      // delete all predictors
-      _pNetwork->ga_World.DeletePredictors();
+    // delete all predictors
+    _pNetwork->ga_World.DeletePredictors();
 
-      // change the character
-      ses_apltPlayers[iPlayer].plt_penPlayerEntity->CharacterChanged(pcCharacter);
+    // change the character
+    ses_apltPlayers[iPlayer].plt_penPlayerEntity->CharacterChanged(pcCharacter);
 
-      // handle all the sent events
-      ses_bAllowRandom = TRUE;
-      CEntity::HandleSentEvents();
-      ses_bAllowRandom = FALSE;
+    // handle all the sent events
+    ses_bAllowRandom = TRUE;
+    CEntity::HandleSentEvents();
+    ses_bAllowRandom = FALSE;
+  } break;
 
-                                } break;
   // if receiving client actions
-  case MSG_SEQ_ALLACTIONS: {
+  case MSG_SEQ_ALLACTIONS:
+  {
       // read time from packet
       TIME tmPacket;
       nmMessage>>tmPacket;    // packet time
@@ -1622,21 +1776,23 @@ void CSessionState::Read_t(CTStream *pstr)  // throw char *
     pstr->ExpectID_t("SESV");
     (*pstr)>>iVersion;
   }
-  (*pstr)>>ses_tmLastProcessedTick;
-  (*pstr)>>ses_iLastProcessedSequence;
-  (*pstr)>>ses_iLevel;
-  (*pstr)>>ses_ulRandomSeed;
-  (*pstr)>>ses_ulSpawnFlags;
-  (*pstr)>>ses_tmSyncCheckFrequency;
-  (*pstr)>>ses_iExtensiveSyncCheck;
-  (*pstr)>>ses_tmLastSyncCheck;
-  (*pstr)>>ses_ctMaxPlayers;
-  (*pstr)>>ses_bWaitAllPlayers;
-  (*pstr)>>ses_bPause;
-  (*pstr)>>ses_bGameFinished;
-  if (iVersion>=SESSIONSTATEVERSION_WITHBULLETTIME) {
-    (*pstr)>>ses_fRealTimeFactor;
+  (*pstr) >> ses_tmLastProcessedTick;
+  (*pstr) >> ses_iLastProcessedSequence;
+  (*pstr) >> ses_iLevel;
+  (*pstr) >> ses_ulRandomSeed;
+  (*pstr) >> ses_ulSpawnFlags;
+  (*pstr) >> ses_tmSyncCheckFrequency;
+  (*pstr) >> ses_iExtensiveSyncCheck;
+  (*pstr) >> ses_tmLastSyncCheck;
+  (*pstr) >> ses_ctMaxPlayers;
+  (*pstr) >> ses_ctMinPlayers; // [SSE] Minimum Players Option
+  (*pstr) >> ses_bPause;
+  (*pstr) >> ses_bGameFinished;
+
+  if (iVersion >= SESSIONSTATEVERSION_WITHBULLETTIME) {
+    (*pstr) >> ses_fRealTimeFactor;
   }
+
   ses_bWaitingForServer = FALSE;
   ses_bWantPause = ses_bPause;
   ses_strDisconnected = "";
@@ -1780,19 +1936,19 @@ void CSessionState::Write_t(CTStream *pstr)  // throw char *
   pstr->WriteID_t("SESV");
   (*pstr)<<INDEX(SESSIONSTATEVERSION_WITHBULLETTIME);
   // write time information and random seed
-  (*pstr)<<ses_tmLastProcessedTick;
-  (*pstr)<<ses_iLastProcessedSequence;
-  (*pstr)<<ses_iLevel;
-  (*pstr)<<ses_ulRandomSeed;
-  (*pstr)<<ses_ulSpawnFlags;
-  (*pstr)<<ses_tmSyncCheckFrequency;
-  (*pstr)<<ses_iExtensiveSyncCheck;
-  (*pstr)<<ses_tmLastSyncCheck;
-  (*pstr)<<ses_ctMaxPlayers;
-  (*pstr)<<ses_bWaitAllPlayers;
-  (*pstr)<<ses_bPause;
-  (*pstr)<<ses_bGameFinished;
-  (*pstr)<<ses_fRealTimeFactor;
+  (*pstr) << ses_tmLastProcessedTick;
+  (*pstr) << ses_iLastProcessedSequence;
+  (*pstr) << ses_iLevel;
+  (*pstr) << ses_ulRandomSeed;
+  (*pstr) << ses_ulSpawnFlags;
+  (*pstr) << ses_tmSyncCheckFrequency;
+  (*pstr) << ses_iExtensiveSyncCheck;
+  (*pstr) << ses_tmLastSyncCheck;
+  (*pstr) << ses_ctMaxPlayers;
+  (*pstr) << ses_ctMinPlayers; // [SSE] Minimum Players Option
+  (*pstr) << ses_bPause;
+  (*pstr) << ses_bGameFinished;
+  (*pstr) << ses_fRealTimeFactor;
   // write session properties to stream
   (*pstr)<<_pNetwork->ga_strSessionName;
   pstr->Write_t(_pNetwork->ga_aubProperties, NET_MAXSESSIONPROPERTIES);
@@ -2078,6 +2234,45 @@ void CSessionState::SessionStateLoop(void)
         CPrintF(TRANS("Disconnected: %s\n"), strReason);
         // disconnect
         _cmiComm.Client_Close();
+
+      // [SSE] Netcode Update - Attaching player to client (phase 2)
+      } else if (nmReliable.GetType() == MSG_S2C_ATTACHPLAYER) {
+        INDEX iNewPlayer;
+        nmReliable>>iNewPlayer;
+        
+        BOOL bAlreadyInList = FALSE;
+        CPlayerSource *ppls = NULL;
+        
+        FOREACHINSTATICARRAY(_pNetwork->ga_aplsPlayers, CPlayerSource, itcls)
+        {
+          if (itcls->IsActive()) {
+            if (itcls->pls_Index == iNewPlayer) {
+              bAlreadyInList = TRUE;
+            }
+          } else {
+            if (ppls == NULL) {
+              ppls = itcls;
+            }
+          }
+        }
+        
+        if (!bAlreadyInList && ppls != NULL)
+        {
+          ppls->pls_Index = iNewPlayer;
+          ppls->pls_paAction.Clear();
+          for(INDEX ipa = 0; ipa< PLS_MAXLASTACTIONS; ipa++) {
+            ppls->pls_apaLastActions[ipa].Clear();
+          }
+          ppls->pls_Active = TRUE;
+        }
+        
+      // [SSE] Netcode Update - instructions for certain client to change server to another.
+      } else if (nmReliable.GetType() == MSG_S2C_CHANGESERVER) {
+        CTString strAddress;
+        nmReliable >> strAddress;
+        
+        _pShell->Execute("JoinGame(\"" + strAddress + "\");");
+        
       // if this is recon response
       } else if (nmReliable.GetType() == MSG_ADMIN_RESPONSE) {
         // just print it

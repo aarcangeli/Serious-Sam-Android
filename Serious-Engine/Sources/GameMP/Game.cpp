@@ -760,7 +760,12 @@ void CGameTimerHandler::HandleTimer(void)
 
 
 void CGame::GameHandleTimer(void)
-{
+{ 
+  // [SSE] Light Dedicated Server
+  if (_bDedicatedServer) {
+    return; // Server don't care about buttons.
+  }
+
   // if direct input is active
   if( _pInput->IsInputEnabled() && !gm_bMenuOn)
   {
@@ -850,9 +855,27 @@ void CGame::GameHandleTimer(void)
   }
 }
 
-/*
- * Global game object (in our case Flesh) initialization function
- */
+// --------------------------------------------------------------------------------------
+// [SSE] TSEXAR
+// --------------------------------------------------------------------------------------
+static void JoinGameSS(void *pArgs)
+{
+  CTString strJoinAddress = *NEXTARGUMENT(CTString*);
+  
+  int iPort;
+  char strAddress[256];
+  
+  if (strJoinAddress.ScanF("%200[^:]:%d", &strAddress, &iPort) < 2) {
+    iPort = 25600;
+  }
+
+  _pShell->SetINDEX("net_iPort", iPort);
+  _pGame->JoinGame(CNetworkSession(strAddress));
+}
+
+// --------------------------------------------------------------------------------------
+// Global game object (in our case Flesh) initialization function
+// --------------------------------------------------------------------------------------
 void CGame::InitInternal( void)
 {
   gam_strCustomLevel = ""; // filename of custom level chosen
@@ -908,7 +931,11 @@ void CGame::InitInternal( void)
 
   gm_MenuSplitScreenCfg = SSC_PLAY1;
 
-  LoadPlayersAndControls();
+  // [SSE] Light Dedicated Server
+  // Server don't need such things.
+  if (!_bDedicatedServer) {
+    LoadPlayersAndControls();
+  }
 
   gm_iWEDSinglePlayer = 0;
   gm_iSinglePlayer = 0;
@@ -987,6 +1014,10 @@ void CGame::InitInternal( void)
   _pShell->DeclareSymbol("user INDEX con_bTalk;", (void *)&con_bTalk);
   _pShell->DeclareSymbol("user void ReportDemoProfile(void);", (void *)&ReportDemoProfile);
   _pShell->DeclareSymbol("user void DumpDemoProfile(void);",   (void *)&DumpDemoProfile);
+  
+  // [SSE] TSEXAR
+  _pShell->DeclareSymbol("user void JoinGame(CTString);",(void *) &JoinGameSS);
+  //
   extern CTString GetGameAgentRulesInfo(void);
   extern CTString GetGameTypeName(INDEX);
   extern CTString GetGameTypeNameCfunc(void* pArgs);
@@ -1032,11 +1063,14 @@ void CGame::InitInternal( void)
     FatalError(TRANS("Current player controls are invalid."));
   }
 
-  // load common controls
-  try {
-    _ctrlCommonControls.Load_t(fnmCommonControls);
-  } catch ( const char * /*strError*/) {
-    //FatalError(TRANS("Cannot load common controls: %s\n"), strError);
+  // [SSE] Light Dedicated Server
+  if (!_bDedicatedServer) {
+    // load common controls
+    try {
+      _ctrlCommonControls.Load_t(fnmCommonControls);
+    } catch (char * /*strError*/) {
+      //FatalError(TRANS("Cannot load common controls: %s\n"), strError);
+    }
   }
 
   // init LCD textures/fonts
@@ -1094,7 +1128,11 @@ void CGame::EndInternal(void)
   } catch ( const char *strError) {
     WarningMessage(TRANS("Cannot save console history:\n%s"), strError);
   }
-  SavePlayersAndControls();
+  
+  // [SSE] Light Dedicated Server
+  if (!_bDedicatedServer) {
+    SavePlayersAndControls();
+  }
 
   // save game shell settings
   try {
@@ -1633,15 +1671,27 @@ void LoadPlayer(CPlayerCharacter &pc, INDEX i)
  */
 void CGame::LoadPlayersAndControls( void)
 {
+  CPrintF("Loading controls...\n");
+  
   for (INDEX iControls=0; iControls<8; iControls++) {
     LoadControls(gm_actrlControls[iControls], iControls);
   }
+  
+  CPrintF("Loading players...\n");
 
   for (INDEX iPlayer=0; iPlayer<8; iPlayer++) {
     LoadPlayer(gm_apcPlayers[iPlayer], iPlayer);
   }
 
   SavePlayersAndControls();
+}
+
+void SavePlayer_t(CPlayerCharacter &pc, INDEX i)
+{
+  CTFileName fnm;
+  fnm.PrintF("Players\\Player%d.plr", i); // [SSE] Userdata folder.
+
+  pc.Save_t(fnm);
 }
 
 /*
@@ -1652,14 +1702,10 @@ void CGame::SavePlayersAndControls( void)
   try
   {
     // save players
-    gm_apcPlayers[0].Save_t( CTString( "Players\\Player0.plr"));
-    gm_apcPlayers[1].Save_t( CTString( "Players\\Player1.plr"));
-    gm_apcPlayers[2].Save_t( CTString( "Players\\Player2.plr"));
-    gm_apcPlayers[3].Save_t( CTString( "Players\\Player3.plr"));
-    gm_apcPlayers[4].Save_t( CTString( "Players\\Player4.plr"));
-    gm_apcPlayers[5].Save_t( CTString( "Players\\Player5.plr"));
-    gm_apcPlayers[6].Save_t( CTString( "Players\\Player6.plr"));
-    gm_apcPlayers[7].Save_t( CTString( "Players\\Player7.plr"));
+    for (INDEX iPlayer = 0; iPlayer < 8; iPlayer++) {
+      SavePlayer_t(gm_apcPlayers[iPlayer], iPlayer);
+    }
+
     // save controls
    /* gm_actrlControls[0].Save_t( CTString( "Controls\\Controls0.ctl"));
     gm_actrlControls[1].Save_t( CTString( "Controls\\Controls1.ctl"));

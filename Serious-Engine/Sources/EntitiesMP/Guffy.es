@@ -253,20 +253,24 @@ procedures:
     FLOAT3D fLookRight = FLOAT3D(1.0f, 0.0f, 0.0f);
     MakeRotationMatrixFast(m, GetPlacement().pl_OrientationAngle);
     fLookRight = fLookRight * m;
-    BOOL bEnemyRight = (BOOL) (fLookRight % (m_penEnemy->GetPlacement().pl_PositionVector - GetPlacement().pl_PositionVector));
+    BOOL bEnemyRight = fLookRight % (m_penEnemy->GetPlacement().pl_PositionVector - GetPlacement().pl_PositionVector);
 
-    if (bEnemyRight>=0) {  // enemy is to the right of guffy
-      ShootProjectile(PRT_GUFFY_PROJECTILE, FIRE_LEFT_ARM*m_fSize*m_fStretchMultiplier, ANGLE3D(0, 0, 0));
+    FLOAT fSMul = ClampDn(m_fStretchMultiplier, 0.2F); // [SSE] Better Enemy Stretching
+    
+    if (bEnemyRight >= 0) {  // enemy is to the right of guffy
+      ShootProjectile(PRT_GUFFY_PROJECTILE, FIRE_LEFT_ARM*m_fSize * fSMul, ANGLE3D(0, 0, 0));
+      ShootProjectile(PRT_GUFFY_PROJECTILE, FIRE_RIGHT_ARM*m_fSize * fSMul, ANGLE3D(-9, 0, 0) * fSMul);
+
       PlaySound(m_soFire1, SOUND_FIRE, SOF_3D);
-      
-      ShootProjectile(PRT_GUFFY_PROJECTILE, FIRE_RIGHT_ARM*m_fSize*m_fStretchMultiplier, ANGLE3D(-9, 0, 0)*m_fStretchMultiplier);
       PlaySound(m_soFire2, SOUND_FIRE, SOF_3D);
+
     } else { // enemy is to the left of guffy
-      ShootProjectile(PRT_GUFFY_PROJECTILE, FIRE_LEFT_ARM*m_fSize*m_fStretchMultiplier, ANGLE3D(9, 0, 0)*m_fStretchMultiplier);
-      PlaySound(m_soFire1, SOUND_FIRE, SOF_3D);
+      ShootProjectile(PRT_GUFFY_PROJECTILE, FIRE_LEFT_ARM*m_fSize * fSMul, ANGLE3D(9, 0, 0) * fSMul);
+      ShootProjectile(PRT_GUFFY_PROJECTILE, FIRE_RIGHT_ARM*m_fSize * fSMul, ANGLE3D(0, 0, 0));
       
-      ShootProjectile(PRT_GUFFY_PROJECTILE, FIRE_RIGHT_ARM*m_fSize*m_fStretchMultiplier, ANGLE3D(0, 0, 0));
+      PlaySound(m_soFire1, SOUND_FIRE, SOF_3D);
       PlaySound(m_soFire2, SOUND_FIRE, SOF_3D);
+ 
     }
     
     autowait(1.0f);

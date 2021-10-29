@@ -43,13 +43,22 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Templates/Stock_CShader.h>
 #include <Engine/Templates/StaticArray.cpp>
 #include <Engine/Base/IFeel.h>
+
+#include <Engine/revision.h>
 #include <sys/system_properties.h>
 #include <sys/sysinfo.h>
+#include <dirent.h>
+#include <sys/stat.h>
 
 // this version string can be referenced from outside the engine
 ENGINE_API CTString _strEngineBuild  = "";
 ENGINE_API ULONG _ulEngineBuildMajor = _SE_BUILD_MAJOR;
 ENGINE_API ULONG _ulEngineBuildMinor = _SE_BUILD_MINOR;
+
+ENGINE_API ULONG _ulEngineRevision = REVISION_ID;
+ENGINE_API ULONG _ulEngineBuildYear = REVISION_BUILD_YEAR;
+ENGINE_API ULONG _ulEngineBuildMonth = REVISION_BUILD_MONTH;
+ENGINE_API ULONG _ulEngineBuildDay = REVISION_BUILD_DAY;
 
 ENGINE_API BOOL _bDedicatedServer = FALSE;
 ENGINE_API BOOL _bWorldEditorApp  = FALSE;
@@ -253,7 +262,10 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
 //    _strLogFile = CTFileName(CTString(strExePath)).FileName();
     _strLogFile = CTFileName(_fnmApplicationExe).FileName();
   }
-  _pConsole->Initialize(_fnmApplicationPath+_strLogFile+".log", 90, 512);
+
+  CTFileName fnmLogsDir = _fnmApplicationPath + "Logs/";
+  mkdir(fnmLogsDir.str_String, ACCESSPERMS);
+  _pConsole->Initialize(fnmLogsDir + _strLogFile+".log", 90, 512);
 
   _pAnimStock        = new CStock_CAnimData;
   _pTextureStock     = new CStock_CTextureData;
@@ -268,7 +280,12 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
   _pTimer = new CTimer;
   _pGfx   = new CGfxLibrary;
   _pSound = new CSoundLibrary;
-  _pInput = new CInput;
+
+  // [SSE] Light Dedicated Server
+  if (!_bDedicatedServer) {
+    _pInput = new CInput;
+  }
+
   _pNetwork = new CNetworkLibrary;
 
   CRCT_Init();
@@ -276,9 +293,11 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
   _strEngineBuild.PrintF( TRANS("SeriousEngine Build: %d.%d"), _SE_BUILD_MAJOR, _SE_BUILD_MINOR);
 
   // print basic engine info
-  CPrintF(TRANS("--- Serious Engine Startup ---\n"));
-  CPrintF("  %s\n\n", _strEngineBuild);
-
+  CPrintF(TRANS("--- Serious Engine E Startup ---\n"));
+  CPrintF("  %s\n", _strEngineBuild);
+  CPrintF("  Revision:   %d\n", _ulEngineRevision);
+  CPrintF("  Build Date: %d/%d/%d\n\n", _ulEngineBuildYear, _ulEngineBuildMonth, _ulEngineBuildDay);
+  
   // print info on the started application
   CPrintF(TRANS("Executable: %s\n"), _fnmApplicationExe);
   CPrintF(TRANS("Assumed engine directory: %s\n"), _fnmApplicationPath);
@@ -448,7 +467,10 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
   }
 #endif
 
-  _pInput->Initialize();
+  // [SSE] Light Dedicated Server
+  if (!_bDedicatedServer) {
+    _pInput->Initialize();
+  }
 
   _pGfx->Init();
   _pSound->Init();
@@ -502,6 +524,7 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
     }
     CPrintF("\n");
   }
+  
 }
 
 
@@ -531,8 +554,10 @@ ENGINE_API void SE_EndEngine(void)
   CRCT_Clear();
 
   // shutdown
-  if( _pNetwork != NULL) { delete _pNetwork;  _pNetwork=NULL; }
-  delete _pInput;    _pInput   = NULL;  
+  if ( _pNetwork != NULL) { delete _pNetwork;  _pNetwork = NULL; }
+  
+  // _pInput can be NULL while running DedicatedServer.
+  if (   _pInput != NULL) { delete _pInput;    _pInput   = NULL; }
   delete _pSound;    _pSound   = NULL;  
   delete _pGfx;      _pGfx     = NULL;    
   delete _pTimer;    _pTimer   = NULL;  

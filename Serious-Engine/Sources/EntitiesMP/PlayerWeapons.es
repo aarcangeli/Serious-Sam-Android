@@ -456,6 +456,8 @@ void DecAmmo(INDEX &ctAmmo, INDEX iDec = 1)
 {
   if (!GetSP()->sp_bInfiniteAmmo) {
     ctAmmo-=iDec;
+   } else {
+    return;
   }
 }
 %}

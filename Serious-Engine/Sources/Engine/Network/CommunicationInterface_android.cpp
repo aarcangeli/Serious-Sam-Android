@@ -58,6 +58,9 @@ BOOL cm_bNetworkInitialized;
 // index 0 is the server's local client, this is an array used by server only
 CClientInterface cm_aciClients[SERVER_CLIENTS];
 
+// [SSE] S2S Communication
+CClientInterface cm_aciServers[SERVER_SERVERS];
+
 // Broadcast interface - i.e. interface for 'nonconnected' communication
 CClientInterface cm_ciBroadcast;
 
@@ -67,8 +70,16 @@ CClientInterface cm_ciLocalClient;
 // global communication interface object (there is only one for the entire engine)
 CCommunicationInterface _cmiComm;
 
+
+/*
+*
+*	Two helper functions - conversion from IP to words
+*
+*/
+
 // convert address to a printable string
-CTString AddressToString(ULONG ulHost) {
+CTString AddressToString(ULONG ulHost)
+{
   ULONG ulHostNet = htonl(ulHost);
 
   // initially not converted
@@ -89,13 +100,7 @@ CTString AddressToString(ULONG ulHost) {
     // just convert to dotted number format
     return inet_ntoa((const in_addr &) ulHostNet);
   }
-}
-
-/*
-*
-*	Two helper functions - conversion from IP to words
-*
-*/
+};
 
 // convert string address to a number
 ULONG StringToAddress(const CTString &strAddress) {
@@ -117,7 +122,9 @@ ULONG StringToAddress(const CTString &strAddress) {
 };
 
 
-CCommunicationInterface::CCommunicationInterface(void) {
+
+CCommunicationInterface::CCommunicationInterface(void)
+{
   cm_csComm.cs_iIndex = -1;
   CTSingleLock slComm(&cm_csComm, TRUE);
 
@@ -249,12 +256,14 @@ void CCommunicationInterface::Unprepare(void) {
 };
 
 
-BOOL CCommunicationInterface::IsNetworkEnabled(void) {
+BOOL CCommunicationInterface::IsNetworkEnabled(void)
+{
   return cm_bNetworkInitialized;
 };
 
 // get address of local machine
-void CCommunicationInterface::GetHostName(CTString &strName, CTString &strAddress) {
+void CCommunicationInterface::GetHostName(CTString &strName, CTString &strAddress)
+{
   strName = cm_strName;
   strAddress = cm_strAddress;
 };
@@ -293,21 +302,21 @@ void CCommunicationInterface::GetRemoteAddress_t(ULONG &ulHost, ULONG &ulPort) {
  */
 
 // broadcast communication
-void CCommunicationInterface::Broadcast_Send(const void *pvSend, SLONG slSendSize,
-                                             CAddress &adrDestination) {
+void CCommunicationInterface::Broadcast_Send(const void *pvSend, SLONG slSendSize,CAddress &adrDestination)
+{
   CTSingleLock slComm(&cm_csComm, TRUE);
 
   cm_ciBroadcast.ci_adrAddress.adr_ulAddress = adrDestination.adr_ulAddress;
   cm_ciBroadcast.ci_adrAddress.adr_uwPort = adrDestination.adr_uwPort;
   cm_ciBroadcast.ci_adrAddress.adr_uwID = adrDestination.adr_uwID;
 
-  cm_ciBroadcast.Send(pvSend, slSendSize, FALSE);
+  cm_ciBroadcast.Send(pvSend, slSendSize,FALSE);
 }
 
-BOOL CCommunicationInterface::Broadcast_Receive(void *pvReceive, SLONG &slReceiveSize,
-                                                CAddress &adrAddress) {
+BOOL CCommunicationInterface::Broadcast_Receive(void *pvReceive, SLONG &slReceiveSize,CAddress &adrAddress)
+{
   CTSingleLock slComm(&cm_csComm, TRUE);
-  return cm_ciBroadcast.ReceiveFrom(pvReceive, slReceiveSize, &adrAddress, FALSE);
+  return cm_ciBroadcast.ReceiveFrom(pvReceive, slReceiveSize,&adrAddress,FALSE);
 }
 
 
@@ -384,7 +393,8 @@ void CCommunicationInterface::Broadcast_Update_t() {
 /*
  *  Initialize server
  */
-void CCommunicationInterface::Server_Init_t(void) {
+void CCommunicationInterface::Server_Init_t(void) 
+{
   CTSingleLock slComm(&cm_csComm, TRUE);
 
   ASSERT(cci_bInitialized);

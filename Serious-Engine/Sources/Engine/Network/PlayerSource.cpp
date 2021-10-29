@@ -160,7 +160,8 @@ void CPlayerSource::SetAction(const CPlayerAction &paAction)
   // set action
   pls_paAction = paAction;
   pls_paAction.pa_llCreated = _pTimer->GetHighPrecisionTimer().GetMilliseconds();
-  //CPrintF("%.2f - created: %d\n", _pTimer->GetRealTimeTick(), SLONG(pls_paAction.pa_llCreated));
+  //CPrintF("%lu\n", pls_paAction.pa_ulButtons);
+  //CPrintF("%-2d  %s  %.2f - created: %d\n", pls_Index, pls_Active ? "  ACTIVE" : "INACTIVE", _pTimer->GetRealTimeTick(), SLONG(pls_paAction.pa_llCreated));
 }
 
 // get mask of this player for chat messages

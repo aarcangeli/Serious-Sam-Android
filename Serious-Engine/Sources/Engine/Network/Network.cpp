@@ -104,7 +104,6 @@ INDEX ser_bClientsMayPause = TRUE;
 FLOAT ser_tmSyncCheckFrequency = 1.0f;
 INDEX ser_iSyncCheckBuffer = 60;
 INDEX ser_bEnumeration  = TRUE;
-INDEX ser_bPingGameAgent = TRUE;
 FLOAT ser_tmKeepAlive = 0.1f;
 FLOAT ser_tmPingUpdate = 3.0f;
 INDEX ser_bWaitFirstPlayer = 0;
@@ -114,9 +113,29 @@ CTString ser_strNameMask = "";
 INDEX ser_bInverseBanning = FALSE;
 CTString ser_strMOTD = "";
 
+// [SSE] Netcode Update - Better Random
+INDEX ser_bBetterRandomOnStart = TRUE;
+INDEX ser_bBetterRandomOnLoad = FALSE;
+INDEX ser_iMaxAllowedChatPerSec = 15; // [SSE] Server Essentials - Chat Anti-DDOS
+
+// [SSE] Netcode Update - Safe Rejoin
+//extern INDEX ser_iMaxDetachedPlayers = 16; // TODO: Make in future.
+INDEX ser_bDetachOnSyncBad = TRUE;
+//
+
+// [SSE] Netcode Update - For Debugging Player Detaching
+INDEX ser_bReportMsgActionsWrongClient = FALSE;
+//
+
+// [SSE] Netcode Update
+INDEX ser_bReportJoinAttemptsNotSSE = FALSE;
+INDEX ser_bReportJoinAttemptsMod = FALSE;
+INDEX ser_bReportJoinAttemptsVersion = FALSE;
+//
+
 INDEX cli_bEmulateDesync  = FALSE;
-INDEX cli_bDumpSync       = TRUE;
-INDEX cli_bDumpSyncEachTick = TRUE;
+INDEX cli_bDumpSync       = FALSE;
+INDEX cli_bDumpSyncEachTick = FALSE;
 INDEX cli_bAutoAdjustSettings = FALSE;
 FLOAT cli_tmAutoAdjustThreshold = 2.0f;
 INDEX cli_bPrediction = FALSE;
@@ -146,7 +165,7 @@ INDEX net_bLerping       = TRUE;
 INDEX net_iGraphBuffer = 100;
 INDEX net_iExactTimer = 2;
 INDEX net_bDumpStreamBlocks = 0;
-INDEX net_bDumpConnectionInfo = 1;
+INDEX net_bDumpConnectionInfo = 0;
 INDEX net_iPort = 25600;
 CTString net_strLocalHost = "";
 CTString net_strLocationCode = "";
@@ -160,11 +179,17 @@ INDEX net_iMaxClients = 0;
 FLOAT net_tmConnectionTimeout = 30.0f;
 FLOAT net_tmProblemsTimeout = 5.0f;
 FLOAT net_tmDisconnectTimeout = 300.0f;  // must be higher for level changing
-INDEX net_bReportCRC = TRUE;
+INDEX net_bReportCRC = FALSE;
 FLOAT net_fDropPackets = 0.0f;
 FLOAT net_tmLatency = 0.0f;
 
+// [SSE] Split Screen Restriction
+INDEX net_iMaxLocalPlayersPerClient = 4;
+//
+
 INDEX ent_bReportSpawnInWall = FALSE;
+
+INDEX ent_bReportClassLoad = FALSE; // [SSE] Extended Class Check
 
 FLOAT cmd_tmTick = 0.0f;
 CTString cmd_cmdOnTick = "";
@@ -172,9 +197,6 @@ CTString cmd_strChatSender = "";
 CTString cmd_strChatMessage = "";
 CTString cmd_cmdOnChat = "";
 INDEX net_ctChatMessages = 0;  // counter for incoming chat messages
-
-// [SSE] Netcode Update - For Debugging Player Detaching
-extern INDEX ser_bReportMsgActionsWrongClient = FALSE;
 
 extern CPacketBufferStats _pbsSend;
 extern CPacketBufferStats _pbsRecv;
@@ -385,6 +407,89 @@ static void NetworkInfo(void)
     }
 }
 
+static void DumpPlayerTargets(void)
+{
+  CPrintF("players targets:\n");
+  
+  // for all remote clients on this machine
+  for(INDEX ipl=0; ipl < _pNetwork->ga_sesSessionState.ses_apltPlayers.Count(); ipl++)
+  {
+    CPlayerTarget &plt = _pNetwork->ga_sesSessionState.ses_apltPlayers[ipl];
+    CPrintF("  %2d %s %s\n", ipl, plt.IsActive() ? "ACTIVE  " : "INACTIVE", plt.plt_penPlayerEntity == NULL ? "NULL " : plt.plt_penPlayerEntity->GetPlayerName());
+  }
+}
+
+static void DumpPlayerSources(void)
+{
+  CPrintF("players sources:\n");
+  
+  // for all local clients on this machine
+  FOREACHINSTATICARRAY(_pNetwork->ga_aplsPlayers, CPlayerSource, itcls)
+  {
+    CPrintF("  %2d %s\n", itcls->pls_Index, itcls->IsActive() ? "ACTIVE  " : "INACTIVE");
+  }
+}
+
+static void ListObservers(void)
+{
+  CPrintF("observer list:\n");
+  if (!_pNetwork->ga_srvServer.srv_bActive) {
+    CPrintF("  <not a server>\n");
+    return;
+  }
+
+  CPrintF("  client# ip\n");
+  CPrintF("  ----------------------------------------\n");
+  
+  INDEX ctObservers = 0;
+
+  for(INDEX iSession = 0; iSession<_pNetwork->ga_srvServer.srv_assoSessions.Count(); iSession++) {
+    CSessionSocket &sso = _pNetwork->ga_srvServer.srv_assoSessions[iSession];
+
+    // Skip inactive sessions.
+    if (iSession > 0 && !sso.sso_bActive) {
+      continue;
+    }
+
+    if (sso.sso_ctLocalPlayers == 0) {
+      ctObservers++;
+      CPrintF("     %-2d   %s\n", iSession, _cmiComm.Server_GetClientName(iSession));
+    }
+  }
+  
+  if (ctObservers == 0) {
+    CPrintF("    There are no observers!\n");
+  }
+  
+  CPrintF("  ----------------------------------------\n");
+}
+
+static void ListAllPlayers(void)
+{
+  CPrintF("player list:\n");
+  
+  CPrintF("  entityid# name\n");
+  CPrintF("  ----------------------------------------\n");
+  
+  INDEX ctPlayers = 0;
+
+  FOREACHINDYNAMICCONTAINER(_pNetwork->ga_World.wo_cenEntities, CEntity, iten) {
+    CEntity *pen = &*iten;
+    // if it is player entity
+    if (IsDerivedFromClass(pen, "PlayerEntity")) {
+      CPlayerEntity *penPlayer = (CPlayerEntity *)pen;
+      CPrintF("     %-4d   %s\n", penPlayer->en_ulID, penPlayer->GetPlayerName());
+      ctPlayers++;
+    }
+  }
+  
+  if (ctPlayers == 0) {
+    CPrintF("    There are no players!\n");
+  }
+  
+  CPrintF("  ----------------------------------------\n");
+}
+
 static void ListPlayers(void)
 {
   CPrintF("player list:\n");
@@ -393,15 +498,16 @@ static void ListPlayers(void)
     return;
   }
 
-  CPrintF("  client# name\n");
-  CPrintF("  ----------------------\n");
+  CPrintF("  CLID# PLID# name\n");
+  CPrintF("  ----------------------------------------\n");
   for(INDEX iplb=0; iplb<_pNetwork->ga_srvServer.srv_aplbPlayers.Count(); iplb++) {
     CPlayerBuffer &plb = _pNetwork->ga_srvServer.srv_aplbPlayers[iplb];
     if (plb.plb_Active) {
-      CPrintF("     %-2d   %s\n", plb.plb_iClient, (const char *) plb.plb_pcCharacter.GetNameForPrinting());
+      CPrintF("     %-2d    %-2d %s\n", plb.plb_iClient, iplb, plb.plb_pcCharacter.GetNameForPrinting());
     }
   }
-  CPrintF("  ----------------------\n");
+  
+  CPrintF("  ----------------------------------------\n");
 }
 
 static void KickClient(INDEX iClient, const CTString &strReason)
@@ -673,11 +779,11 @@ void CNetworkTimerHandler::HandleTimer(void)
  */
 CNetworkLibrary::CNetworkLibrary(void) :
   ga_IsServer(FALSE),               // is not server
-  ga_srvServer(*new CServer),
-  ga_sesSessionState(*new CSessionState),
   ga_bDemoRec(FALSE),               // not recording demo
   ga_bDemoPlay(FALSE),              // not playing demo
-  ga_bDemoPlayFinished(FALSE)      // demo not finished
+  ga_bDemoPlayFinished(FALSE),      // demo not finished
+  ga_srvServer(*new CServer),
+  ga_sesSessionState(*new CSessionState)
 {
   ga_aplsPlayers.New(NET_MAXLOCALPLAYERS);
 
@@ -718,6 +824,317 @@ CNetworkLibrary::~CNetworkLibrary(void)
   delete &ga_srvServer;
 }
 
+static void BroadcastS2STest(void *pArgs)
+{
+  if (!_pNetwork->ga_srvServer.srv_bActive) {
+    CPrintF("  <not a server>\n");
+    return;
+  }
+  
+  CTString strServerName = *NEXTARGUMENT(CTString*);
+  INDEX iPort = NEXTARGUMENT(INDEX);
+  CTString strMessage = *NEXTARGUMENT(CTString*);
+  
+  ULONG ulServerAddress = StringToAddress(strServerName);
+
+  // If message not empty then try to send it.
+  if (strMessage.Length() != 0)
+  {
+    CNetworkMessage nm(MSG_EXTRA);
+    nm << CTString(0, "s2s %s\n", strMessage);
+
+    _pNetwork->SendBroadcast(nm, ulServerAddress, iPort);
+  }
+}
+
+// [SSE] Netcode Update
+static void NET_ChangeServerForClient(void* pArgs)
+{
+  INDEX iClient = NEXTARGUMENT(INDEX);
+  CTString strJoinAddress = *NEXTARGUMENT(CTString*);
+
+  CPrintF("NET_ChangeServerForClient:\n");
+  if (!_pNetwork->ga_srvServer.srv_bActive) {
+    CPrintF("  <not a server>\n");
+    return;
+  }
+  
+  if (!_pNetwork->ga_srvServer.srv_assoSessions[iClient].IsActive()) {
+    CPrintF(TRANS("  <invalid client>\n"));
+    return;
+  }
+  
+  CNetworkMessage nmChangeServer(MSG_S2C_CHANGESERVER);
+  nmChangeServer << strJoinAddress;
+  _pNetwork->SendToClientReliable(iClient, nmChangeServer);
+}
+
+static void NET_AttachPlayer(void* pArgs)
+{
+  INDEX iClient = NEXTARGUMENT(INDEX);
+  INDEX iEntity = NEXTARGUMENT(INDEX);
+  
+  CPrintF("NET_AttachPlayer:\n");
+  if (!_pNetwork->ga_srvServer.srv_bActive) {
+    CPrintF("  <not a server>\n");
+    return;
+  }
+  
+  if (!_pNetwork->ga_srvServer.srv_assoSessions[iClient].IsActive()) {
+    CPrintF(TRANS("  <invalid client>\n"));
+    return;
+  }
+  
+  CEntity *pen = _pNetwork->ga_World.EntityFromID(iEntity);
+
+  // Skip invalid entities.
+  if (pen == NULL) {
+    CPrintF("  <invalid entity>\n");
+    return;
+  }
+
+  // Skip non-players.
+  if (!IsDerivedFromClass(pen, "PlayerEntity")) {
+    CPrintF("  <not a player>\n");
+    return;
+  }
+  
+  FOREACHINSTATICARRAY(_pNetwork->ga_sesSessionState.ses_apltPlayers, CPlayerTarget, itplt)
+  {
+    if (!itplt->IsActive()) {
+      continue;
+    }
+    
+    if (itplt->plt_penPlayerEntity == ((CPlayerEntity*)pen)) {
+      CPrintF("  <already attached>\n");
+      return;
+    }
+  }
+  
+  CPlayerBuffer *pplbNewClient;
+  pplbNewClient = _pNetwork->ga_srvServer.FirstInactivePlayer(); // find some inactive player
+  
+  if (pplbNewClient == NULL) {
+    CPrintF("  <too many players in the session>\n");
+    return;
+  }
+  
+  pplbNewClient->Activate(iClient);
+  INDEX iNewPlayer = pplbNewClient->plb_Index;
+  
+  // create message for attaching player to all sessions
+  CNetworkStreamBlock nsbAttachPlayer(MSG_SEQ_ATTACHPLAYER, ++_pNetwork->ga_srvServer.srv_iLastProcessedSequence);
+  nsbAttachPlayer<<iNewPlayer;
+  nsbAttachPlayer<<iEntity;      // entity id
+  
+  // put the message in buffer to be sent to all sessions
+  _pNetwork->ga_srvServer.AddBlockToAllSessions(nsbAttachPlayer);
+  
+  CNetworkMessage nmPlayerRegistered(MSG_S2C_ATTACHPLAYER);
+  nmPlayerRegistered<<iNewPlayer;   // player index
+  _pNetwork->SendToClientReliable(iClient, nmPlayerRegistered);
+}
+
+static void NET_DetachPlayer(void* pArgs)
+{
+  INDEX iPlayer = NEXTARGUMENT(INDEX);
+
+  CPrintF("NET_DetachPlayer:\n");
+  if (!_pNetwork->ga_srvServer.srv_bActive) {
+    CPrintF("  <not a server>\n");
+    return;
+  }
+
+  iPlayer = Clamp(iPlayer, (INDEX)0, (INDEX)15);
+
+  if (! _pNetwork->ga_sesSessionState.ses_apltPlayers[iPlayer].IsActive()) {
+    CPrintF("  <invalid player>\n");
+    return;
+  }
+
+  // create message for detaching player from all sessions
+  CNetworkStreamBlock nsbRemPlayerData(MSG_SEQ_DETACHPLAYER, ++_pNetwork->ga_srvServer.srv_iLastProcessedSequence);
+  nsbRemPlayerData<<iPlayer;      // write in player index
+
+  // put the message in buffer to be sent to all sessions
+  _pNetwork->ga_srvServer.AddBlockToAllSessions(nsbRemPlayerData);
+
+  // deactivate it
+  _pNetwork->ga_srvServer.srv_aplbPlayers[iPlayer].Deactivate();
+
+  CPrintF("  Detached!\n");
+}
+
+static void NET_SwapPlayers(void* pArgs)
+{
+  INDEX iFirstPlayer = NEXTARGUMENT(INDEX);
+  INDEX iSecondPlayer = NEXTARGUMENT(INDEX);
+
+  CPrintF("NET_SwapPlayers:\n");
+  if (!_pNetwork->ga_srvServer.srv_bActive) {
+    CPrintF("  <not a server>\n");
+    return;
+  }
+
+  iFirstPlayer = Clamp(iFirstPlayer, (INDEX)0, (INDEX)15);
+  iSecondPlayer = Clamp(iSecondPlayer, (INDEX)0, (INDEX)15);
+
+  if (!_pNetwork->ga_sesSessionState.ses_apltPlayers[iFirstPlayer].IsActive()) {
+    CPrintF("  <invalid first player>\n");
+    return;
+  }
+  
+  if (!_pNetwork->ga_sesSessionState.ses_apltPlayers[iSecondPlayer].IsActive()) {
+    CPrintF("  <invalid second player>\n");
+    return;
+  }
+
+  CServer &srvServer = _pNetwork->ga_srvServer;
+  
+  // create message for detaching player from all sessions
+  CNetworkStreamBlock nsbSwapPlayers(MSG_SEQ_SWAPPLAYERENTITIES, ++srvServer.srv_iLastProcessedSequence);
+  nsbSwapPlayers<<iFirstPlayer;      // write in player index
+  nsbSwapPlayers<<iSecondPlayer;      // write in player index
+
+  // put the message in buffer to be sent to all sessions
+  _pNetwork->ga_srvServer.AddBlockToAllSessions(nsbSwapPlayers);
+
+  CPrintF("  Swapped!\n");
+}
+
+static void NET_DestroyEntity(void *pArgs)
+{
+  INDEX iEntity = NEXTARGUMENT(INDEX);
+  
+  CPrintF("NET_DestroyEntity:\n");
+  if (!_pNetwork->ga_srvServer.srv_bActive) {
+    CPrintF("  <not a server>\n");
+    return;
+  }
+  
+  CEntity *penEntity = _pNetwork->ga_World.EntityFromID(iEntity);
+
+  if (penEntity == NULL) {
+    CPrintF("  <invalid entity>\n");
+    return;
+  }
+  
+  CServer &srvServer = _pNetwork->ga_srvServer;
+  
+  // create message for destroying entity in all sessions
+  CNetworkStreamBlock nsbDestroyEntity(MSG_SEQ_DESTROYENTITY, ++srvServer.srv_iLastProcessedSequence);
+  nsbDestroyEntity<<iEntity;
+
+  // put the message in buffer to be sent to all sessions
+  _pNetwork->ga_srvServer.AddBlockToAllSessions(nsbDestroyEntity);
+  
+  CPrintF("  done! Entity marked for removing!\n");
+}
+
+static void NET_SetEntityHealth(void *pArgs)
+{
+  CPrintF("NET_SetEntityHealth:\n");
+  if (!_pNetwork->ga_srvServer.srv_bActive) {
+    CPrintF("  <not a server>\n");
+    return;
+  }
+  
+  INDEX iEntity = NEXTARGUMENT(INDEX);
+  FLOAT fValue = NEXTARGUMENT(FLOAT);
+  
+  CEntity *penEntity = _pNetwork->ga_World.EntityFromID(iEntity);
+
+  if (penEntity == NULL) {
+    CPrintF("  <invalid entity>\n");
+    return;
+  }
+  
+  CServer &srvServer = _pNetwork->ga_srvServer;
+  
+  INDEX iCommandID = 1;
+  
+  // create message for destroying entity in all sessions
+  CNetworkStreamBlock nsbEntityRPC(MSG_SEQ_ENTITYRPC, ++srvServer.srv_iLastProcessedSequence);
+  nsbEntityRPC << iEntity;
+  nsbEntityRPC << iCommandID;
+  nsbEntityRPC << fValue;
+  
+  // put the message in buffer to be sent to all sessions
+  _pNetwork->ga_srvServer.AddBlockToAllSessions(nsbEntityRPC);
+  
+  CPrintF("  done! RPC sent!\n");
+}
+
+static void NET_SetEntityArmor(void *pArgs)
+{
+  CPrintF("NET_SetEntityHealth:\n");
+  if (!_pNetwork->ga_srvServer.srv_bActive) {
+    CPrintF("  <not a server>\n");
+    return;
+  }
+  
+  INDEX iEntity = NEXTARGUMENT(INDEX);
+  FLOAT fValue = NEXTARGUMENT(FLOAT);
+  
+  CEntity *penEntity = _pNetwork->ga_World.EntityFromID(iEntity);
+
+  if (penEntity == NULL) {
+    CPrintF("  <invalid entity>\n");
+    return;
+  }
+  
+  CServer &srvServer = _pNetwork->ga_srvServer;
+  
+  INDEX iCommandID = 2;
+  
+  // create message for destroying entity in all sessions
+  CNetworkStreamBlock nsbEntityRPC(MSG_SEQ_ENTITYRPC, ++srvServer.srv_iLastProcessedSequence);
+  nsbEntityRPC << iEntity;
+  nsbEntityRPC << iCommandID;
+  nsbEntityRPC << fValue;
+  
+  // put the message in buffer to be sent to all sessions
+  _pNetwork->ga_srvServer.AddBlockToAllSessions(nsbEntityRPC);
+  
+  CPrintF("  done! RPC sent!\n");
+}
+
+static void NET_MakePlayerSpectator(void *pArgs)
+{
+  CPrintF("NET_MakePlayerSpectator:\n");
+  if (!_pNetwork->ga_srvServer.srv_bActive) {
+    CPrintF("  <not a server>\n");
+    return;
+  }
+  
+  INDEX iPlayer = NEXTARGUMENT(INDEX);
+  iPlayer = Clamp(iPlayer, (INDEX)0, (INDEX)15);
+  
+  CPlayerTarget &plt = _pNetwork->ga_sesSessionState.ses_apltPlayers[iPlayer];
+  
+  if (!plt.IsActive() || !plt.plt_penPlayerEntity) {
+    CPrintF("  <invalid player>\n");
+    return;
+  }
+  
+  CEntity *penEntity = plt.plt_penPlayerEntity;
+
+  CServer &srvServer = _pNetwork->ga_srvServer;
+  
+  INDEX iCommandID = 3;
+  
+  // create message for destroying entity in all sessions
+  CNetworkStreamBlock nsbEntityRPC(MSG_SEQ_ENTITYRPC, ++srvServer.srv_iLastProcessedSequence);
+  nsbEntityRPC << penEntity->en_ulID;
+  nsbEntityRPC << iCommandID;
+  
+  // put the message in buffer to be sent to all sessions
+  _pNetwork->ga_srvServer.AddBlockToAllSessions(nsbEntityRPC);
+  
+  CPrintF("  done! RPC sent!\n");
+}
+
+extern void DumpVFS();
 
 /*
  * Initialize game management.
@@ -726,174 +1143,229 @@ void CNetworkLibrary::Init(const CTString &strGameID)
 {
   // remember the game ID
   CMessageDispatcher::Init(strGameID);
+  
+  // [SSE] Netcode Update - Testing functions for player Attaching/Detaching/Swapping
+  _pShell->DeclareSymbol("user void NET_ChangeServerForClient(INDEX, CTString);", (void *)  &NET_ChangeServerForClient);
+  _pShell->DeclareSymbol("user void NET_AttachPlayer(INDEX, INDEX);", (void *)  &NET_AttachPlayer);
+  _pShell->DeclareSymbol("user void NET_DetachPlayer(INDEX);", (void *)  &NET_DetachPlayer);
+  _pShell->DeclareSymbol("user void NET_SwapPlayers(INDEX, INDEX);", (void *)  &NET_SwapPlayers);
+  
 
-  // add shell symbols
-  _pShell->DeclareSymbol("user INDEX dbg_bBreak;",(void*) &dbg_bBreak);
-  _pShell->DeclareSymbol("persistent user INDEX gam_bPretouch;",(void*)&gam_bPretouch);
+  _pShell->DeclareSymbol("user void NET_DestroyEntity(INDEX);", (void *)  &NET_DestroyEntity);
+  _pShell->DeclareSymbol("user void NET_SetEntityHealth(INDEX, FLOAT);", (void *)  &NET_SetEntityHealth);
+  _pShell->DeclareSymbol("user void NET_SetEntityArmor(INDEX, FLOAT);", (void *)  &NET_SetEntityArmor);
 
-  _pShell->DeclareSymbol("user INDEX dem_iRecordedNumber;",(void*)&dem_iRecordedNumber);
-  _pShell->DeclareSymbol("user void StartDemoRecording(void);", (void*) &StartDemoRecording);
-  _pShell->DeclareSymbol("user void StopDemoRecording(void);",  (void*) &StopDemoRecording);
-  _pShell->DeclareSymbol("user void NetworkInfo(void);", (void*)  &NetworkInfo);
-  _pShell->DeclareSymbol("user void StockInfo(void);", (void*)    &StockInfo);
-  _pShell->DeclareSymbol("user void StockDump(void);", (void*)    &StockDump);
-  _pShell->DeclareSymbol("user void RendererInfo(void);", (void*) &RendererInfo);
-  _pShell->DeclareSymbol("user void ClearRenderer(void);", (void*)   &ClearRenderer);
-  _pShell->DeclareSymbol("user void CacheShadows(void);", (void*)    &CacheShadows);
-  _pShell->DeclareSymbol("user void KickClient(INDEX, CTString);", (void*) &KickClientCfunc);
-  _pShell->DeclareSymbol("user void KickByName(CTString, CTString);", (void*) &KickByNameCfunc);
-  _pShell->DeclareSymbol("user void ListPlayers(void);", (void*) &ListPlayers);
-  _pShell->DeclareSymbol("user void Admin(CTString);", (void*) &Admin);
+  _pShell->DeclareSymbol("user void NET_MakePlayerSpectator(INDEX);", (void *)  &NET_MakePlayerSpectator);
 
-  _pShell->DeclareSymbol("user void AddIPMask(CTString);", (void*) &AddIPMask);
-  _pShell->DeclareSymbol("user void RemIPMask(CTString);", (void*) &RemIPMask);
-  _pShell->DeclareSymbol("user void AddNameMask(CTString);", (void*) &AddNameMask);
-  _pShell->DeclareSymbol("user void RemNameMask(CTString);", (void*) &RemNameMask);
+  // Add shell symbols.
+  _pShell->DeclareSymbol("user INDEX dbg_bBreak;", (void *)  &dbg_bBreak);
+  _pShell->DeclareSymbol("persistent user INDEX gam_bPretouch;", (void *)  &gam_bPretouch);
 
-  // [SSE] Netcode Update - For Debugging Player Detaching
-  _pShell->DeclareSymbol("user INDEX ser_bReportMsgActionsWrongClient;", &ser_bReportMsgActionsWrongClient);
+  _pShell->DeclareSymbol("user INDEX dem_iRecordedNumber;",     &dem_iRecordedNumber);
+  _pShell->DeclareSymbol("user void StartDemoRecording(void);", (void *)  &StartDemoRecording);
+  _pShell->DeclareSymbol("user void StopDemoRecording(void);", (void *)  &StopDemoRecording);
+  _pShell->DeclareSymbol("user void NetworkInfo(void);", (void *)  &NetworkInfo);
+  _pShell->DeclareSymbol("user void StockInfo(void);", (void *)  &StockInfo);
+  _pShell->DeclareSymbol("user void StockDump(void);", (void *)  &StockDump);
+  _pShell->DeclareSymbol("user void RendererInfo(void);", (void *)  &RendererInfo);
+  _pShell->DeclareSymbol("user void ClearRenderer(void);", (void *)  &ClearRenderer);
+  _pShell->DeclareSymbol("user void CacheShadows(void);", (void *)  &CacheShadows);
+  _pShell->DeclareSymbol("user void KickClient(INDEX, CTString);", (void *)  &KickClientCfunc);
+  _pShell->DeclareSymbol("user void KickByName(CTString, CTString);", (void *)  &KickByNameCfunc);
+  _pShell->DeclareSymbol("user void ListPlayers(void);", (void *)  &ListPlayers);
+  
+  // [SSE] Testing
+  #ifdef USE_LUA
+  extern void LUAJitTest(void *pArgs);
+  _pShell->DeclareSymbol("user void LUAJitTest(void);", (void *)  &LUAJitTest);
+  #endif
+  
+  //#define USE_SE2LOADER
+  
+  #ifdef USE_SE2LOADER
+  extern void __SE2_LoaderTest(void *pArgs);
+  _pShell->DeclareSymbol("user void SE2LoaderTest(void);", (void *)  &__SE2_LoaderTest);
+  #endif
+
+  _pShell->DeclareSymbol("user void BroadcastS2STest(CTString, INDEX, CTString);", (void *)  &BroadcastS2STest);
+  _pShell->DeclareSymbol("user void DumpPlayerSources(void);", (void *)  &DumpPlayerSources);
+  _pShell->DeclareSymbol("user void DumpPlayerTargets(void);", (void *)  &DumpPlayerTargets);
+
+  // [SSE] Server Utilites
+  _pShell->DeclareSymbol("user void ListObservers(void);", (void *)  &ListObservers);
+  _pShell->DeclareSymbol("user void ListAllPlayers(void);", (void *)  &ListAllPlayers);
   //
 
-  _pShell->DeclareSymbol("user FLOAT dem_tmTimer;",(void*)&ga_fDemoTimer);
-  _pShell->DeclareSymbol("user FLOAT dem_fSyncRate;", (void*)      &ga_fDemoSyncRate);
-  _pShell->DeclareSymbol("user FLOAT dem_fRealTimeFactor;",(void*)&ga_fDemoRealTimeFactor);
-  _pShell->DeclareSymbol("user FLOAT gam_fRealTimeFactor;",(void*)&ga_fGameRealTimeFactor);
+  _pShell->DeclareSymbol("user void Admin(CTString);", (void *)  &Admin);
 
-  _pShell->DeclareSymbol("user const FLOAT net_tmLatency;",(void*)&net_tmLatency);
-  _pShell->DeclareSymbol("user const FLOAT cmd_tmTick;",(void*)&cmd_tmTick);
-  _pShell->DeclareSymbol("persistent user CTString cmd_cmdOnTick;",(void*)&cmd_cmdOnTick);
-  _pShell->DeclareSymbol("user CTString cmd_strChatSender ;",(void*)&cmd_strChatSender );
-  _pShell->DeclareSymbol("user CTString cmd_strChatMessage;",(void*)&cmd_strChatMessage);
-  _pShell->DeclareSymbol("persistent user CTString cmd_cmdOnChat;",(void*)&cmd_cmdOnChat);
+  _pShell->DeclareSymbol("user void AddIPMask(CTString);", (void *)  &AddIPMask);
+  _pShell->DeclareSymbol("user void RemIPMask(CTString);", (void *)  &RemIPMask);
+  _pShell->DeclareSymbol("user void AddNameMask(CTString);", (void *)  &AddNameMask);
+  _pShell->DeclareSymbol("user void RemNameMask(CTString);", (void *)  &RemNameMask);
 
-  _pShell->DeclareSymbol("user INDEX net_ctChatMessages;",(void*)&net_ctChatMessages);
 
-  _pShell->DeclareSymbol("persistent user INDEX ent_bReportSpawnInWall;",(void*) &ent_bReportSpawnInWall);
+  _pShell->DeclareSymbol("user FLOAT dem_tmTimer;",         &ga_fDemoTimer);
+  _pShell->DeclareSymbol("user FLOAT dem_fSyncRate;",       &ga_fDemoSyncRate);
+  _pShell->DeclareSymbol("user FLOAT dem_fRealTimeFactor;", (void *)  &ga_fDemoRealTimeFactor);
+  _pShell->DeclareSymbol("user FLOAT gam_fRealTimeFactor;", (void *)  &ga_fGameRealTimeFactor);
 
-  _pShell->DeclareSymbol("user INDEX ser_bReportSyncOK;",(void*)&ser_bReportSyncOK);
-  _pShell->DeclareSymbol("user INDEX ser_bReportSyncBad;", (void*)&ser_bReportSyncBad);
-  _pShell->DeclareSymbol("user INDEX ser_bReportSyncLate;",(void*) &ser_bReportSyncLate);
-  _pShell->DeclareSymbol("user INDEX ser_bReportSyncEarly;",(void*) &ser_bReportSyncEarly);
-  _pShell->DeclareSymbol("user INDEX ser_bPauseOnSyncBad;", (void*) &ser_bPauseOnSyncBad);
-  _pShell->DeclareSymbol("user INDEX ser_iKickOnSyncBad;", (void*)&ser_iKickOnSyncBad);
-  _pShell->DeclareSymbol("user INDEX ser_bKickOnSyncLate;", (void*) &ser_bKickOnSyncLate);
-  _pShell->DeclareSymbol("persistent user FLOAT ser_tmSyncCheckFrequency;",(void*) &ser_tmSyncCheckFrequency);
-  _pShell->DeclareSymbol("persistent user INDEX ser_iSyncCheckBuffer;", (void*)&ser_iSyncCheckBuffer);
-  _pShell->DeclareSymbol("persistent user INDEX cli_bLerpActions;", (void*)&cli_bLerpActions);
-  _pShell->DeclareSymbol("persistent user INDEX cli_bReportPredicted;", (void*)&cli_bReportPredicted);
-  _pShell->DeclareSymbol("persistent user INDEX net_iExactTimer;", (void*)&net_iExactTimer);
-  _pShell->DeclareSymbol("user INDEX net_bDumpStreamBlocks;",  (void*) &net_bDumpStreamBlocks);
-  _pShell->DeclareSymbol("user INDEX net_bDumpConnectionInfo;", (void*)&net_bDumpConnectionInfo);
-  _pShell->DeclareSymbol("user INDEX net_iPort;",(void*) &net_iPort);
-  _pShell->DeclareSymbol("persistent user CTString net_strLocalHost;",(void*) &net_strLocalHost);
-  _pShell->DeclareSymbol("persistent user CTString net_strLocationCode;", (void*)&net_strLocationCode);
-  _pShell->DeclareSymbol("user CTString net_strVIPPassword;",(void*) &net_strVIPPassword);
-  _pShell->DeclareSymbol("user CTString net_strObserverPassword;",(void*) &net_strObserverPassword);
-  _pShell->DeclareSymbol("user INDEX net_iVIPReserve;", (void*)&net_iVIPReserve);
-  _pShell->DeclareSymbol("user INDEX net_iMaxObservers;",(void*) &net_iMaxObservers);
-  _pShell->DeclareSymbol("user INDEX net_iMaxClients;", (void*)&net_iMaxClients);
-  _pShell->DeclareSymbol("user CTString net_strConnectPassword;", (void*)&net_strConnectPassword);
-  _pShell->DeclareSymbol("user CTString net_strAdminPassword;",(void*) &net_strAdminPassword);
-  _pShell->DeclareSymbol("user FLOAT net_tmConnectionTimeout;",(void*) &net_tmConnectionTimeout);
-  _pShell->DeclareSymbol("user FLOAT net_tmProblemsTimeout;", (void*)&net_tmProblemsTimeout);
-  _pShell->DeclareSymbol("user FLOAT net_tmDisconnectTimeout;", (void*)&net_tmDisconnectTimeout);
-  _pShell->DeclareSymbol("user INDEX net_bReportCRC;", (void*)&net_bReportCRC);
-  _pShell->DeclareSymbol("user INDEX ser_iRememberBehind;", (void*)&ser_iRememberBehind);
-  _pShell->DeclareSymbol("user INDEX cli_bEmulateDesync;", (void*) &cli_bEmulateDesync);
-  _pShell->DeclareSymbol("user INDEX cli_bDumpSync;",     (void*)  &cli_bDumpSync);
-  _pShell->DeclareSymbol("user INDEX cli_bDumpSyncEachTick;",(void*)&cli_bDumpSyncEachTick);
-  _pShell->DeclareSymbol("persistent user INDEX ser_iExtensiveSyncCheck;", (void*)&ser_iExtensiveSyncCheck);
-  _pShell->DeclareSymbol("persistent user INDEX net_bLookupHostNames;",   (void*) &net_bLookupHostNames);
-  _pShell->DeclareSymbol("persistent user INDEX net_iCompression ;",   (void*)    &net_iCompression);
-  _pShell->DeclareSymbol("persistent user INDEX net_bReportPackets;",(void*) &net_bReportPackets);
-  _pShell->DeclareSymbol("persistent user INDEX net_iMaxSendRetries;", (void*)&net_iMaxSendRetries);
-  _pShell->DeclareSymbol("persistent user FLOAT net_fSendRetryWait;", (void*)&net_fSendRetryWait);
-  _pShell->DeclareSymbol("persistent user INDEX net_bReportTraffic;", (void*)&net_bReportTraffic);
-  _pShell->DeclareSymbol("persistent user INDEX net_bReportICMPErrors;", (void*)&net_bReportICMPErrors);
-  _pShell->DeclareSymbol("persistent user INDEX net_bReportMiscErrors;",(void*) &net_bReportMiscErrors);
-  _pShell->DeclareSymbol("persistent user INDEX net_bLerping;",    (void*)   &net_bLerping);
-  _pShell->DeclareSymbol("persistent user INDEX ser_bClientsMayPause;",(void*) &ser_bClientsMayPause);
-  _pShell->DeclareSymbol("persistent user INDEX ser_bEnumeration;",    (void*)  &ser_bEnumeration);
-  _pShell->DeclareSymbol("persistent user INDEX ser_bPingGameAgent;",(void*) &ser_bPingGameAgent);
-  _pShell->DeclareSymbol("persistent user FLOAT ser_tmKeepAlive;",(void*) &ser_tmKeepAlive);
-  _pShell->DeclareSymbol("persistent user FLOAT ser_tmPingUpdate;",(void*) &ser_tmPingUpdate);
-  _pShell->DeclareSymbol("persistent user INDEX ser_bWaitFirstPlayer;",(void*) &ser_bWaitFirstPlayer);
-  _pShell->DeclareSymbol("persistent user INDEX ser_iMaxAllowedBPS;", (void*)&ser_iMaxAllowedBPS);
-  _pShell->DeclareSymbol("persistent user INDEX ser_iMaxAllowedBPS;",(void*) &ser_iMaxAllowedBPS);
-  _pShell->DeclareSymbol("persistent user CTString ser_strIPMask;",(void*) &ser_strIPMask);
-  _pShell->DeclareSymbol("persistent user CTString ser_strNameMask;",(void*) &ser_strNameMask);
-  _pShell->DeclareSymbol("persistent user INDEX ser_bInverseBanning;",(void*) &ser_bInverseBanning);
-  _pShell->DeclareSymbol("persistent user CTString ser_strMOTD;",(void*) &ser_strMOTD);
+  _pShell->DeclareSymbol("user const FLOAT net_tmLatency;", (void *)  &net_tmLatency);
+  _pShell->DeclareSymbol("user const FLOAT cmd_tmTick;", (void *)  &cmd_tmTick);
+  _pShell->DeclareSymbol("persistent user CTString cmd_cmdOnTick;", (void *)  &cmd_cmdOnTick);
+  _pShell->DeclareSymbol("user CTString cmd_strChatSender ;", (void *)  &cmd_strChatSender );
+  _pShell->DeclareSymbol("user CTString cmd_strChatMessage;", (void *)  &cmd_strChatMessage);
+  _pShell->DeclareSymbol("persistent user CTString cmd_cmdOnChat;", (void *)  &cmd_cmdOnChat);
 
-  _pShell->DeclareSymbol("persistent user INDEX cli_bAutoAdjustSettings;", (void*)  &cli_bAutoAdjustSettings);
-  _pShell->DeclareSymbol("persistent user FLOAT cli_tmAutoAdjustThreshold;",(void*) &cli_tmAutoAdjustThreshold);
-  _pShell->DeclareSymbol("persistent user INDEX cli_bPrediction;",      (void*)     &cli_bPrediction);
-  _pShell->DeclareSymbol("persistent user INDEX cli_iMaxPredictionSteps;", (void*)  &cli_iMaxPredictionSteps);
-  _pShell->DeclareSymbol("persistent user INDEX cli_bPredictIfServer;",   (void*)   &cli_bPredictIfServer);
-  _pShell->DeclareSymbol("persistent user INDEX cli_bPredictLocalPlayers;", (void*) &cli_bPredictLocalPlayers);
-  _pShell->DeclareSymbol("persistent user INDEX cli_bPredictRemotePlayers;", (void*)&cli_bPredictRemotePlayers);
-  _pShell->DeclareSymbol("persistent user FLOAT cli_fPredictEntitiesRange;",(void*) &cli_fPredictEntitiesRange);
-  _pShell->DeclareSymbol("persistent user FLOAT cli_fPredictionFilter;", (void*)&cli_fPredictionFilter);
-  _pShell->DeclareSymbol("persistent user INDEX cli_iSendBehind;",(void*) &cli_iSendBehind);
-  _pShell->DeclareSymbol("persistent user INDEX cli_iPredictionFlushing;",(void*) &cli_iPredictionFlushing);
+  _pShell->DeclareSymbol("user INDEX net_ctChatMessages;", (void *)  &net_ctChatMessages);
 
-  _pShell->DeclareSymbol("persistent user INDEX cli_iBufferActions;",(void*)  &cli_iBufferActions);
-  _pShell->DeclareSymbol("persistent user INDEX cli_iMaxBPS;",  (void*)   &cli_iMaxBPS);
-  _pShell->DeclareSymbol("persistent user INDEX cli_iMinBPS;",  (void*)   &cli_iMinBPS);
+  _pShell->DeclareSymbol("persistent user INDEX ent_bReportSpawnInWall;", (void *)  &ent_bReportSpawnInWall);
+  
+  _pShell->DeclareSymbol("persistent user INDEX ent_bReportClassLoad;", (void *)  &ent_bReportClassLoad); // [SSE] Extended Class Check
 
-  _pShell->DeclareSymbol("user FLOAT net_fLimitLatencySend;", (void*)  &_pbsSend.pbs_fLatencyLimit);
-  _pShell->DeclareSymbol("user FLOAT net_fLimitLatencyRecv;",  (void*) &_pbsRecv.pbs_fLatencyLimit);
-  _pShell->DeclareSymbol("user FLOAT net_fLatencyVariationSend;",(void*) &_pbsSend.pbs_fLatencyVariation);
-  _pShell->DeclareSymbol("user FLOAT net_fLatencyVariationRecv;",(void*) &_pbsRecv.pbs_fLatencyVariation);
-  _pShell->DeclareSymbol("user FLOAT net_fLimitBandwidthSend;", (void*)&_pbsSend.pbs_fBandwidthLimit);
-  _pShell->DeclareSymbol("user FLOAT net_fLimitBandwidthRecv;", (void*)&_pbsRecv.pbs_fBandwidthLimit);
-  _pShell->DeclareSymbol("user FLOAT net_fDropPackets;", (void*)&net_fDropPackets);
+  _pShell->DeclareSymbol("user INDEX ser_bReportSyncOK;", (void *)  &ser_bReportSyncOK);
+  _pShell->DeclareSymbol("user INDEX ser_bReportSyncBad;", (void *)  &ser_bReportSyncBad);
+  _pShell->DeclareSymbol("user INDEX ser_bReportSyncLate;", (void *)  &ser_bReportSyncLate);
+  _pShell->DeclareSymbol("user INDEX ser_bReportSyncEarly;", (void *)  &ser_bReportSyncEarly);
 
-  _pShell->DeclareSymbol("persistent user INDEX net_iGraphBuffer;",(void*) &net_iGraphBuffer);
+  // [SSE] Netcode Update - For Debugging Player Detaching
+  _pShell->DeclareSymbol("user INDEX ser_bReportMsgActionsWrongClient;", (void *)  &ser_bReportMsgActionsWrongClient);
+  //
+  
+  // [SSE] Netcode Update
+  _pShell->DeclareSymbol("user INDEX ser_bReportJoinAttemptsNotSSE;", (void *)  &ser_bReportJoinAttemptsNotSSE);
+  _pShell->DeclareSymbol("user INDEX ser_bReportJoinAttemptsMod;", (void *)  &ser_bReportJoinAttemptsMod);
+  _pShell->DeclareSymbol("user INDEX ser_bReportJoinAttemptsVersion;", (void *)  &ser_bReportJoinAttemptsVersion);
+  //
 
-  _pShell->DeclareSymbol("user const INDEX precache_NONE;",  (void*)   &_precache_NONE);
-  _pShell->DeclareSymbol("user const INDEX precache_SMART;",  (void*)  &_precache_SMART);
-  _pShell->DeclareSymbol("user const INDEX precache_ALL;",   (void*)   &_precache_ALL);
-  _pShell->DeclareSymbol("user const INDEX precache_PARANOIA;",(void*) &_precache_PARANOIA);
-  _pShell->DeclareSymbol("persistent user INDEX gam_iPrecachePolicy;",(void*) &gam_iPrecachePolicy);
+  _pShell->DeclareSymbol("user INDEX ser_bPauseOnSyncBad;", (void *)  &ser_bPauseOnSyncBad);
+  _pShell->DeclareSymbol("user INDEX ser_iKickOnSyncBad;", (void *)  &ser_iKickOnSyncBad);
+  _pShell->DeclareSymbol("user INDEX ser_bKickOnSyncLate;", (void *)  &ser_bKickOnSyncLate);
+  
+  // [SSE] Netcode Update - Safe Rejoin BEGIN
+  //_pShell->DeclareSymbol("user INDEX ser_iMaxDetachedPlayers;", (void *)  &ser_iMaxDetachedPlayers); // TODO: Make in future. 
+  _pShell->DeclareSymbol("user INDEX ser_bDetachOnSyncBad;", (void *)  &ser_bDetachOnSyncBad);
+  // [SSE] Netcode Update - Safe Rejoin END
+  
+  _pShell->DeclareSymbol("persistent user FLOAT ser_tmSyncCheckFrequency;", (void *)  &ser_tmSyncCheckFrequency);
+  _pShell->DeclareSymbol("persistent user INDEX ser_iSyncCheckBuffer;", (void *)  &ser_iSyncCheckBuffer);
+  _pShell->DeclareSymbol("persistent user INDEX cli_bLerpActions;", (void *)  &cli_bLerpActions);
+  _pShell->DeclareSymbol("persistent user INDEX cli_bReportPredicted;", (void *)  &cli_bReportPredicted);
+  _pShell->DeclareSymbol("persistent user INDEX net_iExactTimer;", (void *)  &net_iExactTimer);
+  _pShell->DeclareSymbol("user INDEX net_bDumpStreamBlocks;", (void *)  &net_bDumpStreamBlocks);
+  _pShell->DeclareSymbol("user INDEX net_bDumpConnectionInfo;", (void *)  &net_bDumpConnectionInfo);
+  _pShell->DeclareSymbol("user INDEX net_iPort;", (void *)  &net_iPort);
+  _pShell->DeclareSymbol("persistent user CTString net_strLocalHost;", (void *)  &net_strLocalHost);
+  _pShell->DeclareSymbol("persistent user CTString net_strLocationCode;", (void *)  &net_strLocationCode);
+  _pShell->DeclareSymbol("user CTString net_strVIPPassword;", (void *)  &net_strVIPPassword);
+  _pShell->DeclareSymbol("user CTString net_strObserverPassword;", (void *)  &net_strObserverPassword);
+  _pShell->DeclareSymbol("user INDEX net_iVIPReserve;", (void *)  &net_iVIPReserve);
+  _pShell->DeclareSymbol("user INDEX net_iMaxObservers;", (void *)  &net_iMaxObservers);
+  _pShell->DeclareSymbol("user INDEX net_iMaxClients;", (void *)  &net_iMaxClients);
 
-  _pShell->DeclareSymbol("user FLOAT phy_fCollisionCacheAhead;", (void*) &phy_fCollisionCacheAhead);
-  _pShell->DeclareSymbol("user FLOAT phy_fCollisionCacheAround;",(void*) &phy_fCollisionCacheAround);
+  // [SSE] Split Screen Restriction
+  _pShell->DeclareSymbol("user INDEX net_iMaxLocalPlayersPerClient;", (void *)  &net_iMaxLocalPlayersPerClient);
+  //
 
-  _pShell->DeclareSymbol("persistent user INDEX inp_iKeyboardReadingMethod;", (void*)  &inp_iKeyboardReadingMethod);
-  _pShell->DeclareSymbol("persistent user INDEX inp_bAllowMouseAcceleration;", (void*) &inp_bAllowMouseAcceleration);
-  _pShell->DeclareSymbol("persistent user FLOAT inp_fMouseSensitivity;",   (void*)     &inp_fMouseSensitivity);
-  _pShell->DeclareSymbol("persistent user INDEX inp_bMousePrecision;",      (void*)    &inp_bMousePrecision);
-  _pShell->DeclareSymbol("persistent user FLOAT inp_fMousePrecisionFactor;", (void*)   &inp_fMousePrecisionFactor);
-  _pShell->DeclareSymbol("persistent user FLOAT inp_fMousePrecisionThreshold;", (void*)&inp_fMousePrecisionThreshold);
-  _pShell->DeclareSymbol("persistent user FLOAT inp_fMousePrecisionTimeout;", (void*)  &inp_fMousePrecisionTimeout);
-  _pShell->DeclareSymbol("persistent user INDEX inp_bInvertMouse;",  (void*)  &inp_bInvertMouse);
-  _pShell->DeclareSymbol("persistent user INDEX inp_bFilterMouse;",   (void*) &inp_bFilterMouse);
-  _pShell->DeclareSymbol("persistent user INDEX inp_bAllowPrescan;", (void*)  &inp_bAllowPrescan);
+  _pShell->DeclareSymbol("user CTString net_strConnectPassword;", (void *)  &net_strConnectPassword);
+  _pShell->DeclareSymbol("user CTString net_strAdminPassword;", (void *)  &net_strAdminPassword);
+  _pShell->DeclareSymbol("user FLOAT net_tmConnectionTimeout;", (void *)  &net_tmConnectionTimeout);
+  _pShell->DeclareSymbol("user FLOAT net_tmProblemsTimeout;", (void *)  &net_tmProblemsTimeout);
+  _pShell->DeclareSymbol("user FLOAT net_tmDisconnectTimeout;", (void *)  &net_tmDisconnectTimeout);
+  _pShell->DeclareSymbol("user INDEX net_bReportCRC;", (void *)  &net_bReportCRC);
+  _pShell->DeclareSymbol("user INDEX ser_iRememberBehind;", (void *)  &ser_iRememberBehind);
+  _pShell->DeclareSymbol("user INDEX cli_bEmulateDesync;", (void *)  &cli_bEmulateDesync);
+  _pShell->DeclareSymbol("user INDEX cli_bDumpSync;",   (void *)    &cli_bDumpSync);
+  _pShell->DeclareSymbol("user INDEX cli_bDumpSyncEachTick;",(void *)&cli_bDumpSyncEachTick);
+  _pShell->DeclareSymbol("persistent user INDEX ser_iExtensiveSyncCheck;", (void *)  &ser_iExtensiveSyncCheck);
+  _pShell->DeclareSymbol("persistent user INDEX net_bLookupHostNames;", (void *)  &net_bLookupHostNames);
+  _pShell->DeclareSymbol("persistent user INDEX net_iCompression ;",       &net_iCompression);
+  _pShell->DeclareSymbol("persistent user INDEX net_bReportPackets;", (void *)  &net_bReportPackets);
+  _pShell->DeclareSymbol("persistent user INDEX net_iMaxSendRetries;", (void *)  &net_iMaxSendRetries);
+  _pShell->DeclareSymbol("persistent user FLOAT net_fSendRetryWait;", (void *)  &net_fSendRetryWait);
+  _pShell->DeclareSymbol("persistent user INDEX net_bReportTraffic;", (void *)  &net_bReportTraffic);
+  _pShell->DeclareSymbol("persistent user INDEX net_bReportICMPErrors;", (void *)  &net_bReportICMPErrors);
+  _pShell->DeclareSymbol("persistent user INDEX net_bReportMiscErrors;", (void *)  &net_bReportMiscErrors);
+  _pShell->DeclareSymbol("persistent user INDEX net_bLerping;",  (void *)     &net_bLerping);
+  _pShell->DeclareSymbol("persistent user INDEX ser_bClientsMayPause;", (void *)  &ser_bClientsMayPause);
+  _pShell->DeclareSymbol("persistent user INDEX ser_bEnumeration;",   (void *)   &ser_bEnumeration);
+  _pShell->DeclareSymbol("persistent user FLOAT ser_tmKeepAlive;", (void *)  &ser_tmKeepAlive);
+  _pShell->DeclareSymbol("persistent user FLOAT ser_tmPingUpdate;", (void *)  &ser_tmPingUpdate);
+  _pShell->DeclareSymbol("persistent user INDEX ser_bWaitFirstPlayer;", (void *)  &ser_bWaitFirstPlayer);
+  _pShell->DeclareSymbol("persistent user INDEX ser_iMaxAllowedBPS;", (void *)  &ser_iMaxAllowedBPS);
+  _pShell->DeclareSymbol("persistent user CTString ser_strIPMask;", (void *)  &ser_strIPMask);
+  _pShell->DeclareSymbol("persistent user CTString ser_strNameMask;", (void *)  &ser_strNameMask);
+  _pShell->DeclareSymbol("persistent user INDEX ser_bInverseBanning;", (void *)  &ser_bInverseBanning);
+  _pShell->DeclareSymbol("persistent user CTString ser_strMOTD;", (void *)  &ser_strMOTD);
 
-  _pShell->DeclareSymbol("persistent user INDEX inp_i2ndMousePort;", (void*)  &inp_i2ndMousePort);
-  _pShell->DeclareSymbol("persistent user INDEX inp_bInvert2ndMouse;",(void*) &inp_bInvert2ndMouse);
-  _pShell->DeclareSymbol("persistent user INDEX inp_bFilter2ndMouse;",(void*) &inp_bFilter2ndMouse);
-  _pShell->DeclareSymbol("persistent user FLOAT inp_f2ndMouseSensitivity;",  (void*)      &inp_f2ndMouseSensitivity);
-  _pShell->DeclareSymbol("persistent user INDEX inp_b2ndMousePrecision;",    (void*)      &inp_b2ndMousePrecision);
-  _pShell->DeclareSymbol("persistent user FLOAT inp_f2ndMousePrecisionFactor;",  (void*)  &inp_f2ndMousePrecisionFactor);
-  _pShell->DeclareSymbol("persistent user FLOAT inp_f2ndMousePrecisionThreshold;", (void*)&inp_f2ndMousePrecisionThreshold);
-  _pShell->DeclareSymbol("persistent user FLOAT inp_f2ndMousePrecisionTimeout;", (void*)  &inp_f2ndMousePrecisionTimeout);
+  _pShell->DeclareSymbol("persistent user INDEX ser_bBetterRandomOnStart;", (void *)  &ser_bBetterRandomOnStart); // [SSE] Netcode Update - Better Random
+  _pShell->DeclareSymbol("persistent user INDEX ser_bBetterRandomOnLoad;", (void *)  &ser_bBetterRandomOnLoad); // [SSE] Netcode Update - Better Random
+  _pShell->DeclareSymbol("persistent user INDEX ser_iMaxAllowedChatPerSec;", (void *)  &ser_iMaxAllowedChatPerSec); // [SSE] Server Essentials - Chat Anti-DDOS
 
-  _pShell->DeclareSymbol("persistent user INDEX inp_bMsgDebugger;", (void*)   &inp_bMsgDebugger);
-  _pShell->DeclareSymbol("persistent user INDEX inp_iMButton4Up;",(void*) &inp_iMButton4Up);
-  _pShell->DeclareSymbol("persistent user INDEX inp_iMButton4Dn;",(void*) &inp_iMButton4Dn);
-  _pShell->DeclareSymbol("persistent user INDEX inp_iMButton5Up;",(void*) &inp_iMButton5Up);
-  _pShell->DeclareSymbol("persistent user INDEX inp_iMButton5Dn;", (void*)&inp_iMButton5Dn);
-  _pShell->DeclareSymbol("persistent user INDEX inp_ctJoysticksAllowed;",  (void*)  &inp_ctJoysticksAllowed);
-  _pShell->DeclareSymbol("persistent user INDEX inp_bForceJoystickPolling;",(void*) &inp_bForceJoystickPolling);
-  _pShell->DeclareSymbol("persistent user INDEX inp_bAutoDisableJoysticks;",(void*) &inp_bAutoDisableJoysticks);
+  _pShell->DeclareSymbol("persistent user INDEX cli_bAutoAdjustSettings;", (void *)  &cli_bAutoAdjustSettings);
+  _pShell->DeclareSymbol("persistent user FLOAT cli_tmAutoAdjustThreshold;", (void *)  &cli_tmAutoAdjustThreshold);
+  _pShell->DeclareSymbol("persistent user INDEX cli_bPrediction;",           &cli_bPrediction);
+  _pShell->DeclareSymbol("persistent user INDEX cli_iMaxPredictionSteps;", (void *)  &cli_iMaxPredictionSteps);
+  _pShell->DeclareSymbol("persistent user INDEX cli_bPredictIfServer;",      &cli_bPredictIfServer);
+  _pShell->DeclareSymbol("persistent user INDEX cli_bPredictLocalPlayers;", (void *)  &cli_bPredictLocalPlayers);
+  _pShell->DeclareSymbol("persistent user INDEX cli_bPredictRemotePlayers;", (void *)  &cli_bPredictRemotePlayers);
+  _pShell->DeclareSymbol("persistent user FLOAT cli_fPredictEntitiesRange;", (void *)  &cli_fPredictEntitiesRange);
+  _pShell->DeclareSymbol("persistent user FLOAT cli_fPredictionFilter;", (void *)  &cli_fPredictionFilter);
+  _pShell->DeclareSymbol("persistent user INDEX cli_iSendBehind;", (void *)  &cli_iSendBehind);
+  _pShell->DeclareSymbol("persistent user INDEX cli_iPredictionFlushing;", (void *)  &cli_iPredictionFlushing);
 
-  _pShell->DeclareSymbol("persistent user INDEX wed_bUseGenericTextureReplacement;",(void*) &wed_bUseGenericTextureReplacement);
+  _pShell->DeclareSymbol("persistent user INDEX cli_iBufferActions;", (void *)  &cli_iBufferActions);
+  _pShell->DeclareSymbol("persistent user INDEX cli_iMaxBPS;",   (void *)  &cli_iMaxBPS);
+  _pShell->DeclareSymbol("persistent user INDEX cli_iMinBPS;",  (void *)   &cli_iMinBPS);
 
-  _pShell->DeclareSymbol("persistent user CTString ga_strServer;",(void*) &ga_strServer);
-  _pShell->DeclareSymbol("persistent user CTString ga_strMSLegacy;",(void*) &ga_strMSLegacy);
-  _pShell->DeclareSymbol("persistent user INDEX ga_bMSLegacy;",(void*) &ga_bMSLegacy);
+  _pShell->DeclareSymbol("user FLOAT net_fLimitLatencySend;", (void *)  &_pbsSend.pbs_fLatencyLimit);
+  _pShell->DeclareSymbol("user FLOAT net_fLimitLatencyRecv;", (void *)  &_pbsRecv.pbs_fLatencyLimit);
+  _pShell->DeclareSymbol("user FLOAT net_fLatencyVariationSend;", (void *)  &_pbsSend.pbs_fLatencyVariation);
+  _pShell->DeclareSymbol("user FLOAT net_fLatencyVariationRecv;", (void *)  &_pbsRecv.pbs_fLatencyVariation);
+  _pShell->DeclareSymbol("user FLOAT net_fLimitBandwidthSend;", (void *)  &_pbsSend.pbs_fBandwidthLimit);
+  _pShell->DeclareSymbol("user FLOAT net_fLimitBandwidthRecv;", (void *)  &_pbsRecv.pbs_fBandwidthLimit);
+  _pShell->DeclareSymbol("user FLOAT net_fDropPackets;", (void *)  &net_fDropPackets);
+
+  _pShell->DeclareSymbol("persistent user INDEX net_iGraphBuffer;", (void *)  &net_iGraphBuffer);
+
+  _pShell->DeclareSymbol("user const INDEX precache_NONE;",     &_precache_NONE);
+  _pShell->DeclareSymbol("user const INDEX precache_SMART;", (void *)  &_precache_SMART);
+  _pShell->DeclareSymbol("user const INDEX precache_ALL;",      &_precache_ALL);
+  _pShell->DeclareSymbol("user const INDEX precache_PARANOIA;", (void *)  &_precache_PARANOIA);
+  _pShell->DeclareSymbol("persistent user INDEX gam_iPrecachePolicy;", (void *)  &gam_iPrecachePolicy);
+
+  _pShell->DeclareSymbol("user FLOAT phy_fCollisionCacheAhead;", (void *)  &phy_fCollisionCacheAhead);
+  _pShell->DeclareSymbol("user FLOAT phy_fCollisionCacheAround;", (void *)  &phy_fCollisionCacheAround);
+
+  _pShell->DeclareSymbol("persistent user INDEX inp_iKeyboardReadingMethod;", (void *)  &inp_iKeyboardReadingMethod);
+  _pShell->DeclareSymbol("persistent user INDEX inp_bAllowMouseAcceleration;", (void *)  &inp_bAllowMouseAcceleration);
+  _pShell->DeclareSymbol("persistent user FLOAT inp_fMouseSensitivity;",   (void *)     &inp_fMouseSensitivity);
+  _pShell->DeclareSymbol("persistent user INDEX inp_bMousePrecision;",     (void *)     &inp_bMousePrecision);
+  _pShell->DeclareSymbol("persistent user FLOAT inp_fMousePrecisionFactor;", (void *)  &inp_fMousePrecisionFactor);
+  _pShell->DeclareSymbol("persistent user FLOAT inp_fMousePrecisionThreshold;", (void *)  &inp_fMousePrecisionThreshold);
+  _pShell->DeclareSymbol("persistent user FLOAT inp_fMousePrecisionTimeout;", (void *)  &inp_fMousePrecisionTimeout);
+  _pShell->DeclareSymbol("persistent user INDEX inp_bInvertMouse;", (void *)  &inp_bInvertMouse);
+  _pShell->DeclareSymbol("persistent user INDEX inp_bFilterMouse;", (void *)  &inp_bFilterMouse);
+  _pShell->DeclareSymbol("persistent user INDEX inp_bAllowPrescan;", (void *)  &inp_bAllowPrescan);
+
+  _pShell->DeclareSymbol("persistent user INDEX inp_i2ndMousePort;", (void *)  &inp_i2ndMousePort);
+  _pShell->DeclareSymbol("persistent user INDEX inp_bInvert2ndMouse;", (void *)  &inp_bInvert2ndMouse);
+  _pShell->DeclareSymbol("persistent user INDEX inp_bFilter2ndMouse;", (void *)  &inp_bFilter2ndMouse);
+  _pShell->DeclareSymbol("persistent user FLOAT inp_f2ndMouseSensitivity;",   (void *)     &inp_f2ndMouseSensitivity);
+  _pShell->DeclareSymbol("persistent user INDEX inp_b2ndMousePrecision;",    (void *)      &inp_b2ndMousePrecision);
+  _pShell->DeclareSymbol("persistent user FLOAT inp_f2ndMousePrecisionFactor;", (void *)  &inp_f2ndMousePrecisionFactor);
+  _pShell->DeclareSymbol("persistent user FLOAT inp_f2ndMousePrecisionThreshold;", (void *)  &inp_f2ndMousePrecisionThreshold);
+  _pShell->DeclareSymbol("persistent user FLOAT inp_f2ndMousePrecisionTimeout;", (void *)  &inp_f2ndMousePrecisionTimeout);
+
+  _pShell->DeclareSymbol("persistent user INDEX inp_bMsgDebugger;", (void *)  &inp_bMsgDebugger);
+  _pShell->DeclareSymbol("persistent user INDEX inp_iMButton4Up;", (void *)  &inp_iMButton4Up);
+  _pShell->DeclareSymbol("persistent user INDEX inp_iMButton4Dn;", (void *)  &inp_iMButton4Dn);
+  _pShell->DeclareSymbol("persistent user INDEX inp_iMButton5Up;", (void *)  &inp_iMButton5Up);
+  _pShell->DeclareSymbol("persistent user INDEX inp_iMButton5Dn;", (void *)  &inp_iMButton5Dn);
+  _pShell->DeclareSymbol("persistent user INDEX inp_ctJoysticksAllowed;", (void *)  &inp_ctJoysticksAllowed);
+  _pShell->DeclareSymbol("persistent user INDEX inp_bForceJoystickPolling;", (void *)  &inp_bForceJoystickPolling);
+  _pShell->DeclareSymbol("persistent user INDEX inp_bAutoDisableJoysticks;", (void *)  &inp_bAutoDisableJoysticks);
+
+  _pShell->DeclareSymbol("persistent user INDEX wed_bUseGenericTextureReplacement;", (void *)  &wed_bUseGenericTextureReplacement);
 
 }
 
@@ -973,6 +1445,36 @@ void CNetworkLibrary::AutoAdjustSettings(void)
 }
 */
 
+// [SSE] Network Update - Better Random
+static void BetterRandom()
+{
+  const ULONG ulDefaultSeed = 0x87654321;
+
+  CSessionState &ses = _pNetwork->ga_sesSessionState;
+  
+  BOOL bOldAllow = ses.ses_bAllowRandom;
+
+  ses.ses_bAllowRandom = TRUE;
+  ses.ses_ulRandomSeed = ulDefaultSeed; // random must start at a number different than zero!
+
+  INDEX iV = 32;
+
+  srand(time(NULL));
+  
+  iV = 8 + rand() % 33;
+  CPrintF("Random IV %d\n", iV);
+  
+  // run rnd a few times to make it go random
+  for (INDEX i = 0; i < iV; i++) {
+    ses.Rnd();
+  }
+  
+  CPrintF("Default Seed: %lu\n", ulDefaultSeed);
+  CPrintF("New     Seed: %lu\n", ses.ses_ulRandomSeed);
+
+  ses.ses_bAllowRandom = bOldAllow;
+}
+
 /*
  * Start a peer-to-peer game session.
  *
@@ -987,7 +1489,8 @@ void CNetworkLibrary::StartPeerToPeer_t(const CTString &strSessionName,
   _pSound->Mute();
 
   // go on
-  CPrintF( TRANS("Starting session: '%s'\n"), (const char *) strSessionName);
+  CPrintF("------------------------------------------------------------\n");
+  CPrintF( TRANS("Starting session: '%s'\n"), strSessionName);
   CPrintF( TRANS("  level: '%s'\n"), (const char*) fnmWorld);
   CPrintF( TRANS("  spawnflags: %08x\n"), ulSpawnFlags);
   CPrintF( TRANS("  max players: %d\n"), ctMaxPlayers);
@@ -1089,7 +1592,12 @@ void CNetworkLibrary::StartPeerToPeer_t(const CTString &strSessionName,
   // start timer sync anew
   ga_ctTimersPending = 0;
   FinishCRCGather();
-  CPrintF( TRANS("  started.\n"));
+  CPrintF( TRANS("  started.                  \n"));
+
+  // [SSE] Network Update - Better Random
+  if (ser_bBetterRandomOnStart) {
+    BetterRandom();
+  }
 }
 
 /*
@@ -1110,8 +1618,10 @@ void CNetworkLibrary::Save_t(const CTFileName &fnmGame) // throw char *
   strmFile.Create_t(fnmGame);
 
   // write game to stream
-  strmFile.WriteID_t("GAME");
+  strmFile.WriteID_t("ESAV"); // [SSE] GAME tag changed to ESAV to have way detect which saved game you try to load.
+
   ga_sesSessionState.Write_t(&strmFile);
+
   strmFile.WriteID_t("GEND");   // game end
 }
 
@@ -1138,9 +1648,8 @@ void CNetworkLibrary::Load_t(const CTFileName &fnmGame) // throw char *
   CTFileStream strmFile;
   strmFile.Open_t(fnmGame);
 
-  // if starting in network
+  // if starting in network then start gathering CRCs.
   if (_cmiComm.IsNetworkEnabled()) {
-    // start gathering CRCs
     InitCRCGather();
   }
 
@@ -1154,7 +1663,17 @@ void CNetworkLibrary::Load_t(const CTFileName &fnmGame) // throw char *
   // start the timer loop
   AddTimerHandler();
 
-  strmFile.ExpectID_t("GAME");
+  // [SSE]
+  if ( strmFile.PeekID_t() == CChunkID("GAME")) {
+    RemoveTimerHandler();
+    ga_srvServer.Stop();
+    ga_IsServer = FALSE;
+
+    ThrowF_t(TRANS("Saved games from classics are incompatible with SSE!"));
+  }
+
+  strmFile.ExpectID_t("ESAV"); // [SSE] GAME tag changed to ESAV to have way detect which saved game you try to load.
+
   // read session state
   try {
     ga_sesSessionState.Start_t(-1);
@@ -1174,6 +1693,11 @@ void CNetworkLibrary::Load_t(const CTFileName &fnmGame) // throw char *
     ga_srvServer.Stop();
     ga_IsServer = FALSE;
     throw;
+  }
+  
+  // [SSE] Network Update - Better Random
+  if (ser_bBetterRandomOnLoad) {
+    BetterRandom();
   }
 
   // set time and pause for server from the saved game
@@ -1221,10 +1745,11 @@ void CNetworkLibrary::EnumSessions(BOOL bInternet)
     delete &*itns;
   }
 
+  // [SSE] [ZCaliptium] We don't need since we init own socket for query protocols.
   // make sure network is on
-  if (!_cmiComm.IsNetworkEnabled()) {
-    _cmiComm.PrepareForUse(/*network*/TRUE, /*client*/FALSE); // have to enumerate as server
-  }
+  //if (!_cmiComm.IsNetworkEnabled()) {
+  //  _cmiComm.PrepareForUse(/*network*/TRUE, /*client*/FALSE); // have to enumerate as server
+  //}
 
   // request enumeration
   GameAgent_EnumTrigger(bInternet);
@@ -1323,11 +1848,19 @@ void CNetworkLibrary::StartDemoPlay_t(const CTFileName &fnDemo)  // throw char *
   AddTimerHandler();
   // initialize server
   try {
-    // read initial info to stream
-    ga_strmDemoPlay.ExpectID_t("DEMO");
-    if (ga_strmDemoPlay.PeekID_t()==CChunkID("MVER")) {
+    // Read initial info to stream.
+    CChunkID cidPeek = ga_strmDemoPlay.PeekID_t();
+
+    // [SSE]
+    if (cidPeek == CChunkID("DEMO")) {
+      ThrowF_t(TRANS("Demos from classics are incompatible with SSE!"));
+    }
+    
+    ga_strmDemoPlay.ExpectID_t("EDEM"); // [SSE] DEMO tag changed to EDEM to have way detect which demo you try to load.
+
+    if (ga_strmDemoPlay.PeekID_t() == CChunkID("MVER")) {
       ga_strmDemoPlay.ExpectID_t("MVER");
-      ga_strmDemoPlay>>ga_ulDemoMinorVersion;
+      ga_strmDemoPlay >> ga_ulDemoMinorVersion;
     } else {
       ga_ulDemoMinorVersion = 2;
     }
@@ -1475,14 +2008,18 @@ BOOL CNetworkLibrary::IsWaitingForPlayers(void)
     // not waiting
     return FALSE;
   }
-  // if server
+  
+  // [SSE] Minimum Players
+  if (ga_sesSessionState.ses_ctMinPlayers <= 1) {
+    return FALSE;
+  }
+  
+  // if server then check number of players on server
   if (IsServer()) {
-    // check number of players on server
-    return ga_srvServer.GetPlayersCount()<ga_sesSessionState.ses_ctMaxPlayers;
-  // if not server
+    return ga_srvServer.GetPlayersCount() < ga_sesSessionState.ses_ctMaxPlayers;
+  // if not server then check number of players in session
   } else {
-    // check number of players in session
-    return ga_sesSessionState.GetPlayersCount()<ga_sesSessionState.ses_ctMaxPlayers;
+    return ga_sesSessionState.GetPlayersCount() < ga_sesSessionState.ses_ctMaxPlayers;
   }
 }
 // test if game is waiting for server
@@ -1774,7 +2311,7 @@ void CNetworkLibrary::StartDemoRec_t(const CTFileName &fnDemo) // throw char *
   ga_strmDemoRec.Create_t(fnDemo);
 
   // write initial info to stream
-  ga_strmDemoRec.WriteID_t("DEMO");
+  ga_strmDemoRec.WriteID_t("EDEM"); // [SSE] DEMO tag changed to EDEM to have way detect which demo you try to load.
   ga_strmDemoRec.WriteID_t("MVER");
   ga_strmDemoRec<<ULONG(_SE_BUILD_MINOR);
   ga_sesSessionState.Write_t(&ga_strmDemoRec);
@@ -1966,31 +2503,34 @@ void CNetworkLibrary::MainLoop(void)
       ULONG ulFrom;
       UWORD uwPort;
       BOOL bHasMsg = ReceiveBroadcast(nmReceived, ulFrom, uwPort);
-      // if there are no more messages
+      // if there are no more messages then finish.
+
       if (!bHasMsg) {
-        // finish
         break;
       }
 
-      // if this message is not valid rcon message
-      if (nmReceived.GetType()!=MSG_EXTRA) {
-        // skip it
+      // If this message is not valid rcon message then skip it.
+      if (nmReceived.GetType() != MSG_EXTRA) {
         continue;
       }
       // get the string from the message
       CTString strMsg;
       nmReceived>>strMsg;
 
-      // if this is server
-      if (IsServer()) {
-        // accept requests
+      if (strMsg.RemovePrefix("s2s ")) {
+        CPrintF("[S2S][%s:%d] %s", AddressToString(ulFrom), uwPort, strMsg);
+      }
+      
+      // If this is server then accept requests.
+      if (IsServer())
+      {
         if (!strMsg.RemovePrefix("rcmd ")) {
           continue;
         }
         ULONG ulCode;
         char strPass[80];
         char strCmd[256];
-        strMsg.ScanF("%u \"%80[^\"]\"%256[^\n]", &ulCode, strPass, strCmd);
+        strMsg.ScanF("%u \"%80[^\"]\"%256[^\n]", (void *)  &ulCode, strPass, strCmd);
         CTString strAdr = AddressToString(ulFrom);
 
         if (net_strAdminPassword=="" || net_strAdminPassword!=strPass) {
@@ -2260,15 +2800,100 @@ void CNetworkLibrary::WriteVersion_t(CTStream &strm)
   strm.WriteID_t("BUIV"); // build version
   strm<<INDEX(_SE_BUILD_MAJOR);
 }
+
+static BOOL RecognizeNewEngine_t(CTStream &strm)
+{
+  CChunkID cidPeakedChunk = strm.PeekID_t();
+  
+  if (cidPeakedChunk == CChunkID("WRKS"))
+  {
+    strm.ExpectID_t("WRKS");
+  }
+  
+  if (cidPeakedChunk == CChunkID("SIGS"))
+  {
+    ThrowF_t(TRANS("File '%s' contains credentials data!\n\nThat means it was created by SE3 or newer, so it cannot be loaded!\nAnd I can't even recognise engine version because I don't know credentals lenght!"), strm.GetDescription());
+    return TRUE;
+  }
+  
+  if (cidPeakedChunk == CChunkID("CTSE"))
+  {
+    strm.ExpectID_t("CTSE");
+    
+    cidPeakedChunk = strm.PeekID_t();
+
+    if (cidPeakedChunk == CChunkID("META"))
+    {
+      strm.ExpectID_t("META");
+
+      CTString strVersion;
+      INDEX iFormatVersion;
+
+      try {
+        INDEX iEndianess;
+        strm >> iEndianess;
+        
+        strm >> iFormatVersion;
+        
+        
+        if (iFormatVersion <= 8) {
+          strVersion.PrintF("Serious Engine 2");
+        } else if (iFormatVersion <= 10) {
+          strVersion.PrintF("Serious Engine 3/3.5");
+        } else if (iFormatVersion == 11) {
+          strVersion.PrintF("Serious Engine 4.0/2017");
+        } else {
+          strVersion.PrintF("Serious Engine 2017+");
+        }
+
+        
+      } catch (char) {
+        ThrowF_t(TRANS("File '%s' contains metadata.\nThat means file was created by SE2 or newer, so it cannot be loaded!"), strm.GetDescription());
+        return TRUE;
+      }
+
+      ThrowF_t(TRANS("File '%s' contains metadata.\nMetadata has version: %d\nThat means file was created by %s, so it cannot be loaded!"), strm.GetDescription(), iFormatVersion, strVersion);
+      
+      return TRUE;
+    } else {
+      ThrowF_t(TRANS("File '%s' cannot be loaded as world document!\nUnknown signature!"), strm.GetDescription());
+      return TRUE;
+    }
+  }
+  
+  return FALSE;
+}
+
+static BOOL RecognieeIdiotism_t(CTStream &strm)
+{
+  CChunkID cidPeakedChunk = strm.PeekID_t();
+
+  if (cidPeakedChunk == CChunkID("TVER"))
+  {
+    ThrowF_t(TRANS("File '%s' is not a world document and cannot be loaded! It is texture because it has texture data!\n\nTrying to open texture as world is supreme stage of idiotism! Ask somebody to award you!"), strm.GetDescription());
+    return TRUE;
+  }
+  
+  if (cidPeakedChunk == CChunkID("MDAT"))
+  {
+    ThrowF_t(TRANS("File '%s' is not a world document and cannot be loaded! It is model because it has model data!\n\nThank you for your endless autism!"), strm.GetDescription());
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
 // load version of engine saved in file and check against current
 void CNetworkLibrary::CheckVersion_t(CTStream &strm, BOOL bAllowReinit, BOOL &bNeedsReinit)
 {
-  // if not saved
-  if (strm.PeekID_t()!=CChunkID("BUIV")) { // build version
-    // behave as if everything is ok (for old versions)
+  if (RecognieeIdiotism_t(strm)) return;
+
+  // if not saved then behave as if everything is ok (for old versions)
+  if (strm.PeekID_t() != CChunkID("BUIV")) { // build version
     bNeedsReinit = FALSE;
     return;
   }
+
   strm.ExpectID_t("BUIV"); // build version
   // read the saved one
   INDEX iSaved;
@@ -2424,7 +3049,7 @@ extern void NET_MakeDefaultState_t(
 // handle broadcast messages (server enumeration)
 void CNetworkLibrary::GameInactive(void)
 {
-  GameAgent_EnumUpdate();
+
 
   // if no network
   if (!_cmiComm.IsNetworkEnabled()) {

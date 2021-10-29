@@ -169,7 +169,11 @@ ENGINE_API void FinishTranslationTable(void)
   };
   _atpPairs.Unlock();
 
-  _pInput->SetKeyNames();
+  // [SSE] Light Dedicated Server
+  extern BOOL _bDedicatedServer;
+  if (!_bDedicatedServer) {
+    _pInput->SetKeyNames();
+  }
 }
 
 // add given translation table

@@ -286,7 +286,7 @@ procedures:
       PlaySound(m_soSound, SOUND_FIRE, SOF_3D);
       autowait(0.51f);
 
-      ShootProjectile(PRT_BEAST_PROJECTILE, FLOAT3D( 0.0f, 1.5f*BEAST_STRETCH*m_fStretchMultiplier, 0.0f),
+      ShootProjectile(PRT_BEAST_PROJECTILE, FLOAT3D(0.0f, 1.5f * BEAST_STRETCH * ClampDn(m_fStretchMultiplier, 0.3F), 0.0f), // [SSE] Better Enemy Stretching
         ANGLE3D(AngleDeg((FRnd()-0.5)*30.0f), AngleDeg(FRnd()*10.0f), 0));
       autowait(0.3f);
     }
@@ -303,7 +303,7 @@ procedures:
 
           PlaySound(m_soSound, SOUND_FIRE, SOF_3D);
           autowait(0.34f);
-          ShootProjectile(PRT_BEAST_BIG_PROJECTILE, FLOAT3D( 0.0f, 1.5f*BIG_BEAST_STRETCH*m_fStretchMultiplier, 0.0f),
+          ShootProjectile(PRT_BEAST_BIG_PROJECTILE, FLOAT3D( 0.0f, 1.5f * BIG_BEAST_STRETCH * ClampDn(m_fStretchMultiplier, 0.1F), 0.0f), // [SSE] Better Enemy Stretching
             ANGLE3D( AngleDeg(40.0f*Cos(m_iCounter*360.0/6.0f)), AngleDeg(20.0f*Sin(m_iCounter*180.0/6.0f)), 0));
           //autowait(0.15f);
           m_iCounter++;
@@ -321,7 +321,7 @@ procedures:
 
           PlaySound(m_soSound, SOUND_FIRE, SOF_3D);
           autowait(0.5f);
-          ShootProjectile(PRT_BEAST_BIG_PROJECTILE, FLOAT3D( 0.0f, 1.5f*BIG_BEAST_STRETCH*m_fStretchMultiplier, 0.0f),
+          ShootProjectile(PRT_BEAST_BIG_PROJECTILE, FLOAT3D( 0.0f, 1.5f * BIG_BEAST_STRETCH * ClampDn(m_fStretchMultiplier, 0.1F), 0.0f), // [SSE] Better Enemy Stretching
             ANGLE3D( AngleDeg(20.0f*Cos(m_iCounter*360.0/3.0f)), AngleDeg(10.0f*Sin(m_iCounter*180.0/3.0f)), 0));
           //autowait(0.25f);
           m_iCounter++;

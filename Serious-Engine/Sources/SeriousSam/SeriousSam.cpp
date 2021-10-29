@@ -145,7 +145,7 @@ CTString sam_strTrainingLevel = "Levels\\KarnakDemo.wld";
 #else
 CTString sam_strVersion = SSA_VERSION;
 CTString sam_strModName = TRANS("-   A N D R O I D   P O R T   ( U N O F F I C I A L )   -");
-CTString sam_strBackLink = TRANS("https://github.com/aarcangeli/Serious-Sam-Android");
+CTString sam_strBackLink = TRANS("https://github.com/Skyrimus/Serious-Sam-Android");
 
 CTFileName sam_strFirstLevel = CTString("Levels\\LevelsMP\\1_0_InTheLastEpisode.wld");
 CTFileName sam_strIntroLevel = CTString("Levels\\LevelsMP\\Intro.wld");
@@ -691,19 +691,22 @@ BOOL Init()
     // execute the mod startup script
     _pShell->Execute(CTString("include \"Scripts\\Mod_startup.ini\";"));
   }
-
+  
+  if (!_bDedicatedServer) {
   // init gl settings module
   InitGLSettings();
-
+  }
   // init level-info subsystem
   LoadLevelsList();
   LoadDemosList();
-
+  
+  if (!_bDedicatedServer) {
   // apply application mode
   StartNewMode( (GfxAPIType)sam_iGfxAPI, sam_iDisplayAdapter, sam_iScreenSizeI, sam_iScreenSizeJ,
                 (enum DisplayDepth)sam_iDisplayDepth, sam_bFullScreenActive);
 
   gles_adapter::gles_adp_init();
+  }
 
   // set default mode reporting
   if( sam_bFirstStarted) {
