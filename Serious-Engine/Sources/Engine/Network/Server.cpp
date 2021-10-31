@@ -911,7 +911,6 @@ void CServer::ConnectRemoteSessionState(INDEX iClient, CNetworkMessage &nm)
 
   // read version info
   INDEX iTag, iMajor, iMinor;
-  INDEX iRevision, iBuildYear, iBuildMonth, iBuildDay;
   nm >> iTag;
 
   extern ULONG _ulEngineRevision;

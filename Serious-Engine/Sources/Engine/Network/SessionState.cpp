@@ -316,14 +316,11 @@ void CSessionState::Start_AtClient_t(INDEX ctLocalPlayers)     // throw char *
   CNetworkMessage nmKeepAlive(MSG_KEEPALIVE);
   _pNetwork->SendToServer(nmKeepAlive);
   
-  extern ULONG _ulEngineRevision;
-  extern ULONG _ulEngineBuildYear;
-  extern ULONG _ulEngineBuildMonth;
-  extern ULONG _ulEngineBuildDay;
+  #define VTAG 0x56544147  // Looks like 'VTAG' in ASCII.
 
   // send registration request
   CNetworkMessage nmRegisterSessionState(MSG_REQ_CONNECTREMOTESESSIONSTATE);
-  nmRegisterSessionState << INDEX('EVT0') << INDEX(_SE_BUILD_MAJOR) << INDEX(_SE_BUILD_MINOR) << _ulEngineRevision << _ulEngineBuildYear << _ulEngineBuildMonth << _ulEngineBuildDay;
+  nmRegisterSessionState << INDEX(VTAG) << INDEX(_SE_BUILD_MAJOR) << INDEX(_SE_BUILD_MINOR);
   nmRegisterSessionState << _strModName;
 
   extern CTString net_strConnectPassword;
