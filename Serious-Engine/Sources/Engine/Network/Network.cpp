@@ -153,7 +153,7 @@ INDEX cli_iBufferActions = 1;
 INDEX cli_iMaxBPS = 4000;
 INDEX cli_iMinBPS = 0;
 
-INDEX net_iCompression = 1;
+INDEX net_iCompression = 0;
 INDEX net_bLookupHostNames = FALSE;
 INDEX net_bReportPackets = FALSE;
 INDEX net_iMaxSendRetries = 10;
