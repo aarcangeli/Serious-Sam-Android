@@ -418,8 +418,8 @@ void InitializeMenus(void)
   _pGUIM->gmNetworkOpenMenu.Initialize_t();
   _pGUIM->gmNetworkOpenMenu.gm_strName = "NetworkOpen";
   _pGUIM->gmNetworkOpenMenu.gm_pmgSelectedByDefault = &_pGUIM->gmNetworkOpenMenu.gm_mgJoin;
-//  _pGUIM->gmNetworkOpenMenu.gm_pgmParentMenu = &_pGUIM->gmNetworkJoinMenu; // skip "join game" menu
-  _pGUIM->gmNetworkOpenMenu.gm_pgmParentMenu = &_pGUIM->gmNetworkMenu;
+  _pGUIM->gmNetworkOpenMenu.gm_pgmParentMenu = &_pGUIM->gmNetworkJoinMenu; // skip "join game" menu
+//  _pGUIM->gmNetworkOpenMenu.gm_pgmParentMenu = &_pGUIM->gmNetworkMenu;
   InitActionsForNetworkOpenMenu();
 
   _pGUIM->gmSplitScreenMenu.Initialize_t();

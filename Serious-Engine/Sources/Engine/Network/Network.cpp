@@ -71,7 +71,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Templates/Stock_CShader.h>
 #include <Engine/Templates/Stock_CSkeleton.h>
 
-#include <Engine/GameAgent/GameAgent.h>
+#include <Engine/Query/MasterServerMgr.h>
 
 
 // pointer to global instance of the only game object in the application
@@ -1367,6 +1367,14 @@ void CNetworkLibrary::Init(const CTString &strGameID)
 
   _pShell->DeclareSymbol("persistent user INDEX wed_bUseGenericTextureReplacement;", (void *)  &wed_bUseGenericTextureReplacement);
 
+  _pShell->DeclareSymbol("persistent user CTString ms_strServer;",(void *) &ms_strServer);
+  _pShell->DeclareSymbol("persistent user CTString ms_strMSLegacy;",(void *) &ms_strMSLegacy);
+  _pShell->DeclareSymbol("persistent user CTString ms_strDarkPlacesMS;",(void *) &ms_strDarkPlacesMS);
+  _pShell->DeclareSymbol("persistent user CTString ms_strGameName;",(void *) &ms_strGameName);
+  _pShell->DeclareSymbol("persistent user INDEX ms_bMSLegacy;",(void *) &ms_bMSLegacy);
+  _pShell->DeclareSymbol("persistent user INDEX ms_bDarkPlacesMS;",(void *) &ms_bDarkPlacesMS);
+  _pShell->DeclareSymbol("persistent user INDEX ms_bDarkPlacesDebug;",(void *) &ms_bDarkPlacesDebug);
+
 }
 
 /*
@@ -1745,7 +1753,8 @@ void CNetworkLibrary::EnumSessions(BOOL bInternet)
   //}
 
   // request enumeration
-  GameAgent_EnumTrigger(bInternet);
+  //GameAgent_EnumTrigger(bInternet);
+  MS_EnumTrigger(bInternet);
 }
 
 /*
@@ -2482,10 +2491,14 @@ void CNetworkLibrary::MainLoop(void)
   if (_cmiComm.IsNetworkEnabled()) {
 
     // do services for gameagent querying
-    GameAgent_ServerUpdate();
+   // GameAgent_ServerUpdate();
 
 //    _cmiComm.Broadcast_Update();
 
+    if (ser_bEnumeration) {
+      MS_OnServerUpdate();
+    }
+	
     // repeat
     FOREVER {
       CNetworkMessage nmReceived;
@@ -3041,6 +3054,7 @@ extern void NET_MakeDefaultState_t(
 void CNetworkLibrary::GameInactive(void)
 {
 
+  MS_EnumUpdate();
 
   // if no network
   if (!_cmiComm.IsNetworkEnabled()) {

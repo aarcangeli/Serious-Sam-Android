@@ -1017,8 +1017,8 @@ void InitActionsForNetworkMenu()
 {
   CNetworkMenu &gmCurrent = _pGUIM->gmNetworkMenu;
 
-//  gmCurrent.gm_mgJoin.mg_pActivatedFunction = &StartNetworkJoinMenu; // skip "join game" menu
-  gmCurrent.gm_mgJoin.mg_pActivatedFunction = &StartNetworkOpenMenu;
+  gmCurrent.gm_mgJoin.mg_pActivatedFunction = &StartNetworkJoinMenu; // skip "join game" menu
+ // gmCurrent.gm_mgJoin.mg_pActivatedFunction = &StartNetworkOpenMenu;
   gmCurrent.gm_mgStart.mg_pActivatedFunction = &StartNetworkStartMenu;
   gmCurrent.gm_mgQuickLoad.mg_pActivatedFunction = &StartNetworkQuickLoadMenu;
   gmCurrent.gm_mgLoad.mg_pActivatedFunction = &StartNetworkLoadMenu;

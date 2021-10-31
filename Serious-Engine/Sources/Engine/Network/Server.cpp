@@ -35,7 +35,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Entities/InternalClasses.h>
 #include <Engine/Base/CRC.h>
 #include <Engine/Base/ErrorTable.h>
-#include <Engine/GameAgent/GameAgent.h>
+#include <Engine/Query/MasterServerMgr.h>
 
 #include <Engine/Templates/StaticArray.cpp>
 
@@ -221,8 +221,12 @@ CServer::~CServer()
 void CServer::Stop(void)
 {
   // stop gameagent
-  GameAgent_ServerEnd();
-
+ // GameAgent_ServerEnd();
+ 
+  if (ser_bEnumeration) {
+    MS_OnServerEnd();
+  }
+  
   // tell all clients to disconnect
   INDEX ctClients = srv_assoSessions.sa_Count;
   INDEX iClient;
@@ -293,7 +297,7 @@ void CServer::Start_t(void)
 
   // init gameagent
   if (_cmiComm.IsNetworkEnabled()) {
-  
+    MS_OnServerStart();
   }
 }
 
@@ -914,40 +918,22 @@ void CServer::ConnectRemoteSessionState(INDEX iClient, CNetworkMessage &nm)
   extern ULONG _ulEngineBuildYear;
   extern ULONG _ulEngineBuildMonth;
   extern ULONG _ulEngineBuildDay;
-  
-  // [SSE] Versionizing System
-  if (iTag == 'EVT0') {
-    nm >> iMajor >> iMinor >> iRevision >> iBuildYear >> iBuildMonth >> iBuildDay;
-    
+
+  #define VTAG 0x56544147  // Looks like 'VTAG' in ASCII.
+  if (iTag==VTAG) {
+    nm>>iMajor>>iMinor;
   } else {
-
-    if (iTag == 'VTAG') {
-      nm >> iMajor >> iMinor;
-    } else {
-      iMajor = 109;
-      iMinor = 1;
-    }
-    
-    CTString strExplanation;
-    strExplanation.PrintF(TRANS(
-      "This server runs version SSE-%d.%d-%d based game.\n"
-      "Your game is not Serious Sam Evolution!\n"
-      "Please visit https://github.com/zcaliptium/Serious-Engine-E for more information."), _SE_BUILD_MAJOR / 10000, _SE_BUILD_MINOR, _ulEngineRevision);
-
-    SendDisconnectMessage(iClient, strExplanation, /*bStream=*/TRUE, ser_bReportJoinAttemptsNotSSE);
-    return;
+    iMajor = 109;
+    iMinor = 1;
   }
 
   // if lesser version then disconnect the client
-  if (iRevision < _ulEngineRevision)
-  {
+  if (iMajor!=_SE_BUILD_MAJOR || iMinor!=_SE_BUILD_MINOR) {
     CTString strExplanation;
     strExplanation.PrintF(TRANS(
-      "This server runs version SSE-%d.%d-%d.\n"
-      "Your version is SSE-%d.%d-%d.\n"
-      "Please visit https://github.com/zcaliptium/Serious-Engine-E for more information."),
-      _SE_BUILD_MAJOR / 10000, _SE_BUILD_MINOR, _ulEngineRevision, iMajor, iMinor, iRevision);
-
+      "This server runs version %d.%d, your version is %d.%d.\n"
+      "Please visit http://www.croteam.com for information on version updating."),
+      _SE_BUILD_MAJOR, _SE_BUILD_MINOR, iMajor, iMinor);
     SendDisconnectMessage(iClient, strExplanation, /*bStream=*/TRUE, ser_bReportJoinAttemptsVersion);
     return;
   }
@@ -1420,6 +1406,11 @@ void CServer::Handle(INDEX iClient, CNetworkMessage &nmMessage)
       CNetworkMessage nmPlayerRegistered(MSG_REP_CONNECTPLAYER);
       nmPlayerRegistered<<iNewPlayer;   // player index
       _pNetwork->SendToClientReliable(iClient, nmPlayerRegistered);
+
+      // notify masterserver
+      if (ser_bEnumeration) {
+        MS_OnServerStateChanged();
+      }
 
     // if refused
     } else {

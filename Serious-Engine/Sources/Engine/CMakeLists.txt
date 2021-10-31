@@ -208,6 +208,10 @@ set(
   "${SE_BASE}/StdH.cpp"
   "${SE_BASE}/Base/Synchronization.cpp"
   "${SE_BASE}/Base/Synchronization_win32_fallback.cpp"
+  "${SE_BASE}/Query/DarkPlacesMasterServer.cpp"
+  "${SE_BASE}/Query/GameAgentMasterServer.cpp"
+  "${SE_BASE}/Query/LegacyMasterServer.cpp"
+  "${SE_BASE}/Query/MasterServerMgr.cpp"
   
   ${SE_GEN_SOURCES}
 
@@ -228,7 +232,7 @@ set(
   ${SE_BASE}/_android/MultiMonitor.cpp
   ${SE_BASE}/Graphics/ViewPort_android.cpp
   ${SE_BASE}/_android/CGfxLibrary.cpp
-  ${SE_BASE}/_android/GameAgent.cpp
+  #${SE_BASE}/_android/GameAgent.cpp
 
   # excluded sources
   #"${SE_BASE}/Graphics/Gfx_wrapper_Direct3D.cpp"
