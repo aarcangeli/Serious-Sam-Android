@@ -94,6 +94,7 @@ android {
                 cppFlags "-fexceptions"
                 abiFilters "armeabi-v7a"
                 arguments "-DSSA_VERSION=" + versionName
+				arguments "-DANDROID_ARM_NEON=ON"
             }
         }
     }
@@ -140,7 +141,8 @@ android {
             cmake {
                 cppFlags "-fexceptions"
                 abiFilters "armeabi-v7a"
-		arguments "-DFIRST_ENCOUNTER=1"
+				arguments "-DFIRST_ENCOUNTER=1"
+				arguments "-DANDROID_ARM_NEON=ON"
             }
         }
 

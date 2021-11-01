@@ -115,7 +115,7 @@ BOOL IsValidFloat(float f)
 
 BOOL IsValidDouble(double f)
 {
-  return std::isfinite(f);
+  return std::isfinite(f) && (*(unsigned long long*)&f)!=0xcdcdcdcdcdcdcdcdll;;
 //  return _finite(f) && (*(unsigned __int64*)&f)!=0xcdcdcdcdcdcdcdcdI64;
 /*  int iClass = _fpclass(f);
   return
