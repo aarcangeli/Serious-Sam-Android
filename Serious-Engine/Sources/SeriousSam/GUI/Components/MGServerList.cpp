@@ -24,8 +24,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 extern CSoundData *_psdSelect;
 extern CSoundData *_psdPress;
 
-float uiScale = g_cb.globalScale;
-
 FLOATaabbox2D GetBoxPartHoriz(const FLOATaabbox2D &box, FLOAT fMin, FLOAT fMax)
 {
   FLOAT fBoxMin = box.Min()(1);
@@ -149,6 +147,8 @@ void SortAndFilterServers(void)
 
 void CMGServerList::Render(CDrawPort *pdp)
 {
+	
+  float uiScale = g_cb.globalScale;
   _iSort = mg_iSort;
   _bSortDown = mg_bSortDown;
   SortAndFilterServers();
@@ -162,10 +162,10 @@ void CMGServerList::Render(CDrawPort *pdp)
 
   PIX pixDPSizeI = pdp->GetWidth();
   PIX pixDPSizeJ = pdp->GetHeight();
-  PIX pixCharSizeI = pdp->dp_pixTextCharSpacing + pdp->dp_FontData->fd_pixCharWidth;
-  PIX pixCharSizeJ = pdp->dp_pixTextLineSpacing + pdp->dp_FontData->fd_pixCharHeight + 1;
-  PIX pixLineSize = 1;
-  PIX pixSliderSizeI = 10;
+  PIX pixCharSizeI = (PIX) ((pdp->dp_pixTextCharSpacing + pdp->dp_FontData->fd_pixCharWidth) * uiScale);
+  PIX pixCharSizeJ = (PIX) ((pdp->dp_pixTextLineSpacing + pdp->dp_FontData->fd_pixCharHeight + 1) * uiScale);
+  PIX pixLineSize = (PIX) (1 * uiScale);
+  PIX pixSliderSizeI = (PIX) (10 * uiScale);
   PIX pixOuterMargin = 20;
 
   INDEX ctSessions = _lhServers.Count();
@@ -272,6 +272,8 @@ void CMGServerList::Render(CDrawPort *pdp)
       if (strMod == "") {
         strMod = "SeriousSam";
       }
+	  
+	  pdp->SetTextScaling(uiScale);
 	  
 	  PIX sessionPixI = apixSeparatorI[0] + pixCharSizeI / 2;
 	  PIX sessionPixSizeI = apixSeparatorI[1] - apixSeparatorI[0] - pixCharSizeI;
