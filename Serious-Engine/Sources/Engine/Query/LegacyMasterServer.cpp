@@ -815,7 +815,7 @@ void *_MS_Thread(void *lpParam)
 
 void *_LocalNet_Thread(void *lpParam)
 {
-  int _sockudp = 0;
+  int _sockudp = NULL;
   struct _sIPPort {
     UBYTE bFirst;
     UBYTE bSecond;

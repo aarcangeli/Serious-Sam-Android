@@ -13,7 +13,7 @@
 #include <Engine/Network/Network.h>
 #include <Engine/Network/Server.h>
 
-#include <Engine/GameAgent/GameAgent.h>
+#include <Engine/Query/MasterServerMgr.h>
 
 #include <fcntl.h>
 #include <arpa/inet.h>
@@ -182,6 +182,8 @@ void CCommunicationInterface::PrepareForUse(BOOL bUseNetwork, BOOL bClient) {
   if (cm_bNetworkInitialized) {
     Unprepare();
   }
+
+  MS_EnumCancel();
 
   if (bUseNetwork) {
     CPrintF(TRANS("Initializing TCP/IP...\n"));
