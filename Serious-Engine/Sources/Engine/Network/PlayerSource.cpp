@@ -197,15 +197,17 @@ void CPlayerSource::WriteActionPacket(CNetworkMessage &nm)
 
   // determine ping
   FLOAT tmPing = ppe->en_tmPing;
-  g_cb.ping = (INDEX)ceil(tmPing*1000);
+  INDEX iPing = (INDEX)ceil(tmPing*1000);
 
   // write all in the message
   BOOL bActive = 1;
   nm.WriteBits(&bActive, 1);
   nm.WriteBits(&pls_Index, 4);  // your index
-  nm.WriteBits(&g_cb.ping, 10);     // your ping
+  nm.WriteBits(&iPing, 10);     // your ping
   nm<<pls_paAction;             // action
   //CPrintF("%.2f - written: %d\n", _pTimer->GetRealTimeTick(), SLONG(pls_paAction.pa_llCreated));
+
+  g_cb.ping = iPing;
 
   // get sendbehind parameters
   extern INDEX cli_iSendBehind;

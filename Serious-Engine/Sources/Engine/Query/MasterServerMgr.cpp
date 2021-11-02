@@ -67,6 +67,8 @@ void _uninitWinsock();
 void _initializeWinsock(void)
 {
   if (_socket != NULL) {
+    CPrintF("Error initializing socket! Closing\n");
+    _uninitWinsock();
     return;
   }
 
@@ -78,13 +80,6 @@ void _initializeWinsock(void)
     delete[] _szBuffer;
   }
   _szBuffer = new char[2050];
-
-  // start WSA
- // if (WSAStartup(MAKEWORD(2, 2), _wsaData) != 0) {
-  //  CPrintF("Error initializing winsock!\n");
-  //  _uninitWinsock();
- //   return;
- // }
 
   // get the host IP
   hostent* phe;
@@ -126,11 +121,32 @@ void _initializeWinsock(void)
   // if we're a server
   if (_bServer) {
     // create the local socket source address
+    
+    // set non blocking
+    int flags = fcntl(_socket, F_GETFL);
+    int failed = flags;
+    if (failed != -1) {
+	flags |= O_NONBLOCK;
+	failed = fcntl(_socket, F_SETFL, flags);
+      }
+
+	  if (failed == -1) {
+		ThrowF_t(TRANS("Cannot set socket to non-blocking mode."));
+	  }
+	
+	struct timeval read_timeout;
+    read_timeout.tv_sec = 0;
+    read_timeout.tv_usec = 10;
+    setsockopt(_socket, SOL_SOCKET, SO_RCVTIMEO, &read_timeout, sizeof(read_timeout));
+    int flagTrue = 1;
+    setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, &flagTrue, sizeof(flagTrue));
+	
+	INDEX port = _pShell->GetINDEX("net_iPort") + 1;
     _sinLocal = new sockaddr_in;
     _sinLocal->sin_family = AF_INET;
-    _sinLocal->sin_addr.s_addr = inet_addr("0.0.0.0");
-    _sinLocal->sin_port = htons(_pShell->GetINDEX("net_iPort") + 1);
-    
+    _sinLocal->sin_addr.s_addr = INADDR_ANY;
+    _sinLocal->sin_port = htons(port);
+	
     int optval = 1;
     if (setsockopt(_socket, SOL_SOCKET, SO_BROADCAST, (char *)&optval, sizeof(optval)) != 0)
     {
@@ -141,18 +157,10 @@ void _initializeWinsock(void)
     }
 
     // bind the socket
-    bind(_socket, (const struct sockaddr *)_sinLocal, sizeof(*_sinLocal));
-  }
-
-    // set non blocking
-    int flags = fcntl(_socket, F_GETFL);
-    int failed = flags;
-    if (failed != -1) {
-	flags |= O_NONBLOCK;
-	failed = fcntl(_socket, F_SETFL, flags);
+    int res = bind(_socket, (const struct sockaddr *)_sinLocal, sizeof(*_sinLocal));
+	  if (res < 0) {
+        ThrowF_t(TRANS("Cannot bind port %li. %s (%i)"), port, std::strerror(errno), errno);
       }
-
-  if (failed == -1) { ThrowF_t(TRANS("Cannot set socket to non-blocking mode."));
   }
 }
 
