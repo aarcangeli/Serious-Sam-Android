@@ -67,8 +67,6 @@ void _uninitWinsock();
 void _initializeWinsock(void)
 {
   if (_socket != NULL) {
-    CPrintF("Error initializing socket! Closing\n");
-    _uninitWinsock();
     return;
   }
 
