@@ -66,9 +66,9 @@ void _uninitWinsock();
 
 void _initializeWinsock(void)
 {
-  //if (_socket != NULL) {
-  //  return;
- // }
+  if (_socket != NULL) {
+    return;
+  }
 
  // _wsaData = new WSADATA;
   _socket = NULL;

@@ -149,7 +149,7 @@ static void _LocalSearch()
   _pNetwork->ga_strEnumerationStatus = ".";
 
  // WORD     _wsaRequested;
-  int _sock = 0;
+  int _sock = NULL;
  // WSADATA  wsaData;
   struct hostent *_phHostinfo = NULL;
   ULONG    _uIP,*_pchIP = &_uIP;
@@ -167,7 +167,7 @@ static void _LocalSearch()
 
   // start WSA
  // _wsaRequested = MAKEWORD( 2, 2 );
-  if (_sock != 0) {
+  if (_sock != NULL) {
     CPrintF("Error initializing socket!\n");
     if (_szIPPortBufferLocal != NULL) {
       delete[] _szIPPortBufferLocal;
