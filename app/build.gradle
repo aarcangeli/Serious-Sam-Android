@@ -117,38 +117,39 @@ android {
     flavorDimensions "version"
     productFlavors {
         TSE {
-	dimension "version"
-	applicationId "com.skyrimus.serioussam.tse"
-	versionNameSuffix "-TSE"
-	buildConfigField('String','home','"SeriousSamTSE"')
-	sourceSets {
-		TSE {
-		res.srcDirs = ['src/main/res_tse','src/main/res']
+		dimension "version"
+		applicationId "com.skyrimus.serioussam.tse"
+		versionNameSuffix "-TSE"
+		buildConfigField('String','home','"SeriousSamTSE"')
+		sourceSets {
+			TSE {
+			res.srcDirs = ['src/main/res_tse','src/main/res']
+			jniLibs.srcDirs = ['src/main/libs_tse/']
+			}
 		}
-	}
 	}
         TFE {
-	dimension "version"
-	applicationId "com.skyrimus.serioussam.tfe"
-	versionNameSuffix "-TFE"
-	buildConfigField('String','home','"SeriousSamTFE"')
-	sourceSets {
-		TFE {
-		res.srcDirs = ['src/main/res_tfe','src/main/res']
+		dimension "version"
+		applicationId "com.skyrimus.serioussam.tfe"
+		versionNameSuffix "-TFE"
+		buildConfigField('String','home','"SeriousSamTFE"')
+		sourceSets {
+			TFE {
+			res.srcDirs = ['src/main/res_tfe','src/main/res']
+			jniLibs.srcDirs = ['src/main/libs_tfe/']
+			}
 		}
-	}
         externalNativeBuild {
-            cmake {
-                cppFlags "-fexceptions"
-                abiFilters "armeabi-v7a"
-				arguments "-DFIRST_ENCOUNTER=1"
-				arguments "-DANDROID_ARM_NEON=ON"
-            }
-        }
-
-
-	}
+				cmake {
+					cppFlags "-fexceptions"
+					abiFilters "armeabi-v7a"
+					arguments "-DFIRST_ENCOUNTER=1"
+					arguments "-DANDROID_ARM_NEON=ON"
+				}
+			}
+		}
     }
+		
     externalNativeBuild {
         cmake {
             path "../CMakeLists.txt"
