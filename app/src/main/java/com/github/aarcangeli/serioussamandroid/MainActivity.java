@@ -127,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        File outputFilder = new File(homeDir, "Scripts/" + name);
+        File outputFilder = new File(homeDir, name);
         outputFilder.mkdirs();
 
         for (String filename : files) {
@@ -781,8 +781,10 @@ public class MainActivity extends AppCompatActivity {
     private void startGame() {
         if (!homeDir.exists()) homeDir.mkdirs();
         try {
-            copyFolder("Menu");
-            copyFolder("NetSettings");
+            copyFolder("Scripts/Menu");
+            copyFolder("Scripts/NetSettings");
+            copyFolder("Classes/AdvancedItemClasses");
+            copyFolder("Classes/AdvancedMonsterClasses");
         } catch (IOException e) {
             Log.e(TAG, "Error while copying resources", e);
         }
