@@ -159,7 +159,7 @@ void CWorld::Clear(void)
 
   {
     // must be in 24bit mode when managing entities
-    CSetFPUPrecision FPUPrecision(FPT_24BIT);
+   // CSetFPUPrecision FPUPrecision(FPT_24BIT);
 
     // clear background viewer
     SetBackgroundViewer(NULL);
@@ -197,7 +197,7 @@ void CWorld::Clear(void)
 CEntity *CWorld::CreateEntity(const CPlacement3D &plPlacement, CEntityClass *pecClass)
 {
   // must be in 24bit mode when managing entities
-  CSetFPUPrecision FPUPrecision(FPT_24BIT);
+//  CSetFPUPrecision FPUPrecision(FPT_24BIT);
   
   // if the world base class is not yet remembered and this class is world base
   if (wo_pecWorldBaseClass==NULL
@@ -277,7 +277,7 @@ void CWorld::DestroyOneEntity( CEntity *penToDestroy)
 void CWorld::DestroyEntities(CEntitySelection &senToDestroy)
 {
   // must be in 24bit mode when managing entities
-  CSetFPUPrecision FPUPrecision(FPT_24BIT);
+ // CSetFPUPrecision FPUPrecision(FPT_24BIT);
 
   // for each entity in selection
   FOREACHINDYNAMICCONTAINER(senToDestroy, CEntity, iten) {
@@ -390,7 +390,7 @@ void CWorld::AddTimer(CRationalEntity *penThinker)
 void CWorld::AdjustLateTimers(TIME tmCurrentTime)
 {
   // must be in 24bit mode when managing entities
-  CSetFPUPrecision FPUPrecision(FPT_24BIT);
+ // CSetFPUPrecision FPUPrecision(FPT_24BIT);
 
   // for each entity in the thinker list
   FOREACHINLIST(CRationalEntity, en_lnInTimers, wo_lhTimers, iten) {
@@ -760,7 +760,7 @@ void CWorld::ReinitializeEntities(void)
   _pfWorldEditingProfile.StartTimer(CWorldEditingProfile::PTI_REINITIALIZEENTITIES);
 
   // must be in 24bit mode when managing entities
-  CSetFPUPrecision FPUPrecision(FPT_24BIT);
+ // CSetFPUPrecision FPUPrecision(FPT_24BIT);
 
   CTmpPrecachingNow tpn;
 
@@ -789,7 +789,7 @@ void CWorld::PrecacheEntities_t(void)
 void CWorld::FilterEntitiesBySpawnFlags(ULONG ulFlags)
 {
   // must be in 24bit mode when managing entities
-  CSetFPUPrecision FPUPrecision(FPT_24BIT);
+ // CSetFPUPrecision FPUPrecision(FPT_24BIT);
 
   BOOL bOldAllowRandom = _pNetwork->ga_sesSessionState.ses_bAllowRandom;
   _pNetwork->ga_sesSessionState.ses_bAllowRandom = TRUE;
@@ -823,7 +823,7 @@ void CWorld::LinkEntitiesToSectors(void)
 {
   _pfWorldEditingProfile.StartTimer(CWorldEditingProfile::PTI_LINKENTITIESTOSECTORS);
   // must be in 24bit mode when managing entities
-  CSetFPUPrecision FPUPrecision(FPT_24BIT);
+ // CSetFPUPrecision FPUPrecision(FPT_24BIT);
   // for each entity in the world
   FOREACHINDYNAMICCONTAINER(wo_cenEntities, CEntity, iten) {
     CEntity &en = *iten;
@@ -847,7 +847,7 @@ void CWorld::LinkEntitiesToSectors(void)
       en.en_pbrBrush->CalculateBoundingBoxes();
       _bDontDiscardLinks = FALSE;
       // FPU must be in 53-bit mode
-      CSetFPUPrecision FPUPrecision(FPT_53BIT);
+      //CSetFPUPrecision FPUPrecision(FPT_53BIT);
 
       // for all brush mips
       FOREACHINLIST(CBrushMip, bm_lnInBrush, en.en_pbrBrush->br_lhBrushMips, itbm) {
@@ -1066,7 +1066,7 @@ void CWorld::CreatePredictors(void)
 void CWorld::DeletePredictors(void)
 {
   // must be in 24bit mode when managing entities
-  CSetFPUPrecision FPUPrecision(FPT_24BIT);
+  //CSetFPUPrecision FPUPrecision(FPT_24BIT);
 
   // first remember eventual predicted player positions
   _pNetwork->ga_sesSessionState.RememberPlayerPredictorPositions();

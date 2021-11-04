@@ -205,7 +205,7 @@ void CBrushSector::UncacheLightMaps(void)
 void CBrushSector::FindEntitiesInSector(void)
 {
   // assure that floating point precision is 53 bits
-  CSetFPUPrecision sfp(FPT_53BIT);
+  //CSetFPUPrecision sfp(FPT_53BIT);
 
   // get the entity of this sector's brush
   CEntity *penEntity = bsc_pbmBrushMip->bm_pbrBrush->br_penEntity;

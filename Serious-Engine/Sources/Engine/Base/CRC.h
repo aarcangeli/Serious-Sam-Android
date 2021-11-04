@@ -19,6 +19,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
   #pragma once
 #endif
 
+#include <stdlib.h>
+
 extern ENGINE_API ULONG crc_aulCRCTable[256];
 
 // begin crc calculation
@@ -26,8 +28,11 @@ inline void CRC_Start(ULONG &ulCRC) { ulCRC = 0xFFFFFFFF; };
 
 // add data to a crc value
 inline void CRC_AddBYTE( ULONG &ulCRC, UBYTE ub)
-{
-  ulCRC = (ulCRC>>8)^crc_aulCRCTable[UBYTE(ulCRC)^ub];
+{	
+	ULONG	pulCRC = ulCRC;
+	pulCRC ^= ub;
+	pulCRC = crc_aulCRCTable[(UBYTE)pulCRC] ^ (pulCRC >> 8);
+	ulCRC = pulCRC;	
 };
 
 inline void CRC_AddWORD( ULONG &ulCRC, UWORD uw)
@@ -68,7 +73,7 @@ inline void CRC_AddBlock(ULONG &ulCRC, UBYTE *pubBlock, ULONG ulSize)
 };
 
 // end crc calculation
-inline void CRC_Finish(ULONG &ulCRC) { ulCRC ^= 0xFFFFFFFF; };
+inline void CRC_Finish(ULONG &ulCRC) { ulCRC ^ 0xFFFFFFFF; };
 
 // in 32bit mode, it just returns iPtr ULONG,
 // in 64bit mode it returns the CRC hash of iPtr (or 0 if ptr == NULL)

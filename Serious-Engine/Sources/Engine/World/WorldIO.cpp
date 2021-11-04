@@ -100,7 +100,7 @@ void CWorld::Load_t(const CTFileName &fnmWorld) // throw char *
 void CWorld::Write_t(CTStream *postrm) // throw char *
 {
   // need high FPU precision
-  CSetFPUPrecision FPUPrecision(FPT_53BIT);
+  ////CSetFPUPrecision FPUPrecision(FPT_53BIT);
 
   // delete all predictor entities before saving
   UnmarkForPrediction();
@@ -130,7 +130,7 @@ void CWorld::Read_t(CTStream *pistrm) // throw char *
   _bFileReplacingApplied = FALSE;
 
   // need high FPU precision
-  CSetFPUPrecision FPUPrecision(FPT_53BIT);
+  ////CSetFPUPrecision FPUPrecision(FPT_53BIT);
 
   // clear eventual old data in the world
   Clear();
@@ -181,7 +181,7 @@ void CWorld::ReadBrushes_t( CTStream *istrm)// throw char *
   _pfWorldEditingProfile.StartTimer(CWorldEditingProfile::PTI_READBRUSHES);
 
   // must be in 53bit mode when managing brushes
-  CSetFPUPrecision FPUPrecision(FPT_53BIT);
+  //CSetFPUPrecision FPUPrecision(FPT_53BIT);
   
   ReadInfo_t(istrm, FALSE);
 
@@ -231,7 +231,7 @@ void CWorld::ReadState_t( CTStream *istr) // throw char *
 {
   _pfWorldEditingProfile.StartTimer(CWorldEditingProfile::PTI_READSTATE);
   // must be in 24bit mode when managing entities
-  CSetFPUPrecision FPUPrecision(FPT_24BIT);
+  //CSetFPUPrecision FPUPrecision(FPT_24BIT);
 
   CTmpPrecachingNow tpn;
   _bReadEntitiesByID = FALSE;
@@ -706,7 +706,7 @@ void CWorld::ReadState_new_t( CTStream *istr) // throw char *
 void CWorld::WriteState_t( CTStream *ostr, BOOL bImportDictionary /* = FALSE */) // throw char *
 {
   // must be in 24bit mode when managing entities
-  CSetFPUPrecision FPUPrecision(FPT_24BIT);
+  //CSetFPUPrecision FPUPrecision(FPT_24BIT);
 
   // all predictors must be deleted
   ASSERT(

@@ -2123,7 +2123,7 @@ void CNetworkLibrary::ChangeLevel(
 // really do the level change
 void CNetworkLibrary::ChangeLevel_internal(void)
 {
-  CSetFPUPrecision FPUPrecision(FPT_24BIT);
+  //CSetFPUPrecision FPUPrecision(FPT_24BIT);
 
   extern BOOL _bReinitEntitiesWhileCopying;
   _bReinitEntitiesWhileCopying = FALSE;

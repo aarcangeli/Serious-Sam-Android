@@ -930,7 +930,7 @@ void CSessionState::ProcessGameTick(CNetworkMessage &nmMessage, TIME tmCurrentTi
   //CPrintF("normal: %.2f\n", tmCurrentTick);
 
   // FPU must be in 24-bit mode
-  CSetFPUPrecision FPUPrecision(FPT_24BIT);
+  //CSetFPUPrecision FPUPrecision(FPT_24BIT);
 
   // copy the tick to process into tick used for all tasks
   _pTimer->SetCurrentTick(tmCurrentTick);
@@ -1040,7 +1040,7 @@ void CSessionState::ProcessPredictedGameTick(INDEX iPredictionStep, FLOAT fFacto
   //CPrintF("predicted: %.2f\n", tmCurrentTick);
 
   // FPU must be in 24-bit mode
-  CSetFPUPrecision FPUPrecision(FPT_24BIT);
+  //CSetFPUPrecision FPUPrecision(FPT_24BIT);
 
   // now predicting
   ses_bPredicting = TRUE;
@@ -1099,7 +1099,7 @@ void CSessionState::ProcessGameStream(void)
   _pfNetworkProfile.StartTimer(CNetworkProfile::PTI_SESSIONSTATE_PROCESSGAMESTREAM);
 
   // must be in 24bit mode when managing entities
-  CSetFPUPrecision FPUPrecision(FPT_24BIT);
+  //CSetFPUPrecision FPUPrecision(FPT_24BIT);
 
   TIME tmDemoNow = _pNetwork->ga_fDemoTimer;
   // if playing a demo
@@ -1273,7 +1273,7 @@ INDEX CSessionState::GetPredictionStepsCount(void)
 void CSessionState::ProcessPrediction(void)
 {
   // FPU must be in 24-bit mode
-  CSetFPUPrecision FPUPrecision(FPT_24BIT);
+  //CSetFPUPrecision FPUPrecision(FPT_24BIT);
 
   // get number of steps that could be predicted
   INDEX ctSteps = GetPredictionStepsCount();

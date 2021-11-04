@@ -52,7 +52,7 @@ void CBrushMip::ToObject3D(
     CObject3D &ob,
     CBrushSectorSelectionForCSG &selbscToCopy)
 {
-  CSetFPUPrecision sfp(FPT_53BIT);
+  //CSetFPUPrecision sfp(FPT_53BIT);
   // get number of sectors in the selection
   INDEX ctSectors = selbscToCopy.Count();
   // create that much sectors in the object

@@ -67,7 +67,7 @@ void CBrush3D::FromObject3D_t(CObject3D &ob) // throw char *
  */
 CBrushSector *CBrushMip::AddFromObject3D_t(CObject3D &ob) // throw char *
 {
-  CSetFPUPrecision sfp(FPT_53BIT);
+  //CSetFPUPrecision sfp(FPT_53BIT);
   _pfWorldEditingProfile.StartTimer(CWorldEditingProfile::PTI_ADDFROMOBJECT3D);
   // optimize the object, to remove replicated and unused elements and find edge inverses
   CBrush3D::OptimizeObject3D(ob);

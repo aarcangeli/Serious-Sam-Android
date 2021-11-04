@@ -228,7 +228,7 @@ void CBrush3D::CalculateBoundingBoxes(void)
 void CBrush3D::CalculateBoundingBoxesForOneMip(CBrushMip *pbmOnly)  // for only one mip
 {
   // set FPU to double precision
-  CSetFPUPrecision FPUPrecision(FPT_53BIT);
+  //CSetFPUPrecision FPUPrecision(FPT_53BIT);
 
   // prepare a projection from brush space to absolute space
   CSimpleProjection3D_DOUBLE prBrushToAbsolute;

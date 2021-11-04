@@ -5,6 +5,7 @@
 #include <ctype.h>
 #include <cstdarg>
 #include <errno.h>
+#include <unistd.h>
 
 #define ENGINE_API
 #define PLATFORM_UNIX 1
@@ -39,6 +40,10 @@ int64_t getTimeNsec();
 unsigned int _rotl(unsigned int value, int shift);
 
 char *strupr(char *string);
+
+static inline void Sleep(DWORD dwMilliseconds) {
+  usleep(dwMilliseconds * 1000);
+}
 
 #include <AndroidAdapters/win-constants.h>
 

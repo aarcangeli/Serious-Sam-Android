@@ -109,22 +109,6 @@ static CTString sys_strModExt  = "";
 // enables paranoia checks for allocation array
 BOOL _bAllocationArrayParanoiaCheck = FALSE;
 
-BOOL APIENTRY DllMain( HANDLE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved)
-{
-  switch (ul_reason_for_call)
-	{
-		case DLL_PROCESS_ATTACH:
-      break;
-		case DLL_THREAD_ATTACH:
-		case DLL_THREAD_DETACH:
-		case DLL_PROCESS_DETACH:
-			break;
-    default:
-      ASSERT(FALSE);
-  }
-  return TRUE;
-}
-
 //static void DetectCPU(void)
 //{
 //  char strVendor[12+1];

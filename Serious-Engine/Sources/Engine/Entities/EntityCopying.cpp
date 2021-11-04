@@ -377,7 +377,7 @@ void CWorld::CopyEntities(CWorld &woOther, CDynamicContainer<CEntity> &cenToCopy
     return;
   }
 
-  CSetFPUPrecision FPUPrecision(FPT_24BIT);
+  //CSetFPUPrecision FPUPrecision(FPT_24BIT);
 
   ULONG ulCopyFlags = COPY_REMAP;
   if(_bReinitEntitiesWhileCopying) {
@@ -616,7 +616,7 @@ void CWorld::MirrorAndStretch(CWorld &woOriginal, FLOAT fStretch, enum WorldMirr
 
   // update all links
   {
-    CSetFPUPrecision FPUPrecision(FPT_53BIT);
+    //CSetFPUPrecision FPUPrecision(FPT_53BIT);
     wo_baBrushes.LinkPortalsAndSectors();
   }
 

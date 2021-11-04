@@ -19,6 +19,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
   #pragma once
 #endif
 
+#define __stdcall
+#define __cdecl
+
 #include <Engine/Base/Base.h>
 #include <Engine/Graphics/gl_types.h>
 #include <stdint.h>
@@ -43,13 +46,16 @@ typedef uint32_t  UINT;
 	typedef uint64_t __uint64;
     typedef int64_t __int64;
     typedef uint32_t  DWORD;
+	typedef uint16_t WORD;
     typedef int32_t    LONG;
 
     typedef void *HWND;  /* !!! FIXME this sucks. */
     typedef void *HINSTANCE;  /* !!! FIXME this sucks. */
     typedef void *HGLRC;  /* !!! FIXME this sucks. */
     typedef ULONG COLORREF;  /* !!! FIXME this sucks. */
-
+	typedef char CHAR;
+	
+	
     typedef struct
     {
         LONG x;
@@ -63,6 +69,20 @@ typedef uint32_t  UINT;
         LONG right;
         LONG bottom;
     } RECT;
+	
+	#define WAVE_FORMAT_PCM  0x0001
+	
+	typedef struct
+    {
+        SWORD wFormatTag;
+        WORD  nChannels;
+        DWORD nSamplesPerSec;
+        WORD  wBitsPerSample;
+        WORD  nBlockAlign;
+        DWORD nAvgBytesPerSec;
+        WORD  cbSize;
+    } WAVEFORMATEX;
+	
 #endif
 
 #define MAX_SLONG ((SLONG)0x7FFFFFFFL)

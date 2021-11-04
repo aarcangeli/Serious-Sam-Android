@@ -693,7 +693,7 @@ const char *CEntity::PrintStackDebug(void)
  */
 void CEntity::Initialize(const CEntityEvent &eeInput)
 {
-  CSetFPUPrecision FPUPrecision(FPT_24BIT);
+  //CSetFPUPrecision FPUPrecision(FPT_24BIT);
 
   // make sure we are not deleted during intialization
   CEntityPointer penThis = this;
@@ -750,7 +750,7 @@ void CEntity::Initialize_internal(const CEntityEvent &eeInput)
  */
 void CEntity::End(void)
 {
-  CSetFPUPrecision FPUPrecision(FPT_24BIT);
+  //CSetFPUPrecision FPUPrecision(FPT_24BIT);
   /* NOTE: Must not remove from thinker/mover list here, or CServer::ProcessGameTick()
    * might crash!
    */
@@ -903,7 +903,7 @@ void CEntity::Teleport(const CPlacement3D &plNew, BOOL bTelefrag /*=TRUE*/)
  */
 void CEntity::SetPlacement(const CPlacement3D &plNew)
 {
-  CSetFPUPrecision FPUPrecision(FPT_24BIT);
+  //CSetFPUPrecision FPUPrecision(FPT_24BIT);
   // check if orientation is changed
   BOOL bSameOrientation = (plNew.pl_OrientationAngle==en_plPlacement.pl_OrientationAngle);
 
@@ -1071,7 +1071,7 @@ void CEntity::SetPlacement_internal(const CPlacement3D &plNew, const FLOATmatrix
     // if it is zoning
     if (en_ulFlags&ENF_ZONING) {
       // FPU must be in 53-bit mode
-      CSetFPUPrecision FPUPrecision(FPT_53BIT);
+      //CSetFPUPrecision FPUPrecision(FPT_53BIT);
 
       // for all brush mips
       FOREACHINLIST(CBrushMip, bm_lnInBrush, en_pbrBrush->br_lhBrushMips, itbm) {
@@ -1762,7 +1762,7 @@ void CEntity::CopyCollisionInfo(CEntity &enOrg)
 /* Get box and sphere for spatial clasification. */
 void CEntity::UpdateSpatialRange(void)
 {
-  CSetFPUPrecision FPUPrecision(FPT_24BIT);
+  //CSetFPUPrecision FPUPrecision(FPT_24BIT);
 
   en_fSpatialClassificationRadius = -1.0f;
 
@@ -1813,7 +1813,7 @@ void CEntity::UpdateSpatialRange(void)
 /* Find and remember all sectors that this entity is in. */
 void CEntity::FindSectorsAroundEntity(void)
 {
-  CSetFPUPrecision sfp(FPT_53BIT);
+  //CSetFPUPrecision sfp(FPT_53BIT);
 
   // if not in spatial clasification
   if (en_fSpatialClassificationRadius<0) {
@@ -2159,7 +2159,7 @@ void CEntity::SendEventInRange(const CEntityEvent &ee, const FLOATaabbox3D &boxR
 void CEntity::HandleSentEvents(void)
 {
 
-  CSetFPUPrecision FPUPrecision(FPT_24BIT);
+  //CSetFPUPrecision FPUPrecision(FPT_24BIT);
 
   // while there are any unhandled events
   INDEX iFirstEvent = 0;

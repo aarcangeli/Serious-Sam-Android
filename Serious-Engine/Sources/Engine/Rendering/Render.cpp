@@ -686,7 +686,7 @@ void CRenderer::Render(void)
   // if the world doesn't have all portal-sector links updated
   if( !re_pwoWorld->wo_bPortalLinksUpToDate) {
     // update the links
-    CSetFPUPrecision FPUPrecision(FPT_53BIT);
+    //CSetFPUPrecision FPUPrecision(FPT_53BIT);
     re_pwoWorld->wo_baBrushes.LinkPortalsAndSectors();
     re_pwoWorld->wo_bPortalLinksUpToDate = TRUE;
   }
@@ -696,7 +696,7 @@ void CRenderer::Render(void)
   _pfRenderProfile.StartTimer(CRenderProfile::PTI_RENDERING);
 
   // set FPU to single precision while rendering
-  CSetFPUPrecision FPUPrecision(FPT_24BIT);
+  //CSetFPUPrecision FPUPrecision(FPT_24BIT);
 
   // initialize all rendering structures
   Initialize();

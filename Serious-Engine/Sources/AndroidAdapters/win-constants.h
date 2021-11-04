@@ -7,7 +7,6 @@
 #define UNICODE
 
 #define CONST const
-typedef char CHAR;
 typedef unsigned char BYTE;
 typedef unsigned short WORD;
 typedef int INT;
@@ -53,60 +52,11 @@ typedef WCHAR *LPWSTR;
 #define WINAPI
 #define APIENTRY
 #define CALLBACK
-#define __stdcall
-#define __cdecl
 
 typedef LRESULT (CALLBACK *WNDPROC)(HWND, UINT, WPARAM, LPARAM);
 
-#define DLL_PROCESS_ATTACH   1
-#define DLL_THREAD_ATTACH    2
-#define DLL_THREAD_DETACH    3
-#define DLL_PROCESS_DETACH   0
-
-#define HKEY_CLASSES_ROOT ((HKEY) (ULONG_PTR)((LONG)0x80000000))
-#define HKEY_CURRENT_USER ((HKEY) (ULONG_PTR)((LONG)0x80000001))
-#define HKEY_LOCAL_MACHINE ((HKEY) (ULONG_PTR)((LONG)0x80000002))
-#define HKEY_USERS ((HKEY) (ULONG_PTR)((LONG)0x80000003))
-#define HKEY_PERFORMANCE_DATA ((HKEY) (ULONG_PTR)((LONG)0x80000004))
-#define HKEY_PERFORMANCE_TEXT ((HKEY) (ULONG_PTR)((LONG)0x80000050))
-#define HKEY_PERFORMANCE_NLSTEXT ((HKEY) (ULONG_PTR)((LONG)0x80000060))
-#define HKEY_CURRENT_CONFIG ((HKEY) (ULONG_PTR)((LONG)0x80000005))
-#define HKEY_DYN_DATA ((HKEY) (ULONG_PTR)((LONG)0x80000006))
-
-#define DELETE (__MSABI_LONG(0x00010000))
-#define READ_CONTROL (__MSABI_LONG(0x00020000))
-#define WRITE_DAC (__MSABI_LONG(0x00040000))
-#define WRITE_OWNER (__MSABI_LONG(0x00080000))
-#define SYNCHRONIZE (__MSABI_LONG(0x00100000))
-
-#define STANDARD_RIGHTS_READ (READ_CONTROL)
-#define STANDARD_RIGHTS_WRITE (READ_CONTROL)
-#define STANDARD_RIGHTS_EXECUTE (READ_CONTROL)
-
-#define KEY_READ ((STANDARD_RIGHTS_READ | KEY_QUERY_VALUE | KEY_ENUMERATE_SUB_KEYS | KEY_NOTIFY) & (~SYNCHRONIZE))
-#define KEY_WRITE ((STANDARD_RIGHTS_WRITE | KEY_SET_VALUE | KEY_CREATE_SUB_KEY) & (~SYNCHRONIZE))
-#define KEY_EXECUTE ((KEY_READ) & (~SYNCHRONIZE))
-#define KEY_ALL_ACCESS ((STANDARD_RIGHTS_ALL | KEY_QUERY_VALUE | KEY_SET_VALUE | KEY_CREATE_SUB_KEY | KEY_ENUMERATE_SUB_KEYS | KEY_NOTIFY | KEY_CREATE_LINK) & (~SYNCHRONIZE))
-#define REG_OPTION_RESERVED (__MSABI_LONG(0x00000000))
-
 #define S_OK ((HRESULT)0x00000000)
 #define S_FALSE ((HRESULT)0x00000001)
-
-#ifdef UNICODE
-typedef LPWSTR LPTSTR;
-#else
-typedef LPSTR LPTSTR;
-#endif
-
-typedef struct {
-    WORD wFormatTag;
-    WORD nChannels;
-    DWORD nSamplesPerSec;
-    DWORD nAvgBytesPerSec;
-    WORD nBlockAlign;
-    WORD wBitsPerSample;
-    WORD cbSize;
-} WAVEFORMATEX;
 
 typedef struct tagMSG {
     HWND hwnd;
@@ -160,8 +110,6 @@ typedef struct tagWNDCLASSA {
     LPCSTR lpszMenuName;
     LPCSTR lpszClassName;
 } WNDCLASSA, *PWNDCLASSA;
-
-#define WAVE_FORMAT_PCM 1
 
 #define SEM_FAILCRITICALERRORS 0x0001
 #define SEM_NOGPFAULTERRORBOX 0x0002
@@ -557,22 +505,6 @@ typedef struct tagWNDCLASSA {
 #define PM_REMOVE           0x0001
 #define PM_NOYIELD          0x0002
 
-#define ERROR_SUCCESS                    0L
-
-#define CS_VREDRAW          0x0001
-#define CS_HREDRAW          0x0002
-#define CS_DBLCLKS          0x0008
-#define CS_OWNDC            0x0020
-#define CS_CLASSDC          0x0040
-#define CS_PARENTDC         0x0080
-#define CS_NOCLOSE          0x0200
-#define CS_SAVEBITS         0x0800
-#define CS_BYTEALIGNCLIENT  0x1000
-#define CS_BYTEALIGNWINDOW  0x2000
-#define CS_GLOBALCLASS      0x4000
-#define CS_IME              0x00010000
-#define CS_DROPSHADOW       0x00020000
-
 #define INADDR_ANY (u_long)0x00000000
 #define INADDR_LOOPBACK 0x7f000001
 #define INADDR_BROADCAST (u_long)0xffffffff
@@ -601,10 +533,6 @@ int _CrtCheckMemory(void);
 
 HMODULE GetModuleHandleA(LPCSTR lpModuleName);
 
-#include <unistd.h>
-static inline void Sleep(DWORD dwMilliseconds) {
-  usleep(dwMilliseconds * 1000);
-}
 #undef R_OK
 
 #endif

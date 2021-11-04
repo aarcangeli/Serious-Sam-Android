@@ -116,7 +116,7 @@ GLboolean (__stdcall *pglIsOcclusionQueryNV)( GLuint id);
 void (__stdcall *pglPNTrianglesiATI)( GLenum pname, GLint param);
 void (__stdcall *pglPNTrianglesfATI)( GLenum pname, GLfloat param);
 
-
+#ifdef PLATFORM_WIN32
 void WIN_CheckError(BOOL bRes, const char *strDescription)
 {
   if( bRes) return;
@@ -124,7 +124,7 @@ void WIN_CheckError(BOOL bRes, const char *strDescription)
   if( dwWindowsErrorCode==ERROR_SUCCESS) return; // ignore stupid 'successful' error
   WarningMessage("%s: %s", strDescription, GetWindowsError(dwWindowsErrorCode));
 }
-
+#endif
 
 static void FailFunction_t(const char *strName) {
   ThrowF_t(TRANS("Required function %s not found."), strName);
