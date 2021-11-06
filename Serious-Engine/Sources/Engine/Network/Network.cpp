@@ -134,7 +134,7 @@ INDEX ser_bReportJoinAttemptsVersion = FALSE;
 //
 
 INDEX cli_bEmulateDesync  = FALSE;
-INDEX cli_bDumpSync       = FALSE;
+INDEX cli_bDumpSync       = TRUE;
 INDEX cli_bDumpSyncEachTick = FALSE;
 INDEX cli_bAutoAdjustSettings = FALSE;
 FLOAT cli_tmAutoAdjustThreshold = 2.0f;
@@ -165,7 +165,7 @@ INDEX net_bLerping       = TRUE;
 INDEX net_iGraphBuffer = 100;
 INDEX net_iExactTimer = 2;
 INDEX net_bDumpStreamBlocks = 0;
-INDEX net_bDumpConnectionInfo = 0;
+INDEX net_bDumpConnectionInfo = 1;
 INDEX net_iPort = 25600;
 CTString net_strLocalHost = "";
 CTString net_strLocationCode = "";
@@ -189,7 +189,7 @@ INDEX net_iMaxLocalPlayersPerClient = 4;
 
 INDEX ent_bReportSpawnInWall = FALSE;
 
-INDEX ent_bReportClassLoad = FALSE; // [SSE] Extended Class Check
+INDEX ent_bReportClassLoad = TRUE; // [SSE] Extended Class Check
 
 FLOAT cmd_tmTick = 0.0f;
 CTString cmd_cmdOnTick = "";
@@ -2488,17 +2488,14 @@ void CNetworkLibrary::MainLoop(void)
   ga_tvDemoTimerLastTime = tvNow;
 
   // if network
-  if (_cmiComm.IsNetworkEnabled()) {
-
-    // do services for gameagent querying
-   // GameAgent_ServerUpdate();
-
-//    _cmiComm.Broadcast_Update();
-
+  if (_cmiComm.IsNetworkEnabled())
+  {
     if (ser_bEnumeration) {
       MS_OnServerUpdate();
     }
-	
+
+//    _cmiComm.Broadcast_Update();
+
     // repeat
     FOREVER {
       CNetworkMessage nmReceived;

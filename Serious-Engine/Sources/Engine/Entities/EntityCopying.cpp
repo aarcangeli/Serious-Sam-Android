@@ -452,7 +452,7 @@ void CWorld::CopyEntities(CWorld &woOther, CDynamicContainer<CEntity> &cenToCopy
 
   // for each of the created entities
   {FOREACHINSTATICARRAY(_aprRemaps, CPointerRemapping, itpr) {
-    //CEntity *penOriginal = itpr->pr_penOriginal;
+    CEntity *penOriginal = itpr->pr_penOriginal;
     CEntity *penCopy = itpr->pr_penCopy;
     if (_bReinitEntitiesWhileCopying) {
       // init the new copy
@@ -469,7 +469,7 @@ void CWorld::CopyEntities(CWorld &woOther, CDynamicContainer<CEntity> &cenToCopy
 
   // for each of the created entities
   {FOREACHINSTATICARRAY(_aprRemaps, CPointerRemapping, itpr) {
-    //CEntity *penOriginal = itpr->pr_penOriginal;
+    CEntity *penOriginal = itpr->pr_penOriginal;
     CEntity *penCopy = itpr->pr_penCopy;
 
     // if this is a brush
@@ -718,7 +718,7 @@ void CWorld::CopyEntitiesToPredictors(CDynamicContainer<CEntity> &cenToCopy)
 
   // for each of the created entities
   {FOREACHINSTATICARRAY(_aprRemaps, CPointerRemapping, itpr) {
-    //CEntity *penOriginal = itpr->pr_penOriginal;
+    CEntity *penOriginal = itpr->pr_penOriginal;
     CEntity *penCopy = itpr->pr_penCopy;
 
     // if this is a brush

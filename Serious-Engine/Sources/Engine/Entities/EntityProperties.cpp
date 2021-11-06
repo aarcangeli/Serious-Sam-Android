@@ -95,8 +95,16 @@ void CEntity::WriteEntityPointer_t(CTStream *ostrm, CEntityPointer pen)
  */
 void CEntity::ReadProperties_t(CTStream &istrm) // throw char *
 {
+  CChunkID cidPreProp = istrm.PeekID_t();
+  
+  // [SSE] Better Error Messages
+  if (cidPreProp != CChunkID("PRPS")) {
+    ThrowF_t(TRANS("Error occured while loading entity properties.\n\nEntityID: %d\nClass: %s (may be wrong!)\n\nChunk ID validation failed.\nExpected ID \"PRPS\" but found \"%s\"\nHEX: %02x %02x %02x %02x\nPosition: %d\n"),
+      en_ulID, en_pecClass->ec_pdecDLLClass->dec_strName, cidPreProp.cid_ID, cidPreProp.cid_ID[0], cidPreProp.cid_ID[1], cidPreProp.cid_ID[2], cidPreProp.cid_ID[3], istrm.GetPos_t() - 4);
+  }
+  
   istrm.ExpectID_t("PRPS");  // 'properties'
-  //CDLLEntityClass *pdecDLLClass = en_pecClass->ec_pdecDLLClass;
+  CDLLEntityClass *pdecDLLClass = en_pecClass->ec_pdecDLLClass;
   INDEX ctProperties;
   // read number of properties (note that this doesn't have to be same as number
   // of properties in the class (class might have changed))
@@ -104,7 +112,7 @@ void CEntity::ReadProperties_t(CTStream &istrm) // throw char *
 
   // for all saved properties
   for(INDEX iProperty=0; iProperty<ctProperties; iProperty++) {
-    //pdecDLLClass->dec_ctProperties;
+    pdecDLLClass->dec_ctProperties;
     // read packed identifier
     ULONG ulIDAndType;
     istrm>>ulIDAndType;

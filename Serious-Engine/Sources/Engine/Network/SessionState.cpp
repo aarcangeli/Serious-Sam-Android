@@ -1562,7 +1562,7 @@ void CSessionState::ProcessGameStreamBlock(CNetworkMessage &nmMessage)
     // delete all predictors
     _pNetwork->ga_World.DeletePredictors();
     
-    //penEntity->ReceiveRPC(nmMessage);
+    penEntity->ReceiveRPC(nmMessage);
 
     // handle all the sent events
     ses_bAllowRandom = TRUE;

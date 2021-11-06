@@ -2255,6 +2255,8 @@ functions:
       }
     }
 
+	((CPlayer&)*m_penPlayer).m_soWeaponAmbient.Stop(); // [SSE] Chainsaw Sound Fix
+
     // default ammo pack size
     FLOAT fModifier = ClampDn(GetSP()->sp_fAmmoQuantity, 1.0f);
     m_iMaxBullets        = ClampUp((INDEX) ceil(MAX_BULLETS*fModifier),       INDEX(999));

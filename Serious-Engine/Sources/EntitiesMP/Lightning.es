@@ -107,7 +107,11 @@ functions:
       // render lightning particles
       FLOAT3D vSrc = GetPlacement().pl_PositionVector;
       FLOAT3D vDst = m_penTarget->GetPlacement().pl_PositionVector;
-      Particles_Lightning( vSrc, vDst, m_tmLightningStart);
+	  
+      // [SSE] Lightning - Potential Crash Fix
+      if (vSrc != vDst) {
+        Particles_Lightning( vSrc, vDst, m_tmLightningStart);
+      }
     }
   }
 

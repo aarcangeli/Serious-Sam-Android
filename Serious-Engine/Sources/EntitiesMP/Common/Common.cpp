@@ -1161,6 +1161,11 @@ CEntityPointer Debris_Spawn_Template(
   enum DebrisParticlesType dptParticles = (enum DebrisParticlesType) _dptParticles;
   enum BasicEffectType betStain = (enum BasicEffectType) _betStain;
 
+  if (penmhDestroyed == NULL)
+  {
+    return NULL;
+  }
+
   if(penmhTemplate==NULL || penmhTemplate->GetModelObject()==NULL)
   {
     return NULL;

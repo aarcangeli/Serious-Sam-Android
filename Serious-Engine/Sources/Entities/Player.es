@@ -1075,6 +1075,27 @@ components:
 
 functions:
 
+  virtual void ReceiveRPC(CNetworkMessage &nmMessage)
+  {
+    INDEX iCommandID;
+    FLOAT fValue;
+
+    nmMessage >> iCommandID;
+    
+    if (iCommandID == 1 || iCommandID == 2)
+    {
+      nmMessage >> fValue;
+
+      if (iCommandID == 1) {
+        SetHealth(fValue);
+      } else {
+        SetArmor(fValue);
+      }
+    } 
+
+    //CPrintF("PLID %d received direct RPC!\n", GetMyPlayerIndex());
+  };
+
   void AddBouble( FLOAT3D vPos, FLOAT3D vSpeedRelative)
   {
     ShellLaunchData &sld = m_asldData[m_iFirstEmptySLD];

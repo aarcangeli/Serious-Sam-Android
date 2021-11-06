@@ -60,13 +60,17 @@ public:
   class CEntityProperty *PropertyForName(const CTString &strPropertyName);
   /* Get pointer to entity property from its packed identifier. */
   class CEntityProperty *PropertyForTypeAndID(ULONG ulType, ULONG ulID);
+
+  // [SSE]
+  // Get pointer to entity property from its packed ID.
+  class CEntityProperty *PropertyForID(ULONG ulID);
+  
   /* Get event handler for given state and event code. */
   CEntity::pEventHandler HandlerForStateAndEvent(SLONG slState, SLONG slEvent);
   /* Get pointer to component from its type and identifier. */
-  class CEntityComponent *ComponentForTypeAndID(
-    enum EntityComponentType ectType, SLONG slID);
+  class CEntityComponent *ComponentForTypeAndID(enum EntityComponentType ectType, SLONG slID);
   /* Get pointer to component from the component. */
-  inline class CEntityComponent *ComponentForPointer(void *pv);
+  class CEntityComponent *ComponentForPointer(void *pv);
 
   // overrides from CSerial
   /* Read from stream. */

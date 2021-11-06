@@ -36,6 +36,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <map>
 #include <string>
 
+extern INDEX ent_bReportClassLoad; // [SSE] Extended Class Check
+
+
 /////////////////////////////////////////////////////////////////////
 // CEntityClass
 
@@ -122,9 +125,12 @@ void CEntityClass::CheckClassProperties(void)
         // for all properties
         for(INDEX iProperty2=0; iProperty2<pdecDLLClass2->dec_ctProperties; iProperty2++) {
           CEntityProperty &epProperty2 = pdecDLLClass2->dec_aepProperties[iProperty2];
+
+          CTString strMsg;
+          strMsg.PrintF("No two properties may have same id!\nCLASS 1: %s\nCLASS 2: %s\nPropCycleID: %d\nID 1: %lu\nID 2: %lu\nOffset: %d\nType 1: %d\nType 2: %d", pdecDLLClass1->dec_strName, pdecDLLClass2->dec_strName, iProperty1, epProperty1.ep_ulID, epProperty2.ep_ulID, epProperty2.ep_slOffset, epProperty1.ep_eptType, epProperty2.ep_eptType);
           // the two properties must not have same id unless they are same property
           ASSERTMSG(&epProperty1==&epProperty2 || epProperty1.ep_ulID!=epProperty2.ep_ulID,
-            "No two properties may have same id!");
+            strMsg.str_String);
         }
       }
     }
@@ -349,12 +355,18 @@ void CEntityClass::Read_t( CTStream *istr) // throw char *
     CTmpPrecachingNow tpn;
     ObtainComponents_t();
   }
+  
+  ec_pdecDLLClass->dec_ulID = 0; // [SSE] Extended Class Check
 
   // attach the DLL
   ec_pdecDLLClass->dec_OnInitClass();
 
   // check that the class properties have been properly declared
   CheckClassProperties();
+
+  if (ent_bReportClassLoad) {
+    CPrintF("  Loaded Class: %d [%s]\n", ec_pdecDLLClass->dec_ulID, strClassName);
+  }
 }
 
 /*
@@ -388,7 +400,7 @@ void CEntityClass::AddToCRCTable(void)
   // add the file itself
   CRCT_AddFile_t(fnm);
   // add its DLL
-  //CRCT_AddFile_t(ec_fnmClassDLL);
+  CRCT_AddFile_t(ec_fnmClassDLL);
 }
 
 /* Get pointer to entity property from its name. */
@@ -401,6 +413,15 @@ class CEntityProperty *CEntityClass::PropertyForTypeAndID(
   return ec_pdecDLLClass->PropertyForTypeAndID((CEntityProperty::PropertyType)ulType, ulID);
 };
 
+// --------------------------------------------------------------------------------------
+// [SSE]
+// Get pointer to entity property from its packed ID.
+// --------------------------------------------------------------------------------------
+class CEntityProperty *CEntityClass::PropertyForID(ULONG ulID)
+{
+  return ec_pdecDLLClass->PropertyForID(ulID);
+};
+
 /* Get event handler for given state and event code. */
 CEntity::pEventHandler CEntityClass::HandlerForStateAndEvent(SLONG slState, SLONG slEvent) {
   return ec_pdecDLLClass->HandlerForStateAndEvent(slState, slEvent);
@@ -408,7 +429,7 @@ CEntity::pEventHandler CEntityClass::HandlerForStateAndEvent(SLONG slState, SLON
 
 /* Get pointer to component from its identifier. */
 class CEntityComponent *CEntityClass::ComponentForTypeAndID(
-  enum EntityComponentType ectType, SLONG slID) {
+  EntityComponentType ectType, SLONG slID) {
   return ec_pdecDLLClass->ComponentForTypeAndID(ectType, slID);
 }
 /* Get pointer to component from the component. */
@@ -484,6 +505,30 @@ class CEntityProperty *CDLLEntityClass::PropertyForTypeAndID(
     return NULL;
   }
 };
+
+// --------------------------------------------------------------------------------------
+// [SSE]
+// Get pointer to entity property from its packed ID.
+// --------------------------------------------------------------------------------------
+class CEntityProperty *CDLLEntityClass::PropertyForID(ULONG ulID)
+{
+  // For each property...
+  for (INDEX iProperty = 0; iProperty < dec_ctProperties; iProperty++)
+  {
+    // If it has that same identifier then return it.
+    if (dec_aepProperties[iProperty].ep_ulID == ulID) {
+      return &dec_aepProperties[iProperty];
+    }
+  }
+
+  // If base class exists then look in the base class.
+  if (dec_pdecBase != NULL) {
+    return dec_pdecBase->PropertyForID(ulID);
+  }
+
+  return NULL; // Otherwise - nothing found!
+};
+
 
 /*
  * Get pointer to component from its identifier.

@@ -79,15 +79,31 @@ extern INDEX _ctPredictorEntities;
 // check if entity is of given class
 BOOL IsOfClass(CEntity *pen, const char *pstrClassName)
 {
-  if (pen==NULL || pstrClassName==NULL) {
+  if (pen == NULL || pstrClassName == NULL) {
     return FALSE;
   }
-  if (strcmp(pen->GetClass()->ec_pdecDLLClass->dec_strName, pstrClassName)==0) {
+
+  if (strcmp(pen->GetClass()->ec_pdecDLLClass->dec_strName, pstrClassName) == 0) {
     return TRUE;
   } else {
     return FALSE;
   }
 }
+
+// [SSE] Extended Class Check
+BOOL ENGINE_API IsOfClassID(CEntity *pen, ULONG ulID)
+{
+  if (pen == NULL) {
+    return FALSE;
+  }
+  
+  if (pen->GetClass()->ec_pdecDLLClass->dec_ulID == ulID) {
+    return TRUE;
+  } else {
+    return FALSE;
+  }
+}
+
 BOOL IsOfSameClass(CEntity *pen1, CEntity *pen2)
 {
   if (pen1==NULL || pen2==NULL) {
@@ -100,22 +116,61 @@ BOOL IsOfSameClass(CEntity *pen1, CEntity *pen2)
   }
 }
 
+// [SSE] Extended Class Check
+BOOL IsOfSameClassID(CEntity *pen1, CEntity *pen2)
+{
+  if (pen1 == NULL || pen2 == NULL) {
+    return FALSE;
+  }
+
+  if (pen1->GetClass()->ec_pdecDLLClass->dec_ulID == pen2->GetClass()->ec_pdecDLLClass->dec_ulID) {
+    return TRUE;
+  } else {
+    return FALSE;
+  }
+}
+
 // check if entity is of given class or derived from
 BOOL IsDerivedFromClass(CEntity *pen, const char *pstrClassName)
 {
-  if (pen==NULL || pstrClassName==NULL) {
+  if (pen == NULL || pstrClassName == NULL) {
     return FALSE;
   }
+
   // for all classes in hierarchy of the entity
   for(CDLLEntityClass *pdecDLLClass = pen->GetClass()->ec_pdecDLLClass;
-      pdecDLLClass!=NULL;
+      pdecDLLClass != NULL;
       pdecDLLClass = pdecDLLClass->dec_pdecBase) {
-    // if it is the wanted class
-    if (strcmp(pdecDLLClass->dec_strName, pstrClassName)==0) {
-      // it is derived
+
+    // If it is the wanted class then it is derived.
+    if (strcmp(pdecDLLClass->dec_strName, pstrClassName) == 0) {
+      //
       return TRUE;
     }
   }
+
+  // otherwise, it is not derived
+  return FALSE;
+}
+
+// [SSE] Extended Class Check
+BOOL IsDerivedFromClassID(CEntity *pen, ULONG ulID)
+{
+  if (pen == NULL) {
+    return FALSE;
+  }
+
+  // for all classes in hierarchy of the entity
+  for(CDLLEntityClass *pdecDLLClass = pen->GetClass()->ec_pdecDLLClass;
+      pdecDLLClass != NULL;
+      pdecDLLClass = pdecDLLClass->dec_pdecBase) {
+
+    // If it is the wanted class then it is derived.
+    if (pdecDLLClass->dec_ulID == ulID) {
+      return TRUE;
+    }
+  }
+
   // otherwise, it is not derived
   return FALSE;
 }
@@ -481,7 +536,7 @@ void CEntity::GetCollisionBoxParameters(INDEX iBox, FLOATaabbox3D &box, INDEX &i
   if(en_RenderType==RT_SKAMODEL || en_RenderType==RT_SKAEDITORMODEL) {
     box.minvect = GetModelInstance()->GetCollisionBoxMin(iBox);
     box.maxvect = GetModelInstance()->GetCollisionBoxMax(iBox);
-    //FLOATaabbox3D boxNS = box;
+    FLOATaabbox3D boxNS = box;
     box.StretchByVector(GetModelInstance()->mi_vStretch);
     iEquality = GetModelInstance()->GetCollisionBoxDimensionEquality(iBox);
   } else {
@@ -1205,6 +1260,20 @@ void CEntity::SetParent(CEntity *penNewParent)
   }
 }
 
+// --------------------------------------------------------------------------------------
+// [SSE] Extended Engine API
+// Get child entities count
+// --------------------------------------------------------------------------------------
+INDEX CEntity::GetChildCount(void)
+{
+  INDEX ctChild = 0;
+
+  {FOREACHINLIST(CEntity, en_lnInParent, en_lhChildren, itenChild) {
+    ctChild++;
+  }}
+  
+  return ctChild;
+}
 
 // find first child of given class
 CEntity *CEntity::GetChildOfClass(const char *strClass)
@@ -3145,7 +3214,7 @@ void CEntity::InflictBoxDamage(CEntity *penInflictor, enum DamageType dmtType,
     if (en.en_pciCollisionInfo==NULL) {
       continue;
     }
-    //CCollisionInfo *pci = en.en_pciCollisionInfo;
+    CCollisionInfo *pci = en.en_pciCollisionInfo;
     // if entity is not allowed to execute now
     if (!en.IsAllowedForPrediction()) {
       // do nothing
@@ -3263,6 +3332,35 @@ BOOL CEntity::FillEntityStatistics(struct EntityStats *pes)
 }
 
 /////////////////////////////////////////////////////////////////////
+// [SSE] Interaction API
+
+BOOL CEntity::IsInteractionProvider(void)
+{
+  return FALSE;
+}
+
+BOOL CEntity::IsInteractionRelay(void)
+{
+  return FALSE;
+}
+
+CEntity* CEntity::GetInteractionProvider(void)
+{
+  return NULL;
+}
+
+const CTString &CEntity::GetInteractionHint() const
+{
+  static const CTString strDummyName("");
+  return strDummyName;
+}
+
+FLOAT CEntity::GetInteractionDistance(void) const
+{
+  return 0.0F;
+}
+
+/////////////////////////////////////////////////////////////////////
 // Overrides from CSerial
 
 /*
@@ -3300,6 +3398,10 @@ void CEntity::Read_t( CTStream *istr) // throw char *
            >>en_ulSpawnFlags
            >>en_ulFlags;
   } else {
+    #ifndef NDEBUG
+    CPrintF("[DBG] Entity #%d at %d without ENT2, ENT3, ENT4 or other header! It is potential reason of loading error!\n", en_ulID, istr->GetPos_t()); // [SSE]
+    #endif
+
     (*istr)>>(ULONG &)en_RenderType
            >>en_ulPhysicsFlags
            >>en_ulCollisionFlags
@@ -3624,6 +3726,15 @@ class CEntityComponent *CEntity::ComponentForTypeAndID(ULONG ulType, ULONG ulID)
 class CEntityProperty *CEntity::PropertyForName(const CTString &strPropertyName)
 {
   return en_pecClass->PropertyForName(strPropertyName);
+}
+
+// --------------------------------------------------------------------------------------
+// [SSE]
+// Get pointer to entity property from its packed ID.
+// --------------------------------------------------------------------------------------
+class CEntityProperty *CEntity::PropertyForID(ULONG ulID)
+{
+  return en_pecClass->PropertyForID(ulID);
 }
  
 /* Create a new entity of given class in this world. */

@@ -28,7 +28,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 class CEntityPropertyEnumValue {
 public:
   INDEX epev_iValue;      // value
-  const char *epev_strName;     // descriptive name of the enum value (for editor)
+  char *epev_strName;     // descriptive name of the enum value (for editor)
 };
 class CEntityPropertyEnumType {
 public:
@@ -65,7 +65,11 @@ typedef CTString CTStringTrans;
 /////////////////////////////////////////////////////////////////////
 // Classes and macros for defining entity properties
 
-#define EPROPF_HIDEINPERSPECTIVE    (1UL<<0)  // not visualized in perspective view (for ranges)
+#define EPROPF_HIDEINPERSPECTIVE    (1UL << 0)  // not visualized in perspective view (for ranges)
+
+// [SSE] Read Only Entity Properties
+#define EPROPF_READONLY             (1UL << 10)
+//
 
 class ENGINE_API CEntityProperty {
 public:
@@ -109,21 +113,21 @@ public:
 
   ULONG ep_ulID;         // property ID for this class
   SLONG ep_slOffset;     // offset of the property in the class
-  const char *ep_strName;      // descriptive name of the property (for editor)
+  char *ep_strName;      // descriptive name of the property (for editor)
   ULONG ep_ulFlags;      // additional flags for the property
   char  ep_chShortcut;   // shortcut key for selecting the property in editor (0 for none)
   COLOR ep_colColor;     // property color, for various wed purposes (like target arrows)
 
   CEntityProperty(PropertyType eptType, CEntityPropertyEnumType *pepetEnumType,
-    ULONG ulID, SLONG slOffset, const char *strName, char chShortcut, COLOR colColor, ULONG ulFlags)
+    ULONG ulID, SLONG slOffset, char *strName, char chShortcut, COLOR colColor, ULONG ulFlags)
     : ep_eptType         (eptType      )
     , ep_pepetEnumType   (pepetEnumType)
     , ep_ulID            (ulID         )
     , ep_slOffset        (slOffset     )
     , ep_strName         (strName      )
-    , ep_ulFlags         (ulFlags      )
     , ep_chShortcut      (chShortcut   )
     , ep_colColor        (colColor     )
+    , ep_ulFlags         (ulFlags      )
   {};
   CEntityProperty(void) {};
 };
@@ -179,7 +183,7 @@ public:
 
   // NOTE: This uses special EFNM initialization for CTFileName class!
   CEntityComponent(EntityComponentType ectType,
-    ULONG ulID, const char *strEFNMComponent)
+    ULONG ulID, char *strEFNMComponent)
     : ec_ectType(ectType)
     , ec_slID(ulID)
     , ec_fnmComponent(strEFNMComponent, 4) { ec_pvPointer = NULL; };
@@ -200,9 +204,9 @@ public:
   CEntityComponent *dec_aecComponents;// array of components
   INDEX dec_ctComponents;             // number of components
 
-  const char *dec_strName;                  // descriptive name of the class
-  const char *dec_strIconFileName;          // filename of texture or thumbnail
-  INDEX dec_iID;                      // class ID
+  char *dec_strName;                  // descriptive name of the class
+  char *dec_strIconFileName;          // filename of texture or thumbnail
+  ULONG dec_ulID;                     // class ID
 
   CDLLEntityClass *dec_pdecBase;      // pointer to the base class
 
@@ -219,6 +223,11 @@ public:
   class CEntityProperty *PropertyForName(const CTString &strPropertyName);
   /* Get pointer to entity property from its packed identifier. */
   class CEntityProperty *PropertyForTypeAndID(CEntityProperty::PropertyType eptType, ULONG ulID);
+
+  // [SSE]
+  // Get pointer to entity property from its packed ID.
+  class CEntityProperty *PropertyForID(ULONG ulID);
+
   /* Get event handler given state and event code. */
   CEntity::pEventHandler HandlerForStateAndEvent(SLONG slState, SLONG slEvent);
   /* Get event handler name for given state. */

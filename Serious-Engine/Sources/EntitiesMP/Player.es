@@ -429,17 +429,19 @@ DECL_DLL void ctl_ComposeActionPacket(const CPlayerCharacter &pc, CPlayerAction 
 
   // find local player, if any
   CPlayer *penThis = NULL;
+  
   INDEX ctPlayers = CEntity::GetMaxPlayers();
-  for (INDEX iPlayer = 0; iPlayer<ctPlayers; iPlayer++) {
-    CPlayer *pen=(CPlayer *)CEntity::GetPlayerEntity(iPlayer);
-    if (pen!=NULL && pen->en_pcCharacter==pc) {
+
+  for (INDEX iPlayer = 0; iPlayer < ctPlayers; iPlayer++) {
+    CPlayer *pen = (CPlayer *)CEntity::GetPlayerEntity(iPlayer);
+    if (pen != NULL && pen->en_pcCharacter == pc) {
       penThis = pen;
       break;
     }
   }
-  // if not found
-  if (penThis==NULL) {
-    // do nothing
+  
+  // if not found then do nothing
+  if (penThis == NULL) {
     return;
   }
 
@@ -1250,6 +1252,27 @@ components:
 
 
 functions:
+
+  virtual void ReceiveRPC(CNetworkMessage &nmMessage)
+  {
+    INDEX iCommandID;
+    FLOAT fValue;
+
+    nmMessage >> iCommandID;
+    
+    if (iCommandID == 1 || iCommandID == 2)
+    {
+      nmMessage >> fValue;
+
+      if (iCommandID == 1) {
+        SetHealth(fValue);
+      } else {
+        SetArmor(fValue);
+      }
+    } 
+
+    CPrintF("PLID %d received direct RPC!\n", GetMyPlayerIndex());
+  };
 
   INDEX GenderSound(INDEX iSound)
   {
