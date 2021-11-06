@@ -25,12 +25,14 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 CTStream &operator>>(CTStream &strm, CPlacement3D &p3d)
 {
-  strm.Read_t(&p3d, sizeof(p3d));
+  strm>>p3d.pl_PositionVector;
+  strm>>p3d.pl_OrientationAngle;
   return strm;
 }
 CTStream &operator<<(CTStream &strm, const CPlacement3D &p3d)
 {
-  strm.Write_t(&p3d, sizeof(p3d));
+  strm<<p3d.pl_PositionVector;
+  strm<<p3d.pl_OrientationAngle;
   return strm;
 }
 

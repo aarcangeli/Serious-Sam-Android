@@ -142,7 +142,7 @@ SLONG CStock_TYPE::CalculateUsedMemory(void)
 void CStock_TYPE::DumpMemoryUsage_t(CTStream &strm) // throw char *
 {
   CTString strLine;
-  SLONG slUsedTotal = 0;
+  //SLONG slUsedTotal = 0;
   {FOREACHINDYNAMICCONTAINER(st_ctObjects, TYPE, itt) {
     SLONG slUsedByObject = itt->GetUsedMemory();
     if (slUsedByObject<0) {
@@ -150,7 +150,7 @@ void CStock_TYPE::DumpMemoryUsage_t(CTStream &strm) // throw char *
       return;
     }
     strLine.PrintF("%7.1fk %s(%d) %s", 
-      slUsedByObject/1024.0f, (const char*)(itt->GetName()), itt->GetUsedCount(), itt->GetDescription());
+      slUsedByObject/1024.0f, (const char*)(itt->GetName()), itt->GetUsedCount(), (const char *) itt->GetDescription());
     strm.PutLine_t(strLine);
   }}
 }

@@ -61,8 +61,9 @@ public:
   Type *Pointer(INDEX iObject);
   const Type *Pointer(INDEX iObject) const;
   /* Random access operator. */
-  inline Type &operator[](INDEX iObject);
-  inline const Type &operator[](INDEX iObject) const;
+  inline Type &operator[](INDEX iObject) { return *Pointer(iObject); }
+  inline const Type &operator[](INDEX iObject) const { return *Pointer(iObject); }
+
   /* Assignment operator. */
   CDynamicArray<Type> &operator=(CDynamicArray<Type> &arOriginal);
   /* Move all elements of another array into this one. */

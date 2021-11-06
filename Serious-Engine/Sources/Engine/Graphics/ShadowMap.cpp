@@ -342,13 +342,21 @@ void CShadowMap::Read_old_t(CTStream *pstrm) // throw char *
   //  pstrm->ExpectID_t( CChunkID("CTSM")); // read in Read_t()
   if( pstrm->GetSize_t() != 5*4) throw( TRANS("Invalid shadow cluster map file."));
 
-  *pstrm >> (INDEX&)sm_iFirstMipLevel;
+  INDEX idx; // this was the only way I could coerce GCC into playing. --ryan.
+
+  *pstrm >> idx;
+  sm_iFirstMipLevel = idx;
   INDEX iNoOfMipmaps;
-  *pstrm >> (INDEX&)iNoOfMipmaps;
-  *pstrm >> (MEX&)sm_mexOffsetX;
-  *pstrm >> (MEX&)sm_mexOffsetY;
-  *pstrm >> (MEX&)sm_mexWidth;
-  *pstrm >> (MEX&)sm_mexHeight;
+  *pstrm >> iNoOfMipmaps;
+  *pstrm >> idx;
+  sm_mexOffsetX = idx;
+  *pstrm >> idx;
+  sm_mexOffsetY = idx;
+  *pstrm >> idx;
+  sm_mexWidth = idx;
+  *pstrm >> idx;
+  sm_mexHeight = idx;
+
   BOOL bStaticImagePresent, bAnimatingImagePresent;
   *pstrm >> (INDEX&)bStaticImagePresent;
   *pstrm >> (INDEX&)bAnimatingImagePresent;

@@ -56,10 +56,56 @@ struct PCXHeader
   SBYTE Filler[54];
 };
 
+static __forceinline CTStream &operator>>(CTStream &strm, PCXHeader &t) {
+  strm>>t.MagicID;
+  strm>>t.Version;
+  strm>>t.Encoding;
+  strm>>t.PixelBits;
+  strm>>t.Xmin;
+  strm>>t.Ymin;
+  strm>>t.Xmax;
+  strm>>t.Ymax;
+  strm>>t.Hres;
+  strm>>t.Vres;
+  strm.Read_t(t.Palette, sizeof (t.Palette));
+  strm>>t.Reserved;
+  strm>>t.Planes;
+  strm>>t.BytesPerLine;
+  strm>>t.PaletteInfo;
+  strm>>t.HscreenSize;
+  strm>>t.VscreenSize;
+  strm.Read_t(t.Filler, sizeof (t.Filler));
+  return strm;
+}
+
+#if 0 // DG: unused.
+static __forceinline CTStream &operator<<(CTStream &strm, const PCXHeader &t) {
+  strm<<t.MagicID;
+  strm<<t.Version;
+  strm<<t.Encoding;
+  strm<<t.PixelBits;
+  strm<<t.Xmin;
+  strm<<t.Ymin;
+  strm<<t.Xmax;
+  strm<<t.Ymax;
+  strm<<t.Hres;
+  strm<<t.Vres;
+  strm.Write_t(t.Palette, sizeof (t.Palette));
+  strm<<t.Reserved;
+  strm<<t.Planes;
+  strm<<t.BytesPerLine;
+  strm<<t.PaletteInfo;
+  strm<<t.HscreenSize;
+  strm<<t.VscreenSize;
+  strm.Write_t(t.Filler, sizeof (t.Filler));
+  return strm;
+}
+#endif // 0
+
 // TARGA header structure
 struct TGAHeader
 {
-  UBYTE IdLenght;
+  UBYTE IdLength;
   UBYTE ColorMapType;
   UBYTE ImageType;
   UBYTE ColorMapSpec[5];
@@ -71,6 +117,35 @@ struct TGAHeader
   UBYTE Descriptor;
 };
 
+static __forceinline CTStream &operator>>(CTStream &strm, TGAHeader &t) {
+  strm>>t.IdLength;
+  strm>>t.ColorMapType;
+  strm>>t.ImageType;
+  strm>>t.ColorMapSpec[5];
+  strm>>t.Xorigin;
+  strm>>t.Yorigin;
+  strm>>t.Width;
+  strm>>t.Height;
+  strm>>t.BitsPerPixel;
+  strm>>t.Descriptor;
+  return(strm);
+}
+
+#if 0 // DG: unused.
+static __forceinline CTStream &operator<<(CTStream &strm, const TGAHeader &t) {
+  strm<<t.IdLength;
+  strm<<t.ColorMapType;
+  strm<<t.ImageType;
+  strm<<t.ColorMapSpec[5];
+  strm<<t.Xorigin;
+  strm<<t.Yorigin;
+  strm<<t.Width;
+  strm<<t.Height;
+  strm<<t.BitsPerPixel;
+  strm<<t.Descriptor;
+  return(strm);
+}
+#endif // 0 (unused)
 
 
 /******************************************************
@@ -93,9 +168,13 @@ void CImageInfo::Read_t( CTStream *inFile)   // throw char *
   inFile->ExpectID_t( CChunkID("CTII"));
   if( inFile->GetSize_t() != 5*4) throw( "Invalid image info file.");
 
-  *inFile >> (PIX&)ii_Width;
-  *inFile >> (PIX&)ii_Height;
-  *inFile >> (SLONG&)ii_BitsPerPixel;
+  SLONG tmp;
+  *inFile >> tmp;
+  ii_Width = (PIX) tmp;
+  *inFile >> tmp;
+  ii_Height = (PIX) tmp;
+  *inFile >> tmp;
+  ii_BitsPerPixel = (SLONG) tmp;
 
   // read image contents (all channels)
   ULONG pic_size = ii_Width*ii_Height * ii_BitsPerPixel/8;
@@ -221,7 +300,7 @@ INDEX CImageInfo::GetGfxFileInfo_t( const CTFileName &strFileName) // throw char
 
   // lets assume it's a TGA file
   GfxFile.Open_t( strFileName, CTStream::OM_READ);
-  GfxFile.Read_t( &TGAhdr, sizeof( struct TGAHeader));
+  GfxFile>>TGAhdr;
   GfxFile.Close();
 
   // check for supported targa format
@@ -237,7 +316,7 @@ INDEX CImageInfo::GetGfxFileInfo_t( const CTFileName &strFileName) // throw char
 
   // we miss Targa, so lets check for supported PCX format
   GfxFile.Open_t( strFileName, CTStream::OM_READ);
-  GfxFile.Read_t( &PCXhdr, sizeof( struct PCXHeader));
+  GfxFile>>PCXhdr;
   GfxFile.Close();
 
   // check for supported PCX format
@@ -284,7 +363,7 @@ void CImageInfo::LoadTGA_t( const CTFileName &strFileName) // throw char *
   // TGA header starts at the begining of the TGA file
   pTGAHdr = (struct TGAHeader*)pTGABuffer;
   // TGA image bytes definition follows up
-  pTGAImage = pTGABuffer + sizeof(struct TGAHeader) + pTGAHdr->IdLenght;
+  pTGAImage = pTGABuffer + sizeof(struct TGAHeader) + pTGAHdr->IdLength;
 
   // detremine picture size dimensions
   ii_Width        = (SLONG)pTGAHdr->Width;
