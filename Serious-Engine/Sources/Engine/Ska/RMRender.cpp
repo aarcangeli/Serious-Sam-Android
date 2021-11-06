@@ -1392,7 +1392,7 @@ void RM_BeginRenderingView(CAnyProjection3D &apr, CDrawPort *pdp)
 
   // make FPU precision low
   _fpuOldPrecision = GetFPUPrecision(); 
-  SetFPUPrecision(FPT_24BIT);
+  //CSetFPUPrecision(FPT_24BIT);
 
 }
 
@@ -1404,7 +1404,7 @@ void RM_EndRenderingView( BOOL bRestoreOrtho/*=TRUE*/)
 
   // assure that FPU precision was low all the model rendering time, then revert to old FPU precision
   ASSERT( GetFPUPrecision()==FPT_24BIT);
-  SetFPUPrecision(_fpuOldPrecision);
+  //CSetFPUPrecision(_fpuOldPrecision);
 
   // back to 2D projection?
   if( bRestoreOrtho) _pdp->SetOrtho();

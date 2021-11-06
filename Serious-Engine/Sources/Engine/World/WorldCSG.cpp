@@ -37,7 +37,7 @@ void AssureFPT_53(void)
 {
   if (GetFPUPrecision()!=FPT_53BIT) {
     ASSERTALWAYS( "Floating precision must be set to 53 bits during CSG!");
-    SetFPUPrecision(FPT_53BIT);
+    //CSetFPUPrecision(FPT_53BIT);
   }
 }
 

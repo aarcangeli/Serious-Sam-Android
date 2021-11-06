@@ -66,7 +66,7 @@ void BeginModelRenderingView( CAnyProjection3D &prProjection, CDrawPort *pdp)
   _pdp->SetProjection( _aprProjection);
   // make FPU precision low
   _fpuOldPrecision = GetFPUPrecision(); 
-  SetFPUPrecision(FPT_24BIT);
+  //CSetFPUPrecision(FPT_24BIT);
 
   // prepare common arrays for simple shadows rendering
   _avtxCommon.PopAll();
@@ -89,7 +89,7 @@ void EndModelRenderingView( BOOL bRestoreOrtho/*=TRUE*/)
   ASSERT( _iRenderingType==1 && _pdp!=NULL);
   // assure that FPU precision was low all the model rendering time, then revert to old FPU precision
   ASSERT( GetFPUPrecision()==FPT_24BIT);
-  SetFPUPrecision(_fpuOldPrecision);
+  //CSetFPUPrecision(_fpuOldPrecision);
   // restore front face direction
   gfxFrontFace(GFX_CCW);
   // render all batched shadows
