@@ -2207,11 +2207,8 @@ void CModelObject::RenderModel_View( CRenderModel &rm)
 {
   // cache API
   _eAPI = _pGfx->gl_eCurrentAPI;
-#ifdef SE1_D3D
-  ASSERT( _eAPI==GAT_OGL || _eAPI==GAT_D3D || _eAPI==GAT_NONE);
-#else // SE1_D3D
-  ASSERT( _eAPI==GAT_OGL || _eAPI==GAT_NONE);
-#endif // SE1_D3D
+  ASSERT( GfxValidApi(_eAPI) );
+
   if( _eAPI==GAT_NONE) return;  // must have API
 
   _pfModelProfile.StartTimer(CModelProfile::PTI_VIEW_RENDERMODEL);

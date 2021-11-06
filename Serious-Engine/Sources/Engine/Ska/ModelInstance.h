@@ -50,7 +50,7 @@ struct ColisionBox
   ColisionBox(FLOAT3D vMin,FLOAT3D vMax) {
     SetMin(vMin);
     SetMax(vMax);
-//    SetName("Default");
+    SetName("Default");
   };
   inline FLOAT3D &Min() {return cb_vMin;}
   inline FLOAT3D &Max() {return cb_vMax;}

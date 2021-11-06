@@ -35,6 +35,21 @@ struct QVect
   FLOATquat3D qRot;
 };
 
+static inline CTStream &operator>>(CTStream &strm, QVect &qv)
+{
+    strm>>qv.vPos;
+    strm>>qv.qRot;
+    return(strm);
+}
+
+static inline CTStream &operator<<(CTStream &strm, const QVect &qv)
+{
+    strm<<qv.vPos;
+    strm<<qv.qRot;
+    return(strm);
+}
+
+
 struct ENGINE_API SkeletonLOD
 {
   FLOAT slod_fMaxDistance;                        // distance in witch this lod is visible

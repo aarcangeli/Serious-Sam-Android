@@ -497,7 +497,8 @@ void CAnimSet::Read_t(CTStream *istrFile)
       // read bone envelope ID
       be.be_iBoneID = ska_GetIDFromStringTable(pstrNameID);
       // read default pos(matrix12)
-      istrFile->Read_t(&be.be_mDefaultPos[0],sizeof(FLOAT)*12);
+      for (int i = 0; i < 12; i++)
+        (*istrFile) >> be.be_mDefaultPos[i];
 
       INDEX ctp;
       // read pos array
@@ -505,7 +506,7 @@ void CAnimSet::Read_t(CTStream *istrFile)
       be.be_apPos.New(ctp);
       for(INDEX ip=0;ip<ctp;ip++)
       {
-        istrFile->Read_t(&be.be_apPos[ip],sizeof(AnimPos));
+        (*istrFile)>>be.be_apPos[ip];
       }
       INDEX ctr;
       // read rot array count
@@ -529,7 +530,7 @@ void CAnimSet::Read_t(CTStream *istrFile)
       for(INDEX ir=0;ir<ctr;ir++)
       {
         AnimRot arRot;// = be.be_arRot[ir];
-        istrFile->Read_t(&arRot,sizeof(AnimRot));
+        (*istrFile) >> arRot;
         if(!an.an_bCompresed)
         {
           be.be_arRot[ir] = arRot;
@@ -580,7 +581,8 @@ void CAnimSet::Read_t(CTStream *istrFile)
       // create morph factors array
       me.me_aFactors.New(ctmf);
       // read morph factors
-      istrFile->Read_t(&me.me_aFactors[0],sizeof(FLOAT)*ctmf);
+      for (INDEX i = 0; i < ctmf; i++)
+        (*istrFile) >> me.me_aFactors[i];
     }
   }
 }

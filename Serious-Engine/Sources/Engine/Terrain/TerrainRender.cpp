@@ -46,7 +46,7 @@ CStaticStackArray<GFXVertex4>  _avLerpedTileLayerVertices;
 
 // Arrays for batch rendering of tiles is lowest mip
 static CStaticStackArray<GFXVertex4>  _avDelayedVertices;
-static CStaticStackArray<INDEX_T>       _aiDelayedIndices;
+static CStaticStackArray<INDEX_T>     _aiDelayedIndices;
 static CStaticStackArray<GFXTexCoord> _auvDelayedTexCoords;
 static CStaticStackArray<GFXTexCoord> _auvDelayedShadowMapTC;
 

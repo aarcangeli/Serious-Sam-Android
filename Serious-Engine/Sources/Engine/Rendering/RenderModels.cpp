@@ -763,17 +763,17 @@ void DeleteLensFlare(CLightSource *pls)
 /* Render lens flares. */
 void CRenderer::RenderLensFlares(void)
 {
-  // make sure we're have orthographic projection 
+  // make sure we have orthographic projection
   re_pdpDrawPort->SetOrtho(); 
 
-  // if there are no flares of flares are off, do nothing
+  // if there are no flares or flares are off, do nothing
   gfx_iLensFlareQuality = Clamp( gfx_iLensFlareQuality, 0, 3);
   if( gfx_iLensFlareQuality==0 || re_alfiLensFlares.Count()==0) return;
 
   // get drawport ID
   ASSERT( re_pdpDrawPort!=NULL);
   const ULONG ulDrawPortID = re_pdpDrawPort->GetID();
- 
+  
   // for each lens flare of this drawport
   {for(INDEX iFlare=0; iFlare<re_alfiLensFlares.Count(); iFlare++) {
     CLensFlareInfo &lfi = re_alfiLensFlares[iFlare];

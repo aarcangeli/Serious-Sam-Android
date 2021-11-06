@@ -851,7 +851,7 @@ void CTextureData::Read_t( CTStream *inFile)
         // read type of effect source
         *inFile >> itEffectSource->tes_ulEffectSourceType;
         // read structure holding effect source properties
-        inFile->Read_t( &itEffectSource->tes_tespEffectSourceProperties, sizeof(struct TextureEffectSourceProperties));
+        *inFile >> itEffectSource->tes_tespEffectSourceProperties;
         // remember pointer to global effect
         itEffectSource->tes_ptegGlobalEffect = td_ptegEffect;
         // read count of effect pixels
@@ -862,7 +862,8 @@ void CTextureData::Read_t( CTStream *inFile)
           // alocate needed ammount of members
           itEffectSource->tes_atepPixels.New( ctEffectSourcePixels);
           // read all effect pixels in one block
-          inFile->Read_t( &itEffectSource->tes_atepPixels[0], sizeof(struct TextureEffectPixel)*ctEffectSourcePixels);
+          for (INDEX i = 0; i < ctEffectSourcePixels; i++)
+            *inFile >> itEffectSource->tes_atepPixels[i];
         }
       }
       // allocate memory for effect frame buffer

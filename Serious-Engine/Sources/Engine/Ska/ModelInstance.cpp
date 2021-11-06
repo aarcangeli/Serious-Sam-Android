@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include <Engine/StdH.h>
 #include <Engine/Ska/ModelInstance.h>
 #include <Engine/Ska/Skeleton.h>
 #include <Engine/Ska/Render.h>
@@ -160,7 +160,7 @@ INDEX CModelInstance::GetColisionBoxIndex(INDEX iBoxID)
 {
   INDEX ctcb = mi_cbAABox.Count();
   // for each existing box
-  for(INT icb=0;icb<ctcb;icb++) {
+  for(SLONG icb=0;icb<ctcb;icb++) {
     ColisionBox &cb = mi_cbAABox[icb];
     // if this is searched box
     if(cb.GetID() == iBoxID) {
@@ -651,7 +651,8 @@ void CModelInstance::RemAnimsWithID(INDEX iGroupID)
   // count played anims in anim list
   INDEX ctpa = alList.al_PlayedAnims.Count();
   // loop each played anim in anim list
-  for(int ipa=0;ipa<ctpa;ipa++) {
+  int ipa;
+  for(ipa=0;ipa<ctpa;ipa++) {
     PlayedAnim &paAnim = alList.al_PlayedAnims[ipa];
     // remove if same Group ID
     if(paAnim.pa_GroupID == iGroupID) {
@@ -675,8 +676,8 @@ void CModelInstance::RemovePassedAnimsFromQueue()
   // find newes animlist that has fully faded in
   INDEX iFirstAnimList = -1;
   // for each anim list from last to first
-  INDEX ial=ctal-1;
-  for(;ial>=0;ial--)
+  INDEX ial;
+  for(ial=ctal-1;ial>=0;ial--)
   {
     AnimList &alList = mi_aqAnims.aq_Lists[ial];
     // calculate fade factor for this animlist

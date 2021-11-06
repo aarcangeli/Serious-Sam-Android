@@ -41,6 +41,20 @@ struct AnimPos
   FLOAT3D ap_vPos;     //bone pos
 };
 
+static inline CTStream &operator>>(CTStream &strm, AnimPos &ap)
+{
+    strm>>ap.ap_iFrameNum;
+    strm>>ap.ap_vPos;
+    return(strm);
+}
+
+static inline CTStream &operator<<(CTStream &strm, const AnimPos &ap)
+{
+    strm<<ap.ap_iFrameNum;
+    strm<<ap.ap_vPos;
+    return(strm);
+}
+
 struct AnimRotOpt
 {
   UWORD aro_iFrameNum;  //frame number
@@ -53,6 +67,20 @@ struct AnimRot
   UWORD ar_iFrameNum;  //frame number
   FLOATquat3D ar_qRot; //bone rot
 };
+
+static inline CTStream &operator>>(CTStream &strm, AnimRot &ar)
+{
+    strm>>ar.ar_iFrameNum;
+    strm>>ar.ar_qRot;
+    return(strm);
+}
+
+static inline CTStream &operator<<(CTStream &strm, const AnimRot &ar)
+{
+    strm<<ar.ar_iFrameNum;
+    strm<<ar.ar_qRot;
+    return(strm);
+}
 
 struct Animation
 {

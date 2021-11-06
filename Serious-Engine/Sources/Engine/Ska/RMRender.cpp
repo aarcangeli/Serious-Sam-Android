@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include <Engine/StdH.h>
 #include <Engine/Base/Console.h>
 #include <Engine/Math/Projection.h>
 #include <Engine/Math/Float.h>
@@ -263,6 +263,7 @@ static void GetHazeMapInVertex( GFXVertex4 &vtx, FLOAT &tx1)
   tx1 = (fD+_fHazeAdd) * _haze_fMul;
 }
 
+#if 0 // DG: unused
 // check model's bounding box against fog
 static BOOL IsModelInFog( FLOAT3D &vMin, FLOAT3D &vMax)
 {
@@ -294,6 +295,7 @@ static BOOL IsModelInHaze( FLOAT3D &vMin, FLOAT3D &vMax)
   vtx.x=vMax(1); vtx.y=vMax(2); vtx.z=vMax(3); GetHazeMapInVertex(vtx,fS); if(InHaze(fS)) return TRUE;
   return FALSE;
 }
+#endif // 0 (unused)
 
 BOOL PrepareHaze(void)
 {
@@ -977,8 +979,8 @@ static void RenderBone(RenBone &rb, COLOR col)
   TransformVector(vRingPt[3].vector,rb.rb_mBonePlacement);
 
   // connect start point of bone with end point
-  INDEX il=0;
-  for(;il<4;il++) {
+  INDEX il;
+  for(il=0;il<4;il++) {
     _pdp->DrawLine3D(vBoneStart,vRingPt[il],col);
     _pdp->DrawLine3D(vBoneEnd,vRingPt[il],col);
   }
@@ -1135,8 +1137,8 @@ static void RenderActiveBones(RenModel &rm)
   // find newes animlist that has fully faded in
   INDEX iFirstAnimList = 0;
   // loop from newer to older
-  INDEX ial=ctal-1;
-  for(;ial>=0;ial--) {
+  INDEX ial;
+  for(ial=ctal-1;ial>=0;ial--) {
     AnimList &alList = pmi->mi_aqAnims.aq_Lists[ial];
     // calculate fade factor
     FLOAT fFadeFactor = CalculateFadeFactor(alList);
@@ -1178,7 +1180,7 @@ static void RenderActiveBones(void)
   gfxSetViewMatrix(NULL);
   // for each renmodel
   INDEX ctrm = _aRenModels.Count();
-  for(INT irm=0;irm<ctrm;irm++) {
+  for(SLONG irm=0;irm<ctrm;irm++) {
     RenModel &rm = _aRenModels[irm];
     RenderActiveBones(rm);
   }
@@ -1777,8 +1779,8 @@ static void CalculateBoneTransforms()
 
   Matrix12 mStretch;
   // for each renbone after first dummy one
-  int irb=1;
-  for(; irb<_aRenBones.Count(); irb++) {
+  int irb;
+  for(irb=1; irb<_aRenBones.Count(); irb++) {
     Matrix12 mRelPlacement;
     Matrix12 mOffset;
     RenBone &rb = _aRenBones[irb];
@@ -1856,8 +1858,8 @@ static void MatchAnims(RenModel &rm)
   // find newes animlist that has fully faded in
   INDEX iFirstAnimList = 0;
   // loop from newer to older
-  INDEX ial=ctal-1;
-  for(;ial>=0;ial--) {
+  INDEX ial;
+  for(ial=ctal-1;ial>=0;ial--) {
     AnimList &alList = rm.rm_pmiModel->mi_aqAnims.aq_Lists[ial];
     // calculate fade factor
     FLOAT fFadeFactor = CalculateFadeFactor(alList);
@@ -2100,7 +2102,7 @@ static void RenderMesh(RenMesh &rmsh,RenModel &rm)
 
       // clamp surface texture count to max number of textrues in mesh
       INDEX cttx = pShaderParams->sp_aiTextureIDs.Count();
-      INDEX cttxMax = rmsh.rmsh_pMeshInst->mi_tiTextures.Count();
+      //INDEX cttxMax = rmsh.rmsh_pMeshInst->mi_tiTextures.Count();
       // cttx = ClampUp(cttx,cttxMax);
 
       _patoTextures.PopAll();
@@ -2263,7 +2265,7 @@ static void PrepareMeshForRendering(RenMesh &rmsh, INDEX iSkeletonlod)
         } else {
           // blend absolute (1-f)*cur + f*dst
           INDEX vtx = rm.rmp_pmmmMorphMap->mmp_aMorphMap[ivx].mwm_iVxIndex;
-          MeshVertex &mvSrc = mlod.mlod_aVertices[vtx];
+          //MeshVertex &mvSrc = mlod.mlod_aVertices[vtx];
           MeshVertexMorph &mvmDst = rm.rmp_pmmmMorphMap->mmp_aMorphMap[ivx];
           // blend vertices
           _aMorphedVtxs[vtx].x = (1.0f-rm.rmp_fFactor) * _aMorphedVtxs[vtx].x + rm.rmp_fFactor*mvmDst.mwm_x;

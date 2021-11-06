@@ -584,20 +584,20 @@ void CAnimData::Read_t( CTStream *istrFile) // throw char *
 	// First we recognize main ID
 	istrFile->ExpectID_t( CChunkID( "ADAT"));
 	// Then we load and create number of animations
-	istrFile->Read_t( &ad_NumberOfAnims, sizeof( INDEX));
+	(*istrFile)>>ad_NumberOfAnims;
 	ad_Anims = new COneAnim[ ad_NumberOfAnims];
 	for( i=0; i<ad_NumberOfAnims; i++)
 	{
 		// Next block reads and allocates all data for one animation
-		istrFile->Read_t( &ad_Anims[i].oa_Name, sizeof( NAME));
-		istrFile->Read_t( &ad_Anims[i].oa_SecsPerFrame, sizeof( TIME));
-		istrFile->Read_t( &ad_Anims[i].oa_NumberOfFrames, sizeof( INDEX));
+		istrFile->Read_t(ad_Anims[i].oa_Name, sizeof (ad_Anims[i].oa_Name));  // char[32]
+		(*istrFile)>>ad_Anims[i].oa_SecsPerFrame;
+		(*istrFile)>>ad_Anims[i].oa_NumberOfFrames;
 		ad_Anims[i].oa_FrameIndices = (INDEX *)
 								AllocMemory( ad_Anims[i].oa_NumberOfFrames * sizeof( INDEX));
-		istrFile->Read_t( ad_Anims[i].oa_FrameIndices,
-							ad_Anims[i].oa_NumberOfFrames * sizeof( INDEX));
+        for (SLONG j = 0; j < ad_Anims[i].oa_NumberOfFrames; j++)
+            (*istrFile)>>ad_Anims[i].oa_FrameIndices[j];
 	}
-};
+}
 
 /*
  * Default constructor.
@@ -639,7 +639,7 @@ ENGINE_API void CAnimObject::Synchronize(CAnimObject &aoOther)
 }
 
 /*
- * Get animation's lenght.
+ * Get animation's length.
  */
 FLOAT CAnimObject::GetAnimLength(INDEX iAnim) const
 {
@@ -1116,23 +1116,23 @@ void CAnimObject::GetFrame( INDEX &iFrame0, INDEX &iFrame1, FLOAT &fRatio) const
 void CAnimObject::Write_t( CTStream *pstr) // throw char *
 {
   (*pstr).WriteID_t("ANOB");
-	(*pstr).WriteRawChunk_t( &ao_tmAnimStart, sizeof( TIME));
-	(*pstr).WriteRawChunk_t( &ao_iCurrentAnim, sizeof( INDEX));
-	(*pstr).WriteRawChunk_t( &ao_iLastAnim, sizeof( INDEX));
-	(*pstr).WriteRawChunk_t( &ao_ulFlags, sizeof( INDEX));
-};
+	(*pstr)<<ao_tmAnimStart;
+	(*pstr)<<ao_iCurrentAnim;
+	(*pstr)<<ao_iLastAnim;
+	(*pstr)<<ao_ulFlags;
+}
 
 void CAnimObject::Read_t( CTStream *pstr) // throw char *
 {
   if ((*pstr).PeekID_t()==CChunkID("ANOB")) {
     (*pstr).ExpectID_t("ANOB");
-	  (*pstr).ReadRawChunk_t( &ao_tmAnimStart, sizeof( TIME));
-	  (*pstr).ReadRawChunk_t( &ao_iCurrentAnim, sizeof( INDEX));
-	  (*pstr).ReadRawChunk_t( &ao_iLastAnim, sizeof( INDEX));
-	  (*pstr).ReadRawChunk_t( &ao_ulFlags, sizeof( INDEX));
+	  (*pstr)>>ao_tmAnimStart;
+	  (*pstr)>>ao_iCurrentAnim;
+	  (*pstr)>>ao_iLastAnim;
+	  (*pstr)>>ao_ulFlags;
   } else {
-	  (*pstr).ReadRawChunk_t( &ao_tmAnimStart, sizeof( TIME));
-	  (*pstr).ReadRawChunk_t( &ao_iCurrentAnim, sizeof( INDEX));
+	  (*pstr)>>ao_tmAnimStart;
+	  (*pstr)>>ao_iCurrentAnim;
     ao_iLastAnim = ao_iCurrentAnim;
     ao_ulFlags = 0;
   }
