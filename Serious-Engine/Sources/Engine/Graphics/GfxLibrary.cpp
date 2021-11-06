@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 #include <Engine/Base/CTString.h>
 
 #include <Engine/Graphics/GfxLibrary.h>
@@ -81,7 +81,9 @@ extern BOOL CVA_bModels;
 static FLOAT _fLastBrightness, _fLastContrast, _fLastGamma;
 static FLOAT _fLastBiasR, _fLastBiasG, _fLastBiasB;
 static INDEX _iLastLevels;
+#ifdef PLATFORM_WIN32 // DG: not used on other platforms
 static UWORD _auwGammaTable[256*3];
+#endif
 
 // table for clipping [-512..+1024] to [0..255]
 static UBYTE aubClipByte[256*2+ 256 +256*3];
@@ -304,6 +306,9 @@ INDEX sys_bUsingDirect3D = 0;
  */
 #define WH_KEYBOARD_LL 13
 
+#ifdef PLATFORM_WIN32
+void EnableWindowsKeys(void);
+
 #pragma message(">> doublecheck me!!!")
 // these are commented because they are already defined in winuser.h
 //#define LLKHF_EXTENDED 0x00000001
@@ -327,7 +332,6 @@ INDEX sys_bUsingDirect3D = 0;
 
 static HHOOK _hLLKeyHook = NULL;
 
-#if PLATFORM_WIN32
 LRESULT CALLBACK LowLevelKeyboardProc (INT nCode, WPARAM wParam, LPARAM lParam)
 {
   // By returning a non-zero value from the hook procedure, the
@@ -361,10 +365,8 @@ LRESULT CALLBACK LowLevelKeyboardProc (INT nCode, WPARAM wParam, LPARAM lParam)
           break;
   }
   return CallNextHookEx (_hLLKeyHook, nCode, wParam, lParam);
-}
-#endif
+} 
 
-#if PLATFORM_WIN32
 void DisableWindowsKeys(void)
 {
   //if( _hLLKeyHook!=NULL) UnhookWindowsHookEx(_hLLKeyHook);
@@ -373,19 +375,17 @@ void DisableWindowsKeys(void)
   INDEX iDummy;
   SystemParametersInfo(SPI_SETSCREENSAVERRUNNING, TRUE, &iDummy, 0);
 }
-#else
-void DisableWindowsKeys(void) {}
-#endif
 
-#if PLATFORM_WIN32
 void EnableWindowsKeys(void)
 {
   INDEX iDummy;
   SystemParametersInfo(SPI_SETSCREENSAVERRUNNING, FALSE, &iDummy, 0);
   // if( _hLLKeyHook!=NULL) UnhookWindowsHookEx(_hLLKeyHook);
 }
+
 #else
-void EnableWindowsKeys(void) {}
+    #define DisableWindowsKeys()
+    #define EnableWindowsKeys()
 #endif
 
 // texture size reporting
@@ -494,12 +494,9 @@ static void GAPInfo(void)
 {
   // check API
   const GfxAPIType eAPI = _pGfx->gl_eCurrentAPI;
-#ifdef SE1_D3D
-  ASSERT( eAPI==GAT_OGL || eAPI==GAT_D3D || eAPI==GAT_NONE);
-#else // SE1_D3D
-  ASSERT( eAPI==GAT_OGL || eAPI==GAT_NONE);
-#endif // SE1_D3D
   CPrintF( "\n");
+
+  ASSERT( GfxValidApi(eAPI) );
 
   // in case of driver hasn't been initialized yet
   if( (_pGfx->go_hglRC==NULL 
@@ -665,8 +662,8 @@ static void GAPInfo(void)
     CPrintF("\n- Supported extensions: %s\n", (const char *) ReformatExtensionsString(_pGfx->go_strSupportedExtensions));
   }
 
-  // Direct3D only stuff
 #ifdef SE1_D3D
+  // Direct3D only stuff
   if( eAPI==GAT_D3D)
   {
     // HW T&L
@@ -1017,7 +1014,6 @@ CGfxLibrary::CGfxLibrary(void)
  */
 CGfxLibrary::~CGfxLibrary()
 {
-  extern void EnableWindowsKeys(void);
   EnableWindowsKeys();
   // free common arrays
   _avtxCommon.Clear();
@@ -1572,13 +1568,13 @@ void CGfxLibrary::DestroyWindowCanvas(CViewPort *pvpOld) {
 /////////////////////////////////////////////////////////////////////
 // Work canvas functions
 
+#ifdef PLATFORM_WIN32
 #define WorkCanvasCLASS "WorkCanvas Window"
 static BOOL _bClassRegistered = FALSE;
 
 /* Create a work canvas. */
 void CGfxLibrary::CreateWorkCanvas(PIX pixWidth, PIX pixHeight, CDrawPort **ppdpNew)
 {
-#if PLATFORM_WIN32
   // must have dimensions
 	ASSERT (pixWidth>0 || pixHeight>0);
 
@@ -1617,9 +1613,6 @@ void CGfxLibrary::CreateWorkCanvas(PIX pixWidth, PIX pixHeight, CDrawPort **ppdp
   *ppdpNew = NULL;
   CViewPort *pvp;
   CreateWindowCanvas(hWnd, &pvp, ppdpNew);
-#else
-  FatalError("Should not be called");
-#endif
 }
 
 /* Destroy a work canvas. */
@@ -1628,10 +1621,9 @@ void CGfxLibrary::DestroyWorkCanvas(CDrawPort *pdpOld)
   CViewPort *pvp = pdpOld->dp_Raster->ra_pvpViewPort;
   HWND hwnd = pvp->vp_hWndParent;
   DestroyWindowCanvas(pvp);
-//  ::DestroyWindow(hwnd);
+  ::DestroyWindow(hwnd);
 }
-
-
+#endif
 
 // optimize memory used by cached shadow maps
 
@@ -1733,7 +1725,9 @@ INDEX _ctProbeShdU = 0;
 INDEX _ctProbeShdB = 0;
 INDEX _ctFullShdU  = 0;
 SLONG _slFullShdUBytes = 0;
+#ifdef PLATFORM_WIN32 // only used there
 static BOOL GenerateGammaTable(void);
+#endif
 
 
 
@@ -1897,13 +1891,14 @@ void CGfxLibrary::SwapBuffers(CViewPort *pvp)
   //pvp->vp_Raster.ra_MainDrawPort.FillZBuffer(ZBUF_BACK);
 
   // adjust gamma table if supported ...
+#ifdef PLATFORM_WIN32
   if( gl_ulFlags & GLF_ADJUSTABLEGAMMA) {
     // ... and required
     const BOOL bTableSet = GenerateGammaTable();
     if( bTableSet) {
       if( gl_eCurrentAPI==GAT_OGL) {
-//        CTempDC tdc(pvp->vp_hWnd);
-//        SetDeviceGammaRamp( tdc.hdc, &_auwGammaTable[0]);
+        CTempDC tdc(pvp->vp_hWnd);
+        SetDeviceGammaRamp( tdc.hdc, &_auwGammaTable[0]);
       } 
 #ifdef SE1_D3D
       else if( gl_eCurrentAPI==GAT_D3D) {
@@ -1912,8 +1907,22 @@ void CGfxLibrary::SwapBuffers(CViewPort *pvp)
 #endif // SE1_D3D
     }
   }
+  else
+#elif defined(PLATFORM_PANDORA)
+  if( gl_ulFlags & GLF_ADJUSTABLEGAMMA) {
+    //hacky Gamma only (no Contrast/Brightness) support.
+    static float old_pandora_gamma = 0.0f;
+    if (old_pandora_gamma!=gfx_fGamma) {
+      char buf[50];
+      sprintf(buf,"sudo /usr/pandora/scripts/op_gamma.sh %.2f", gfx_fGamma);
+      system(buf);
+      old_pandora_gamma = gfx_fGamma;
+    }
+  } 
+  else
+#endif
   // if not supported
-  else {
+  {
     // just reset settings to default
     gfx_fBrightness = 0;
     gfx_fContrast   = 1;
@@ -1971,7 +1980,7 @@ void CGfxLibrary::UnlockRaster( CRaster *praToUnlock)
 }
 
 
-
+#ifdef PLATFORM_WIN32 // DG: only used on windows
 // generates gamma table and returns true if gamma table has been changed
 static BOOL GenerateGammaTable(void)
 {
@@ -2047,7 +2056,7 @@ static BOOL GenerateGammaTable(void)
   // done
   return TRUE;
 }
-
+#endif // PLATFORM_WIN32
 
 
 #if 0

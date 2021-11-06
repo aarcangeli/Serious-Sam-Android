@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include <Engine/StdH.h>
 
 #include <Engine/Graphics/DrawPort.h>
 
@@ -64,7 +64,7 @@ static GfxAPIType eAPI;
 static CStaticStackArray<GFXVertex>   _avtxPass;   
 static CStaticStackArray<GFXTexCoord> _atexPass[MAXTEXUNITS];
 static CStaticStackArray<GFXColor>    _acolPass;   
-static CStaticStackArray<INDEX_T>     _aiElements;
+static CStaticStackArray<INDEX_T>       _aiElements;
 // general coordinate stack referenced by the scene polygons
 CStaticStackArray<GFXVertex3> _avtxScene;
 
@@ -374,9 +374,9 @@ static void RSBinToGroups( ScenePolygon *pspoFirst)
             else {
               UBYTE ubR,ubG,ubB;
               ColorToRGB( colFlat, ubR,ubG,ubB);
-              ULONG ulR = ClampUp( ((ULONG)ubR)<<1, (ULONG) 255);
-              ULONG ulG = ClampUp( ((ULONG)ubG)<<1, (ULONG) 255);
-              ULONG ulB = ClampUp( ((ULONG)ubB)<<1, (ULONG) 255);
+              const ULONG ulR = ClampUp( ((ULONG)ubR)<<1, (ULONG) 255);
+              const ULONG ulG = ClampUp( ((ULONG)ubG)<<1, (ULONG) 255);
+              const ULONG ulB = ClampUp( ((ULONG)ubB)<<1, (ULONG) 255);
               colFlat = RGBToColor(ulR,ulG,ulB);
             }
           } // mix color in the first texture layer
@@ -1707,16 +1707,13 @@ void RenderScene( CDrawPort *pDP, ScenePolygon *pspoFirst, CAnyProjection3D &prP
 {
   // check API
   eAPI = _pGfx->gl_eCurrentAPI;
+  ASSERT( GfxValidApi(eAPI) );
+
 #ifdef SE1_D3D
-  ASSERT( eAPI==GAT_OGL || eAPI==GAT_D3D || eAPI==GAT_NONE);
-#else // SE1_D3D
-  ASSERT( eAPI==GAT_OGL || eAPI==GAT_NONE);
-#endif // SE1_D3D
-  if( eAPI!=GAT_OGL 
-#ifdef SE1_D3D
-    && eAPI!=GAT_D3D
-#endif // SE1_D3D
-    ) return;
+  if( eAPI!=GAT_OGL && eAPI!=GAT_D3D) return;
+#else
+  if( eAPI!=GAT_OGL) return;
+#endif
 
   // some cvars cannot be altered in multiplayer mode!
   if( _bMultiPlayer) {
@@ -1850,7 +1847,7 @@ void RenderSceneBackground(CDrawPort *pDP, COLOR col)
   // set arrays
   gfxResetArrays();
   GFXVertex   *pvtx = _avtxCommon.Push(4);
-  GFXTexCoord *ptex = _atexCommon.Push(4);
+  /* GFXTexCoord *ptex = */ _atexCommon.Push(4);
   GFXColor    *pcol = _acolCommon.Push(4);
   pvtx[0].x =  0;  pvtx[0].y =  0;  pvtx[0].z = 1;
   pvtx[1].x =  0;  pvtx[1].y = iH;  pvtx[1].z = 1;

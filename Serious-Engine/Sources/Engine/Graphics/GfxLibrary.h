@@ -73,6 +73,17 @@ enum GfxAPIType
 };
 
 
+__forceinline bool GfxValidApi(GfxAPIType eAPI)
+{
+#ifdef SE1_D3D
+  return(eAPI==GAT_OGL || eAPI==GAT_D3D || eAPI==GAT_NONE);
+#else
+  return(eAPI==GAT_OGL || eAPI==GAT_NONE);
+#endif
+}
+
+
+
 // vertex type (for lock/unlock function)
 enum VtxType
 {
@@ -204,6 +215,7 @@ private:
   void SwapBuffers_OGL( CViewPort *pvpToSwap);
 
   // Direct3D specific
+#ifdef SE1_D3D
   BOOL InitDriver_D3D(void);
   void EndDriver_D3D(void);
   BOOL InitDisplay_D3D( INDEX iAdapter, PIX pixSizeI, PIX pixSizeJ, enum DisplayDepth eColorDepth);
@@ -211,6 +223,7 @@ private:
   BOOL SetCurrentViewport_D3D( CViewPort *pvp);
   void UploadPattern_D3D( ULONG ulPatternEven);
   void SwapBuffers_D3D( CViewPort *pvpToSwap);
+#endif
 
 public:
 

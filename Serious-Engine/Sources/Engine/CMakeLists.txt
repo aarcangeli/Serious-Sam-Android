@@ -223,7 +223,7 @@ set(
   #"${SE_BASE}/Base/ErrorReporting.cpp"
   #"${SE_BASE}/Network/CommunicationInterface.cpp"
   #"${SE_BASE}/Graphics/ViewPort.cpp"
-  #"${SE_BASE}/Graphics/Adapter.cpp"
+  "${SE_BASE}/Graphics/Adapter.cpp"
   #"${SE_BASE}/GameAgent/GameAgent.cpp"
 
   ${SE_BASE}/_android/ErrorReporting.cpp
@@ -231,7 +231,7 @@ set(
   ${SE_BASE}/Sound/SoundLibrary_android.cpp
   ${SE_BASE}/_android/MultiMonitor.cpp
   ${SE_BASE}/Graphics/ViewPort_android.cpp
-  ${SE_BASE}/_android/CGfxLibrary.cpp
+  #${SE_BASE}/_android/CGfxLibrary.cpp
   #${SE_BASE}/_android/GameAgent.cpp
 
   # excluded sources

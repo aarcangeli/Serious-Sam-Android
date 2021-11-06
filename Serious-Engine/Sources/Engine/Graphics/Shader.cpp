@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include <Engine/StdH.h>
 #include <Engine/Base/Stream.h>
 #include <Engine/Math/Projection.h>
 #include <Engine/Ska/Render.h>
@@ -52,7 +52,7 @@ static COLOR       _colModel   = 0x000000FF;     // Model color
 static GFXColor    _colLight   = 0x000000FF;     // Light color
 static FLOAT3D     _vLightDir  = FLOAT3D(0,0,0); // Light direction
 
-static COLOR       _colConstant   = 0; // current set color
+static COLOR       _colConstant  = 0;     // current set color
 static COLOR       *_paColors    = NULL;  // array of colors to chose from
 static FLOAT       *_paFloats    = NULL;  // array of floats to chose from
 static ULONG       _ulFlags      = 0;
