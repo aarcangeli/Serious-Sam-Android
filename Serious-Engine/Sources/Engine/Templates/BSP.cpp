@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 
 #include <Engine/Templates/BSP.h>
 #include <Engine/Templates/BSP_internal.h>
@@ -186,6 +186,8 @@ void BSPVertexContainer<Type, iDimensions>::Sort(void)
 template<class Type, int iDimensions>
 void BSPVertexContainer<Type, iDimensions>::ElliminatePairedVertices(void)
 {
+  // FIXME: DG: am I missing something or is this function not actually changing anything?
+
   // if there are no vertices, or the container is not line
   if (bvc_aVertices.Count()==0 || IsPlannar()) {
     // do not attempt to sort
@@ -256,16 +258,6 @@ void BSPVertexContainer<Type, iDimensions>::CreateEdges(CDynamicArray<BSPEdge<Ty
 
 /////////////////////////////////////////////////////////////////////
 // BSP edge
-
-/*
- * Constructor with two vectors.
- */
-template<class Type, int iDimensions>
-BSPEdge<Type, iDimensions>::BSPEdge(const Vector<Type, iDimensions> &vVertex0, const Vector<Type, iDimensions> &vVertex1, size_t ulTag)
-  : bed_vVertex0(vVertex0)
-  , bed_vVertex1(vVertex1)
-  , bed_ulEdgeTag(ulTag)
-{}
 
 // remove all edges marked for removal
 template<class Type, int iDimensions>
@@ -426,9 +418,9 @@ template<class Type, int iDimensions>
 BSPNode<Type, iDimensions>::BSPNode(const Plane<Type, iDimensions> &plSplitPlane, size_t ulPlaneTag,
                  BSPNode<Type, iDimensions> &bnFront, BSPNode<Type, iDimensions> &bnBack)
   : Plane<Type, iDimensions>(plSplitPlane)
+  , bn_bnlLocation(BNL_BRANCH)
   , bn_pbnFront(&bnFront)
   , bn_pbnBack(&bnBack)
-  , bn_bnlLocation(BNL_BRANCH)
   , bn_ulPlaneTag(ulPlaneTag)
 {
 }
@@ -479,7 +471,7 @@ FLOAT BSPNode<Type, iDimensions>::TestSphere(const Vector<Type, iDimensions> &vS
   } else {
     ASSERT(bn_bnlLocation == BNL_BRANCH);
     // test the sphere against the split plane
-    Type tCenterDistance = Super::PointDistance(vSphereCenter);
+    Type tCenterDistance = this->PointDistance(vSphereCenter);
     // if the sphere is in front of the plane
     if (tCenterDistance > +tSphereRadius) {
       // recurse down the front node
@@ -588,8 +580,8 @@ void BSPNode<Type, iDimensions>::FindLineMinMax(
   } else {
     ASSERT(bn_bnlLocation == BNL_BRANCH);
     // test the points against the split plane
-    Type tD0 = Super::PointDistance(v0);
-    Type tD1 = Super::PointDistance(v1);
+    Type tD0 = this->PointDistance(v0);
+    Type tD1 = this->PointDistance(v1);
     // if both are front
     if (tD0>=0 && tD1>=0) {
       // recurse down the front node
@@ -966,7 +958,6 @@ template<class Type, int iDimensions>
 BSPNode<Type, iDimensions> *BSPTree<Type, iDimensions>::CreateSubTree(CDynamicArray<BSPPolygon<Type, iDimensions> > &abpoPolygons)
 {
   // local declarations, to fix macro expansion in FOREACHINDYNAMICARRAY
-  typedef BSPEdge<Type, iDimensions> edge_t;
   typedef BSPPolygon<Type, iDimensions> polygon_t;
   ASSERT(abpoPolygons.Count()>=1);
 
@@ -1052,8 +1043,6 @@ BSPNode<Type, iDimensions> *BSPTree<Type, iDimensions>::CreateSubTree(CDynamicAr
 template<class Type, int iDimensions>
 void BSPTree<Type, iDimensions>::Create(CDynamicArray<BSPPolygon<Type, iDimensions> > &abpoPolygons)
 {
-  typedef BSPPolygon<Type, iDimensions> polygon_t; // local declaration, to fix macro expansion in FOREACHINDYNAMICARRAY
-
   // free eventual existing tree
   Destroy();
 
@@ -1213,13 +1202,19 @@ void BSPTree<Type, iDimensions>::Read_t(CTStream &strm) // throw char *
   // read count of nodes and create array
   INDEX ctNodes;
   strm>>ctNodes;
+  // This assert was less silly when it was basically sizeof (*this), but to serialize this across targets, it looks different now.  --ryan.
   ASSERT(slSize==(SLONG)(sizeof(INDEX)+ctNodes*((sizeof(Type)*(iDimensions+1))+16)));
   bt_abnNodes.New(ctNodes);
   // for each node
   for(INDEX iNode=0; iNode<ctNodes; iNode++) {
     BSPNode<Type, iDimensions> &bn = bt_abnNodes[iNode];
     // read it from disk
-    strm.Read_t(&(Plane<Type, iDimensions>&)bn, sizeof(Plane<Type, iDimensions>));
+    //strm.Read_t(&(Plane<Type, iDimensions>&)bn, sizeof(Plane<Type, iDimensions>));
+    //strm >> ((Plane<Type, iDimensions>&)bn);
+    Plane<DOUBLE, iDimensions> tmp;
+    strm >> tmp;
+    ((Plane<FLOAT, iDimensions> &)bn) = DOUBLEtoFLOAT(tmp);
+
     strm>>(INDEX&)bn.bn_bnlLocation;
 
     INDEX iFront;
@@ -1237,7 +1232,6 @@ void BSPTree<Type, iDimensions>::Read_t(CTStream &strm) // throw char *
     } else {
       bn.bn_pbnBack = &bt_abnNodes[iBack];
     }
-
     ULONG ul;
     strm>>ul;
     bn.bn_ulPlaneTag = ul;
@@ -1270,7 +1264,8 @@ void BSPTree<Type, iDimensions>::Write_t(CTStream &strm) // throw char *
   for(INDEX iNode=0; iNode<ctNodes; iNode++) {
     BSPNode<Type, iDimensions> &bn = bt_abnNodes[iNode];
     // write it to disk
-    strm.Write_t(&(Plane<Type, iDimensions>&)bn, sizeof(Plane<Type, iDimensions>));
+    //strm.Write_t(&(Plane<Type, iDimensions>&)bn, sizeof(Plane<Type, iDimensions>));
+    strm << ((Plane<Type, iDimensions>&)bn);
     strm<<(INDEX&)bn.bn_bnlLocation;
 
     INDEX iFront;

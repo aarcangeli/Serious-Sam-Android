@@ -763,7 +763,7 @@ void DeleteLensFlare(CLightSource *pls)
 /* Render lens flares. */
 void CRenderer::RenderLensFlares(void)
 {
-  CPrintF( "[LENS FLARES] RenderLensFlares started!\n");
+  //CPrintF( "[LENS FLARES] RenderLensFlares started!\n");
   // make sure we have orthographic projection
   re_pdpDrawPort->SetOrtho(); 
   // get count of currently existing flares and time
@@ -772,8 +772,8 @@ void CRenderer::RenderLensFlares(void)
   gfx_iLensFlareQuality = Clamp( gfx_iLensFlareQuality, 0, 3);
   
   if( gfx_iLensFlareQuality==0 || ctFlares == 0) return;
-  CPrintF( "[LENS FLARES] gfx_iLensFlareQuality = %d \n", gfx_iLensFlareQuality);
-  CPrintF( "[LENS FLARES] ctFlares count = %d \n", ctFlares);
+  //CPrintF( "[LENS FLARES] gfx_iLensFlareQuality = %d \n", gfx_iLensFlareQuality);
+  //CPrintF( "[LENS FLARES] ctFlares count = %d \n", ctFlares);
 
   // get drawport ID
   ASSERT( re_pdpDrawPort!=NULL);
@@ -806,7 +806,7 @@ void CRenderer::RenderLensFlares(void)
       lfi = re_alfiLensFlares[ctFlares-1];
       re_alfiLensFlares[ctFlares-1].Clear();
       ctFlares--;
-	  CPrintF( "[LENS FLARES] Flare deleted!\n");
+	  //CPrintF( "[LENS FLARES] Flare deleted!\n");
     // if the flare is still active
     } else {
       // go to next flare
@@ -827,8 +827,8 @@ void CRenderer::RenderLensFlares(void)
     }
     // clear active flag for next frame
     lfi.lfi_ulFlags &= ~LFF_ACTIVE;
-    CPrintF( "[LENS FLARES] lfi.lfi_ulDrawPortID = %d \n", lfi.lfi_ulDrawPortID);
-	CPrintF( "[LENS FLARES] ulDrawPortID = %d \n", ulDrawPortID);
+    // CPrintF( "[LENS FLARES] lfi.lfi_ulDrawPortID = %d \n", lfi.lfi_ulDrawPortID);
+	//CPrintF( "[LENS FLARES] ulDrawPortID = %d \n", ulDrawPortID);
     // fade the flare in/out
     #define FLAREINSPEED  (0.2f)
     #define FLAREOUTSPEED (0.1f)
@@ -843,7 +843,7 @@ void CRenderer::RenderLensFlares(void)
     lfi.lfi_tmLastFrame = tmNow;
     // skip if the flare is invisible
     if( lfi.lfi_fFadeFactor<0.01f) continue;
-    CPrintF( "[LENS FLARES] lfi.lfi_fFadeFactor = %f \n", lfi.lfi_fFadeFactor);
+    //CPrintF( "[LENS FLARES] lfi.lfi_fFadeFactor = %f \n", lfi.lfi_fFadeFactor);
     // calculate general flare factors
     FLOAT fScreenSizeI   = re_pdpDrawPort->GetWidth();
     FLOAT fScreenSizeJ   = re_pdpDrawPort->GetHeight();
@@ -861,8 +861,8 @@ void CRenderer::RenderLensFlares(void)
     FLOAT fOfCenterFadeFactor = 1.0f-2.0f*fReflectionDistance/fScreenSizeI;
     fOfCenterFadeFactor = Max(fOfCenterFadeFactor, 0.0f);
 	
-	CPrintF( "[LENS FLARES] fScreenSizeI = %d \n", fScreenSizeI);
-	CPrintF( "[LENS FLARES] fScreenSizeJ = %d \n", fScreenSizeJ);
+	//CPrintF( "[LENS FLARES] fScreenSizeI = %d \n", fScreenSizeI);
+	//CPrintF( "[LENS FLARES] fScreenSizeJ = %d \n", fScreenSizeJ);
 	
     FLOAT fFogHazeFade = 1.0f;
     // if in haze

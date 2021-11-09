@@ -92,7 +92,9 @@ public:
   /* Default constructor. */
   inline BSPEdge(void) {};
   /* Constructor with two vectors. */
-  inline BSPEdge(const Vector<Type, iDimensions> &vVertex0, const Vector<Type, iDimensions> &vVertex1, size_t ulTag);
+  inline BSPEdge(const Vector<Type, iDimensions> &vVertex0, const Vector<Type, iDimensions> &vVertex1, size_t ulTag)
+    : bed_vVertex0(vVertex0), bed_vVertex1(vVertex1), bed_ulEdgeTag(ulTag) {}
+
   /* Clear the object. */
   inline void Clear(void) {};
   // remove all edges marked for removal
@@ -139,7 +141,6 @@ public:
  */
 template<class Type, int iDimensions>
 class BSPNode : public Plane<Type, iDimensions> {  // split plane
-  using Super = Plane<Type, iDimensions>;
 public:
   enum BSPNodeLocation bn_bnlLocation;    // location of bsp node
 
@@ -153,7 +154,7 @@ public:
   /* Constructor for a leaf node. */
   inline BSPNode(enum BSPNodeLocation bnl);
   /* Constructor for a branch node. */
-  inline BSPNode(const Plane<Type, iDimensions> &plSplitPlane, size_t ulPlaneTag, 
+  inline BSPNode(const Plane<Type, iDimensions> &plSplitPlane, size_t ulPlaneTag,
     BSPNode<Type, iDimensions> &bnFront, BSPNode<Type, iDimensions> &bnBack);
   /* Constructor for cloning a bsp (sub)tree. */
   BSPNode(BSPNode<Type, iDimensions> &bnRoot);

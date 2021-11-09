@@ -754,7 +754,7 @@ void *_MS_Thread(void *lpParam)
         (const struct sockaddr *) &sinServer, sizeof(sinServer));
 
     sockaddr_in _sinClient;
-    int _iClientLength = sizeof(_sinClient);
+	socklen_t size = sizeof(_sinClient);
 
     fd_set readfds_udp;                         // declare a read set
     struct timeval timeout_udp;                 // declare a timeval for our timer
@@ -769,7 +769,7 @@ void *_MS_Thread(void *lpParam)
     if (_iN > 0)
     {
       /** do recvfrom stuff **/
-      iRet =  recvfrom(_sockudp, _szBuffer, 2048, 0, (struct sockaddr*)&_sinClient, &_iClientLength);
+      iRet =  recvfrom(_sockudp, _szBuffer, 2048, 0, (struct sockaddr*)&_sinClient, &size);
       FD_CLR(_sockudp, &readfds_udp);
 
       if (iRet != -1 && iRet > 100 && iRet != SOCKET_ERROR) {
@@ -888,7 +888,7 @@ void *_LocalNet_Thread(void *lpParam)
     //sendto(_sockudp,"\\status\\",8,0, (sockaddr *) &sinServer, sizeof(sinServer));
 
     sockaddr_in _sinClient;
-    int _iClientLength = sizeof(_sinClient);
+    socklen_t size = sizeof(_sinClient);
 
     fd_set readfds_udp;                         // declare a read set
     struct timeval timeout_udp;                 // declare a timeval for our timer
@@ -906,7 +906,7 @@ void *_LocalNet_Thread(void *lpParam)
     if (_iN > 0)
     {
       /** do recvfrom stuff **/
-      iRet =  recvfrom(_sockudp, _szBuffer, 2048, 0, (struct sockaddr*)&_sinClient, &_iClientLength);
+      iRet =  recvfrom(_sockudp, _szBuffer, 2048, 0, (struct sockaddr*)&_sinClient, &size);
       FD_CLR(_sockudp, &readfds_udp);
 
       if (iRet != -1 && iRet > 100 && iRet != SOCKET_ERROR)

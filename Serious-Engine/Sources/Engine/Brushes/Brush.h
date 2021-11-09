@@ -567,7 +567,7 @@ public:
   FLOATaabbox3D bsc_boxBoundingBox;                   // bounding box in absolute space
   FLOATaabbox3D bsc_boxRelative;                      // bounding box in relative space
   CListNode bsc_lnInActiveSectors; // node in sectors active in some operation (e.g. rendering)
-  DOUBLEbsptree3D &bsc_bspBSPTree;  // the local bsp tree of the sector
+  FLOATbsptree3D &bsc_bspBSPTree;  // the local bsp tree of the sector
   CRelationDst bsc_rdOtherSidePortals;  // relation to portals pointing to this sector
   CRelationSrc bsc_rsEntities;     // relation to all entities in this sector
   CTString bsc_strName;   // sector name

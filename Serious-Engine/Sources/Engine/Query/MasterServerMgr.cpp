@@ -195,8 +195,8 @@ void _sendPacket(const char* szBuffer)
 
 int _recvPacket()
 {
-  int fromLength = sizeof(_sinFrom);
-  return recvfrom(_socket, _szBuffer, 2048, 0, (struct sockaddr*)&_sinFrom, &fromLength);
+  socklen_t size = sizeof(_sinFrom);
+  return recvfrom(_socket, _szBuffer, 2048, 0, (struct sockaddr*)&_sinFrom, &size);
 }
 
 CTString _getGameModeName(INDEX iGameMode)

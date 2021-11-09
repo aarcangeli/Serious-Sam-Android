@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 
 #include <Engine/Brushes/Brush.h>
 #include <Engine/Brushes/BrushTransformed.h>
@@ -100,6 +100,7 @@ void CBrushPolygon::CreateBSPPolygon(BSPPolygon<DOUBLE, 3> &bspo)
   }}
   bspo.bpo_abedPolygonEdges.Unlock();
 }
+
 void CBrushPolygon::CreateBSPPolygon(BSPPolygon<FLOAT, 3> &bspo)
 {
   ASSERT(GetFPUPrecision()==FPT_53BIT);
@@ -126,6 +127,7 @@ void CBrushPolygon::CreateBSPPolygon(BSPPolygon<FLOAT, 3> &bspo)
   }}
   bspo.bpo_abedPolygonEdges.Unlock();
 }
+
 void CBrushPolygon::CreateBSPPolygonNonPrecise(BSPPolygon<DOUBLE, 3> &bspo)
 {
   CBrushPolygon &brpo = *this;
@@ -158,6 +160,7 @@ void CBrushPolygon::CreateBSPPolygonNonPrecise(BSPPolygon<DOUBLE, 3> &bspo)
   }}
   bspo.bpo_abedPolygonEdges.Unlock();
 }
+
 void CBrushPolygon::CreateBSPPolygonNonPrecise(BSPPolygon<FLOAT, 3> &bspo)
 {
   CBrushPolygon &brpo = *this;
@@ -190,6 +193,7 @@ void CBrushPolygon::CreateBSPPolygonNonPrecise(BSPPolygon<FLOAT, 3> &bspo)
   }}
   bspo.bpo_abedPolygonEdges.Unlock();
 }
+
 /*
  * Select adjacent polygons with same color as this one.
  */
@@ -566,7 +570,7 @@ CBrushPolygon &CBrushPolygon::CopyPolygon(CBrushPolygon &bp)
   bpo_boxBoundingBox=bp.bpo_boxBoundingBox;
   bpo_pbscSector=bp.bpo_pbscSector;
   bpo_rsOtherSideSectors.Clear();
-  bpo_lhShadingInfos;
+  //bpo_lhShadingInfos; // don't copy or anything, it's a CListHead which must not be copied
   bpo_iInWorld=bp.bpo_iInWorld;
   return *this;
 }

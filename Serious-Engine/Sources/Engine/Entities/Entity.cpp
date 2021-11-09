@@ -536,7 +536,7 @@ void CEntity::GetCollisionBoxParameters(INDEX iBox, FLOATaabbox3D &box, INDEX &i
   if(en_RenderType==RT_SKAMODEL || en_RenderType==RT_SKAEDITORMODEL) {
     box.minvect = GetModelInstance()->GetCollisionBoxMin(iBox);
     box.maxvect = GetModelInstance()->GetCollisionBoxMax(iBox);
-    FLOATaabbox3D boxNS = box;
+    //FLOATaabbox3D boxNS = box;
     box.StretchByVector(GetModelInstance()->mi_vStretch);
     iEquality = GetModelInstance()->GetCollisionBoxDimensionEquality(iBox);
   } else {
@@ -1895,14 +1895,13 @@ void CEntity::FindSectorsAroundEntity(void)
   // make oriented bounding box of the entity
   FLOATobbox3D boxEntity = FLOATobbox3D(en_boxSpatialClassification, 
     en_plPlacement.pl_PositionVector, en_mRotation);
-  DOUBLEobbox3D boxdEntity = FLOATtoDOUBLE(boxEntity);
 
   // unset spatial clasification
   en_rdSectors.Clear();
 
   // for each brush in the world
   FOREACHINDYNAMICARRAY(en_pwoWorld->wo_baBrushes.ba_abrBrushes, CBrush3D, itbr) {
-    CBrush3D &br=*itbr;
+    //CBrush3D &br=*itbr;
     // if the brush entity is not zoning
     if (itbr->br_penEntity==NULL || !(itbr->br_penEntity->en_ulFlags&ENF_ZONING)) {
       // skip it
@@ -1919,10 +1918,10 @@ void CEntity::FindSectorsAroundEntity(void)
           
           // if the sphere is inside the sector
           if (itbsc->bsc_bspBSPTree.TestSphere(
-              FLOATtoDOUBLE(vSphereCenter), FLOATtoDOUBLE(fSphereRadius))>=0) {
+              vSphereCenter, fSphereRadius)>=0) {
 
             // if the box is inside the sector
-            if (itbsc->bsc_bspBSPTree.TestBox(boxdEntity)>=0) {
+            if (itbsc->bsc_bspBSPTree.TestBox(boxEntity)>=0) {
               // relate the entity to the sector
               if (en_RenderType==RT_BRUSH
                 ||en_RenderType==RT_FIELDBRUSH
@@ -1959,7 +1958,6 @@ void CEntity::FindSectorsAroundEntityNear(void)
   // make oriented bounding box of the entity
   FLOATobbox3D oboxEntity = FLOATobbox3D(en_boxSpatialClassification, 
     en_plPlacement.pl_PositionVector, en_mRotation);
-  DOUBLEobbox3D oboxdEntity = FLOATtoDOUBLE(oboxEntity);
 
   CListHead lhActive;
   // for each sector around this entity
@@ -1990,13 +1988,13 @@ void CEntity::FindSectorsAroundEntityNear(void)
         (pbsc->bsc_boxBoundingBox.HasContactWith(boxEntity))&&
         // the sphere is inside the sector
         (pbsc->bsc_bspBSPTree.TestSphere(
-              FLOATtoDOUBLE(vSphereCenter), FLOATtoDOUBLE(fSphereRadius))>=0)&&
+              vSphereCenter, fSphereRadius)>=0)&&
         // (use more detailed testing for moving brushes)
         (en_RenderType!=RT_BRUSH||
           // oriented box touches box of sector
-          (oboxEntity.HasContactWith(FLOATobbox3D(pbsc->bsc_boxBoundingBox)))&&
+          ((oboxEntity.HasContactWith(FLOATobbox3D(pbsc->bsc_boxBoundingBox)))&&
           // oriented box is in bsp
-          (pbsc->bsc_bspBSPTree.TestBox(oboxdEntity)>=0));
+          (pbsc->bsc_bspBSPTree.TestBox(oboxEntity)>=0)));
     // if it is not
     if (!bIn) {
       // if it has link
@@ -2937,7 +2935,7 @@ CBrushSector *CEntity::GetSectorFromPoint(const FLOAT3D &vPointAbs)
   // for each sector around entity
   {FOREACHSRCOFDST(en_rdSectors, CBrushSector, bsc_rsEntities, pbsc)
     // if point is in this sector
-    if( pbsc->bsc_bspBSPTree.TestSphere(FLOATtoDOUBLE(vPointAbs), 0.01)>=0) {
+    if( pbsc->bsc_bspBSPTree.TestSphere(vPointAbs, 0.01)>=0) {
       // return that
       return pbsc;
     }
@@ -3214,7 +3212,7 @@ void CEntity::InflictBoxDamage(CEntity *penInflictor, enum DamageType dmtType,
     if (en.en_pciCollisionInfo==NULL) {
       continue;
     }
-    CCollisionInfo *pci = en.en_pciCollisionInfo;
+    //CCollisionInfo *pci = en.en_pciCollisionInfo;
     // if entity is not allowed to execute now
     if (!en.IsAllowedForPrediction()) {
       // do nothing
@@ -3381,7 +3379,7 @@ void CEntity::Read_t( CTStream *istr) // throw char *
            >>en_ulCollisionFlags
            >>en_ulSpawnFlags
            >>en_ulFlags;
-    (*istr).Read_t(&en_mRotation, sizeof(en_mRotation));
+    (*istr)>>en_mRotation;
   } else if (istr->PeekID_t()==CChunkID("ENT3")) { // entity v3
     istr->ExpectID_t("ENT3");
     (*istr)>>(ULONG &)en_RenderType
@@ -3389,7 +3387,7 @@ void CEntity::Read_t( CTStream *istr) // throw char *
            >>en_ulCollisionFlags
            >>en_ulSpawnFlags
            >>en_ulFlags;
-    (*istr).Read_t(&en_mRotation, sizeof(en_mRotation));
+    (*istr)>>en_mRotation;
   } else if (istr->PeekID_t()==CChunkID("ENT2")) { // entity v2
     istr->ExpectID_t("ENT2");
     (*istr)>>(ULONG &)en_RenderType

@@ -149,4 +149,4 @@ target_compile_options(Entities PUBLIC "-I${SE_CURRENT_GENERATED_DIR}")
 target_compile_options(Entities PRIVATE "-I${SE_CURRENT_GENERATED_DIR}/StdH")
 
 target_link_libraries(Entities Engine)
-target_compile_options(Entities PUBLIC -Wpedantic)
+#target_compile_options(Entities PUBLIC -Wpedantic)

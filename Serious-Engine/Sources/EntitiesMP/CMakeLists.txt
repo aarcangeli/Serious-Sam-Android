@@ -171,4 +171,4 @@ target_compile_options(EntitiesMP PUBLIC "-I${SE_CURRENT_GENERATED_DIR}")
 target_compile_options(EntitiesMP PRIVATE "-I${SE_CURRENT_GENERATED_DIR}/StdH")
 
 target_link_libraries(EntitiesMP Engine)
-target_compile_options(EntitiesMP PUBLIC -Wpedantic)
+#target_compile_options(EntitiesMP PUBLIC -Wpedantic)

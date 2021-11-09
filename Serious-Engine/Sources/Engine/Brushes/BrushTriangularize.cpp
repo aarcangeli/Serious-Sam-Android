@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 
 #include <Engine/Brushes/Brush.h>
 #include <Engine/Templates/DynamicArray.cpp>
@@ -50,8 +50,7 @@ static CTFileStream _strmDebugOutput;
 
 // this function is here to satisfy compiler's weird need when compiling 
 // the template for CDynamicArray<CBrushVertex *>
-template<>
-inline void Clear(CBrushVertex *&pbvx) {
+inline void Clear(CBrushVertex *pbvx) {
   (void)pbvx;
 };
 
@@ -156,7 +155,7 @@ public:
   void AddBestTriangleToTriangles(void);
 
   /* Print a statement to debugging output file. */
-  void DPrintF(char *strFormat, ...);
+  void DPrintF(const char *strFormat, ...);
   /* Dump triangle edges to debug output. */
   void DumpEdges(void);
 
@@ -338,7 +337,7 @@ void CTriangularizer::MakeEdgesForTriangularization(void)
   // get number of edges in polygon
   INDEX ctEdges = tr_abpeOriginalEdges.Count();
   // create that much edges in the array
-  CBrushEdge *pbedEdges = tr_abedEdges.New(ctEdges);
+  /* CBrushEdge *pbedEdges = */ tr_abedEdges.New(ctEdges);
 
   tr_abedEdges.Lock();
 
@@ -481,7 +480,7 @@ void CTriangularizer::FindExistingTriangleEdges(void)
 
   // for each edge
   FOREACHINDYNAMICARRAY(tr_abedEdges, CBrushEdge, itbed) {
-    CBrushEdge *pbed = itbed;
+    //CBrushEdge *pbed = itbed;
 
     // if it is the bottom edge of the triangle
     if (tr_pbedBottom == itbed) {
@@ -518,7 +517,7 @@ BOOL CTriangularizer::CheckTriangleAgainstEdges(void)
 {
   // for each edge
   FOREACHINDYNAMICARRAY(tr_abedEdges, CBrushEdge, itbed) {
-    CBrushEdge *pbed = itbed;
+    //CBrushEdge *pbed = itbed;
 
     // if it is the bottom edge of the triangle
     if (tr_pbedBottom == itbed) {
@@ -585,13 +584,14 @@ void EdgeDir(const DOUBLE3D &vPoint0, const DOUBLE3D &vPoint1,
 /*
  * Print a statement to debugging output file.
  */
-void CTriangularizer::DPrintF(char *strFormat, ...)
+void CTriangularizer::DPrintF(const char *strFormat, ...)
 {
   char strBuffer[256];
   // format the message in buffer
   va_list arg;
   va_start(arg, strFormat);
   vsprintf(strBuffer, strFormat, arg);
+  va_end(arg);
 
   // if the debug output file is not open
   if (!_bDebugOutputOpen) {

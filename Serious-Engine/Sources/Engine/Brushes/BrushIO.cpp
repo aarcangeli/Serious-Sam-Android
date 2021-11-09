@@ -236,7 +236,7 @@ void CBrushPolygonTexture::Read_t( CTStream &strm) // throw char *
   if (bpt_toTexture.GetData()!=NULL) {
     bpt_toTexture.GetData()->AddToCRCTable();
   }
-  strm.Read_t(&bpt_mdMapping, sizeof(bpt_mdMapping));
+  strm>>bpt_mdMapping;
   strm>>s.bpt_ubScroll;
   strm>>s.bpt_ubBlend;
   strm>>s.bpt_ubFlags;
@@ -415,7 +415,7 @@ void CBrushSector::Read_t( CTStream *pistrm) // throw char *
   // for each vertex
   {FOREACHINSTATICARRAY(bsc_abvxVertices, CBrushVertex, itbvx) {
     // read precise vertex coordinates
-    pistrm->Read_t(&itbvx->bvx_vdPreciseRelative, sizeof(DOUBLE3D));
+    (*pistrm)>>itbvx->bvx_vdPreciseRelative;
     // remember sector pointer
     itbvx->bvx_pbscSector = this;
   }}
@@ -430,7 +430,7 @@ void CBrushSector::Read_t( CTStream *pistrm) // throw char *
   // for each plane
   {FOREACHINSTATICARRAY(bsc_abplPlanes, CBrushPlane, itbpl) {
     // read precise plane coordinates
-    pistrm->Read_t(&itbpl->bpl_pldPreciseRelative, sizeof(DOUBLEplane3D));
+    (*pistrm)>>itbpl->bpl_pldPreciseRelative;
   }}
 
   (*pistrm).ExpectID_t("EDGs");  // 'edges'
@@ -491,7 +491,7 @@ void CBrushSector::Read_t( CTStream *pistrm) // throw char *
       bpo.bpo_abptTextures[2].Read_t(*pistrm);
 
       // read other polygon properties
-      (*pistrm).Read_t(&bpo.bpo_bppProperties, sizeof(bpo.bpo_bppProperties));
+      (*pistrm)>>bpo.bpo_bppProperties;
 
     } else {
       // read textures
@@ -508,7 +508,7 @@ void CBrushSector::Read_t( CTStream *pistrm) // throw char *
       // read texture mapping
       bpo.bpo_mdShadow.ReadOld_t(*pistrm);
       // read other polygon properties
-      (*pistrm).Read_t(&bpo.bpo_bppProperties, sizeof(bpo.bpo_bppProperties));
+      (*pistrm)>>bpo.bpo_bppProperties;
 
       // adjust polygon and texture properties
       bpo.bpo_abptTextures[0].bpt_mdMapping = bpo.bpo_mdShadow;
@@ -592,7 +592,9 @@ void CBrushSector::Read_t( CTStream *pistrm) // throw char *
       bpo.bpo_aiTriangleElements.New(ctElements);
       // read all element indices
       if (ctElements>0) {
-        (*pistrm).Read_t(&bpo.bpo_aiTriangleElements[0], ctElements*sizeof(INDEX));
+        for (INDEX i = 0; i < ctElements; i++) {
+          (*pistrm)>>bpo.bpo_aiTriangleElements[i];
+        }
       }
     }
 
