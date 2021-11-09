@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 
 #include <Engine/Sound/SoundDecoder.h>
 #include <Engine/Base/Stream.h>
@@ -46,7 +46,7 @@ public:
 
 
 // ------------------------------------ Ogg Vorbis
-#include <vorbis/vorbisfile.h>  // we define needed stuff ourselves, and ignore the rest
+#include <vorbis/ivorbisfile.h>  // we define needed stuff ourselves, and ignore the rest
 
 // vorbis vars
 BOOL _bOVEnabled = FALSE;
@@ -501,8 +501,7 @@ INDEX CSoundDecoder::Decode(void *pvDestBuffer, INDEX ctBytesToDecode)
     char *pch = (char *)pvDestBuffer;
     INDEX ctDecoded = 0;
     while (ctDecoded<ctBytesToDecode) {
-      long iRes = pov_read(sdc_pogg->ogg_vfVorbisFile, pch, ctBytesToDecode-ctDecoded, 
-        0, 2, 1, &iCurrrentSection);
+      long iRes = pov_read(sdc_pogg->ogg_vfVorbisFile, pch, ctBytesToDecode-ctDecoded, &iCurrrentSection);
       if (iRes<=0) {
         return ctDecoded;
       }
