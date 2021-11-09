@@ -194,18 +194,18 @@ void CBrushSector::FromObjectSector_t(CObjectSector &osc) // throw char *
     bpo.bpo_pbscSector = this;
 
     // copy polygon properties
-    const int sizeTextureProperties = sizeof(bpo.bpo_abptTextures[0].bpt.bpt_auProperties);
+    const int sizeTextureProperties = sizeof(bpo.bpo_abptTextures[0].bpt_auProperties);
     const int sizePolygonProperties = sizeof(CBrushPolygonProperties);
     ASSERT(sizeof(opo.opo_ubUserData)>=sizePolygonProperties+3*sizeTextureProperties);
     UBYTE *pubUserData = (UBYTE*)&opo.opo_ubUserData;
     memcpy(&bpo.bpo_bppProperties, pubUserData, sizePolygonProperties);
-    memcpy(&bpo.bpo_abptTextures[0].bpt.bpt_auProperties,
+    memcpy(&bpo.bpo_abptTextures[0].bpt_auProperties,
       pubUserData+sizePolygonProperties+0*sizeTextureProperties,
       sizeTextureProperties);
-    memcpy(&bpo.bpo_abptTextures[1].bpt.bpt_auProperties,
+    memcpy(&bpo.bpo_abptTextures[1].bpt_auProperties,
       pubUserData+sizePolygonProperties+1*sizeTextureProperties,
       sizeTextureProperties);
-    memcpy(&bpo.bpo_abptTextures[2].bpt.bpt_auProperties,
+    memcpy(&bpo.bpo_abptTextures[2].bpt_auProperties,
       pubUserData+sizePolygonProperties+2*sizeTextureProperties,
       sizeTextureProperties);
     bpo.bpo_colShadow = *(ULONG*)(pubUserData+sizePolygonProperties+3*sizeTextureProperties),
@@ -219,20 +219,20 @@ void CBrushSector::FromObjectSector_t(CObjectSector &osc) // throw char *
       bpo.bpo_bppProperties.bpp_ubShadowBlend = 1;
       bpo.bpo_colShadow = C_WHITE|CT_OPAQUE;
 
-      bpo.bpo_abptTextures[0].bpt.s.bpt_colColor = C_WHITE|CT_OPAQUE;
-      bpo.bpo_abptTextures[0].bpt.s.bpt_ubFlags = BPTF_DISCARDABLE;
-      bpo.bpo_abptTextures[0].bpt.s.bpt_ubScroll = 0;
-      bpo.bpo_abptTextures[0].bpt.s.bpt_ubBlend = BPT_BLEND_OPAQUE;
+      bpo.bpo_abptTextures[0].s.bpt_colColor = C_WHITE|CT_OPAQUE;
+      bpo.bpo_abptTextures[0].s.bpt_ubFlags = BPTF_DISCARDABLE;
+      bpo.bpo_abptTextures[0].s.bpt_ubScroll = 0;
+      bpo.bpo_abptTextures[0].s.bpt_ubBlend = BPT_BLEND_OPAQUE;
 
-      bpo.bpo_abptTextures[1].bpt.s.bpt_colColor = C_WHITE|CT_OPAQUE;
-      bpo.bpo_abptTextures[1].bpt.s.bpt_ubFlags = BPTF_DISCARDABLE;
-      bpo.bpo_abptTextures[1].bpt.s.bpt_ubScroll = 0;
-      bpo.bpo_abptTextures[1].bpt.s.bpt_ubBlend = BPT_BLEND_SHADE;
+      bpo.bpo_abptTextures[1].s.bpt_colColor = C_WHITE|CT_OPAQUE;
+      bpo.bpo_abptTextures[1].s.bpt_ubFlags = BPTF_DISCARDABLE;
+      bpo.bpo_abptTextures[1].s.bpt_ubScroll = 0;
+      bpo.bpo_abptTextures[1].s.bpt_ubBlend = BPT_BLEND_SHADE;
 
-      bpo.bpo_abptTextures[2].bpt.s.bpt_colColor = C_WHITE|CT_OPAQUE;
-      bpo.bpo_abptTextures[2].bpt.s.bpt_ubFlags = BPTF_DISCARDABLE;
-      bpo.bpo_abptTextures[2].bpt.s.bpt_ubScroll = 0;
-      bpo.bpo_abptTextures[2].bpt.s.bpt_ubBlend = BPT_BLEND_SHADE;
+      bpo.bpo_abptTextures[2].s.bpt_colColor = C_WHITE|CT_OPAQUE;
+      bpo.bpo_abptTextures[2].s.bpt_ubFlags = BPTF_DISCARDABLE;
+      bpo.bpo_abptTextures[2].s.bpt_ubScroll = 0;
+      bpo.bpo_abptTextures[2].s.bpt_ubBlend = BPT_BLEND_SHADE;
 
       bpo.bpo_ulFlags|=BPOF_WASBRUSHPOLYGON;
     }
@@ -242,7 +242,7 @@ void CBrushSector::FromObjectSector_t(CObjectSector &osc) // throw char *
       // turn on usual portal flags
       bpo.bpo_ulFlags |= (BPOF_PASSABLE|BPOF_PORTAL);
       // make its first texture translucent
-      bpo.bpo_abptTextures[0].bpt.s.bpt_ubBlend = BPT_BLEND_BLEND;
+      bpo.bpo_abptTextures[0].s.bpt_ubBlend = BPT_BLEND_BLEND;
       // make its shadow additive
       bpo.bpo_bppProperties.bpp_ubShadowBlend = BPT_BLEND_ADD;
 
@@ -251,7 +251,7 @@ void CBrushSector::FromObjectSector_t(CObjectSector &osc) // throw char *
       // turn off usual portal flags
       bpo.bpo_ulFlags &= ~(BPOF_PASSABLE|BPOF_PORTAL);
       // make its first texture opaque
-      bpo.bpo_abptTextures[0].bpt.s.bpt_ubBlend = BPT_BLEND_OPAQUE;
+      bpo.bpo_abptTextures[0].s.bpt_ubBlend = BPT_BLEND_OPAQUE;
       // make its shadow shading
       bpo.bpo_bppProperties.bpp_ubShadowBlend = BPT_BLEND_SHADE;
     }

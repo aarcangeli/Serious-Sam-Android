@@ -267,33 +267,47 @@ public:
   CMappingDefinition bpt_mdMapping; // mapping of texture on polygon
 
   union {
-  struct {
-    UBYTE bpt_ubScroll;               // texture scroll
-    UBYTE bpt_ubBlend;                // type of texture blending used
-    UBYTE bpt_ubFlags;                // additional flags
-    UBYTE bpt_ubDummy;                // unused (alignment)
-    COLOR bpt_colColor;               // defines constant color and alpha of polygon
-  } s;
+    struct {
+      UBYTE bpt_ubScroll;               // texture scroll
+      UBYTE bpt_ubBlend;                // type of texture blending used
+      UBYTE bpt_ubFlags;                // additional flags
+      UBYTE bpt_ubDummy;                // unused (alignment)
+      COLOR bpt_colColor;               // defines constant color and alpha of polygon
+    } s;
     UBYTE bpt_auProperties[8];
-  } bpt;
+  };
+
+  // ATTENTION! If you add/edit/remove any data member, PLEASE update the
+  //  operator = method, below!  --ryan.
+  CBrushPolygonTexture& operator =(const CBrushPolygonTexture &src)
+  {
+    if (this != &src)
+    {
+      bpt_toTexture = src.bpt_toTexture;
+      bpt_mdMapping = src.bpt_mdMapping;
+      memcpy(&bpt_auProperties, &src.bpt_auProperties, sizeof (bpt_auProperties));
+    }
+    return *this;
+  }
+
 
   CBrushPolygonTexture(void)
     {
-        bpt.s.bpt_ubScroll = 0;
-        bpt.s.bpt_ubBlend = 0;
-        bpt.s.bpt_ubFlags = BPTF_DISCARDABLE;
-        bpt.s.bpt_ubDummy = 0;
-        bpt.s.bpt_colColor = 0xFFFFFFFF;
+        s.bpt_ubScroll = 0;
+        s.bpt_ubBlend = 0;
+        s.bpt_ubFlags = BPTF_DISCARDABLE;
+        s.bpt_ubDummy = 0;
+        s.bpt_colColor = 0xFFFFFFFF;
     }
 
   /* Copy polygon properties */
   CBrushPolygonTexture &CopyTextureProperties(CBrushPolygonTexture &bptOther, BOOL bCopyMapping) {
     bpt_toTexture.SetData( bptOther.bpt_toTexture.GetData());
-    bpt.s.bpt_ubScroll = bptOther.bpt.s.bpt_ubScroll;
-    bpt.s.bpt_ubBlend = bptOther.bpt.s.bpt_ubBlend;
-    bpt.s.bpt_ubFlags = bptOther.bpt.s.bpt_ubFlags;
-    bpt.s.bpt_ubDummy = bptOther.bpt.s.bpt_ubDummy;
-    bpt.s.bpt_colColor = bptOther.bpt.s.bpt_colColor;
+    s.bpt_ubScroll = bptOther.s.bpt_ubScroll;
+    s.bpt_ubBlend = bptOther.s.bpt_ubBlend;
+    s.bpt_ubFlags = bptOther.s.bpt_ubFlags;
+    s.bpt_ubDummy = bptOther.s.bpt_ubDummy;
+    s.bpt_colColor = bptOther.s.bpt_colColor;
     if( bCopyMapping) bpt_mdMapping = bptOther.bpt_mdMapping;
     return *this;
   };
@@ -360,8 +374,29 @@ struct CBrushPolygonProperties {
   UWORD bpp_uwPretenderDistance;  // distance for pretender switching [m]
   /* Default constructor. */
   CBrushPolygonProperties(void) { memset(this, 0, sizeof(*this)); };
+  friend __forceinline CTStream &operator>>(CTStream &strm, CBrushPolygonProperties &cbpp)
+  {
+    strm>>cbpp.bpp_ubSurfaceType;
+    strm>>cbpp.bpp_ubIlluminationType;
+    strm>>cbpp.bpp_ubShadowBlend;
+    strm>>cbpp.bpp_ubMirrorType;
+    strm>>cbpp.bpp_ubGradientType;
+    strm>>cbpp.bpp_sbShadowClusterSize;
+    strm>>cbpp.bpp_uwPretenderDistance;
+    return strm;
+  }
+  friend __forceinline CTStream &operator<<(CTStream &strm, const CBrushPolygonProperties &cbpp)
+  {
+    strm<<cbpp.bpp_ubSurfaceType;
+    strm<<cbpp.bpp_ubIlluminationType;
+    strm<<cbpp.bpp_ubShadowBlend;
+    strm<<cbpp.bpp_ubMirrorType;
+    strm<<cbpp.bpp_ubGradientType;
+    strm<<cbpp.bpp_sbShadowClusterSize;
+    strm<<cbpp.bpp_uwPretenderDistance;
+    return strm;
+  }
 };
-
 class ENGINE_API CBrushPolygon {
 public:
 // implementation:
@@ -389,20 +424,21 @@ public:
   void Triangulate(void);
 public:
 // interface:
+  FLOATaabbox3D bpo_boxBoundingBox;           // bounding box
+  ULONG bpo_ulFlags;                          // flags
+
   CBrushPlane *bpo_pbplPlane;                 // plane of this polygon
   CStaticArray<CBrushPolygonEdge> bpo_abpePolygonEdges;   // edges in this polygon
   CStaticArray<CBrushVertex *> bpo_apbvxTriangleVertices; // triangle vertices
   CStaticArray<INDEX> bpo_aiTriangleElements; // element indices inside vertex arrays
   CBrushPolygonTexture bpo_abptTextures[3];   // texture on this polygon
   COLOR bpo_colColor;                         // color of this polygon
-  ULONG bpo_ulFlags;                          // flags
   COLOR bpo_colShadow;                        // color of shadow on this polygon
   CBrushShadowMap bpo_smShadowMap;            // shadow map of this polygon
   CMappingDefinition bpo_mdShadow;            // mapping of shadow on polygon
   CBrushPolygonProperties bpo_bppProperties;  // additional properties
   class CScreenPolygon *bpo_pspoScreenPolygon;  // used in rendering
 
-  FLOATaabbox3D bpo_boxBoundingBox;           // bounding box
   CBrushSector *bpo_pbscSector;               // sector of this polygon
 
   CRelationSrc bpo_rsOtherSideSectors;        // relation to sectors on other side of portal
@@ -452,6 +488,7 @@ public:
 // get pointer to embedding brush polygon
 inline CBrushPolygon *CBrushShadowMap::GetBrushPolygon(void) {
   return (CBrushPolygon *) ((UBYTE*)this-offsetof(CBrushPolygon, bpo_smShadowMap));
+  return(NULL);
 }
 
 

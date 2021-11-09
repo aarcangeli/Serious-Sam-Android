@@ -237,21 +237,21 @@ void CBrushPolygonTexture::Read_t( CTStream &strm) // throw char *
     bpt_toTexture.GetData()->AddToCRCTable();
   }
   strm.Read_t(&bpt_mdMapping, sizeof(bpt_mdMapping));
-  strm>>bpt.s.bpt_ubScroll;
-  strm>>bpt.s.bpt_ubBlend;
-  strm>>bpt.s.bpt_ubFlags;
-  strm>>bpt.s.bpt_ubDummy;
-  strm>>bpt.s.bpt_colColor;
+  strm>>s.bpt_ubScroll;
+  strm>>s.bpt_ubBlend;
+  strm>>s.bpt_ubFlags;
+  strm>>s.bpt_ubDummy;
+  strm>>s.bpt_colColor;
 }
 void CBrushPolygonTexture::Write_t( CTStream &strm)  // throw char *
 {
   strm<<bpt_toTexture.GetName();
   strm.Write_t(&bpt_mdMapping, sizeof(bpt_mdMapping));
-  strm<<bpt.s.bpt_ubScroll;
-  strm<<bpt.s.bpt_ubBlend;
-  strm<<bpt.s.bpt_ubFlags;
-  strm<<bpt.s.bpt_ubDummy;
-  strm<<bpt.s.bpt_colColor;
+  strm<<s.bpt_ubScroll;
+  strm<<s.bpt_ubBlend;
+  strm<<s.bpt_ubFlags;
+  strm<<s.bpt_ubDummy;
+  strm<<s.bpt_colColor;
 }
 
 /*
@@ -512,22 +512,22 @@ void CBrushSector::Read_t( CTStream *pistrm) // throw char *
 
       // adjust polygon and texture properties
       bpo.bpo_abptTextures[0].bpt_mdMapping = bpo.bpo_mdShadow;
-      bpo.bpo_abptTextures[0].bpt.s.bpt_ubBlend = BPT_BLEND_OPAQUE;
-      bpo.bpo_abptTextures[0].bpt.s.bpt_colColor = C_WHITE|CT_OPAQUE;
+      bpo.bpo_abptTextures[0].s.bpt_ubBlend = BPT_BLEND_OPAQUE;
+      bpo.bpo_abptTextures[0].s.bpt_colColor = C_WHITE|CT_OPAQUE;
 
       bpo.bpo_abptTextures[1].bpt_mdMapping = bpo.bpo_mdShadow;
-      bpo.bpo_abptTextures[1].bpt.s.bpt_ubBlend = BPT_BLEND_SHADE;
-      bpo.bpo_abptTextures[1].bpt.s.bpt_colColor = C_WHITE|CT_OPAQUE;
+      bpo.bpo_abptTextures[1].s.bpt_ubBlend = BPT_BLEND_SHADE;
+      bpo.bpo_abptTextures[1].s.bpt_colColor = C_WHITE|CT_OPAQUE;
 
       bpo.bpo_abptTextures[2].bpt_mdMapping = bpo.bpo_mdShadow;
-      bpo.bpo_abptTextures[2].bpt.s.bpt_ubBlend = BPT_BLEND_SHADE;
-      bpo.bpo_abptTextures[2].bpt.s.bpt_colColor = C_WHITE|CT_OPAQUE;
+      bpo.bpo_abptTextures[2].s.bpt_ubBlend = BPT_BLEND_SHADE;
+      bpo.bpo_abptTextures[2].s.bpt_colColor = C_WHITE|CT_OPAQUE;
 
       bpo.bpo_bppProperties.bpp_ubShadowBlend = BPT_BLEND_SHADE;
 
       if (bpo.bpo_ulFlags&BPOF_PORTAL) {
-        bpo.bpo_abptTextures[0].bpt.s.bpt_ubBlend = BPT_BLEND_BLEND;
-        bpo.bpo_abptTextures[1].bpt.s.bpt_ubBlend = BPT_BLEND_ADD;
+        bpo.bpo_abptTextures[0].s.bpt_ubBlend = BPT_BLEND_BLEND;
+        bpo.bpo_abptTextures[1].s.bpt_ubBlend = BPT_BLEND_ADD;
         bpo.bpo_bppProperties.bpp_ubShadowBlend = BPT_BLEND_ADD;
       }
     }

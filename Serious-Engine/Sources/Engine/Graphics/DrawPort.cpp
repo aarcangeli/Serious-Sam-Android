@@ -1049,8 +1049,9 @@ void CDrawPort::RenderLensFlare( CTextureObject *pto, FLOAT fI, FLOAT fJ,
 {
   // check API
   const GfxAPIType eAPI = _pGfx->gl_eCurrentAPI;
+  CPrintF( "[LENS FLARES] HUY\n");
   ASSERT( GfxValidApi(eAPI) );
-
+  CPrintF( "[LENS FLARES] CDrawPort::RenderLensFlare started!\n");
   // setup rendering mode
   gfxEnableDepthTest();
   gfxDisableDepthWrite();
@@ -1084,10 +1085,10 @@ void CDrawPort::RenderLensFlare( CTextureObject *pto, FLOAT fI, FLOAT fJ,
   pvtx[1].x = fI- fRICosA-fRJSinA;  pvtx[1].y = fJ- fRISinA-fRJCosA;  pvtx[1].z = 0.01f;
   pvtx[2].x = fI+ fRICosA-fRJSinA;  pvtx[2].y = fJ+ fRISinA-fRJCosA;  pvtx[2].z = 0.01f;
   pvtx[3].x = fI+ fRICosA+fRJSinA;  pvtx[3].y = fJ+ fRISinA+fRJCosA;  pvtx[3].z = 0.01f;
-  ptex[0].gfxtc.st.s = 0;  ptex[0].gfxtc.st.t = 0;
-  ptex[1].gfxtc.st.s = 0;  ptex[1].gfxtc.st.t = 1;
-  ptex[2].gfxtc.st.s = 1;  ptex[2].gfxtc.st.t = 1;
-  ptex[3].gfxtc.st.s = 1;  ptex[3].gfxtc.st.t = 0;
+  ptex[0].st.s = 0;  ptex[0].st.t = 0;
+  ptex[1].st.s = 0;  ptex[1].st.t = 1;
+  ptex[2].st.s = 1;  ptex[2].st.t = 1;
+  ptex[3].st.s = 1;  ptex[3].st.t = 0;
   pcol[0] = glcol;
   pcol[1] = glcol;
   pcol[2] = glcol;
@@ -1262,7 +1263,7 @@ void CDrawPort::PutText( const CTString &strText, PIX pixX0, PIX pixY0, const CO
         acTmp[6] = '\0'; // terminate string
         col = strtoul( acTmp, &pcDummy, 16) <<8;
         col = AdjustColor( col, _slTexHueShift, _slTexSaturation);
-        glcol.Set( col|glcol.gfxcol.ub.a); // do color change but keep original alpha
+        glcol.Set( col|glcol.ub.a); // do color change but keep original alpha
         continue;
       // alpha change?
       case 'a':
@@ -1328,8 +1329,8 @@ void CDrawPort::PutText( const CTString &strText, PIX pixX0, PIX pixY0, const CO
     }
 
     // adjust alpha for flashing
-    if( iFlash>0) glcol.gfxcol.ub.a = ulAlpha*(sin(iFlash*tmFrame)*0.5f+0.5f);
-    else glcol.gfxcol.ub.a = ulAlpha; 
+    if( iFlash>0) glcol.ub.a = ulAlpha*(sin(iFlash*tmFrame)*0.5f+0.5f);
+    else glcol.ub.a = ulAlpha; 
 
     // prepare coordinates for screen and texture
     const FLOAT fX0 = pixXA;  const FLOAT fX1 = fX0 +pixScaledWidth;
@@ -1340,10 +1341,10 @@ void CDrawPort::PutText( const CTString &strText, PIX pixX0, PIX pixY0, const CO
     pvtx[1].x = fX0;  pvtx[1].y = fY1;  pvtx[1].z = 0;
     pvtx[2].x = fX1;  pvtx[2].y = fY1;  pvtx[2].z = 0;
     pvtx[3].x = fX1;  pvtx[3].y = fY0;  pvtx[3].z = 0;
-    ptex[0].gfxtc.st.s = fU0;  ptex[0].gfxtc.st.t = fV0;
-    ptex[1].gfxtc.st.s = fU0;  ptex[1].gfxtc.st.t = fV1;
-    ptex[2].gfxtc.st.s = fU1;  ptex[2].gfxtc.st.t = fV1;
-    ptex[3].gfxtc.st.s = fU1;  ptex[3].gfxtc.st.t = fV0;
+    ptex[0].st.s = fU0;  ptex[0].st.t = fV0;
+    ptex[1].st.s = fU0;  ptex[1].st.t = fV1;
+    ptex[2].st.s = fU1;  ptex[2].st.t = fV1;
+    ptex[3].st.s = fU1;  ptex[3].st.t = fV0;
     pcol[0] = glcol;
     pcol[1] = glcol;
     pcol[2] = glcol;
@@ -1366,10 +1367,10 @@ void CDrawPort::PutText( const CTString &strText, PIX pixX0, PIX pixY0, const CO
       pvtx[1].x = pvtx[1-4].x +fAdjustX;  pvtx[1].y = fY1;  pvtx[1].z = 0;
       pvtx[2].x = pvtx[2-4].x +fAdjustX;  pvtx[2].y = fY1;  pvtx[2].z = 0;
       pvtx[3].x = pvtx[3-4].x +fAdjustX;  pvtx[3].y = fY0;  pvtx[3].z = 0;
-      ptex[0].gfxtc.st.s = fU0;    ptex[0].gfxtc.st.t = fV0;
-      ptex[1].gfxtc.st.s = fU0;    ptex[1].gfxtc.st.t = fV1;
-      ptex[2].gfxtc.st.s = fU1;    ptex[2].gfxtc.st.t = fV1;
-      ptex[3].gfxtc.st.s = fU1;    ptex[3].gfxtc.st.t = fV0;
+      ptex[0].st.s = fU0;    ptex[0].st.t = fV0;
+      ptex[1].st.s = fU0;    ptex[1].st.t = fV1;
+      ptex[2].st.s = fU1;    ptex[2].st.t = fV1;
+      ptex[3].st.s = fU1;    ptex[3].st.t = fV0;
       pcol[0] = glcol;
       pcol[1] = glcol;
       pcol[2] = glcol;
@@ -1515,10 +1516,10 @@ void CDrawPort::PutTexture( class CTextureObject *pTO,
   pvtx[1].x = fI0;  pvtx[1].y = fJ1;  pvtx[1].z = 0;
   pvtx[2].x = fI1;  pvtx[2].y = fJ1;  pvtx[2].z = 0;
   pvtx[3].x = fI1;  pvtx[3].y = fJ0;  pvtx[3].z = 0;
-  ptex[0].gfxtc.st.s = fU0;  ptex[0].gfxtc.st.t = fV0;
-  ptex[1].gfxtc.st.s = fU0;  ptex[1].gfxtc.st.t = fV1;
-  ptex[2].gfxtc.st.s = fU1;  ptex[2].gfxtc.st.t = fV1;
-  ptex[3].gfxtc.st.s = fU1;  ptex[3].gfxtc.st.t = fV0;
+  ptex[0].st.s = fU0;  ptex[0].st.t = fV0;
+  ptex[1].st.s = fU0;  ptex[1].st.t = fV1;
+  ptex[2].st.s = fU1;  ptex[2].st.t = fV1;
+  ptex[3].st.s = fU1;  ptex[3].st.t = fV0;
   pcol[0] = glcolUL;
   pcol[1] = glcolDL;
   pcol[2] = glcolDR;
@@ -1569,10 +1570,10 @@ void CDrawPort::AddTexture( const FLOAT fI0, const FLOAT fJ0, const FLOAT fI1, c
   pvtx[1].x = fI0;  pvtx[1].y = fJ1;  pvtx[1].z = 0;
   pvtx[2].x = fI1;  pvtx[2].y = fJ1;  pvtx[2].z = 0;
   pvtx[3].x = fI1;  pvtx[3].y = fJ0;  pvtx[3].z = 0;
-  ptex[0].gfxtc.st.s = 0;    ptex[0].gfxtc.st.t = 0;
-  ptex[1].gfxtc.st.s = 0;    ptex[1].gfxtc.st.t = 1;
-  ptex[2].gfxtc.st.s = 1;    ptex[2].gfxtc.st.t = 1;
-  ptex[3].gfxtc.st.s = 1;    ptex[3].gfxtc.st.t = 0;
+  ptex[0].st.s = 0;    ptex[0].st.t = 0;
+  ptex[1].st.s = 0;    ptex[1].st.t = 1;
+  ptex[2].st.s = 1;    ptex[2].st.t = 1;
+  ptex[3].st.s = 1;    ptex[3].st.t = 0;
   pcol[0] = glCol;  pcol[1] = glCol;  pcol[2] = glCol;  pcol[3] = glCol;
   pelm[0] = iStart+0;  pelm[1] = iStart+1;  pelm[2] = iStart+2;
   pelm[3] = iStart+2;  pelm[4] = iStart+3;  pelm[5] = iStart+0;
@@ -1593,10 +1594,10 @@ void CDrawPort::AddTexture( const FLOAT fI0, const FLOAT fJ0, const FLOAT fI1, c
   pvtx[1].x = fI0;  pvtx[1].y = fJ1;  pvtx[1].z = 0;
   pvtx[2].x = fI1;  pvtx[2].y = fJ1;  pvtx[2].z = 0;
   pvtx[3].x = fI1;  pvtx[3].y = fJ0;  pvtx[3].z = 0;
-  ptex[0].gfxtc.st.s = fU0;  ptex[0].gfxtc.st.t = fV0;
-  ptex[1].gfxtc.st.s = fU0;  ptex[1].gfxtc.st.t = fV1;
-  ptex[2].gfxtc.st.s = fU1;  ptex[2].gfxtc.st.t = fV1;
-  ptex[3].gfxtc.st.s = fU1;  ptex[3].gfxtc.st.t = fV0;
+  ptex[0].st.s = fU0;  ptex[0].st.t = fV0;
+  ptex[1].st.s = fU0;  ptex[1].st.t = fV1;
+  ptex[2].st.s = fU1;  ptex[2].st.t = fV1;
+  ptex[3].st.s = fU1;  ptex[3].st.t = fV0;
   pcol[0] = glCol;
   pcol[1] = glCol;
   pcol[2] = glCol;
@@ -1648,10 +1649,10 @@ void CDrawPort::AddTexture( const FLOAT fI0, const FLOAT fJ0, const FLOAT fU0, c
   pvtx[1].x = fI1;  pvtx[1].y = fJ1;  pvtx[1].z = 0;
   pvtx[2].x = fI2;  pvtx[2].y = fJ2;  pvtx[2].z = 0;
   pvtx[3].x = fI3;  pvtx[3].y = fJ3;  pvtx[3].z = 0;
-  ptex[0].gfxtc.st.s = fU0;  ptex[0].gfxtc.st.t = fV0;
-  ptex[1].gfxtc.st.s = fU1;  ptex[1].gfxtc.st.t = fV1;
-  ptex[2].gfxtc.st.s = fU2;  ptex[2].gfxtc.st.t = fV2;
-  ptex[3].gfxtc.st.s = fU3;  ptex[3].gfxtc.st.t = fV3;
+  ptex[0].st.s = fU0;  ptex[0].st.t = fV0;
+  ptex[1].st.s = fU1;  ptex[1].st.t = fV1;
+  ptex[2].st.s = fU2;  ptex[2].st.t = fV2;
+  ptex[3].st.s = fU3;  ptex[3].st.t = fV3;
   pcol[0] = glCol0;
   pcol[1] = glCol1;
   pcol[2] = glCol2;

@@ -763,19 +763,24 @@ void DeleteLensFlare(CLightSource *pls)
 /* Render lens flares. */
 void CRenderer::RenderLensFlares(void)
 {
+  CPrintF( "[LENS FLARES] RenderLensFlares started!\n");
   // make sure we have orthographic projection
   re_pdpDrawPort->SetOrtho(); 
-
+  // get count of currently existing flares and time
+  INDEX ctFlares   = re_alfiLensFlares.Count();
   // if there are no flares or flares are off, do nothing
   gfx_iLensFlareQuality = Clamp( gfx_iLensFlareQuality, 0, 3);
-  if( gfx_iLensFlareQuality==0 || re_alfiLensFlares.Count()==0) return;
+  
+  if( gfx_iLensFlareQuality==0 || ctFlares == 0) return;
+  CPrintF( "[LENS FLARES] gfx_iLensFlareQuality = %d \n", gfx_iLensFlareQuality);
+  CPrintF( "[LENS FLARES] ctFlares count = %d \n", ctFlares);
 
   // get drawport ID
   ASSERT( re_pdpDrawPort!=NULL);
   const ULONG ulDrawPortID = re_pdpDrawPort->GetID();
   
   // for each lens flare of this drawport
-  {for(INDEX iFlare=0; iFlare<re_alfiLensFlares.Count(); iFlare++) {
+  {for(INDEX iFlare=0; iFlare<ctFlares; iFlare++) {
     CLensFlareInfo &lfi = re_alfiLensFlares[iFlare];
     // skip if not in this drawport
     if( lfi.lfi_ulDrawPortID!=ulDrawPortID && lfi.lfi_iMirrorLevel==0) continue;
@@ -786,8 +791,6 @@ void CRenderer::RenderLensFlares(void)
     }
   }}
 
-  // get count of currently existing flares and time
-  INDEX ctFlares   = re_alfiLensFlares.Count();
   const TIME tmNow = _pTimer->GetRealTimeTick();
 
   // for each lens flare
@@ -803,6 +806,7 @@ void CRenderer::RenderLensFlares(void)
       lfi = re_alfiLensFlares[ctFlares-1];
       re_alfiLensFlares[ctFlares-1].Clear();
       ctFlares--;
+	  CPrintF( "[LENS FLARES] Flare deleted!\n");
     // if the flare is still active
     } else {
       // go to next flare
@@ -815,14 +819,16 @@ void CRenderer::RenderLensFlares(void)
   else re_alfiLensFlares.PopUntil(ctFlares-1);
 
   // for each lens flare of this drawport
-  {for(INDEX iFlare=0; iFlare<re_alfiLensFlares.Count(); iFlare++) {
+  {for(INDEX iFlare=0; iFlare<ctFlares; iFlare++) {
     CLensFlareInfo &lfi = re_alfiLensFlares[iFlare];
+
     if (lfi.lfi_ulDrawPortID!=ulDrawPortID || lfi.lfi_plsLightSource->ls_plftLensFlare==NULL) {
       continue;
     }
     // clear active flag for next frame
     lfi.lfi_ulFlags &= ~LFF_ACTIVE;
-
+    CPrintF( "[LENS FLARES] lfi.lfi_ulDrawPortID = %d \n", lfi.lfi_ulDrawPortID);
+	CPrintF( "[LENS FLARES] ulDrawPortID = %d \n", ulDrawPortID);
     // fade the flare in/out
     #define FLAREINSPEED  (0.2f)
     #define FLAREOUTSPEED (0.1f)
@@ -837,7 +843,7 @@ void CRenderer::RenderLensFlares(void)
     lfi.lfi_tmLastFrame = tmNow;
     // skip if the flare is invisible
     if( lfi.lfi_fFadeFactor<0.01f) continue;
-
+    CPrintF( "[LENS FLARES] lfi.lfi_fFadeFactor = %f \n", lfi.lfi_fFadeFactor);
     // calculate general flare factors
     FLOAT fScreenSizeI   = re_pdpDrawPort->GetWidth();
     FLOAT fScreenSizeJ   = re_pdpDrawPort->GetHeight();
@@ -854,7 +860,10 @@ void CRenderer::RenderLensFlares(void)
     FLOAT fReflectionDistance = sqrt(fReflectionDirI*fReflectionDirI+fReflectionDirJ*fReflectionDirJ);
     FLOAT fOfCenterFadeFactor = 1.0f-2.0f*fReflectionDistance/fScreenSizeI;
     fOfCenterFadeFactor = Max(fOfCenterFadeFactor, 0.0f);
-
+	
+	CPrintF( "[LENS FLARES] fScreenSizeI = %d \n", fScreenSizeI);
+	CPrintF( "[LENS FLARES] fScreenSizeJ = %d \n", fScreenSizeJ);
+	
     FLOAT fFogHazeFade = 1.0f;
     // if in haze
     if( lfi.lfi_ulFlags&LFF_HAZE) {
@@ -868,8 +877,8 @@ void CRenderer::RenderLensFlares(void)
     if( lfi.lfi_ulFlags&LFF_FOG) {
       // get fog strength at light position
       GFXTexCoord tex;
-      tex.gfxtc.st.s = -lfi.lfi_vProjected(3)*_fog_fMulZ;
-      tex.gfxtc.st.t = (lfi.lfi_vProjected%_fog_vHDirView+_fog_fAddH)*_fog_fMulH;
+      tex.st.s= -lfi.lfi_vProjected(3)*_fog_fMulZ;
+      tex.st.t = (lfi.lfi_vProjected%_fog_vHDirView+_fog_fAddH)*_fog_fMulH;
       FLOAT fFogStrength = NormByteToFloat(GetFogAlpha(tex));
       // fade flare with fog
       fFogHazeFade *= 1-fFogStrength;
@@ -918,7 +927,7 @@ void CRenderer::RenderLensFlares(void)
       FLOAT fThisB  = (ubB + (FLOAT(ubI)-ubB)*olf.olf_fLightDesaturation)*fIntensityFactor;
       UBYTE ubThisR = (UBYTE) (Min( fThisR, 255.0f));
       UBYTE ubThisG = (UBYTE) (Min( fThisG, 255.0f));
-      UBYTE ubThisB = (UBYTE)(Min( fThisB, 255.0f));
+      UBYTE ubThisB = (UBYTE) (Min( fThisB, 255.0f));
       COLOR colBlending = RGBToColor( ubThisR,ubThisG,ubThisB);
 
       // render the flare

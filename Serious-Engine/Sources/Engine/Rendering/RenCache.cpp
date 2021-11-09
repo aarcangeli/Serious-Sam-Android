@@ -526,24 +526,24 @@ void CRenderer::SetOneTextureParameters(CBrushPolygon &bpo, ScenePolygon &spo, I
   spo.spo_aptoTextures[iLayer] = &bpo.bpo_abptTextures[iLayer].bpt_toTexture;
 
   // get texture blending type
-  CTextureBlending &tb = re_pwoWorld->wo_atbTextureBlendings[bpo.bpo_abptTextures[iLayer].bpt.s.bpt_ubBlend];
+  CTextureBlending &tb = re_pwoWorld->wo_atbTextureBlendings[bpo.bpo_abptTextures[iLayer].s.bpt_ubBlend];
 
   // set texture blending flags
   ASSERT( BPTF_CLAMPU==STXF_CLAMPU && BPTF_CLAMPV==STXF_CLAMPV && BPTF_AFTERSHADOW==STXF_AFTERSHADOW);
   spo.spo_aubTextureFlags[iLayer] = 
-     (bpo.bpo_abptTextures[iLayer].bpt.s.bpt_ubFlags & (BPTF_CLAMPU|BPTF_CLAMPV|BPTF_AFTERSHADOW))
+     (bpo.bpo_abptTextures[iLayer].s.bpt_ubFlags & (BPTF_CLAMPU|BPTF_CLAMPV|BPTF_AFTERSHADOW))
    | (tb.tb_ubBlendingType);
-  if( bpo.bpo_abptTextures[iLayer].bpt.s.bpt_ubFlags & BPTF_REFLECTION) spo.spo_aubTextureFlags[iLayer] |= STXF_REFLECTION;
+  if( bpo.bpo_abptTextures[iLayer].s.bpt_ubFlags & BPTF_REFLECTION) spo.spo_aubTextureFlags[iLayer] |= STXF_REFLECTION;
 
   // set texture blending color
-  spo.spo_acolColors[iLayer] = MulColors( bpo.bpo_abptTextures[iLayer].bpt.s.bpt_colColor, tb.tb_colMultiply);
+  spo.spo_acolColors[iLayer] = MulColors( bpo.bpo_abptTextures[iLayer].s.bpt_colColor, tb.tb_colMultiply);
 
   // if texture should be not transformed
-  INDEX iTransformation = bpo.bpo_abptTextures[iLayer].bpt.s.bpt_ubScroll;
+  INDEX iTransformation = bpo.bpo_abptTextures[iLayer].s.bpt_ubScroll;
   if( iTransformation==0)
   {
     // if texture is wrapped on both axes
-    if( (bpo.bpo_abptTextures[iLayer].bpt.s.bpt_ubFlags&(BPTF_CLAMPU|BPTF_CLAMPV))==0)
+    if( (bpo.bpo_abptTextures[iLayer].s.bpt_ubFlags&(BPTF_CLAMPU|BPTF_CLAMPV))==0)
     { // make a mapping adjusted for texture wrapping
       const MEX mexMaskU = ptd->GetWidth()  -1;
       const MEX mexMaskV = ptd->GetHeight() -1;
@@ -605,10 +605,10 @@ CScreenPolygon *CRenderer::MakeScreenPolygon(CBrushPolygon &bpo)
   if (br.br_pfsFieldSettings!=NULL) {
     // set the polygon up to render as a field brush
     bpo.bpo_abptTextures[0].bpt_toTexture.SetData(br.br_pfsFieldSettings->fs_toTexture.GetData());
-    bpo.bpo_abptTextures[0].bpt.s.bpt_colColor = br.br_pfsFieldSettings->fs_colColor;
-    bpo.bpo_abptTextures[0].bpt.s.bpt_ubScroll = 0;
-    bpo.bpo_abptTextures[0].bpt.s.bpt_ubFlags = 0;
-    bpo.bpo_abptTextures[0].bpt.s.bpt_ubBlend = BPT_BLEND_BLEND;
+    bpo.bpo_abptTextures[0].s.bpt_colColor = br.br_pfsFieldSettings->fs_colColor;
+    bpo.bpo_abptTextures[0].s.bpt_ubScroll = 0;
+    bpo.bpo_abptTextures[0].s.bpt_ubFlags = 0;
+    bpo.bpo_abptTextures[0].s.bpt_ubBlend = BPT_BLEND_BLEND;
     bpo.bpo_abptTextures[1].bpt_toTexture.SetData(NULL);
     bpo.bpo_abptTextures[2].bpt_toTexture.SetData(NULL);
     bpo.bpo_ulFlags = BPOF_PORTAL|BPOF_RENDERASPORTAL|BPOF_FULLBRIGHT|BPOF_TRANSLUCENT|BPOF_DETAILPOLYGON;

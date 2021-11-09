@@ -248,7 +248,7 @@ void StartFog( CFogParameters &fp, const FLOAT3D &vViewPosAbs, const FLOATmatrix
     // exp fog
     case AT_EXP: {
       // calculate linear step for the fog parameter
-      FLOAT fT = 0.0f;
+      //FLOAT fT = 0.0f;
       FLOAT fTStep = 1.0f/pixSizeL*fFar*fDensity*fA;
       // fog is exp(-t) function of fog parameter, now calculate
       // step (actually multiplication) for the fog
@@ -261,7 +261,7 @@ void StartFog( CFogParameters &fp, const FLOAT3D &vViewPosAbs, const FLOATmatrix
     } break;
     case AT_EXP2: {
       // calculate linear step for the fog parameter
-      FLOAT fT = 0.0f;
+      //FLOAT fT = 0.0f;
       FLOAT fTStep = 1.0f/pixSizeL*fFar*fDensity*fA;
       // fog is exp(-t^2) function of fog parameter, now calculate
       // first and second order step (actually multiplication) for the fog
@@ -280,17 +280,17 @@ void StartFog( CFogParameters &fp, const FLOAT3D &vViewPosAbs, const FLOATmatrix
   // determine where fog starts and ends
   _fog_fStart = LowerLimit(0.0f);
   _fog_fEnd   = UpperLimit(0.0f);
+
+  INDEX pix;
   if( _fog_pubTable[pixSizeL-1]) {
     // going from bottom
-    INDEX pix=pixSizeH-1;
-    for( ; pix>0; pix--) {
+    for( pix=pixSizeH-1; pix>0; pix--) {
       if( (_fog_pubTable[(pix+1)*pixSizeL-1]*_fog_ulAlpha)>>8) break;
     }
     if( pix<(pixSizeH-1)) _fog_fEnd = (FLOAT)(pix+1) / (FLOAT)(pixSizeH-1);
   } else {
     // going from top
-    INDEX pix=0;
-    for( ; pix<pixSizeH; pix++) {
+    for( pix=0; pix<pixSizeH; pix++) {
       if( (_fog_pubTable[(pix+1)*pixSizeL-1]*_fog_ulAlpha)>>8) break;
     }
     if( pix>0) _fog_fStart = (FLOAT)(pix-1) / (FLOAT)(pixSizeH-1);

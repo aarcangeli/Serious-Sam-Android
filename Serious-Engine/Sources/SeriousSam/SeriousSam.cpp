@@ -32,7 +32,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "SplashScreen.h"
 #include "MainWindow.h"
 #include "GLSettings.h"
-#include "LevelInfo.h"
+#include "SeriousSam/LevelInfo.h"
 #include "LCDDrawing.h"
 #include "CmdLine.h"
 #include "Credits.h"
@@ -446,7 +446,7 @@ void StartNextDemo(void)
   _lhAutoDemos.AddTail(pli->li_lnNode);
 
   // if intro
-  if (pli->li_fnLevel==sam_strIntroLevel) {
+  if (pli->li_fnLevel==CTFileName(sam_strIntroLevel)) {
     // start intro
 	InfoMessage("[libSeriousSam] Start intro");
     _gmRunningGameMode = GM_NONE;
@@ -682,9 +682,9 @@ BOOL Init()
   // !! NOTE !! Re-enable these to allow mod support.
   LoadStringVar(CTString("Data\\Var\\Sam_Version.var"), sam_strVersion);
   LoadStringVar(CTString("Data\\Var\\ModName.var"), sam_strModName);
-  CPrintF(TRANS("Serious Sam version: %s\n"), sam_strVersion);
-  CPrintF(TRANS("Active mod: %s\n"), sam_strModName);
-  InitializeMenus();      
+  CPrintF(TRANS("Serious Sam version: %s\n"), (const char *) sam_strVersion);
+  CPrintF(TRANS("Active mod: %s\n"), (const char *) sam_strModName);
+  InitializeMenus();
   
   // if there is a mod
   if (_fnmMod!="") {
@@ -820,7 +820,7 @@ void PrintDisplayModeInfo(void)
 #endif // SE1_D3D
 
   CTString strDescr;
-  strDescr.PrintF("\n%s (%s)\n", _strPreferencesDescription, RenderingPreferencesDescription(sam_iVideoSetup));
+  strDescr.PrintF("\n%s (%s)\n", (const char *) _strPreferencesDescription, (const char *) RenderingPreferencesDescription(sam_iVideoSetup));
   strRes+=strDescr;
   // tell if application is started for the first time, or failed to set mode
   if( _iDisplayModeChangeFlag==0) {
@@ -842,8 +842,8 @@ void DoGame(void)
   // set flag if not in game
   if( !_pGame->gm_bGameOn) _gmRunningGameMode = GM_NONE;
 
-  if( _gmRunningGameMode==GM_DEMO  && _pNetwork->IsDemoPlayFinished()
-      ||_gmRunningGameMode==GM_INTRO && _pNetwork->IsGameFinished()) {
+  if( (_gmRunningGameMode==GM_DEMO  && _pNetwork->IsDemoPlayFinished())
+    ||(_gmRunningGameMode==GM_INTRO && _pNetwork->IsGameFinished())) {
     _pGame->StopGame();
     _gmRunningGameMode = GM_NONE;
 
@@ -1050,7 +1050,7 @@ BOOL TryToSetDisplayMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI,
   dmTmp.dm_ddDepth = eColorDepth;
   
   CPrintF( TRANS("  Starting display mode: %dx%dx%s (%s)\n"),
-           pixSizeI, pixSizeJ, dmTmp.DepthString(),
+           pixSizeI, pixSizeJ, (const char *) dmTmp.DepthString(),
            bFullScreenMode ? TRANS("fullscreen") : TRANS("window"));
 
   // mark to start ignoring window size/position messages until settled down

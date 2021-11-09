@@ -508,6 +508,7 @@ void CGfxLibrary::InitContext_OGL(void)
                                   GFX_fMaxDepthRange = 1.0f;
   // (re)set some OpenGL defaults
   gfxPolygonMode( GFX_FILL);
+  pglFrontFace( GL_CCW);
   pglShadeModel( GL_SMOOTH);
   pglEnable( GL_SCISSOR_TEST);
   pglDrawBuffer( GL_BACK);
@@ -537,7 +538,7 @@ void CGfxLibrary::InitContext_OGL(void)
 
   // report
   CPrintF( TRANS("\n* OpenGL context created: *----------------------------------\n"));
-  CPrintF( "  (%s, %s, %s)\n\n", da.da_strVendor, da.da_strRenderer, da.da_strVersion);
+  CPrintF( "  (%s, %s, %s)\n\n", (const char *) da.da_strVendor, (const char *) da.da_strRenderer, (const char *) da.da_strVersion);
 
   // test for used extensions
   GLint   gliRet;
@@ -937,9 +938,9 @@ extern void SetTBufferEffect( BOOL bEnable)
     if( ogl_iTBufferEffect==0 || _pGfx->go_ctSampleBuffers<2 || !bEnable) pglDisable( GL_MULTISAMPLE_3DFX);
     else {
       pglEnable( GL_MULTISAMPLE_3DFX);
-      UINT uiMask = 0xFFFFFFFF;
+      //UINT uiMask = 0xFFFFFFFF;
       // set one buffer in case of motion-blur
-      if( ogl_iTBufferEffect==2) uiMask = (1UL) << _pGfx->go_iCurrentWriteBuffer;
+      //if( ogl_iTBufferEffect==2) uiMask = (1UL) << _pGfx->go_iCurrentWriteBuffer;
       //pglTBufferMask3DFX(uiMask);
     }
   }

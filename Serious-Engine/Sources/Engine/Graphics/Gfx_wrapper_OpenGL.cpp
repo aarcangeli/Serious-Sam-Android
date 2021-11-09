@@ -607,8 +607,8 @@ static void ogl_BlendFunc( GfxBlend eSrc, GfxBlend eDst)
   GLenum gleSrc, gleDst;
 #ifndef NDEBUG
   GfxBlend gfxSrc, gfxDst; 
-  pglGetIntegerv( GL_BLEND_SRC_RGB, (GLint*)&gleSrc);
-  pglGetIntegerv( GL_BLEND_DST_RGB, (GLint*)&gleDst);
+  pglGetIntegerv( GL_BLEND_SRC, (GLint*)&gleSrc);
+  pglGetIntegerv( GL_BLEND_DST, (GLint*)&gleDst);
   OGL_CHECKERROR;
   gfxSrc = BlendFromOGL(gleSrc);
   gfxDst = BlendFromOGL(gleDst);
@@ -716,8 +716,8 @@ static void ogl_DepthRange( FLOAT fMin, FLOAT fMax)
   // check consistency
   ASSERT( _pGfx->gl_eCurrentAPI==GAT_OGL);
 #ifndef NDEBUG
-  FLOAT fDepths[2]; 
-  pglGetFloatv( GL_DEPTH_RANGE,(GLfloat*)&fDepths);
+  GLfloat fDepths[2];
+  pglGetFloatv( GL_DEPTH_RANGE, fDepths);
   OGL_CHECKERROR;
   ASSERT( fDepths[0]==GFX_fMinDepthRange && fDepths[1]==GFX_fMaxDepthRange);
 #endif
@@ -1048,7 +1048,7 @@ static void ogl_SetVertexArray( GFXVertex4 *pvtx, INDEX ctVtx)
   ASSERT( !pglIsEnabled( GL_COLOR_ARRAY));
   ASSERT( !pglIsEnabled( GL_NORMAL_ARRAY));
   ASSERT(  pglIsEnabled( GL_VERTEX_ARRAY));
-  pglVertexPointer( 3, GL_FLOAT, 16, pvtx);
+  pglVertexPointer( 3, GL_FLOAT, sizeof (*pvtx), pvtx);
   OGL_CHECKERROR;
   GFX_bColorArray = FALSE; // mark that color array has been disabled (because of potential LockArrays)
 
@@ -1066,7 +1066,7 @@ static void ogl_SetNormalArray( GFXNormal *pnor)
 
   pglEnableClientState(GL_NORMAL_ARRAY);
   ASSERT( pglIsEnabled(GL_NORMAL_ARRAY));
-  pglNormalPointer( GL_FLOAT, 16, pnor);
+  pglNormalPointer( GL_FLOAT, sizeof (*pnor), pnor);
   OGL_CHECKERROR;
 
   _sfStats.StopTimer(CStatForm::STI_GFXAPI);
@@ -1082,7 +1082,7 @@ static void ogl_SetColorArray( GFXColor *pcol)
   ogl_EnableColorArray();
   _sfStats.StartTimer(CStatForm::STI_GFXAPI);
   
-  pglColorPointer( 4, GL_UNSIGNED_BYTE, 0, pcol);
+  pglColorPointer( 4, GL_UNSIGNED_BYTE, sizeof (*pcol), pcol);
   OGL_CHECKERROR;
 
   _sfStats.StopTimer(CStatForm::STI_GFXAPI);
@@ -1099,7 +1099,7 @@ static void ogl_SetTexCoordArray( GFXTexCoord *ptex, BOOL b4/*=FALSE*/)
 
   pglEnableClientState(GL_TEXTURE_COORD_ARRAY);
   ASSERT( pglIsEnabled(GL_TEXTURE_COORD_ARRAY));
-  pglTexCoordPointer( b4?4:2, GL_FLOAT, 0, ptex);
+  pglTexCoordPointer( b4?4:2, GL_FLOAT, sizeof (*ptex), ptex);
   OGL_CHECKERROR;
 
   _sfStats.StopTimer(CStatForm::STI_GFXAPI);
