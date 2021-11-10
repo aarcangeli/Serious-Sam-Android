@@ -126,7 +126,6 @@ typedef int32_t INDEX;     // for indexed values and quantities
 #define ANGLE_270  (270.0f)
 #define ANGLE_360  (360.0f)
 
-// you need <stddef.h> for this!
 #define structptr(structure, member, ptr) \
 ( (struct structure *) ( ((UBYTE *)(ptr)) - \
  offsetof(struct structure, member)) )

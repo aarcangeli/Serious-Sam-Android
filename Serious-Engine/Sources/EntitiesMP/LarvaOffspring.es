@@ -292,7 +292,7 @@ procedures:
         FLOAT fRNDHeading = (FRnd()-0.5f)*180*fDistanceFactor;
         
         // if we are looking near direction of target
-        if( Abs( aWantedHeading) < 30.0f)
+        if( Abs(aWantedHeading) < 30.0f)
         {
           // adjust heading and pich
           SetDesiredRotation(ANGLE3D(aHeading+fRNDHeading,0,0));

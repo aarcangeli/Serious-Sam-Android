@@ -280,7 +280,7 @@ procedures:
               /*
               // tell the key bearer that the key was used
               CTString strMsg;
-              strMsg.PrintF(TRANS("%s used"), GetKeyName(m_kitKey));
+              strMsg.PrintF(TRANSV("%s used"), GetKeyName(m_kitKey));
               PrintCenterMessage(this, ePass.penOther, strMsg, 3.0f, MSS_INFO);
               */
               // become automatic door

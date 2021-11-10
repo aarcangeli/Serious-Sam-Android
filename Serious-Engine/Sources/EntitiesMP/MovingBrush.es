@@ -201,7 +201,7 @@ functions:
       // if impact by bull
       if( dmtType == DMT_IMPACT && IsOfClass(penInflictor, "Werebull"))
       {
-        // receive the damage so large to blowup
+        // recieve the damage so large to blowup
         CMovableBrushEntity::ReceiveDamage(penInflictor, dmtType, m_fHealth*2, vHitPoint, vDirection);
         // kill the bull in place, but make sure it doesn't blow up
         ((CLiveEntity*)penInflictor)->SetHealth(0.0f);

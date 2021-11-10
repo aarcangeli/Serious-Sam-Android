@@ -101,14 +101,14 @@ functions:
     CTString str;
     if (eDeath.eLastDamage.dmtType==DMT_EXPLOSION) {
       if (m_hdtType==HDT_BOMBERMAN) {
-        str.PrintF(TRANS("%s was bombed by a Bomberman"), strPlayerName);
+        str.PrintF(TRANSV("%s was bombed by a Bomberman"), (const char *) strPlayerName);
       } else {
-        str.PrintF(TRANS("%s fell victim of a Kamikaze"), strPlayerName);
+        str.PrintF(TRANSV("%s fell victim of a Kamikaze"), (const char *) strPlayerName);
       }
     } else if (m_hdtType==HDT_ROCKETMAN) {
-      str.PrintF(TRANS("A Rocketeer tickled %s to death"), strPlayerName);
+      str.PrintF(TRANSV("A Rocketeer tickled %s to death"), (const char *) strPlayerName);
     } else if (m_hdtType==HDT_FIRECRACKER) {
-      str.PrintF(TRANS("A Firecracker tickled %s to death"), strPlayerName);
+      str.PrintF(TRANSV("A Firecracker tickled %s to death"), (const char *) strPlayerName);
     }
     return str;
   }

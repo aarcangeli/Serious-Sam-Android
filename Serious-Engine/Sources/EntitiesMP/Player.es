@@ -898,41 +898,41 @@ void PrintPlayerDeathMessage(CPlayer *ppl, const EDeath &eDeath)
         CTString strKillerName = ((CPlayer*)penKiller)->GetPlayerName();
 
         if(eDeath.eLastDamage.dmtType==DMT_TELEPORT) {
-          CPrintF(TRANS("%s telefragged %s\n"), strKillerName, strMyName);
+          CPrintF(TRANSV("%s telefragged %s\n"), (const char *) strKillerName, (const char *) strMyName);
         } else if(eDeath.eLastDamage.dmtType==DMT_CLOSERANGE) {
-          CPrintF(TRANS("%s cut %s into pieces\n"), strKillerName, strMyName);
+          CPrintF(TRANSV("%s cut %s into pieces\n"), (const char *) strKillerName, (const char *) strMyName);
         } else if(eDeath.eLastDamage.dmtType==DMT_CHAINSAW) {
-          CPrintF(TRANS("%s cut %s into pieces\n"), strKillerName, strMyName);
+          CPrintF(TRANSV("%s cut %s into pieces\n"), (const char *) strKillerName, (const char *) strMyName);
         } else if(eDeath.eLastDamage.dmtType==DMT_BULLET) {
-          CPrintF(TRANS("%s poured lead into %s\n"), strKillerName, strMyName);
+          CPrintF(TRANSV("%s poured lead into %s\n"), (const char *) strKillerName, (const char *) strMyName);
         } else if(eDeath.eLastDamage.dmtType==DMT_PROJECTILE || eDeath.eLastDamage.dmtType==DMT_EXPLOSION) {
-          CPrintF(TRANS("%s blew %s away\n"), strKillerName, strMyName);
+          CPrintF(TRANSV("%s blew %s away\n"), (const char *) strKillerName, (const char *) strMyName);
         } else if(eDeath.eLastDamage.dmtType==DMT_CANNONBALL) {
-          CPrintF(TRANS("%s smashed %s with a cannon\n"), strKillerName, strMyName);
+          CPrintF(TRANSV("%s smashed %s with a cannon\n"), (const char *) strKillerName, (const char *) strMyName);
         } else if(eDeath.eLastDamage.dmtType==DMT_CANNONBALL_EXPLOSION) {
-          CPrintF(TRANS("%s nuked %s\n"), strKillerName, strMyName);
+          CPrintF(TRANSV("%s nuked %s\n"), (const char *) strKillerName, (const char *) strMyName);
         } else {
-          CPrintF(TRANS("%s killed %s\n"), strKillerName, strMyName);
+          CPrintF(TRANSV("%s killed %s\n"), (const char *) strKillerName, (const char *) strMyName);
         }
       } else {
         // make message from damage type
         switch(eDeath.eLastDamage.dmtType) {
-        case DMT_DROWNING:  CPrintF(TRANS("%s drowned\n"), strMyName); break;
-        case DMT_BURNING:   CPrintF(TRANS("%s burst into flames\n"), strMyName); break;
-        case DMT_SPIKESTAB: CPrintF(TRANS("%s fell into a spike-hole\n"), strMyName); break;
-        case DMT_FREEZING:  CPrintF(TRANS("%s has frozen\n"), strMyName); break;
-        case DMT_ACID:      CPrintF(TRANS("%s dissolved\n"), strMyName); break;
+        case DMT_DROWNING:  CPrintF(TRANSV("%s drowned\n"), (const char *) strMyName); break;
+        case DMT_BURNING:   CPrintF(TRANSV("%s burst into flames\n"), (const char *) strMyName); break;
+        case DMT_SPIKESTAB: CPrintF(TRANSV("%s fell into a spike-hole\n"), (const char *) strMyName); break;
+        case DMT_FREEZING:  CPrintF(TRANSV("%s has frozen\n"), (const char *) strMyName); break;
+        case DMT_ACID:      CPrintF(TRANSV("%s dissolved\n"), (const char *) strMyName); break;
         case DMT_PROJECTILE:
         case DMT_EXPLOSION:
-          CPrintF(TRANS("%s blew himself away\n"), strMyName); break;
-        default:            CPrintF(TRANS("%s has committed suicide\n"), strMyName);
+          CPrintF(TRANSV("%s blew himself away\n"), (const char *) strMyName); break;
+        default:            CPrintF(TRANSV("%s has committed suicide\n"), (const char *) strMyName);
         }
       }
     // if killed by an enemy
     } else if (IsDerivedFromClass(penKiller, "Enemy Base")) {
       // check for telefrag first
       if(eDeath.eLastDamage.dmtType==DMT_TELEPORT) {
-        CPrintF(TRANS("%s was telefragged\n"), strMyName);
+        CPrintF(TRANSV("%s was telefragged\n"), (const char *) strMyName);
         return;
       }
       // describe how this enemy killed player
@@ -942,17 +942,17 @@ void PrintPlayerDeathMessage(CPlayer *ppl, const EDeath &eDeath)
     } else {
       // make message from damage type
       switch(eDeath.eLastDamage.dmtType) {
-      case DMT_SPIKESTAB: CPrintF(TRANS("%s was pierced\n"), strMyName); break;
-      case DMT_BRUSH:     CPrintF(TRANS("%s was squashed\n"), strMyName); break;
-      case DMT_ABYSS:     CPrintF(TRANS("%s went over the edge\n"), strMyName); break;
-      case DMT_IMPACT:    CPrintF(TRANS("%s swashed\n"), strMyName); break;
-      case DMT_HEAT:      CPrintF(TRANS("%s stood in the sun for too long\n"), strMyName); break;
-      default:            CPrintF(TRANS("%s passed away\n"), strMyName);
+      case DMT_SPIKESTAB: CPrintF(TRANSV("%s was pierced\n"), (const char *) strMyName); break;
+      case DMT_BRUSH:     CPrintF(TRANSV("%s was squashed\n"), (const char *) strMyName); break;
+      case DMT_ABYSS:     CPrintF(TRANSV("%s went over the edge\n"), (const char *) strMyName); break;
+      case DMT_IMPACT:    CPrintF(TRANSV("%s swashed\n"), (const char *) strMyName); break;
+      case DMT_HEAT:      CPrintF(TRANSV("%s stood in the sun for too long\n"), (const char *) strMyName); break;
+      default:            CPrintF(TRANSV("%s passed away\n"), (const char *) strMyName);
       }
     }
   // if no entity pointer (shouldn't happen)
   } else {
-    CPrintF(TRANS("%s is missing in action\n"), strMyName);
+    CPrintF(TRANSV("%s is missing in action\n"), (const char *) strMyName);
   }
 }
 
@@ -1537,10 +1537,10 @@ functions:
       }
     }
 
-    istr->Read_t(&m_psLevelStats, sizeof(m_psLevelStats));
-    istr->Read_t(&m_psLevelTotal, sizeof(m_psLevelTotal));
-    istr->Read_t(&m_psGameStats , sizeof(m_psGameStats ));
-    istr->Read_t(&m_psGameTotal , sizeof(m_psGameTotal ));
+    (*istr) >> m_psLevelStats;
+    (*istr) >> m_psLevelTotal;
+    (*istr) >> m_psGameStats;
+    (*istr) >> m_psGameTotal;
 
     // set your real appearance if possible
     ValidateCharacter();
@@ -2008,7 +2008,7 @@ functions:
   {
     // list the directory
     CDynamicStackArray<CTFileName> afnmDir;
-    MakeDirList(afnmDir, strDir, "*.txt", DLI_RECURSIVE);
+    MakeDirList(afnmDir, strDir, CTFileName(CTString("*.txt")), DLI_RECURSIVE);
 
     // for each file in the directory
     for (INDEX i=0; i<afnmDir.Count(); i++) {
@@ -2470,7 +2470,7 @@ functions:
       pdp->SetTextScaling( fScale);
       pdp->SetTextAspect( 1.0f);
       CTString strMsg;
-      strMsg.PrintF(TRANS("%s connected"), GetPlayerName());
+      strMsg.PrintF(TRANSV("%s connected"), (const char *) GetPlayerName());
       pdp->PutTextCXY( strMsg, pixDPWidth*0.5f, pixDPHeight*0.5f, SE_COL_BLUE_NEUTRAL_LT|CT_OPAQUE);
     }
   }
@@ -3395,7 +3395,7 @@ functions:
         ItemPicked(strKey, 0);
         // if in cooperative
         if (GetSP()->sp_bCooperative && !GetSP()->sp_bSinglePlayer) {
-          CPrintF(TRANS("^cFFFFFF%s - %s^r\n"), GetPlayerName(), strKey);
+          CPrintF(TRANSV("^cFFFFFF%s - %s^r\n"), (const char *) GetPlayerName(), (const char *) strKey);
         }
         return TRUE;
       }
@@ -3795,15 +3795,15 @@ functions:
     // if the name has changed
     if (pcOrg.GetName()!=pcNew.GetName()) {
       // report that
-      CPrintF(TRANS("%s is now known as %s\n"), 
-        pcOrg.GetNameForPrinting(), pcNew.GetNameForPrinting());
+      CPrintF(TRANSV("%s is now known as %s\n"), 
+        (const char *) pcOrg.GetNameForPrinting(), (const char *) pcNew.GetNameForPrinting());
     }
 
     // if the team has changed
     if (pcOrg.GetTeam()!=pcNew.GetTeam()) {
       // report that
-      CPrintF(TRANS("%s switched to team %s\n"), 
-        pcNew.GetNameForPrinting(), pcNew.GetTeamForPrinting());
+      CPrintF(TRANSV("%s switched to team %s\n"), 
+        (const char *) pcNew.GetNameForPrinting(), (const char *) pcNew.GetTeamForPrinting());
     }
 
     // if appearance changed
@@ -3817,13 +3817,13 @@ functions:
       if (bSuccess) {
         ParseGender(strNewLook);
         // report that
-        CPrintF(TRANS("%s now appears as %s\n"), 
-          pcNew.GetNameForPrinting(), strNewLook);
+        CPrintF(TRANSV("%s now appears as %s\n"), 
+          (const char *) pcNew.GetNameForPrinting(), (const char *) strNewLook);
       // if failed
       } else {
         // report that
-        CPrintF(TRANS("Cannot change appearance for %s: setting '%s' is unavailable\n"), 
-          pcNew.GetNameForPrinting(), (const char*)ppsNew->GetModelFilename());
+        CPrintF(TRANSV("Cannot change appearance for %s: setting '%s' is unavailable\n"), 
+          (const char *) pcNew.GetNameForPrinting(), (const char*)ppsNew->GetModelFilename());
       }
       // attach weapon to new appearance
       GetPlayerAnimator()->SyncWeapon();
@@ -4482,21 +4482,21 @@ functions:
             }
 
             // initiate respawn
-            CPrintF(TRANS("%s is riding the gun again\n"), GetPlayerName());
+            CPrintF(TRANSV("%s is riding the gun again\n"), (const char *) GetPlayerName());
             SendEvent(EEnd());
 
             // report number of credits left
             if (GetSP()->sp_ctCredits>0) {
               if (GetSP()->sp_ctCreditsLeft==0) {
-                CPrintF(TRANS("  no more credits left!\n"));
+                CPrintF(TRANSV("  no more credits left!\n"));
               } else {
-                CPrintF(TRANS("  %d credits left\n"), GetSP()->sp_ctCreditsLeft);
+                CPrintF(TRANSV("  %d credits left\n"), GetSP()->sp_ctCreditsLeft);
               }
             }
           // if no more credits left
           } else {
             // report that you cannot respawn
-            CPrintF(TRANS("%s rests in peace - out of credits\n"), GetPlayerName());
+            CPrintF(TRANSV("%s rests in peace - out of credits\n"), (const char *) GetPlayerName());
           }
         }
       }
@@ -5411,8 +5411,8 @@ functions:
 
     // record stats for this level and add to global table
     CTString strStats;
-    strStats.PrintF(TRANS("%s\n  Time:   %s\n  Score: %9d\n  Kills:   %03d/%03d\n  Secrets:   %02d/%02d\n"), 
-        TranslateConst(en_pwoWorld->GetName(), 0), TimeToString(tmLevelTime), 
+    strStats.PrintF(TRANSV("%s\n  Time:   %s\n  Score: %9d\n  Kills:   %03d/%03d\n  Secrets:   %02d/%02d\n"), 
+        TranslateConst(en_pwoWorld->GetName(), 0), (const char *) TimeToString(tmLevelTime), 
         m_psLevelStats.ps_iScore,
         m_psLevelStats.ps_iKills, m_psLevelTotal.ps_iKills,
         m_psLevelStats.ps_iSecrets, m_psLevelTotal.ps_iSecrets);
@@ -5697,11 +5697,11 @@ procedures:
         // if killed by a player
         if (pplKillerPlayer!=NULL) {
           // print how much that player gained
-          CPrintF(TRANS("  %s: +%d points\n"), pplKillerPlayer->GetPlayerName(), m_iMana);
+          CPrintF(TRANSV("  %s: +%d points\n"), (const char *) pplKillerPlayer->GetPlayerName(), m_iMana);
         // if it was a suicide, or an accident
         } else {
           // print how much you lost
-          CPrintF(TRANS("  %s: -%d points\n"), GetPlayerName(), m_iMana);
+          CPrintF(TRANSV("  %s: -%d points\n"), (const char *) GetPlayerName(), m_iMana);
         }
       }
 
@@ -6796,7 +6796,7 @@ procedures:
       // if any found
       if (penNextPlayer!=NULL) {
         // transfer keys to that player
-        CPrintF(TRANS("%s leaving, all keys transfered to %s\n"), 
+        CPrintF(TRANSV("%s leaving, all keys transfered to %s\n"), 
           (const char*)m_strName, (const char*)penNextPlayer->GetPlayerName());
         penNextPlayer->m_ulKeys |= m_ulKeys;
       }

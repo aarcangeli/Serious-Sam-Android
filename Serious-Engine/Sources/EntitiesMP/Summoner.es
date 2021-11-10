@@ -279,7 +279,7 @@ functions:
   virtual CTString GetPlayerKillDescription(const CTString &strPlayerName, const EDeath &eDeath)
   {
     CTString str;
-    str.PrintF(TRANS("The Summoner unsummoned %s"), strPlayerName);
+    str.PrintF(TRANSV("The Summoner unsummoned %s"), (const char *) strPlayerName);
     return str;
   }
   
@@ -618,7 +618,8 @@ functions:
       pen = &m_penGroup03Template01;
       iCount = IRnd()%m_iGroup03Count+1;
     } else {
-      ASSERT("Invalid group!");
+      ASSERTALWAYS("Invalid group!");
+      iCount = 0; // DG: this should have a deterministic value in case this happens after all!
     }
     ASSERT(iCount>0);
 

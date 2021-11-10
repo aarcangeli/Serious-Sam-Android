@@ -116,25 +116,25 @@ const FLOAT *pfSinTable = afSinTable +256;
 const FLOAT *pfCosTable = afSinTable +256+64;
 
 // texture/shadow control
-INDEX tex_iNormalQuality    = 00;      // 0=optimal, 1=16bit, 2=32bit, 3=compressed (1st num=opaque tex, 2nd=alpha tex)
+INDEX tex_iNormalQuality    = 11;      // 0=optimal, 1=16bit, 2=32bit, 3=compressed (1st num=opaque tex, 2nd=alpha tex)
 INDEX tex_iAnimationQuality = 11;      // 0=optimal, 1=16bit, 2=32bit, 3=compressed (1st num=opaque tex, 2nd=alpha tex)
 INDEX tex_iNormalSize     = 9;         // log2 of texture area /2 for max texture size allowed
 INDEX tex_iAnimationSize  = 7; 
 INDEX tex_iEffectSize     = 7; 
 INDEX tex_bDynamicMipmaps = FALSE;     // how many mipmaps will be bilineary filtered (0-15)
 INDEX tex_iDithering      = 3;         // 0=none, 1-3=low, 4-7=medium, 8-10=high
-INDEX tex_bFineEffect = TRUE;         // 32bit effect? (works only if base texture hasn't been dithered)
+INDEX tex_bFineEffect = FALSE;         // 32bit effect? (works only if base texture hasn't been dithered)
 INDEX tex_bFineFog = TRUE;             // should fog be 8/32bit? (or just plain 4/16bit)
 INDEX tex_iFogSize = 7;                // limit fog texture size 
 INDEX tex_iFiltering = 0;              // -6 - +6; negative = sharpen, positive = blur, 0 = none
-INDEX tex_iEffectFiltering = +4;       // filtering of fire effect textures
+INDEX tex_iEffectFiltering = 4;       // filtering of fire effect textures
 INDEX tex_bProgressiveFilter = FALSE;  // filter mipmaps in creation time (not afterwards)
 INDEX tex_bColorizeMipmaps   = FALSE;  // DEBUG: colorize texture's mipmap levels in various colors
 INDEX tex_bCompressAlphaChannel = FALSE;  // for compressed textures, compress alpha channel too   
 INDEX tex_bAlternateCompression = FALSE;  // basically, this is fix for GFs (compress opaque texture as translucent)
 
-INDEX shd_iStaticSize  = 8;
-INDEX shd_iDynamicSize = 8;
+INDEX shd_iStaticSize  = 6;
+INDEX shd_iDynamicSize = 6;
 INDEX shd_bFineQuality = FALSE;
 INDEX shd_iFiltering = 3;     // >0 = blurring, 0 = no filtering
 INDEX shd_iDithering = 1;     // 0=none, 1,2=low, 3,4=medium, 5=high
@@ -152,16 +152,16 @@ INDEX shd_bColorize   = FALSE;  // colorize shadows by size (gradieng from red=b
 // OpenGL control
 INDEX ogl_iTextureCompressionType  = 1;    // 0=none, 1=default (ARB), 2=S3TC, 3=FXT1, 4=old S3TC
 INDEX ogl_bUseCompiledVertexArrays = 101;  // =XYZ; X=2D, Y=world, Z=models
-INDEX ogl_bAllowQuadArrays = FALSE;
+INDEX ogl_bAllowQuadArrays = TRUE;
 INDEX ogl_bExclusive = TRUE;
 INDEX ogl_bGrabDepthBuffer = FALSE;
 INDEX ogl_iMaxBurstSize = 0;        // unlimited
 INDEX ogl_bTruformLinearNormals = TRUE;
 INDEX ogl_bAlternateClipPlane = FALSE; // signal when user clip plane requires a texture unit
 
-INDEX ogl_iTBufferEffect  = 0;      // 0=none, 1=partial FSAA, 2=Motion Blur
+INDEX ogl_iTBufferEffect  = 1;      // 0=none, 1=partial FSAA, 2=Motion Blur
 INDEX ogl_iTBufferSamples = 2;      // 2, 4 or 8 (for now)
-INDEX ogl_iFinish = 1;              // 0=never, 1=before rendering of next frame, 2=at the end of this frame, 3=at projection change
+INDEX ogl_iFinish = 0;              // 0=never, 1=before rendering of next frame, 2=at the end of this frame, 3=at projection change
 
 // Direct3D control
 INDEX d3d_bUseHardwareTnL = TRUE;
@@ -173,17 +173,17 @@ INDEX d3d_iMaxBurstSize = 0;             // 0=unlimited
 INDEX d3d_iFinish = 0;
 
 // API common controls
-INDEX gap_iUseTextureUnits = 4;
+INDEX gap_iUseTextureUnits = 1;
 INDEX gap_iTextureFiltering  = 21;       // bilinear by default
 INDEX gap_iTextureAnisotropy = 1;        // 1=isotropic, 2=min anisotropy
-FLOAT gap_fTextureLODBias    = 0.0f;
+FLOAT gap_fTextureLODBias    = 2.0f;
 INDEX gap_bOptimizeStateChanges = TRUE;
 INDEX gap_iOptimizeDepthReads = 1;        // 0=imediately, 1=after frame, 2=every 0.1 seconds
 INDEX gap_iOptimizeClipping   = 2;        // 0=no, 1=mirror plane only, 2=mirror and frustum
 INDEX gap_bAllowGrayTextures = TRUE;
 INDEX gap_bAllowSingleMipmap = TRUE;
 INDEX gap_iSwapInterval = 0;
-INDEX gap_iRefreshRate  = 60;
+INDEX gap_iRefreshRate  = 0;
 INDEX gap_iDithering = 2;        // 16-bit dithering: 0=none, 1=no alpha, 2=all
 INDEX gap_bForceTruform = 0;     // 0 = only for models that allow truform, 1=for every model
 INDEX gap_iTruformLevel = 3;     // 0 = no tesselation
@@ -202,7 +202,7 @@ INDEX mdl_bRenderBump       = TRUE;
 INDEX mdl_bAllowOverbright  = TRUE;
 INDEX mdl_bFineQuality      = TRUE;
 INDEX mdl_iShadowQuality    = 1;
-FLOAT mdl_fLODMul           = 1.0f;
+FLOAT mdl_fLODMul           = 1.6f;
 FLOAT mdl_fLODAdd           = 0.0f;
 INDEX mdl_iLODDisappear     = 1; // 0=never, 1=ignore bias, 2=with bias
 // ska controls
@@ -233,13 +233,13 @@ INDEX wld_bTextureLayers        = 111;
 INDEX wld_bShowTriangles        = FALSE;
 INDEX wld_bShowDetailTextures   = FALSE;
 INDEX wld_iDetailRemovingBias   = 3;
-FLOAT wld_fEdgeOffsetI          = 0.0f; //0.125f;
-FLOAT wld_fEdgeAdjustK          = 1.0f; //1.0001f;
+FLOAT wld_fEdgeOffsetI          = 0.125f; //0.125f;
+FLOAT wld_fEdgeAdjustK          = 1.0001f; //1.0001f;
 
 INDEX gfx_bRenderWorld      = TRUE;
 INDEX gfx_bRenderParticles  = TRUE;
 INDEX gfx_bRenderModels     = TRUE;
-INDEX gfx_bRenderPredicted  = FALSE;
+INDEX gfx_bRenderPredicted  = TRUE;
 INDEX gfx_bRenderFog        = TRUE;
 INDEX gfx_iLensFlareQuality = 3;   // 0=none, 1=corona only, 2=corona and reflections, 3=corona, reflections and glare 
 

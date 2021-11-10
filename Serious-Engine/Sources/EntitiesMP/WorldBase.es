@@ -29,7 +29,7 @@ uses "EntitiesMP/GradientMarker";
 
 %{
 
-//inline void Clear(EntityStats &es) {es.es_strName.Clear();};
+inline void Clear(EntityStats &es) {es.es_strName.Clear();};
 static CDynamicArray<EntityStats> _aes;
 static CAnimObject _aoLightningColor;
 
@@ -102,8 +102,8 @@ static void MakeWorldStatistics(void)
         (const char *) es.es_strName, es.es_ctCount, es.es_ctAmmount, es.es_fValue, es.es_iScore);
       strm.PutLine_t(strLine);
     }}
-    CPrintF("Dumped to '%s'\n", CTString(fnm));
-  } catch ( const char *strError) {
+    CPrintF("Dumped to '%s'\n", (const char *) fnm);
+  } catch (const char *strError) {
     CPrintF("Error: %s\n", strError);
   }
 

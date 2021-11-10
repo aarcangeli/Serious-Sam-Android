@@ -18,9 +18,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "EntitiesMP/StdH/StdH.h"
 %}
 
+uses "EntitiesMP/Debris";
 uses "EntitiesMP/ModelHolder2";
 uses "EntitiesMP/BasicEffects";
-uses "EntitiesMP/Debris";
 uses "EntitiesMP/BloodSpray";
 uses "EntitiesMP/SoundHolder";
 

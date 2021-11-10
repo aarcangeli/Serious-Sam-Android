@@ -170,7 +170,7 @@ functions:
     try {
       m_aoLightAnimation.SetData_t(m_fnmLightAnimation);
     } catch ( const char *strError) {
-      WarningMessage(TRANS("Cannot load '%s': %s"), (CTString&)m_fnmLightAnimation, strError);
+      WarningMessage(TRANS("Cannot load '%s': %s"), (const char *) (CTString&)m_fnmLightAnimation, strError);
       m_fnmLightAnimation = "";
     }
     if (m_aoLightAnimation.GetData()!=NULL) {

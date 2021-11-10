@@ -218,7 +218,7 @@ static FLOAT hud_fCrosshairRatio    = 0.5f;  // max distance size ratio
 static INDEX hud_bShowPlayerName = TRUE;
 static INDEX hud_bShowCoords     = FALSE;
 static FLOAT plr_tmSnoopingDelay = 1.0f; // seconds 
-FLOAT plr_tmSnoopingTime  = 1.0f; // seconds 
+FLOAT plr_tmSnoopingTime  = 1.0f; // seconds
 
 // some static vars
 static INDEX _iLastCrosshairType=-1;
@@ -2480,7 +2480,7 @@ functions:
         break;
       // error
       default:
-      ASSERTALWAYS("Uknown weapon type");
+      ASSERTALWAYS("Unknown weapon type");
         break;
     }
 
@@ -2812,7 +2812,7 @@ functions:
         strMessage.DeleteChar(iLen-1);
       };
       if( iAmmoTypes>4 ) {
-        strMessage.PrintF(TRANS("Ammo pack"));
+        strMessage.PrintF(TRANSV("Ammo pack"));
       };
 
       ((CPlayer&)*m_penPlayer).ItemPicked(strMessage, 0);
@@ -3178,7 +3178,7 @@ functions:
         return (WeaponType)i;
       }
     }
-    ASSERT("Non-existant weapon in remap array!");
+    ASSERTALWAYS("Non-existant weapon in remap array!");
     return (WeaponType)0;
   }
 

@@ -253,7 +253,7 @@ functions:
   virtual CTString GetPlayerKillDescription(const CTString &strPlayerName, const EDeath &eDeath)
   {
     CTString str;
-    str.PrintF(TRANS("Ugh Zan killed %s"), strPlayerName);
+    str.PrintF(TRANSV("Ugh Zan killed %s"), (const char *) strPlayerName);
     return str;
   }
 
