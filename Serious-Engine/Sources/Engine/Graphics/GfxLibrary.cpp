@@ -159,7 +159,7 @@ INDEX ogl_iMaxBurstSize = 0;        // unlimited
 INDEX ogl_bTruformLinearNormals = TRUE;
 INDEX ogl_bAlternateClipPlane = FALSE; // signal when user clip plane requires a texture unit
 
-INDEX ogl_iTBufferEffect  = 1;      // 0=none, 1=partial FSAA, 2=Motion Blur
+INDEX ogl_iTBufferEffect  = 0;      // 0=none, 1=partial FSAA, 2=Motion Blur
 INDEX ogl_iTBufferSamples = 2;      // 2, 4 or 8 (for now)
 INDEX ogl_iFinish = 0;              // 0=never, 1=before rendering of next frame, 2=at the end of this frame, 3=at projection change
 
@@ -198,7 +198,7 @@ INDEX mdl_bCreateStrips     = TRUE;
 INDEX mdl_bRenderDetail     = TRUE;
 INDEX mdl_bRenderSpecular   = TRUE;
 INDEX mdl_bRenderReflection = TRUE;
-INDEX mdl_bRenderBump       = TRUE;
+INDEX mdl_bRenderBump       = FALSE;
 INDEX mdl_bAllowOverbright  = TRUE;
 INDEX mdl_bFineQuality      = TRUE;
 INDEX mdl_iShadowQuality    = 1;
@@ -233,8 +233,8 @@ INDEX wld_bTextureLayers        = 111;
 INDEX wld_bShowTriangles        = FALSE;
 INDEX wld_bShowDetailTextures   = FALSE;
 INDEX wld_iDetailRemovingBias   = 3;
-FLOAT wld_fEdgeOffsetI          = 0.125f; //0.125f;
-FLOAT wld_fEdgeAdjustK          = 1.0001f; //1.0001f;
+FLOAT wld_fEdgeOffsetI          = 0.0f; //0.125f;
+FLOAT wld_fEdgeAdjustK          = 1.0f; //1.0001f;
 
 INDEX gfx_bRenderWorld      = TRUE;
 INDEX gfx_bRenderParticles  = TRUE;
