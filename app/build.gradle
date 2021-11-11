@@ -76,7 +76,7 @@ android {
 
     println("Serious-Sam-Android v${ver.version} (${ver.versionCode})")
     if (signing) {
-        println("Signign as '${signing.keyAlias}' (keyStore: $signing.storeFile)")
+        println("Signing as '${signing.keyAlias}' (keyStore: $signing.storeFile)")
     }
 
     compileSdkVersion 28
@@ -92,7 +92,7 @@ android {
         externalNativeBuild {
             cmake {
                 cppFlags "-fexceptions"
-                abiFilters "armeabi-v7a"
+                abiFilters "armeabi-v7a", "arm64-v8a"
                 arguments "-DSSA_VERSION=" + versionName
 				arguments "-DANDROID_ARM_NEON=ON"
             }
@@ -142,9 +142,7 @@ android {
         externalNativeBuild {
 				cmake {
 					cppFlags "-fexceptions"
-					abiFilters "armeabi-v7a"
 					arguments "-DFIRST_ENCOUNTER=1"
-					arguments "-DANDROID_ARM_NEON=ON"
 				}
 			}
 		}
