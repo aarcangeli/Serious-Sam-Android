@@ -120,6 +120,7 @@ void CTimer_TimerFunc_internal(void)
     _pTimer->tm_tvLastTimeOnTime = tvTimeNow;
     _pTimer->tm_tmLastTickOnTime = tmTickNow;
 
+    _pTimer->tm_tvLowPrecisionTimer = tvTimeNow;
 //  } CTSTREAM_END;
 }
 

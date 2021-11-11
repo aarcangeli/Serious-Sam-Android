@@ -769,7 +769,7 @@ extern BOOL ProbeMode( CTimerValue tvLast)
   }
   // clamp and determine probe mode
   if( gfx_tmProbeDecay>999) gfx_tmProbeDecay = 999;
-  CTimerValue tvNow  = _pTimer->GetHighPrecisionTimer();
+  CTimerValue tvNow  = _pTimer->GetLowPrecisionTimer();
   const TIME tmDelta = (tvNow-tvLast).GetSeconds();
   if( tmDelta>gfx_tmProbeDecay) return TRUE;
   return FALSE;
@@ -1639,7 +1639,7 @@ void CGfxLibrary::ReduceShadows(void)
   // clamp shadow caching variables
   shd_fCacheSize    = Clamp( shd_fCacheSize,   0.1f, 128.0f);
   shd_tmFlushDelay  = Clamp( shd_tmFlushDelay, 0.1f, 120.0f);
-  CTimerValue tvNow = _pTimer->GetHighPrecisionTimer(); // readout current time
+  CTimerValue tvNow = _pTimer->GetLowPrecisionTimer(); // readout current time
   const TIME tmAcientDelay = Clamp( shd_tmFlushDelay*3, 60.0f, 300.0f);
 
   // determine cached shadowmaps stats (if needed)
