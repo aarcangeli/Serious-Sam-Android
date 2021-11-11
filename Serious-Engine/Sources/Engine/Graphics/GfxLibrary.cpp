@@ -176,7 +176,7 @@ INDEX d3d_iFinish = 0;
 INDEX gap_iUseTextureUnits = 1;
 INDEX gap_iTextureFiltering  = 21;       // bilinear by default
 INDEX gap_iTextureAnisotropy = 1;        // 1=isotropic, 2=min anisotropy
-FLOAT gap_fTextureLODBias    = 2.0f;
+FLOAT gap_fTextureLODBias    = 0.0f;
 INDEX gap_bOptimizeStateChanges = TRUE;
 INDEX gap_iOptimizeDepthReads = 1;        // 0=imediately, 1=after frame, 2=every 0.1 seconds
 INDEX gap_iOptimizeClipping   = 2;        // 0=no, 1=mirror plane only, 2=mirror and frustum
@@ -295,7 +295,7 @@ static INDEX sys_bHasTextureLODBias = 0;
 static INDEX sys_bHasMultitexturing = 0;
 static INDEX sys_bHas32bitTextures = 0;
 static INDEX sys_bHasSwapInterval = 0;
-static INDEX sys_bHasHardwareTnL = 1;
+static INDEX sys_bHasHardwareTnL = 0;
 static INDEX sys_bHasTruform = 0;
 static INDEX sys_bHasCVAs = 0;
 static INDEX sys_bUsingOpenGL = 0;
@@ -733,7 +733,7 @@ extern void UpdateGfxSysCVars(void)
   sys_bHasMultitexturing = 0;
   sys_bHas32bitTextures = 0;
   sys_bHasSwapInterval = 0;
-  sys_bHasHardwareTnL = 1;
+  sys_bHasHardwareTnL = 0;
   sys_bHasTruform = 0;
   sys_bHasCVAs = 1;
   sys_bUsingOpenGL = 0;
@@ -1192,8 +1192,8 @@ void CGfxLibrary::Init(void)
   _pShell->DeclareSymbol("           user INDEX shd_bShowFlats;", (void*) &shd_bShowFlats);
   _pShell->DeclareSymbol("           user INDEX shd_bColorize;", (void*) &shd_bColorize);
   
-  _pShell->DeclareSymbol("           user INDEX gfx_bRenderParticles;", (void*) &gfx_bRenderParticles);
-  _pShell->DeclareSymbol("           user INDEX gfx_bRenderFog;",  (void*)  &gfx_bRenderFog);
+  _pShell->DeclareSymbol("persistent user INDEX gfx_bRenderParticles;", (void*) &gfx_bRenderParticles);
+  _pShell->DeclareSymbol("persistent user INDEX gfx_bRenderFog;",  (void*)  &gfx_bRenderFog);
   _pShell->DeclareSymbol("           user INDEX gfx_bRenderWorld;",  (void*)  &gfx_bRenderWorld);
   _pShell->DeclareSymbol("persistent user INDEX gfx_iLensFlareQuality;", (void*) &gfx_iLensFlareQuality);
   _pShell->DeclareSymbol("persistent user INDEX wld_bTextureLayers;", (void*) &wld_bTextureLayers);
