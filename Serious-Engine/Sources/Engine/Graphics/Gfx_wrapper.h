@@ -258,7 +258,7 @@ extern void gfxArrayBufferData(void *pvData, ULONG ulSize);
 
 // draw uploaded elements
 // NB: call gfxSetElementArrayBuffer(obj) before and gfxSetElementArrayBuffer(0) after
-extern void gfxDrawElementArrayBuffer(INDEX iCount, INDEX *pidx);
+extern void gfxDrawElementArrayBuffer(INDEX iCount, INDEX_T *pidx);
 
 // Shader
 typedef void *GfxProgram;

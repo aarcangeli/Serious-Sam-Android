@@ -339,7 +339,7 @@ static void PlayDemo(void* pArgs)
 {
   CTString strDemoFilename = *NEXTARGUMENT(CTString*);
   _gmMenuGameMode = GM_DEMO;
-  CTFileName fnDemo = "demos\\" + strDemoFilename + ".dem";
+  CTFileName fnDemo = "Demos\\" + strDemoFilename + ".dem";
   extern BOOL LSLoadDemo(const CTFileName &fnm);
   LSLoadDemo(fnDemo);
 }

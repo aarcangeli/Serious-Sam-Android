@@ -1136,7 +1136,7 @@ static void ogl_DrawElements( INDEX ctElem, INDEX_T *pidx)
 
   // arrays or elements
   if( pidx==NULL) pglDrawArrays( GL_QUADS, 0, ctElem);
-  else pglDrawElements( GL_TRIANGLES, ctElem, GL_UNSIGNED_INT, pidx);
+  else pglDrawElements( GL_TRIANGLES, ctElem, GL_UNSIGNED_SHORT, pidx);
   OGL_CHECKERROR;
 
   _sfStats.StopTimer(CStatForm::STI_GFXAPI);
