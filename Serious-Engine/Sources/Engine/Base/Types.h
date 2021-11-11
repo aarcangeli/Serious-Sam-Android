@@ -441,5 +441,23 @@ inline void Clear(void *pv) {};
 
 #define SYMBOLLOCATOR(symbol)
 
+// DG: screw macros, use inline functions instead - they're even safe for signed values
+inline UWORD BYTESWAP16_unsigned(UWORD x)
+{
+  return __builtin_bswap16(x);
+}
+
+inline ULONG BYTESWAP32_unsigned(ULONG x)
+{
+  return __builtin_bswap32(x);
+}
+
+inline __uint64 BYTESWAP64_unsigned(__uint64 x)
+{
+  return __builtin_bswap64(x);
+}
+
+#define BYTESWAP(x)
+
 #endif  /* include-once check. */
 

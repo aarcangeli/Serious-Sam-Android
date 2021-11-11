@@ -68,13 +68,14 @@ ULONG PrepareTexture( UBYTE *pubTexture, PIX pixSizeI, PIX pixSizeJ)
 {
   // need to upload from RGBA format
   const PIX pixTextureSize = pixSizeI * pixSizeJ;
-  const UBYTE *src = pubTexture;
-  uint32_t *dest = (uint32_t *) &pubTexture[pixTextureSize];
-  for (PIX i = 0; i < pixTextureSize; i++) {
-    *dest = (uint32_t) *src << 24 | 0x00FFFFFF;
+   const UBYTE* src = pubTexture;
+   DWORD* dst = (DWORD*)(pubTexture+pixTextureSize);
+   for (int i=0; i<pixTextureSize; i++) {
+    const DWORD tmp = ((DWORD)*src) | 0xFFFFFF00;
+    *dst = BYTESWAP32_unsigned((ULONG)tmp);
     src++;
-    dest++;
-  }
+    dst++;
+   }
 //  __asm {
 //    mov     esi,D [pubTexture]
 //    mov     edi,D [pubTexture]

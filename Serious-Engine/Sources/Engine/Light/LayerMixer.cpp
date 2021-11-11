@@ -1810,7 +1810,7 @@ void CLayerMixer::MixOneMipmap(CBrushShadowMap *pbsm, INDEX iMipmap)
 #else
   ULONG count = this->lm_pixCanvasSizeU * this->lm_pixCanvasSizeV;
 
-  ULONG swapped = ByteSwap(colAmbient);
+  ULONG swapped = BYTESWAP32_unsigned(colAmbient);
 
   for (ULONG *ptr = this->lm_pulShadowMap; count; count--)
   {
@@ -1957,7 +1957,7 @@ __forceinline void CLayerMixer::FillShadowLayer( COLOR col)
 #else
    DWORD* dst = (DWORD*)lm_pulShadowMap;
    int n = lm_pixCanvasSizeU*lm_pixCanvasSizeV;   
-   DWORD color = ByteSwap(col);
+   DWORD color = BYTESWAP32_unsigned(col);
    while(n--) {*(dst++)=color;}
 #endif
 }
