@@ -811,7 +811,7 @@ void PrintDisplayModeInfo(void)
   // get resolution
   CTString strRes;
   extern CTString _strPreferencesDescription;
-  strRes.PrintF( "%dx%dx%s", slDPWidth, slDPHeight, _pGfx->gl_dmCurrentDisplayMode.DepthString());
+  strRes.PrintF( "%dx%d", slDPWidth, slDPHeight);
   if( dm.IsDualHead())   strRes += TRANS(" DualMonitor");
   if( dm.IsWideScreen()) strRes += TRANS(" WideScreen");
        if( _pGfx->gl_eCurrentAPI==GAT_OGL) strRes += " (OpenGL)";
