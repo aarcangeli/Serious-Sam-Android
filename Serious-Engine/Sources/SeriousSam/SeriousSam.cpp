@@ -267,7 +267,7 @@ void TouchUp(void* pArgs) {
 }
 
 void SaveOptions(void* pArgs) {
-  CTFileName fnmPersistentSymbols = CTString("Scripts\\PersistentSymbols.ini");
+  CTFileName fnmPersistentSymbols = CTString("Scripts\\PersistentSymbolsAndroid.ini");
   _pShell->StorePersistentSymbols(fnmPersistentSymbols);
 }
 
@@ -658,12 +658,12 @@ BOOL Init()
 #if 0
   snd_iFormat = Clamp( snd_iFormat, (INDEX)CSoundLibrary::SF_NONE, (INDEX)CSoundLibrary::SF_44100_16);
   _pSound->SetFormat( (enum CSoundLibrary::SoundFormat)snd_iFormat);
-#endif
+
 
   if (sam_bAutoAdjustAudio) {
     _pShell->Execute("include \"Scripts\\Addons\\SFX-AutoAdjust.ini\"");
   }
-
+#endif
   // execute script given on command line
 #if 0
   if (cmd_strScript!="") {

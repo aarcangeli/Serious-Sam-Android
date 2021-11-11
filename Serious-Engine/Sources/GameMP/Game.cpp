@@ -39,7 +39,7 @@ INDEX con_bTalk = 0;
 CTimerValue _tvMenuQuickSave((__int64) 0);
 
 // used filenames
-CTFileName fnmPersistentSymbols = CTString("Scripts\\PersistentSymbols.ini");
+CTFileName fnmPersistentSymbols = CTString("Scripts\\PersistentSymbolsAndroid.ini");
 CTFileName fnmStartupScript     = CTString("Scripts\\Game_startup.ini");
 CTFileName fnmConsoleHistory    = CTString("Temp\\ConsoleHistory.txt");
 CTFileName fnmCommonControls    = CTString("Controls\\System\\Common.ctl");
@@ -1054,7 +1054,7 @@ void CGame::InitInternal( void)
     _pShell->Execute(CTString("include \"")+fnmPersistentSymbols+"\";");
   }
   // execute the startup script
-  _pShell->Execute(CTString("include \"")+fnmStartupScript+"\";");
+ // _pShell->Execute(CTString("include \"")+fnmStartupScript+"\";");
 
   // check the size and pointer of player control variables that are local to each player
   if (ctl_slPlayerControlsSize<=0
@@ -1063,15 +1063,14 @@ void CGame::InitInternal( void)
     FatalError(TRANS("Current player controls are invalid."));
   }
 
-  // [SSE] Light Dedicated Server
-  if (!_bDedicatedServer) {
+ // if (!_bDedicatedServer) {
     // load common controls
-    try {
-      _ctrlCommonControls.Load_t(fnmCommonControls);
-    } catch (char * /*strError*/) {
+ //   try {
+ //     _ctrlCommonControls.Load_t(fnmCommonControls);
+ //   } catch (char * /*strError*/) {
       //FatalError(TRANS("Cannot load common controls: %s\n"), strError);
-    }
-  }
+ //   }
+ // }
 
   // init LCD textures/fonts
   LCDInit();

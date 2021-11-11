@@ -61,7 +61,7 @@ const char *RenderingPreferencesDescription(int iMode)
 
 void InitGLSettings(void)
 {
-  ASSERT(_lhSettings.IsEmpty());
+/*  ASSERT(_lhSettings.IsEmpty());
 
   char achrLine    [1024];
   char achrRenderer[1024];
@@ -97,7 +97,7 @@ void InitGLSettings(void)
   catch ( const char *strError) {
     WarningMessage(TRANS("unable to setup OpenGL settings list: %s"), strError);
   }
-
+*/
   _strLastRenderer= "none";
   _iLastPreferences = 1;
   _pShell->DeclareSymbol("persistent CTString sam_strLastRenderer;", (void *) &_strLastRenderer);
