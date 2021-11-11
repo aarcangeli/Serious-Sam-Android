@@ -233,11 +233,14 @@ void CEntityClass::ReleaseComponents(void)
 /*
  * Load a Dynamic Link Library.
  */
-HINSTANCE LoadDLL_t(const char *strFileName) // throw char *
+HINSTANCE LoadDLL_t(CTString &strFileName) // throw char *
 {
 #ifdef STATIC_LINKING
   FatalError("LoadDLL_t not supported with STATIC_LINKING");
 #else
+  if (strFileName.FindSubstr("EntitiesAdv") != -1) {
+	strFileName = "libEntitiesAdvMP.so"; 
+  }
   void *hiDLL = dlopen(strFileName, RTLD_NOW);
   if (hiDLL == NULL) {
     char *err = dlerror();
@@ -331,7 +334,8 @@ void CEntityClass::Read_t( CTStream *istr) // throw char *
 
 #else
 
-  fnmDLL = "lib" + fnmDLL.FileName() + _strModExt + ".so";
+  fnmDLL = "lib" + fnmDLL.FileName() + _strModExt + ".so"; 
+  
   ec_hiClassDLL = LoadDLL_t(fnmDLL);
   ec_fnmClassDLL = fnmDLL;
 
