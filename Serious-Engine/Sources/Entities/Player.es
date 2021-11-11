@@ -4161,8 +4161,10 @@ functions:
       // camera view
       plView = ((CPlayerView&)*m_pen3rdPersonView).GetPlacement();
     }
-    ((CPlayerWeapons&)*m_penWeapons).RenderCrosshair(prProjection, pdp, plView);
-
+	if (GetFlags()&ENF_ALIVE) // [SSE] Hide Crosshair If Dead
+      {
+		((CPlayerWeapons&)*m_penWeapons).RenderCrosshair(prProjection, pdp, plView);
+	  }
     // get your prediction tail
     CPlayer *pen = (CPlayer*)GetPredictionTail();
     // do screen blending

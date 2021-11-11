@@ -4899,7 +4899,10 @@ functions:
       plView = ((CPlayerView&)*m_pen3rdPersonView).GetPlacement();
     }
     if (!bSniping) {
-      ((CPlayerWeapons&)*m_penWeapons).RenderCrosshair(prProjection, pdp, plView);
+	  if (GetFlags()&ENF_ALIVE) // [SSE] Hide Crosshair If Dead
+      {
+		((CPlayerWeapons&)*m_penWeapons).RenderCrosshair(prProjection, pdp, plView);
+	  }
     }
 
     // get your prediction tail
