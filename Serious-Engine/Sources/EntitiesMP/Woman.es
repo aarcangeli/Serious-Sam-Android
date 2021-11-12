@@ -329,7 +329,7 @@ procedures:
 /************************************************************
  *                    D  E  A  T  H                         *
  ************************************************************/
-  Death(EVoid) : CEnemyFly::Death {
+  Death(EVoid) : CEnemyBase::Death {
     DropKamikaze();
     jump CEnemyFly::Death();
   };
