@@ -2,6 +2,7 @@ package com.github.aarcangeli.serioussamandroid;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
@@ -23,10 +24,9 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import android.util.Log;
 import android.view.Display;
 import android.view.KeyEvent;
@@ -37,7 +37,6 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-
 import com.github.aarcangeli.serioussamandroid.input.InputProcessor;
 import com.github.aarcangeli.serioussamandroid.views.JoystickView;
 import com.hold1.keyboardheightprovider.KeyboardHeightProvider;
@@ -67,7 +66,7 @@ import static com.github.aarcangeli.serioussamandroid.NativeEvents.StateChangeEv
 import static com.github.aarcangeli.serioussamandroid.input.VirtualKeyboard.*;
 import static com.github.aarcangeli.serioussamandroid.views.JoystickView.Listener;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity {
     public static final String TAG = "SeriousSamJava";
     private final int REQUEST_WRITE_STORAGE = 1;
     private static final int AXIS_MOVE_UD = 0;
