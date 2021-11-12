@@ -977,7 +977,7 @@ void RenderMessageModel(CDrawPort *pdp, const CTString &strModel)
     apr = pr;
     BeginModelRenderingView(apr, pdp);
     rm.rm_vLightDirection = _vLightDir;
-    const FLOAT fDistance = 1.0f+ 10.f*(1.0f/(_fMsgAppearFade+0.01f) - 1.0f/(1.0f+0.01f));
+    const FLOAT fDistance = 2.0f+ 10.f*(1.0f/(_fMsgAppearFade+0.01f) - 1.0f/(1.0f+0.01f));
 
     // if model needs floor
     if( _bHasFloor) {
