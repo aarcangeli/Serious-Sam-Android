@@ -801,3 +801,25 @@ void UNZIPClose(INDEX iHandle)
   // clear it
   zh.Clear();
 }
+
+extern void DumpVFS()
+{
+  CPrintF("VFS Dump:\n");
+
+  INDEX iMem = 0;
+
+  //static CTFileName _ftest = CTFILENAME("test.gro");
+  //CZipEntry &ze = _azeFiles.Push();
+  //ze.ze_fnm = CTFILENAME("test.txt");
+  //ze.ze_pfnmArchive = &_ftest;
+
+  for (INDEX iFile=0; iFile<_azeFiles.Count(); iFile++) {
+    CPrintF("  %s\n", *_azeFiles[iFile].ze_pfnmArchive);
+    CPrintF("    %s\n", _azeFiles[iFile].ze_fnm);
+    iMem += _azeFiles[iFile].ze_fnm.Length() + 1;
+  }
+
+  CPrintF("----------------------------------------\n");
+  CPrintF("Files in packs: %d\n", _azeFiles.Count());
+  CPrintF("RAM used for filenames: %d bytes\n", iMem);
+}

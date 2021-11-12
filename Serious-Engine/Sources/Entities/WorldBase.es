@@ -1155,10 +1155,11 @@ functions:
   /* Get gradient type name, return empty string if not used. */
   const CTString &GetGradientName(INDEX iGradient)
   {
-    INDEX ctGradientMarkers = &m_penGradient19-&m_penGradient0+1;
+    INDEX ctGradientMarkers = &m_penGradient19 - &m_penGradient0 + 1;
     static const CTString strDummyName("");
     static const CTString strMarkerUnused("Marker not set");
-    if (iGradient<ctGradientMarkers){
+    if (iGradient < ctGradientMarkers)
+	{
       CGradientMarker *pgm = (CGradientMarker *)(&m_penGradient0)[iGradient].ep_pen;
       if (pgm != NULL) {
         return pgm->GetGradientName();
@@ -1172,7 +1173,7 @@ functions:
   void UncacheShadowsForGradient(class CGradientMarker *penDiscard)
   {
     INDEX ctGradientMarkers = &m_penGradient19-&m_penGradient0+1;
-    for( INDEX iGradient=0; iGradient<ctGradientMarkers; iGradient++)
+    for( INDEX iGradient=0; iGradient < ctGradientMarkers; iGradient++)
     {
       CGradientMarker *pgm = (CGradientMarker *)(&m_penGradient0)[iGradient].ep_pen;
       if(pgm == penDiscard)
@@ -1185,8 +1186,8 @@ functions:
   /* Get gradient, return FALSE for none. */
   BOOL GetGradient(INDEX iGradient, class CGradientParameters &fpGradient)
   {
-    INDEX ctGradientMarkers = &m_penGradient19-&m_penGradient0+1;
-    if ( (iGradient<ctGradientMarkers) && (iGradient>0) ){
+    INDEX ctGradientMarkers = &m_penGradient19 - &m_penGradient0 + 1;
+    if ( (iGradient <= ctGradientMarkers) && (iGradient > 0) ){
       CGradientMarker *pgm = (CGradientMarker *)(&m_penGradient0)[iGradient-1].ep_pen;
       if (pgm != NULL) {
         return pgm->GetGradient(0, fpGradient);

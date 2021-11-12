@@ -3199,12 +3199,13 @@ functions:
         if( m_pstState==PST_DIVE) {
           iSound = GenderSound(SOUND_WOUNDWATER);
           strIFeel = "WoundWater";
-        } // override for diving
-        SetRandomMouthPitch( 0.9f, 1.1f);
+        }
         // give some pause inbetween screaming
         TIME tmNow = _pTimer->CurrentTick();
         if( (tmNow-m_tmScreamTime) > 1.0f) {
           m_tmScreamTime = tmNow;
+		   // override for diving
+		  SetRandomMouthPitch( 0.9f, 1.1f);
           PlaySound( m_soMouth, iSound, SOF_3D);
           if(_pNetwork->IsPlayerLocal(this)) {IFeel_PlayEffect(strIFeel);}
         }

@@ -1144,6 +1144,8 @@ void CNetworkLibrary::Init(const CTString &strGameID)
   // remember the game ID
   CMessageDispatcher::Init(strGameID);
   
+  _pShell->DeclareSymbol("user void DumpVFS();", (void *) &DumpVFS);
+  
   // [SSE] Netcode Update - Testing functions for player Attaching/Detaching/Swapping
   _pShell->DeclareSymbol("user void NET_ChangeServerForClient(INDEX, CTString);", (void *)  &NET_ChangeServerForClient);
   _pShell->DeclareSymbol("user void NET_AttachPlayer(INDEX, INDEX);", (void *)  &NET_AttachPlayer);
