@@ -424,61 +424,11 @@ COLOR AddColors( COLOR col1, COLOR col2)
 
 
 // multiple conversion from OpenGL color to DirectX color
-extern void abgr2argb( ULONG *pulSrc, ULONG *pulDst, INDEX ct)
+void abgr2argb( ULONG *pulSrc, ULONG *pulDst, INDEX ct)
 {
-#if PLATFORM_UNIX
-    FatalError("Never called since we are using opengl");
-#else
-  __asm {
-    mov   esi,dword ptr [pulSrc]
-    mov   edi,dword ptr [pulDst]
-    mov   ecx,dword ptr [ct]
-    shr   ecx,2
-    jz    colSkip4
-colLoop4:
-    push  ecx
-    mov   eax,dword ptr [esi+ 0]
-    mov   ebx,dword ptr [esi+ 4]
-    mov   ecx,dword ptr [esi+ 8]
-    mov   edx,dword ptr [esi+12]
-    bswap eax
-    bswap ebx
-    bswap ecx
-    bswap edx
-    ror   eax,8
-    ror   ebx,8
-    ror   ecx,8
-    ror   edx,8
-    mov   dword ptr [edi+ 0],eax
-    mov   dword ptr [edi+ 4],ebx
-    mov   dword ptr [edi+ 8],ecx
-    mov   dword ptr [edi+12],edx
-    add   esi,4*4
-    add   edi,4*4
-    pop   ecx
-    dec   ecx
-    jnz   colLoop4
-colSkip4:
-    test  dword ptr [ct],2
-    jz    colSkip2
-    mov   eax,dword ptr [esi+0]
-    mov   ebx,dword ptr [esi+4]
-    bswap eax
-    bswap ebx
-    ror   eax,8
-    ror   ebx,8
-    mov   dword ptr [edi+0],eax
-    mov   dword ptr [edi+4],ebx
-    add   esi,4*2
-    add   edi,4*2
-colSkip2:
-    test  dword ptr [ct],1
-    jz    colSkip1
-    mov   eax,dword ptr [esi]
-    bswap eax
-    ror   eax,8
-    mov   dword ptr [edi],eax
-colSkip1:
+  for (int i = 0; i<ct; i++)
+  {
+    pulDst[i] = abgr2argb(pulSrc[i]);
   }
-#endif
+
 }
