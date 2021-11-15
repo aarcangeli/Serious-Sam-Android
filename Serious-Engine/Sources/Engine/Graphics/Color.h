@@ -243,7 +243,7 @@ __forceinline ULONG abgr2argb( ULONG ul)
 
 
 // multiple conversion from OpenGL color to DirectX color
-extern void abgr2argb( ULONG *pulSrc, ULONG *pulDst, INDEX ct);
+void abgr2argb( ULONG *pulSrc, ULONG *pulDst, INDEX ct);
 
 
 // fast memory copy of ULONGs
