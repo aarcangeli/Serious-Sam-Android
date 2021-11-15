@@ -231,46 +231,14 @@ __forceinline ULONG ByteSwap( ULONG ul)
 
 __forceinline ULONG rgba2argb( COLOR col)
 {
-#if (defined USE_PORTABLE_C)
 	return( (col << 24) | (col >> 8) );
-
-#elif (defined _MSC_VER)
-  ULONG ulRet;
-  __asm {
-    mov   eax,dword ptr [col]
-    ror   eax,8
-    mov   dword ptr [ulRet],eax
-  }
-  return ulRet;
-
-#else
-  #error please define for your platform.
-#endif
 }
 
 __forceinline ULONG abgr2argb( ULONG ul)
 {
-#if (defined USE_PORTABLE_C)
-	// this could be simplified, this is just a safe conversion from asm code
-	ul = ( ((ul << 24)            ) |
-         ((ul << 8) & 0x00FF0000) |
-         ((ul >> 8) & 0x0000FF00) |
-         ((ul >> 24)            ) );
-	return( (ul << 24) | (ul >> 8) );
+  ul = BYTESWAP32_unsigned(ul); // AABBGGRR -> RRGGBBAA
+  return((ul << 24) | (ul >> 8)); // AA00000000 | 00RRGGBB
 
-#elif (defined _MSC_VER)
-  ULONG ulRet;
-  __asm {
-    mov   eax,dword ptr [ul]
-    bswap eax
-    ror   eax,8
-    mov   dword ptr [ulRet],eax
-  }
-  return ulRet;
-
-#else
-  #error please define for your platform.
-#endif
 }
 
 
