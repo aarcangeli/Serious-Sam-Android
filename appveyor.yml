@@ -1,5 +1,7 @@
 version: nightly-{build}-{branch}
 skip_tags: true
+skip_commits:
+  message: /\[skip ci\]/
 
 environment:
   ANDROID_HOME: C:\android-sdk-windows
