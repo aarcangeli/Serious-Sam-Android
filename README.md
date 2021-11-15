@@ -1,4 +1,4 @@
-# Serious Sam Android [![Build status](https://ci.appveyor.com/api/projects/status/wacvajrwf2hw59jp/branch/master?svg=true)](https://ci.appveyor.com/project/aarcangeli/serious-sam-android/branch/master)
+# Serious Sam Android [![Build status](https://ci.appveyor.com/api/projects/status/wacvajrwf2hw59jp/branch/master?svg=true)](https://ci.appveyor.com/project/Skyrimus/serious-sam-android/branch/master)
 
 # Serious Sam Classic The First Encounter
 ## Running the game
