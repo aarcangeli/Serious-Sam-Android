@@ -71,24 +71,10 @@ struct GFXColor
  *  simple class. It works for MSVC, though,
  *  so we'll keep it.
  */
-#if (defined _MSC_VER)
-  GFXColor( COLOR col) {
-    _asm mov   ecx,dword ptr [this]
-    _asm mov   eax,dword ptr [col]
-    _asm bswap eax
-    _asm mov   dword ptr [ecx],eax
-  }
 
-  __forceinline void Set( COLOR col) {
-    _asm mov   ecx,dword ptr [this]
-    _asm mov   eax,dword ptr [col]
-    _asm bswap eax
-    _asm mov   dword ptr [ecx],eax
-  }
-#else
-  GFXColor( COLOR col) { ul.abgr = ByteSwap(col); }
-  __forceinline void Set( COLOR col) { ul.abgr = ByteSwap(col); }
-#endif
+  GFXColor( COLOR col) { ul.abgr = BYTESWAP32_unsigned(col); }
+  __forceinline void Set( COLOR col) { ul.abgr = BYTESWAP32_unsigned(col); }
+
 
   void MultiplyRGBA( const GFXColor &col1, const GFXColor &col2) {
     ub.r = (ULONG(col1.ub.r)*col2.ub.r)>>8;
