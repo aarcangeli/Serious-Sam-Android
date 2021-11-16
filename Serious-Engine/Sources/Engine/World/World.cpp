@@ -38,6 +38,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/ProgressHook.h>
 #include <Engine/Templates/StaticArray.cpp>
 #include <Engine/Templates/Selection.cpp>
+#include <Engine/Base/ReplaceFile.h>
 #include <Engine/Terrain/Terrain.h>
 
 #include <Engine/Templates/Stock_CEntityClass.h>
@@ -247,8 +248,11 @@ CEntity *CWorld::CreateEntity(const CPlacement3D &plPlacement, CEntityClass *pec
 CEntity *CWorld::CreateEntity_t(const CPlacement3D &plPlacement,
                                 const CTFileName &fnmClass) // throw char *
 {
+  CTFileName fnmReplacement = fnmClass;
+  GetReplacingClassFile_t(fnmReplacement);
+
   // obtain a new entity class from global stock
-  CEntityClass *pecClass = _pEntityClassStock->Obtain_t(fnmClass);
+  CEntityClass *pecClass = _pEntityClassStock->Obtain_t(fnmReplacement);
   // create entity with that class (obtains it once more)
   CEntity *penNew = CreateEntity(plPlacement, pecClass);
   // release the class

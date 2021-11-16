@@ -37,6 +37,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <Engine/Base/ListIterator.inl>
 
+#define FILTER_ECL            "Entity Class Links (*.ecl)\0*.ecl\0"
 #define FILTER_TEX            "Textures (*.tex)\0*.tex\0"
 #define FILTER_MDL            "Models (*.mdl)\0*.mdl\0"
 #define FILTER_ANI            "Animations (*.ani)\0*.ani\0"
@@ -146,6 +147,31 @@ BOOL GetReplacingFile(CTFileName fnSourceFile, CTFileName &fnReplacingFile,
   }
   return TRUE;
 }
+
+void GetReplacingClassFile_t(CTFileName &fnmClass) {
+  for (;;) {
+    try {
+      // class doesn't exist
+      if (!FileExists(fnmClass)) {
+        ThrowF_t(TRANS("Entity Class Link file \"%s\" doesn't exist!"), fnmClass.str_String);
+      }
+      return;
+
+    } catch (char *strError) {
+      (void)strError;
+      CTFileName fnmReplace;
+
+      // if class wasn't found, ask for a replacement
+      if (GetReplacingFile(fnmClass, fnmReplace, FILTER_ECL FILTER_END)) {
+        // replacing class was provided
+        fnmClass = fnmReplace;
+
+      } else {
+        ThrowF_t(TRANS("Cannot find substitution for \"%s\""), fnmClass.str_String);
+      }
+    }
+  }
+};
 
 
 void SetTextureWithPossibleReplacing_t(CTextureObject &to, CTFileName &fnmTexture)
