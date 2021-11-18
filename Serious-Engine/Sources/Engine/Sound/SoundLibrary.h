@@ -42,6 +42,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 // https://www.gatewan.com/2018/12/slbufferqueuestate.html
 // https://android.googlesource.com/platform/system/media/+/gingerbread/opensles/tests/sandbox
 #include <SLES/OpenSLES.h>
+#include <SLES/OpenSLES_Android.h>
 
 // Mixer
 // set master volume and resets mixer buffer (wipes it with zeroes and keeps pointers)

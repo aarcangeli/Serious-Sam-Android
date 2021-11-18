@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 
 #include <Engine/Sound/SoundData.h>
 
@@ -253,16 +253,14 @@ SLONG CSoundData::GetUsedMemory(void)
 // Add one reference
 void CSoundData::AddReference(void)
 {
-  if (this!=NULL) {
-    MarkUsed();
- }
+  ASSERT(this!=NULL);
+  MarkUsed();
 }
 
 
 // Remove one reference
 void CSoundData::RemReference(void)
 {
-  if (this!=NULL) {
-    _pSoundStock->Release(this);
- }
+  ASSERT(this!=NULL);
+  _pSoundStock->Release(this);
 }

@@ -133,32 +133,23 @@ void ResetMixer( const SLONG *pslBuffer, const SLONG slBufferSize)
 
 
 // plain conversion of mixer buffer from 32-bit to 16-bit clamped
-static void ConvertMixerBuffer(SLONG slBytes)
+static void ConvertMixerBuffer( const SLONG slBytes)
 {
   ASSERT( slBytes%4==0);
   if( slBytes<4) return;
-  int32_t *src = (int32_t *) pvMixerBuffer;
-  int16_t *dst = (int16_t *) pvMixerBuffer;
-  while (slBytes) {
-    *(dst++) = (int16_t) Clamp(*(src++), -0x7FFF, +0x7FFF);
-    slBytes -= 2;
+  
+  SWORD *dest = (SWORD *) pvMixerBuffer;
+  SLONG *src = (SLONG *) pvMixerBuffer;
+  SLONG max = slBytes / 2;
+  int tmp;
+  for (SLONG i = 0; i < max; i++) {
+      tmp = *src;
+      if (tmp>32767) tmp=32767;
+      if (tmp<-32767) tmp=-32767;
+      *dest=tmp;
+      dest++;    // move 16 bits.
+      src++;     // move 32 bits.
   }
-//  __asm {
-//    cld
-//    mov     esi,D [pvMixerBuffer]
-//    mov     edi,D [pvMixerBuffer]
-//    mov     ecx,D [slBytes]
-//    shr     ecx,2 // bytes to samples (2 channels)
-//copyLoop:
-//    movq    mm0,Q [esi]
-//    packssdw mm0,mm0
-//    movd    D [edi],mm0
-//    add     esi,8
-//    add     edi,4
-//    dec     ecx
-//    jnz     copyLoop
-//    emms
-//  }
 }
 
 
@@ -179,13 +170,6 @@ void NormalizeMixerBuffer( const FLOAT fNormStrength, const SLONG slBytes, FLOAT
   SLONG *pslSrc = (SLONG*)pvMixerBuffer;
   const INDEX iSamples = slBytes/2; // 16-bit was assumed -> samples (treat as mono)
   for( i=0; i<iSamples; i++) slPeak = Max( Abs(pslSrc[i]), slPeak);
-
-  // muted channel
-  if (!slPeak) {
-    fLastNormValue = Lerp(1.0f, fLastNormValue, fNormStrength);
-    ConvertMixerBuffer(slBytes);
-    return;
-  }
 
   // determine normalize value and skip normalization if maximize is required (do not increase volume!)
   FLOAT fNormValue = 32767.0f / (FLOAT)slPeak;
@@ -214,8 +198,6 @@ void NormalizeMixerBuffer( const FLOAT fNormStrength, const SLONG slBytes, FLOAT
   // remember normalization value
   fLastNormValue = fCurrentNormValue;
 }
- 
-
 
 // mixes one mono 16-bit signed sound to destination buffer
 inline void MixMono( CSoundObject *pso)

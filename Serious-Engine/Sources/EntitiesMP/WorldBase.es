@@ -20,6 +20,22 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "EntitiesMP/WorldSettingsController.h"
 // for error checking:
 #include "EntitiesMP/SoundHolder.h"
+
+#ifdef PLATFORM_UNIX
+#define EAX_ENVIRONMENT_LIVINGROOM     0
+#define EAX_ENVIRONMENT_STONEROOM      0
+#define EAX_ENVIRONMENT_AUDITORIUM     0
+#define EAX_ENVIRONMENT_HALLWAY        0
+#define EAX_ENVIRONMENT_ARENA          0
+#define EAX_ENVIRONMENT_STONECORRIDOR  0
+#define EAX_ENVIRONMENT_QUARRY         0
+#define EAX_ENVIRONMENT_MOUNTAINS      0
+#define EAX_ENVIRONMENT_PLAIN          0
+#define EAX_ENVIRONMENT_CAVE           0
+#define EAX_ENVIRONMENT_SEWERPIPE      0
+#define EAX_ENVIRONMENT_UNDERWATER     0
+#endif
+
 %}
 
 uses "EntitiesMP/FogMarker";
