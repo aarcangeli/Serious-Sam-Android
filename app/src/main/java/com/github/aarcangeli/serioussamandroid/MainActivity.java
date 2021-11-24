@@ -31,6 +31,7 @@ import android.util.Log;
 import android.view.Display;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
+import android.view.InputDevice;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
@@ -104,7 +105,7 @@ public class MainActivity extends Activity {
     public boolean isTracking;
 	public float input_overlayX, input_overlayY;
 	public View currentView;
-	
+	public float lastx, lasty;
     private InputProcessor processor = new InputProcessor();
     private InputMethodManager inputMethodManager;
 
@@ -367,6 +368,41 @@ public class MainActivity extends Activity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
+        if (gameState == GameState.NORMAL) {
+		findViewById(R.id.main_content).requestPointerCapture();
+		findViewById(R.id.main_content).setOnCapturedPointerListener(new View.OnCapturedPointerListener() {
+		  @Override
+		  public boolean onCapturedPointer (View view, MotionEvent event) {
+				int action = event.getActionMasked();
+				int mouseButton = 1;
+				try {
+					Object object = event.getClass().getMethod("getButtonState").invoke(event);
+					if (object != null) {
+						mouseButton = (Integer) object;
+					}
+				} catch(Exception ignored) {
+				}
+			   			   
+				//nDispatchKeyEvent(KeyEvent.KEYCODE_DPAD_LEFT, event.getAxisValue(MotionEvent.AXIS_VSCROLL) < -.0f ? 1 : 0);
+				//nDispatchKeyEvent(KeyEvent.KEYCODE_DPAD_RIGHT, event.getAxisValue(MotionEvent.AXIS_VSCROLL) > .0f ? 1 : 0);
+				float scroll = event.getAxisValue(MotionEvent.AXIS_VSCROLL);
+				
+				float x = event.getX();
+				float y = event.getY();	
+				
+				shiftAxisValue(AXIS_LOOK_LR, -x * MULT_VIEW_TRACKER * aimViewSensibility);
+				shiftAxisValue(AXIS_LOOK_UD, -y * MULT_VIEW_TRACKER * aimViewSensibility);
+				
+				nSendMouseNative(mouseButton, action, scroll);
+				lastx = x;
+				lasty = y;
+			return true;
+		  }
+		});
+        } else {
+			findViewById(R.id.main_content).releasePointerCapture();
+		}
+
         if (gameState == GameState.MENU || gameState == GameState.CONSOLE) {
             getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN);
         } else {
@@ -564,119 +600,154 @@ public class MainActivity extends Activity {
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
         int keyCode = event.getKeyCode();
-        if (keyCode == KeyEvent.KEYCODE_VOLUME_UP || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
-            return false;
-        }
-        if (gameState == GameState.MENU || gameState == GameState.CONSOLE) {
-            executeShell("input_iIsShiftPressed = " + (event.isShiftPressed() ? 1 : 0));
-            if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                switch (keyCode) {
-                    case KeyEvent.KEYCODE_DPAD_DOWN:
-                        executeShell("MenuEvent(" + VK_DOWN + ")");
-                        break;
-                    case KeyEvent.KEYCODE_DPAD_RIGHT:
-                        executeShell("MenuEvent(" + VK_RIGHT + ")");
-                        break;
-                    case KeyEvent.KEYCODE_DPAD_UP:
-                        executeShell("MenuEvent(" + VK_UP + ")");
-                        break;
-                    case KeyEvent.KEYCODE_DPAD_LEFT:
-                        executeShell("MenuEvent(" + VK_LEFT + ")");
-                        break;
-                    case KeyEvent.KEYCODE_MOVE_HOME:
-                        executeShell("MenuEvent(" + VK_HOME + ")");
-                        break;
-                    case KeyEvent.KEYCODE_MOVE_END:
-                        executeShell("MenuEvent(" + VK_END + ")");
-                        break;
-                    case KeyEvent.KEYCODE_DEL:
-                        executeShell("MenuEvent(" + VK_BACK + ")");
-                        break;
-                    case KeyEvent.KEYCODE_FORWARD_DEL:
-                        executeShell("MenuEvent(" + VK_DELETE + ")");
-                        break;
-                    case KeyEvent.KEYCODE_ENTER:
-                    case KeyEvent.KEYCODE_NUMPAD_ENTER:
-                    case KeyEvent.KEYCODE_BUTTON_A:
-                        executeShell("MenuEvent(" + VK_RETURN + ")");
-                        break;
-                    case KeyEvent.KEYCODE_BUTTON_B:
-                    case KeyEvent.KEYCODE_ESCAPE:
-                    case KeyEvent.KEYCODE_BACK:
-                        executeShell("GoMenuBack()");
-                        break;
-                    case KeyEvent.KEYCODE_F1:
-                        executeShell("MenuEvent(" + VK_F1 + ")");
-                        break;
-                    case KeyEvent.KEYCODE_F2:
-                        executeShell("MenuEvent(" + VK_F2 + ")");
-                        break;
-                    case KeyEvent.KEYCODE_F3:
-                        executeShell("MenuEvent(" + VK_F3 + ")");
-                        break;
-                    case KeyEvent.KEYCODE_F4:
-                        executeShell("MenuEvent(" + VK_F4 + ")");
-                        break;
-                    case KeyEvent.KEYCODE_F5:
-                        executeShell("MenuEvent(" + VK_F5 + ")");
-                        break;
-                    case KeyEvent.KEYCODE_F6:
-                        executeShell("MenuEvent(" + VK_F6 + ")");
-                        break;
-                    case KeyEvent.KEYCODE_F7:
-                        executeShell("MenuEvent(" + VK_F7 + ")");
-                        break;
-                    case KeyEvent.KEYCODE_F8:
-                        executeShell("MenuEvent(" + VK_F8 + ")");
-                        break;
-                    case KeyEvent.KEYCODE_F9:
-                        executeShell("MenuEvent(" + VK_F9 + ")");
-                        break;
-                    case KeyEvent.KEYCODE_F10:
-                        executeShell("MenuEvent(" + VK_F10 + ")");
-                        break;
-                    case KeyEvent.KEYCODE_F11:
-                        executeShell("MenuEvent(" + VK_F11 + ")");
-                        break;
-                    case KeyEvent.KEYCODE_F12:
-                        executeShell("MenuEvent(" + VK_F12 + ")");
-                        break;
-                    case KeyEvent.KEYCODE_TAB:
-                        executeShell("MenuEvent(" + VK_TAB + ")");
-                        break;
-                    case KeyEvent.KEYCODE_PAGE_UP:
-                        executeShell("MenuEvent(" + VK_PRIOR + ")");
-                        break;
-                    case KeyEvent.KEYCODE_PAGE_DOWN:
-                        executeShell("MenuEvent(" + VK_NEXT + ")");
-                        break;
-                }
-                if (event.getRepeatCount() == 0 && gameState == GameState.CONSOLE && keyCode == KeyEvent.KEYCODE_BUTTON_START) {
-                    executeShell("HideConsole();");
-                    keyboardHeightProvider.hideKeyboard();
-                }
-            }
-        } else if (gameState == GameState.COMPUTER) {
-            if (event.getRepeatCount() == 0 && event.getAction() == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_BACK) {
-                executeShell("HideComputer();");
-            }
-        } else if (gameState != GameState.INTRO) {
-            if (event.getRepeatCount() == 0) {
-                if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                    if (keyCode == KeyEvent.KEYCODE_ESCAPE) {
-                        executeShell("sam_bMenu=1;");
-                    }
-                    nDispatchKeyEvent(keyCode, 1);
-                }
-                if (event.getAction() == KeyEvent.ACTION_UP) {
-                    nDispatchKeyEvent(keyCode, 0);
+		int deviceId = event.getDeviceId();
+        int source = event.getSource();
+		Log.i(TAG, "Source: " + source);
+       /* if (event.getRepeatCount() == 0 && ((source & InputDevice.SOURCE_KEYBOARD) != 0)) {
+			executeShell("input_iIsShiftPressed = " + (event.isShiftPressed() ? 1 : 0));
+			switch (event.getAction()) {
+				case KeyEvent.ACTION_DOWN:
+					//if (keyCode == KeyEvent.KEYCODE_ESCAPE) {
+					//	executeShell("sam_bMenu=1;");
+					//}
+					//nDispatchKeyEvent(keyCode, 1);
+					nSendKeyboardButtonDown(keyCode);
+					
+					break;
+				case KeyEvent.ACTION_UP:
+				
+					nSendKeyboardButtonUp(keyCode);
+					//nDispatchKeyEvent(keyCode, 0);
+					break;
+				default:
+					return false;
+			}
+        } */
+		if ((source & InputDevice.SOURCE_MOUSE) != 0) {
+            if ((keyCode == KeyEvent.KEYCODE_FORWARD)) {
+                switch (event.getAction()) {
+                case KeyEvent.ACTION_DOWN:
+                case KeyEvent.ACTION_UP:
+                    return true;
                 }
             }
         }
-        int unicodeChar = event.getUnicodeChar();
-        if (event.getAction() == KeyEvent.ACTION_DOWN && unicodeChar > 0) {
-            executeShell("MenuChar(" + unicodeChar + ")");
-        }
+		if (keyCode == KeyEvent.KEYCODE_VOLUME_UP || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+			return false;
+		}
+		if (gameState == GameState.MENU || gameState == GameState.CONSOLE) {
+			executeShell("input_iIsShiftPressed = " + (event.isShiftPressed() ? 1 : 0));
+			if (event.getAction() == KeyEvent.ACTION_DOWN) {
+
+				System.out.println(" KEYCODE=" +  keyCode);
+
+				switch (keyCode) {
+					case KeyEvent.KEYCODE_DPAD_DOWN:
+						executeShell("MenuEvent(" + VK_DOWN + ")");
+						break;
+					case KeyEvent.KEYCODE_DPAD_RIGHT:
+						executeShell("MenuEvent(" + VK_RIGHT + ")");
+						break;
+					case KeyEvent.KEYCODE_DPAD_UP:
+						executeShell("MenuEvent(" + VK_UP + ")");
+						break;
+					case KeyEvent.KEYCODE_DPAD_LEFT:
+						executeShell("MenuEvent(" + VK_LEFT + ")");
+						break;
+					case KeyEvent.KEYCODE_MOVE_HOME:
+						executeShell("MenuEvent(" + VK_HOME + ")");
+						break;
+					case KeyEvent.KEYCODE_MOVE_END:
+						executeShell("MenuEvent(" + VK_END + ")");
+						break;
+					case KeyEvent.KEYCODE_DEL:
+						executeShell("MenuEvent(" + VK_BACK + ")");
+						break;
+					case KeyEvent.KEYCODE_FORWARD_DEL:
+						executeShell("MenuEvent(" + VK_DELETE + ")");
+						break;
+					case KeyEvent.KEYCODE_ENTER:
+					case KeyEvent.KEYCODE_NUMPAD_ENTER:
+					case KeyEvent.KEYCODE_BUTTON_A:
+						executeShell("MenuEvent(" + VK_RETURN + ")");
+						break;
+					case KeyEvent.KEYCODE_BUTTON_B:
+					case KeyEvent.KEYCODE_ESCAPE:
+					case KeyEvent.KEYCODE_BACK:
+						executeShell("GoMenuBack()");
+						break;
+					case KeyEvent.KEYCODE_F1:
+						executeShell("MenuEvent(" + VK_F1 + ")");
+						break;
+					case KeyEvent.KEYCODE_F2:
+						executeShell("MenuEvent(" + VK_F2 + ")");
+						break;
+					case KeyEvent.KEYCODE_F3:
+						executeShell("MenuEvent(" + VK_F3 + ")");
+						break;
+					case KeyEvent.KEYCODE_F4:
+						executeShell("MenuEvent(" + VK_F4 + ")");
+						break;
+					case KeyEvent.KEYCODE_F5:
+						executeShell("MenuEvent(" + VK_F5 + ")");
+						break;
+					case KeyEvent.KEYCODE_F6:
+						executeShell("MenuEvent(" + VK_F6 + ")");
+						break;
+					case KeyEvent.KEYCODE_F7:
+						executeShell("MenuEvent(" + VK_F7 + ")");
+						break;
+					case KeyEvent.KEYCODE_F8:
+						executeShell("MenuEvent(" + VK_F8 + ")");
+						break;
+					case KeyEvent.KEYCODE_F9:
+						executeShell("MenuEvent(" + VK_F9 + ")");
+						break;
+					case KeyEvent.KEYCODE_F10:
+						executeShell("MenuEvent(" + VK_F10 + ")");
+						break;
+					case KeyEvent.KEYCODE_F11:
+						executeShell("MenuEvent(" + VK_F11 + ")");
+						break;
+					case KeyEvent.KEYCODE_F12:
+						executeShell("MenuEvent(" + VK_F12 + ")");
+						break;
+					case KeyEvent.KEYCODE_TAB:
+						executeShell("MenuEvent(" + VK_TAB + ")");
+						break;
+					case KeyEvent.KEYCODE_PAGE_UP:
+						executeShell("MenuEvent(" + VK_PRIOR + ")");
+						break;
+					case KeyEvent.KEYCODE_PAGE_DOWN:
+						executeShell("MenuEvent(" + VK_NEXT + ")");
+						break;
+				}
+				if (event.getRepeatCount() == 0 && gameState == GameState.CONSOLE && keyCode == KeyEvent.KEYCODE_BUTTON_START) {
+					executeShell("HideConsole();");
+					keyboardHeightProvider.hideKeyboard();
+				}
+			}
+		} else if (gameState == GameState.COMPUTER) {
+			if (event.getRepeatCount() == 0 && event.getAction() == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_BACK) {
+				executeShell("HideComputer();");
+			}
+		} else if (gameState != GameState.INTRO) {
+			if (event.getRepeatCount() == 0) {
+				if (event.getAction() == KeyEvent.ACTION_DOWN) {
+					if (keyCode == KeyEvent.KEYCODE_ESCAPE) {
+						executeShell("sam_bMenu=1;");
+					}
+					nDispatchKeyEvent(keyCode, 1);
+				}
+				if (event.getAction() == KeyEvent.ACTION_UP) {
+					nDispatchKeyEvent(keyCode, 0);
+				}
+			}
+		}
+		int unicodeChar = event.getUnicodeChar();
+		if (event.getAction() == KeyEvent.ACTION_DOWN && unicodeChar > 0) {
+			executeShell("MenuChar(" + unicodeChar + ")");
+		}
         return true;
     }
 
@@ -904,8 +975,8 @@ public class MainActivity extends Activity {
                     break;
                 default:
                     return false;
-            }
-            return true;
+				}
+           return true;
         }
     }
 
@@ -919,4 +990,7 @@ public class MainActivity extends Activity {
     private static native void nDispatchKeyEvent(int key, int isPressed);
     private static native void nConfirmEditText(String newText);
     private static native void nCancelEditText();
+	private static native void nSendMouseNative(int button, int action, float scroll);
+	private static native void nSendKeyboardButtonDown(int button);
+	private static native void nSendKeyboardButtonUp(int button);
 }
