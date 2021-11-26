@@ -558,6 +558,7 @@ properties:
 270 FLOAT m_tmFlamerStart=1e6,
 271 FLOAT m_tmFlamerStop=1e9,
 272 FLOAT m_tmLastChainsawSpray = 0.0f,
+273 CEntityPointer m_penAutoAimTarget,
 
 {
   CEntity *penBullet;
@@ -1071,12 +1072,31 @@ functions:
     }
     CalcWeaponPosition(FLOAT3D(fFX, fFY, 0), plCrosshair, FALSE);
     // cast ray
-    CCastRay crRay( m_penPlayer, plCrosshair);
+    CCastRay crRayAutoAim( m_penPlayer, plCrosshair);
+    crRayAutoAim.cr_bHitTranslucentPortals = FALSE;
+    crRayAutoAim.cr_bPhysical = FALSE;
+    crRayAutoAim.cr_ttHitModels = CCastRay::TT_COLLISIONBOX;
+    crRayAutoAim.cr_bConicForAutoAim = TRUE;
+    GetWorld()->CastRay(crRayAutoAim);
+
+    FLOAT3D castOrigin = plCrosshair.pl_PositionVector;
+    FLOAT3D vDirection;
+    AnglesToDirectionVector(plCrosshair.pl_OrientationAngle, vDirection);
+    FLOAT3D castTarget = castOrigin + vDirection;
+    if (crRayAutoAim.cr_penHit && IsDerivedFromClass(crRayAutoAim.cr_penHit, "Enemy Base")) {
+      CCollisionInfo* pci = crRayAutoAim.cr_penHit->en_pciCollisionInfo;
+      if (pci) {
+        castTarget = pci->ci_boxCurrent.Center();
+      }
+    }
+    CCastRay crRay(m_penPlayer, castOrigin, castTarget);
     crRay.cr_bHitTranslucentPortals = FALSE;
     crRay.cr_bPhysical = FALSE;
     crRay.cr_ttHitModels = CCastRay::TT_COLLISIONBOX;
     GetWorld()->CastRay(crRay);
+
     // store required cast ray results
+    m_penAutoAimTarget = NULL;
     m_vRayHitLast = m_vRayHit;  // for lerping purposes
     m_vRayHit   = crRay.cr_vHit;
     m_penRayHit = crRay.cr_penHit;
@@ -1119,6 +1139,7 @@ functions:
         }
         // keep enemy health for eventual crosshair coloring
         if( IsDerivedFromClass( pen, "Enemy Base")) {
+          m_penAutoAimTarget = m_penRayHit;
           m_fEnemyHealth = ((CEnemyBase*)pen)->GetHealth() / ((CEnemyBase*)pen)->m_fMaxHealth;
         }
          // cannot snoop while firing
@@ -1177,6 +1198,17 @@ functions:
     }
   }
 
+  BOOL IsAutoAiming() const
+  {
+    return (m_penAutoAimTarget && m_penAutoAimTarget->en_pciCollisionInfo);
+  }
+
+  FLOAT3D GetAimPosition() const
+  {
+    const CCollisionInfo* pci = m_penAutoAimTarget->en_pciCollisionInfo;
+    const FLOATaabbox3D& boxModel = pci->ci_boxCurrent;
+    return boxModel.Center();
+  }
 
 
   // Render Crosshair
@@ -1210,18 +1242,34 @@ functions:
 
     // if hit anything
     FLOAT3D vOnScreen;
-    FLOAT   fDistance = m_fRayHitDistance;
+    BOOL autoAiming = FALSE;
+    FLOAT autoAimSize = 0.0f;
     //const FLOAT3D vRayHit = Lerp( m_vRayHitLast, m_vRayHit, _pTimer->GetLerpFactor());
     const FLOAT3D vRayHit = m_vRayHit;  // lerping doesn't seem to work ???
     // if hit anything
-    if( m_penRayHit!=NULL) {
-
-      CEntity *pen = m_penRayHit;
+    if( m_penRayHit!=NULL) { // not checking for auto aim because might need to color other player health
+      FLOAT3D hitPos = vRayHit;
+      FLOAT3D targetSide;
+      if (IsAutoAiming()) {
+        hitPos = GetAimPosition();
+        CCollisionInfo* pci = m_penAutoAimTarget->en_pciCollisionInfo;
+        FLOATaabbox3D& boxModel = pci->ci_boxCurrent;
+        CPlacement3D pl_hit(hitPos, plViewSource.pl_OrientationAngle);
+        CPlacement3D pl_hitSide(FLOAT3D(boxModel.Size().Length() / 2, 0, 0), ANGLE3D(0, 0, 0));
+        pl_hitSide.RelativeToAbsolute(pl_hit);
+        targetSide = pl_hitSide.pl_PositionVector;
+        autoAiming = TRUE;
+      }
       // do screen projection
       prProjection.ViewerPlacementL() = plViewSource;
-      prProjection.ObjectPlacementL() = CPlacement3D( FLOAT3D(0.0f, 0.0f, 0.0f), ANGLE3D( 0, 0, 0));
+      prProjection.ObjectPlacementL() = CPlacement3D(FLOAT3D(0.0f, 0.0f, 0.0f), ANGLE3D(0, 0, 0));
       prProjection.Prepare();
-      prProjection.ProjectCoordinate( vRayHit, vOnScreen);
+      prProjection.ProjectCoordinate(hitPos, vOnScreen);
+      if (autoAiming) {
+        FLOAT3D vSideOnScreen;
+        prProjection.ProjectCoordinate(targetSide, vSideOnScreen);
+        autoAimSize = (vSideOnScreen - vOnScreen).Length();
+      }
       // if required, show enemy health thru crosshair color
       if( hud_bCrosshairColoring && m_fEnemyHealth>0) {
              if( m_fEnemyHealth<0.25f) { colCrosshair = C_RED;    }
@@ -1229,38 +1277,27 @@ functions:
         else                         { colCrosshair = C_GREEN;  }
       }
     }
-    // if didn't hit anything
-    else
-    {
-      // far away in screen center
-      vOnScreen(1) = (FLOAT)pdp->GetWidth()  *0.5f;
-      vOnScreen(2) = (FLOAT)pdp->GetHeight() *0.5f;
-      fDistance    = 100.0f;
+
+    if (!autoAiming) {
+      vOnScreen(1) = (FLOAT)pdp->GetWidth() * 0.5f;
+      vOnScreen(2) = (FLOAT)pdp->GetHeight() * 0.5f;
     }
 
-    // if croshair should be of fixed position
-    if( hud_bCrosshairFixed || GetPlayer()->m_iViewState == PVT_3RDPERSONVIEW) {
-      // reset it to screen center
-      vOnScreen(1) = (FLOAT)pdp->GetWidth()  *0.5f;
-      vOnScreen(2) = (FLOAT)pdp->GetHeight() *0.5f;
-      //fDistance    = 100.0f;
-    }
-    
     // clamp console variables
     hud_fCrosshairScale   = Clamp( hud_fCrosshairScale,   0.1f, 2.0f);
-    hud_fCrosshairRatio   = Clamp( hud_fCrosshairRatio,   0.1f, 1.0f);
     hud_fCrosshairOpacity = Clamp( hud_fCrosshairOpacity, 0.1f, 1.0f);
     const ULONG ulAlpha = NormFloatToByte( hud_fCrosshairOpacity);
     // draw crosshair if needed
     if( iCrossHair>0) {
       // determine crosshair size
-      const FLOAT fMinD =   1.0f;
-      const FLOAT fMaxD = 100.0f;
-      fDistance = Clamp( fDistance, fMinD, fMaxD);
-      const FLOAT fRatio   = (fDistance-fMinD) / (fMaxD-fMinD);
-      const FLOAT fMaxSize = (FLOAT)pdp->GetWidth() / 640.0f;
-      const FLOAT fMinSize = fMaxSize * hud_fCrosshairRatio;
-      const FLOAT fSize    = 16 * Lerp( fMaxSize, fMinSize, fRatio) * hud_fCrosshairScale;
+      FLOAT fSize;
+      if (autoAiming) {
+        const FLOAT fMinSize = 16 * ((FLOAT)pdp->GetWidth() / 640.0f) * 0.2f;
+        const FLOAT fMaxSize = 16 * ((FLOAT)pdp->GetWidth() / 640.0f) * 2.0f;
+        fSize = Clamp(autoAimSize, fMinSize, fMaxSize);
+      } else {
+        fSize = 16 * ((FLOAT)pdp->GetWidth() / 640.0f) * hud_fCrosshairScale;
+      }
       // draw crosshair
       const FLOAT fI0 = + (PIX)vOnScreen(1) - fSize;
       const FLOAT fI1 = + (PIX)vOnScreen(1) + fSize;
