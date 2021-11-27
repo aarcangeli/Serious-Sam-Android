@@ -1094,6 +1094,7 @@ functions:
       }
     }
     CCastRay crRay(m_penPlayer, castOrigin, castTarget);
+    crRay.cr_fHitDistance = UpperLimit(0.0f);
     crRay.cr_bHitTranslucentPortals = FALSE;
     crRay.cr_bPhysical = FALSE;
     crRay.cr_ttHitModels = CCastRay::TT_COLLISIONBOX;
@@ -1104,6 +1105,7 @@ functions:
     CCastRay crRayOriginal(m_penPlayer, castOrigin, castOrigin + vDirection);
     // if autoaim failed - recast to default direction
     if ((tryingAutoAim && crRayAutoAim.cr_penHit != crRay.cr_penHit)) {
+      crRayOriginal.cr_fHitDistance = UpperLimit(0.0f);
       crRayOriginal.cr_bHitTranslucentPortals = FALSE;
       crRayOriginal.cr_bPhysical = FALSE;
       crRayOriginal.cr_ttHitModels = CCastRay::TT_COLLISIONBOX;
