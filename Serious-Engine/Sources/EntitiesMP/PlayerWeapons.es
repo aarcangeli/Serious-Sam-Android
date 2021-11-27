@@ -1070,6 +1070,7 @@ functions:
     if (GetPlayer()->m_iViewState == PVT_3RDPERSONVIEW) {
       fFX = fFY = 0;
     }
+    m_penAutoAimTarget = NULL;
     CalcWeaponPosition(FLOAT3D(fFX, fFY, 0), plCrosshair, FALSE);
     // cast ray
     CCastRay crRayAutoAim( m_penPlayer, plCrosshair);
@@ -1084,10 +1085,12 @@ functions:
     FLOAT3D vDirection;
     AnglesToDirectionVector(plCrosshair.pl_OrientationAngle, vDirection);
     FLOAT3D castTarget = castOrigin + vDirection;
+    BOOL tryingAutoAim = FALSE;
     if (crRayAutoAim.cr_penHit && IsDerivedFromClass(crRayAutoAim.cr_penHit, "Enemy Base")) {
       CCollisionInfo* pci = crRayAutoAim.cr_penHit->en_pciCollisionInfo;
       if (pci) {
         castTarget = pci->ci_boxCurrent.Center();
+        tryingAutoAim = TRUE;
       }
     }
     CCastRay crRay(m_penPlayer, castOrigin, castTarget);
@@ -1096,12 +1099,23 @@ functions:
     crRay.cr_ttHitModels = CCastRay::TT_COLLISIONBOX;
     GetWorld()->CastRay(crRay);
 
+    CCastRay* theRay = &crRay;
+
+    CCastRay crRayOriginal(m_penPlayer, castOrigin, castOrigin + vDirection);
+    // if autoaim failed - recast to default direction
+    if ((tryingAutoAim && crRayAutoAim.cr_penHit != crRay.cr_penHit)) {
+      crRayOriginal.cr_bHitTranslucentPortals = FALSE;
+      crRayOriginal.cr_bPhysical = FALSE;
+      crRayOriginal.cr_ttHitModels = CCastRay::TT_COLLISIONBOX;
+      GetWorld()->CastRay(crRayOriginal);
+      theRay = &crRayOriginal;
+    }
+
     // store required cast ray results
-    m_penAutoAimTarget = NULL;
     m_vRayHitLast = m_vRayHit;  // for lerping purposes
-    m_vRayHit   = crRay.cr_vHit;
-    m_penRayHit = crRay.cr_penHit;
-    m_fRayHitDistance = crRay.cr_fHitDistance;
+    m_vRayHit   = theRay->cr_vHit;
+    m_penRayHit = theRay->cr_penHit;
+    m_fRayHitDistance = theRay->cr_fHitDistance;
     m_fEnemyHealth = 0.0f;
 
     // set some targeting properties (snooping and such...)
@@ -1182,14 +1196,12 @@ functions:
         }
       }
     }
-    // if didn't hit anything
-    else {
+    // if didn't hit anything or if autoaim wasnt successful, determine proper camera position
+    if (!m_penRayHit || (tryingAutoAim && crRayAutoAim.cr_penHit == theRay->cr_penHit)) {
       // not targeting player
       m_tmTargetingStarted = 0; 
       // remember position ahead
-      FLOAT3D vDir = crRay.cr_vTarget-crRay.cr_vOrigin;
-      vDir.Normalize();
-      m_vRayHit = crRay.cr_vOrigin+vDir*50.0f;
+      m_vRayHit = theRay->cr_vOrigin+vDirection*50.0f;
     }
 
     // determine snooping time
@@ -1672,6 +1684,11 @@ functions:
       m_fEyesYOffset;
     plPos.RelativeToAbsoluteSmooth(plView);
     plPos.RelativeToAbsoluteSmooth(m_penPlayer->GetPlacement());
+
+    if (IsAutoAiming()) {
+      FLOAT3D toTarget = (GetAimPosition() - plPos.pl_PositionVector).Normalize();
+      DirectionVectorToAngles(toTarget, plPos.pl_OrientationAngle);
+    }
   };
 
   // calc lerped weapon position
@@ -1743,6 +1760,11 @@ functions:
       m_fEyesYOffset;
     plPos.RelativeToAbsoluteSmooth(plView);
     plPos.RelativeToAbsoluteSmooth(m_penPlayer->GetPlacement());
+
+    if (IsAutoAiming()) {
+      FLOAT3D toTarget = (GetAimPosition() - plPos.pl_PositionVector).Normalize();
+      DirectionVectorToAngles(toTarget, plPos.pl_OrientationAngle);
+    }
   };
 
   // setup 3D sound parameters
