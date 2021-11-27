@@ -1088,7 +1088,7 @@ functions:
     BOOL tryingAutoAim = FALSE;
     if (crRayAutoAim.cr_penHit && IsDerivedFromClass(crRayAutoAim.cr_penHit, "Enemy Base")) {
       CCollisionInfo* pci = crRayAutoAim.cr_penHit->en_pciCollisionInfo;
-      if (pci) {
+      if (pci != NULL) {
         castTarget = pci->ci_boxCurrent.Center();
         tryingAutoAim = TRUE;
       }
@@ -1215,7 +1215,7 @@ functions:
 
   BOOL IsAutoAiming() const
   {
-    return (m_penAutoAimTarget && m_penAutoAimTarget->en_pciCollisionInfo);
+    return (m_penAutoAimTarget != NULL && m_penAutoAimTarget->en_pciCollisionInfo != NULL);
   }
 
   FLOAT3D GetAimPosition() const
