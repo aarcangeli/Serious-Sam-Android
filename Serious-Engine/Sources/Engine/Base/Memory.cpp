@@ -42,8 +42,10 @@ _CRTIMP _PNH __cdecl _set_new_handler( _PNH );*/
 #pragma comment (lib, "msvcrtd.lib")
 #endif
 
+#ifdef _WIN32
 // include user32 library (because of message box)
 #pragma comment (lib, "user32.lib")
+#endif
 
 // if not enough memory
 int NewHandler(size_t size)

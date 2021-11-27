@@ -42,9 +42,10 @@ static inline __int64 ReadTSC(void)
   return getTimeNsec();
 }
 
-
+#ifdef _WIN32
 // link with Win-MultiMedia
 #pragma comment(lib, "winmm.lib")
+#endif
 
 // current game time always valid for the currently active task
 CThreadLocal<TIME> _CurrentTickTimer;
