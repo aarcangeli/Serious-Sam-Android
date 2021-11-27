@@ -295,8 +295,10 @@ void CCastRay::TestModel(CEntity *penModel)
     return;
   }
 
-  if (cr_bConicForAutoAim && !(penModel->en_ulFlags & ENF_ALIVE))
-    return;
+  if (cr_bConicForAutoAim) {
+    if (!(penModel->en_ulFlags & ENF_ALIVE) || IsDerivedFromClass(penModel, "PlayerEntity"))
+      return;
+  }
 
   // get its model
   CModelObject *pmoModel;
@@ -347,8 +349,10 @@ void CCastRay::TestSkaModel(CEntity *penModel)
     return;
   }
 
-  if (cr_bConicForAutoAim && !(penModel->en_ulFlags & ENF_ALIVE))
-    return;
+  if (cr_bConicForAutoAim) {
+    if (!(penModel->en_ulFlags & ENF_ALIVE) || IsDerivedFromClass(penModel, "PlayerEntity"))
+      return;
+  }
 
   CModelInstance &mi = *penModel->GetModelInstance();
   // if simple testing, or no testing (used when testing empty brushes)
