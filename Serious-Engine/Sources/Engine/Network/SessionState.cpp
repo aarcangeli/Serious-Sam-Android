@@ -2310,8 +2310,8 @@ void CSessionState::SessionStateLoop(void)
     try
     {
       CTFileStream strmFile;
-      CTString strFileName = CTString("temp\\syncdump.txt");
-      strmFile.Create_t(CTString("temp\\syncdump.txt"), CTStream::CM_TEXT);
+      CTString strFileName = CTString("Temp\\syncdump.txt");
+      strmFile.Create_t(CTString("Temp\\syncdump.txt"), CTStream::CM_TEXT);
       
 #if DEBUG_SYNCSTREAMDUMPING
       if( cli_bDumpSyncEachTick)
