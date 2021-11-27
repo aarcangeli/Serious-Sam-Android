@@ -1308,6 +1308,7 @@ functions:
         const FLOAT fMinSize = 16 * ((FLOAT)pdp->GetWidth() / 640.0f) * 0.2f;
         const FLOAT fMaxSize = 16 * ((FLOAT)pdp->GetWidth() / 640.0f) * 2.0f;
         fSize = Clamp(autoAimSize, fMinSize, fMaxSize);
+        fSize += sin(_pTimer->GetLerpedCurrentTick() * 6.0f) * 0.1f * fSize;
       } else {
         fSize = 16 * ((FLOAT)pdp->GetWidth() / 640.0f) * hud_fCrosshairScale;
       }
