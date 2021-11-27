@@ -783,7 +783,7 @@ FLOAT CCastRay::GetRayRadius(const FLOAT3D& center) const
 
   CPlacement3D pl_center(center, ANGLE3D(0, 0, 0));
   pl_center.AbsoluteToRelative(cl_plRay);
-  return Abs(pl_center.pl_PositionVector(3) * 0.125f);
+  return Abs(pl_center.pl_PositionVector(3) * cr_fTestR);
 }
 
 /*

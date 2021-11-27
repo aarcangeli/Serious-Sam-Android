@@ -1077,6 +1077,7 @@ functions:
     crRayAutoAim.cr_bPhysical = FALSE;
     crRayAutoAim.cr_ttHitModels = CCastRay::TT_COLLISIONBOX;
     crRayAutoAim.cr_bConicForAutoAim = TRUE;
+    crRayAutoAim.cr_fTestR = 0.125f;
     GetWorld()->CastRay(crRayAutoAim);
 
     FLOAT3D castOrigin = plCrosshair.pl_PositionVector;
