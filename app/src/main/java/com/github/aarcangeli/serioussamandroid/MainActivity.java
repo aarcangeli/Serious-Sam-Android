@@ -100,6 +100,8 @@ public class MainActivity extends Activity {
     private boolean enableTouchController;
     private String din_uiScale;
     private String ui_drawBanner;
+    private boolean useAimAssist;
+    private float autoAimSens;
     public float uiScale;
     public boolean ButtonsMapping = false;
     public boolean isTracking;
@@ -287,6 +289,13 @@ public class MainActivity extends Activity {
 //
 //            }
 //        });
+    }
+
+    public void AimAssistState() {
+        if (!useAimAssist) {
+            executeShell("plr_fAutoAimSensitivity=0.0f;");		
+            Log.i(TAG, "AimAssist disabled");
+        }
     }
 
     public void DinamicUI() {
@@ -873,8 +882,12 @@ public class MainActivity extends Activity {
         deadZone = preferences.getInt("ctrl_deadZone", 20) / 100.f;
         din_uiScale = preferences.getString("din_uiScale", "On");
         ui_drawBanner = preferences.getString("ui_drawBanner", "On");
+        useAimAssist = preferences.getBoolean("useAimAssist", true);
+        autoAimSens = preferences.getInt("autoAimSens", 100) / 100.f;
         DinamicUI();
-		drawBanner();
+        drawBanner();
+        executeShell("plr_fAutoAimSensitivity=" + autoAimSens + ";");
+        AimAssistState();		
         executeShell("hud_iStats=" + (preferences.getBoolean("hud_iStats", false) ? 2 : 0) + ";");
         executeShell("input_uiScale=" + uiScale + ";");
         Log.i(TAG, "uiScale: " + uiScale);
