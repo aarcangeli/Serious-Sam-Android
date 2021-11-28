@@ -222,8 +222,10 @@ FLOAT plr_tmSnoopingTime  = 1.0f; // seconds
 // some static vars
 static INDEX _iLastCrosshairType=-1;
 static CTextureObject _toCrosshair;
+static CTextureObject _toAutoAimTarget;
 
 // must do this to keep dependency catcher happy
+CTFileName fnAutoAimTarget = CTFILENAME("Textures\\Interface\\Crosshairs\\AutoAimTarget.tex");
 CTFileName fn1 = CTFILENAME("Textures\\Interface\\Crosshairs\\Crosshair1.tex");
 CTFileName fn2 = CTFILENAME("Textures\\Interface\\Crosshairs\\Crosshair2.tex");
 CTFileName fn3 = CTFILENAME("Textures\\Interface\\Crosshairs\\Crosshair3.tex");
@@ -1259,6 +1261,7 @@ functions:
       try {
         // load new crosshair texture
         _toCrosshair.SetData_t( fnCrosshair);
+        _toAutoAimTarget.SetData_t(fnAutoAimTarget);
       } catch ( const char *strError) {
         // didn't make it! - reset crosshair
         CPrintF( strError);
@@ -1270,34 +1273,32 @@ functions:
     TIME  tmNow = _pTimer->CurrentTick();
 
     // if hit anything
-    FLOAT3D vOnScreen;
+    FLOAT3D vAutoAimTarget;
     BOOL autoAiming = FALSE;
     FLOAT autoAimSize = 0.0f;
     //const FLOAT3D vRayHit = Lerp( m_vRayHitLast, m_vRayHit, _pTimer->GetLerpFactor());
     const FLOAT3D vRayHit = m_vRayHit;  // lerping doesn't seem to work ???
     // if hit anything
     if( m_penRayHit!=NULL) { // not checking for auto aim because might need to color other player health
-      FLOAT3D hitPos = vRayHit;
-      FLOAT3D targetSide;
       if (IsAutoAiming()) {
-        hitPos = GetLerpedAimPosition();
+        FLOAT3D hitPos = GetLerpedAimPosition();
         CCollisionInfo* pci = m_penAutoAimTarget->en_pciCollisionInfo;
         FLOATaabbox3D& boxModel = pci->ci_boxCurrent;
         CPlacement3D pl_hit(hitPos, plViewSource.pl_OrientationAngle);
         CPlacement3D pl_hitSide(FLOAT3D(boxModel.Size().Length() / 2, 0, 0), ANGLE3D(0, 0, 0));
         pl_hitSide.RelativeToAbsolute(pl_hit);
-        targetSide = pl_hitSide.pl_PositionVector;
-        autoAiming = TRUE;
-      }
-      // do screen projection
-      prProjection.ViewerPlacementL() = plViewSource;
-      prProjection.ObjectPlacementL() = CPlacement3D(FLOAT3D(0.0f, 0.0f, 0.0f), ANGLE3D(0, 0, 0));
-      prProjection.Prepare();
-      prProjection.ProjectCoordinate(hitPos, vOnScreen);
-      if (autoAiming) {
+        FLOAT3D targetSide = pl_hitSide.pl_PositionVector;
+
+        // do screen projection
+        prProjection.ViewerPlacementL() = plViewSource;
+        prProjection.ObjectPlacementL() = CPlacement3D(FLOAT3D(0.0f, 0.0f, 0.0f), ANGLE3D(0, 0, 0));
+        prProjection.Prepare();
+        prProjection.ProjectCoordinate(hitPos, vAutoAimTarget);
         FLOAT3D vSideOnScreen;
         prProjection.ProjectCoordinate(targetSide, vSideOnScreen);
-        autoAimSize = (vSideOnScreen - vOnScreen).Length();
+        autoAimSize = (vSideOnScreen - vAutoAimTarget).Length();
+
+        autoAiming = TRUE;
       }
       // if required, show enemy health thru crosshair color
       if( hud_bCrosshairColoring && m_fEnemyHealth>0) {
@@ -1307,10 +1308,9 @@ functions:
       }
     }
 
-    if (!autoAiming) {
-      vOnScreen(1) = (FLOAT)pdp->GetWidth() * 0.5f;
-      vOnScreen(2) = (FLOAT)pdp->GetHeight() * 0.5f;
-    }
+    FLOAT3D vOnScreen;
+    vOnScreen(1) = (FLOAT)pdp->GetWidth() * 0.5f;
+    vOnScreen(2) = (FLOAT)pdp->GetHeight() * 0.5f;
 
     // clamp console variables
     hud_fCrosshairScale   = Clamp( hud_fCrosshairScale,   0.1f, 2.0f);
@@ -1319,15 +1319,7 @@ functions:
     // draw crosshair if needed
     if( iCrossHair>0) {
       // determine crosshair size
-      FLOAT fSize;
-      if (autoAiming) {
-        const FLOAT fMinSize = 16 * ((FLOAT)pdp->GetWidth() / 640.0f) * 1.0f;
-        const FLOAT fMaxSize = 16 * ((FLOAT)pdp->GetWidth() / 640.0f) * 3.0f;
-        fSize = Clamp(autoAimSize * hud_fCrosshairScale, fMinSize * hud_fCrosshairScale, fMaxSize * hud_fCrosshairScale);
-        fSize += sin(_pTimer->GetLerpedCurrentTick() * 6.0f) * 0.15f * fSize;
-      } else {
-        fSize = 16 * ((FLOAT)pdp->GetWidth() / 640.0f) * hud_fCrosshairScale;
-      }
+      FLOAT fSize = 16 * ((FLOAT)pdp->GetWidth() / 640.0f) * hud_fCrosshairScale;
       // draw crosshair
       const FLOAT fI0 = + (PIX)vOnScreen(1) - fSize;
       const FLOAT fI1 = + (PIX)vOnScreen(1) + fSize;
@@ -1335,6 +1327,21 @@ functions:
       const FLOAT fJ1 = - (PIX)vOnScreen(2) + fSize +pdp->GetHeight();
       pdp->InitTexture( &_toCrosshair);
       pdp->AddTexture( fI0, fJ0, fI1, fJ1, colCrosshair|ulAlpha);
+      pdp->FlushRenderingQueue();
+    }
+
+    if (autoAiming) {
+      const FLOAT fMinSize = 16 * ((FLOAT)pdp->GetWidth() / 640.0f) * 0.5f;
+      const FLOAT fMaxSize = 16 * ((FLOAT)pdp->GetWidth() / 640.0f) * 4.0f;
+      FLOAT fSize = Clamp(autoAimSize * hud_fCrosshairScale, fMinSize * hud_fCrosshairScale, fMaxSize * hud_fCrosshairScale);
+      fSize += sin(_pTimer->GetLerpedCurrentTick() * 6.0f) * 0.15f * fSize;
+
+      const FLOAT fI0 = +(PIX)vAutoAimTarget(1) - fSize;
+      const FLOAT fI1 = +(PIX)vAutoAimTarget(1) + fSize;
+      const FLOAT fJ0 = -(PIX)vAutoAimTarget(2) - fSize + pdp->GetHeight();
+      const FLOAT fJ1 = -(PIX)vAutoAimTarget(2) + fSize + pdp->GetHeight();
+      pdp->InitTexture(&_toAutoAimTarget);
+      pdp->AddTexture(fI0, fJ0, fI1, fJ1, colCrosshair | ulAlpha);
       pdp->FlushRenderingQueue();
     }
 
