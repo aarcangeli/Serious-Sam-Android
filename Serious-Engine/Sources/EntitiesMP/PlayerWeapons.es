@@ -1225,6 +1225,16 @@ functions:
     return boxModel.Center();
   }
 
+  FLOAT3D GetLerpedAimPosition() const
+  {
+    CPlacement3D plTick = m_penAutoAimTarget->GetPlacement();
+    CPlacement3D plLerped = m_penAutoAimTarget->GetLerpedPlacement();
+    plLerped.AbsoluteToRelative(plTick);
+    CPlacement3D plAimLerped(GetAimPosition(), plTick.pl_OrientationAngle);
+    plLerped.RelativeToAbsolute(plAimLerped);
+    return plLerped.pl_PositionVector;
+  }
+
 
   // Render Crosshair
   void RenderCrosshair( CProjection3D &prProjection, CDrawPort *pdp, CPlacement3D &plViewSource)
@@ -1266,7 +1276,7 @@ functions:
       FLOAT3D hitPos = vRayHit;
       FLOAT3D targetSide;
       if (IsAutoAiming()) {
-        hitPos = GetAimPosition();
+        hitPos = GetLerpedAimPosition();
         CCollisionInfo* pci = m_penAutoAimTarget->en_pciCollisionInfo;
         FLOATaabbox3D& boxModel = pci->ci_boxCurrent;
         CPlacement3D pl_hit(hitPos, plViewSource.pl_OrientationAngle);
