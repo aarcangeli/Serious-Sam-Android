@@ -57,17 +57,22 @@ CTString CSerial::GetDescription(void)
 /*
  * Load from file.
  */
-void CSerial::Load_t(const CTFileName fnFileName)  // throw char *
+void CSerial::Load_t(const CTFileName fnFileName, CTMemoryStream* optInFileStream/* = NULL*/)  // throw char *
 {
   ASSERT(!IsUsed());
   // mark that you have changed
   MarkChanged();
 
-  // open a stream
-  CTFileStream istrFile;
-  istrFile.Open_t(fnFileName);
   // read object from stream
-  Read_t(&istrFile);
+  if (optInFileStream != NULL) {
+    Read_t(optInFileStream);
+  }
+  else {
+    // open a stream
+    CTFileStream istrFile;
+    istrFile.Open_t(fnFileName);
+    Read_t(&istrFile);
+  }
   // if still here (no exceptions raised)
   // remember filename
   ser_FileName = fnFileName;

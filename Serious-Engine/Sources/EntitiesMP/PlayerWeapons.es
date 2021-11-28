@@ -20,6 +20,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
   
 #include <Engine/Build.h>
 
+#include "EntitiesMP/Common/AutoAimTarget_Texture.h"
 #include "EntitiesMP/Player.h"
 #include "EntitiesMP/Bullet.h"
 #include "Models/Weapons/Knife/Knife.h"
@@ -1261,7 +1262,9 @@ functions:
       try {
         // load new crosshair texture
         _toCrosshair.SetData_t( fnCrosshair);
-        _toAutoAimTarget.SetData_t(fnAutoAimTarget);
+
+        CTMemoryStream autoAimTextureData(g_AutoAimTarget_tex_data, g_AutoAimTarget_tex_size);
+        _toAutoAimTarget.SetData_t(fnAutoAimTarget, &autoAimTextureData);
       } catch ( const char *strError) {
         // didn't make it! - reset crosshair
         CPrintF( strError);

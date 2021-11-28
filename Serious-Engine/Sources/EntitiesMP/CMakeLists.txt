@@ -7,6 +7,8 @@ file(MAKE_DIRECTORY "${SE_CURRENT_GENERATED_DIR}/StdH")
 
 set(
   SOURCES
+  Common/AutoAimTarget_Texture.cpp
+  Common/AutoAimTarget_Texture.h
   Common/Common.cpp
   Common/EmanatingParticles.cpp
   Common/HUD.cpp
