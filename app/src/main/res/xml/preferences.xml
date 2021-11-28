@@ -23,19 +23,21 @@
             android:summary="%s"
             android:title="Draw Banner in right top of screen" />
     </PreferenceCategory>
-    <PreferenceCategory android:title="Inputs">
+    <PreferenceCategory android:title="Aim-Assistant">
 	    <CheckBoxPreference
             android:defaultValue="true"
             android:key="useAimAssist"
             android:summary="Helps to shoot enemies."
-            android:title="Enable Aim-Assistant" />
+            android:title="Use Aim-Assistant" />
 	    <com.github.aarcangeli.serioussamandroid.preferences.SeekBarPreference
             android:defaultValue="100"
             android:key="autoAimSens"
             android:max="100"
             android:summary="%s%%"
             android:text="%"
-            android:title="Aim-Assistant sensibility" />
+            android:title="Aim-Assistant sensibility" />	
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Inputs">
         <ListPreference
             android:defaultValue="Auto"
             android:entries="@array/ShowTouchControllerEntries"
