@@ -209,11 +209,10 @@ static FLOAT afSniperZoom[] =
 };
 
 // crosshair console variables
-static INDEX hud_bCrosshairFixed    = FALSE;
 static INDEX hud_bCrosshairColoring = TRUE;
 static FLOAT hud_fCrosshairScale    = 1.0f;
 static FLOAT hud_fCrosshairOpacity  = 1.0f;
-static FLOAT hud_fCrosshairRatio    = 0.5f;  // max distance size ratio
+static FLOAT plr_fAutoAimSensitivity = 1.0f;
 // misc HUD vars
 static INDEX hud_bShowPlayerName = TRUE;
 static INDEX hud_bShowCoords     = FALSE;
@@ -416,10 +415,9 @@ void CPlayerWeapons_Init(void) {
   #include "Common/WeaponPositions.h"
   
   // declare crosshair and its coordinates
-  _pShell->DeclareSymbol("persistent user INDEX hud_bCrosshairFixed;",    &hud_bCrosshairFixed);
   _pShell->DeclareSymbol("persistent user INDEX hud_bCrosshairColoring;", &hud_bCrosshairColoring);
   _pShell->DeclareSymbol("persistent user FLOAT hud_fCrosshairScale;",    &hud_fCrosshairScale);
-  _pShell->DeclareSymbol("persistent user FLOAT hud_fCrosshairRatio;",    &hud_fCrosshairRatio);
+  _pShell->DeclareSymbol("persistent user FLOAT plr_fAutoAimSensitivity;", &plr_fAutoAimSensitivity);
   _pShell->DeclareSymbol("persistent user FLOAT hud_fCrosshairOpacity;",  &hud_fCrosshairOpacity);
                                   
   _pShell->DeclareSymbol("persistent user INDEX hud_bShowPlayerName;", &hud_bShowPlayerName);
@@ -1078,15 +1076,19 @@ functions:
     crRayAutoAim.cr_bPhysical = FALSE;
     crRayAutoAim.cr_ttHitModels = CCastRay::TT_COLLISIONBOX;
     crRayAutoAim.cr_bConicForAutoAim = TRUE;
-    crRayAutoAim.cr_fTestR = 0.125f;
-    GetWorld()->CastRay(crRayAutoAim);
+    const FLOAT autoAimSensitivity = Clamp(plr_fAutoAimSensitivity, 0.0f, 1.0f);
+    const BOOL autoAimTurnedOn = autoAimSensitivity > 0.01f;
+    if (autoAimTurnedOn) {
+      crRayAutoAim.cr_fTestR = 0.125f * autoAimSensitivity;
+      GetWorld()->CastRay(crRayAutoAim);
+    }
 
     FLOAT3D castOrigin = plCrosshair.pl_PositionVector;
     FLOAT3D vDirection;
     AnglesToDirectionVector(plCrosshair.pl_OrientationAngle, vDirection);
     FLOAT3D castTarget = castOrigin + vDirection;
     BOOL tryingAutoAim = FALSE;
-    if (crRayAutoAim.cr_penHit && IsDerivedFromClass(crRayAutoAim.cr_penHit, "Enemy Base")) {
+    if (autoAimTurnedOn && crRayAutoAim.cr_penHit && IsDerivedFromClass(crRayAutoAim.cr_penHit, "Enemy Base")) {
       CCollisionInfo* pci = crRayAutoAim.cr_penHit->en_pciCollisionInfo;
       if (pci != NULL) {
         castTarget = pci->ci_boxCurrent.Center();
@@ -1156,7 +1158,9 @@ functions:
         }
         // keep enemy health for eventual crosshair coloring
         if( IsDerivedFromClass( pen, "Enemy Base")) {
-          m_penAutoAimTarget = m_penRayHit;
+          if (autoAimTurnedOn) {
+            m_penAutoAimTarget = m_penRayHit;
+          }
           m_fEnemyHealth = ((CEnemyBase*)pen)->GetHealth() / ((CEnemyBase*)pen)->m_fMaxHealth;
         }
          // cannot snoop while firing
@@ -1319,7 +1323,7 @@ functions:
       if (autoAiming) {
         const FLOAT fMinSize = 16 * ((FLOAT)pdp->GetWidth() / 640.0f) * 1.0f;
         const FLOAT fMaxSize = 16 * ((FLOAT)pdp->GetWidth() / 640.0f) * 3.0f;
-        fSize = Clamp(autoAimSize, fMinSize, fMaxSize);
+        fSize = Clamp(autoAimSize * hud_fCrosshairScale, fMinSize * hud_fCrosshairScale, fMaxSize * hud_fCrosshairScale);
         fSize += sin(_pTimer->GetLerpedCurrentTick() * 6.0f) * 0.15f * fSize;
       } else {
         fSize = 16 * ((FLOAT)pdp->GetWidth() / 640.0f) * hud_fCrosshairScale;
