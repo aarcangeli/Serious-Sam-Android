@@ -76,6 +76,7 @@ void CCastRay::Init(CEntity *penOrigin, const FLOAT3D &vOrigin, const FLOAT3D &v
   cr_pbpoIgnore = NULL;
   cr_penIgnore = NULL;
 
+  cr_bConicForAutoAim = FALSE;
   cr_bHitPortals = FALSE;
   cr_bHitTranslucentPortals = TRUE;
   cr_ttHitModels = TT_SIMPLE;
@@ -177,7 +178,7 @@ void CCastRay::TestModelSimple(CEntity *penModel, CModelObject &mo)
   // if the ray doesn't hit the sphere
   FLOAT fSphereHitDistance;
   if (!RayHitsSphere(cr_vOrigin, cr_vTarget,
-    vSphereCenter, fSphereRadius+cr_fTestR, fSphereHitDistance) ) {
+    vSphereCenter, fSphereRadius+ GetRayRadius(vSphereCenter), fSphereHitDistance) ) {
     // ignore
     return;
   }
@@ -205,11 +206,12 @@ void CCastRay::TestModelCollisionBox(CEntity *penModel)
   FLOATaabbox3D &boxModel = pci->ci_boxCurrent;
   FLOAT fSphereRadius = boxModel.Size().Length()/2.0f;
   FLOAT3D vSphereCenter = boxModel.Center();
+  FLOAT rayRadius = GetRayRadius(vSphereCenter);
 
   // if the ray doesn't hit the sphere
   FLOAT fSphereHitDistance;
   if (!RayHitsSphere(cr_vOrigin, cr_vTarget,
-    vSphereCenter, fSphereRadius+cr_fTestR, fSphereHitDistance) ) {
+    vSphereCenter, fSphereRadius+ rayRadius, fSphereHitDistance) ) {
     // ignore
     return;
   }
@@ -227,8 +229,8 @@ void CCastRay::TestModelCollisionBox(CEntity *penModel)
     // if the ray hits the sphere closer than closest found hit point yet
     FLOAT fOneSphereHitDistance;
     if (RayHitsSphere(cr_vOrigin, cr_vTarget,
-      vCenter, itms->ms_fR+cr_fTestR, fOneSphereHitDistance) &&
-      fOneSphereHitDistance<cr_fHitDistance && fOneSphereHitDistance>-cr_fTestR) {
+      vCenter, itms->ms_fR+ rayRadius, fOneSphereHitDistance) &&
+      fOneSphereHitDistance<cr_fHitDistance && fOneSphereHitDistance>-rayRadius) {
       // set the current entity as new hit target
       cr_fHitDistance=fOneSphereHitDistance;
       cr_penHit = penModel;
@@ -257,7 +259,7 @@ void CCastRay::TestModelFull(CEntity *penModel, CModelObject &mo)
   // if the ray doesn't hit the sphere
   FLOAT fSphereHitDistance;
   if (!RayHitsSphere(cr_vOrigin, cr_vTarget,
-    vSphereCenter, fSphereRadius+cr_fTestR, fSphereHitDistance) ) {
+    vSphereCenter, fSphereRadius+ GetRayRadius(vSphereCenter), fSphereHitDistance) ) {
     // ignore
     return;
   }
@@ -291,6 +293,11 @@ void CCastRay::TestModel(CEntity *penModel)
   {
     // don't test
     return;
+  }
+
+  if (cr_bConicForAutoAim) {
+    if (!(penModel->en_ulFlags & ENF_ALIVE) || IsDerivedFromClass(penModel, "PlayerEntity"))
+      return;
   }
 
   // get its model
@@ -342,6 +349,11 @@ void CCastRay::TestSkaModel(CEntity *penModel)
     return;
   }
 
+  if (cr_bConicForAutoAim) {
+    if (!(penModel->en_ulFlags & ENF_ALIVE) || IsDerivedFromClass(penModel, "PlayerEntity"))
+      return;
+  }
+
   CModelInstance &mi = *penModel->GetModelInstance();
   // if simple testing, or no testing (used when testing empty brushes)
   if (cr_ttHitModels==TT_SIMPLE || cr_ttHitModels==TT_NONE) {
@@ -372,7 +384,7 @@ void CCastRay::TestSkaModelSimple(CEntity *penModel, CModelInstance &mi)
   // if the ray doesn't hit the sphere
   FLOAT fSphereHitDistance;
   if (!RayHitsSphere(cr_vOrigin, cr_vTarget,
-    vSphereCenter, fSphereRadius+cr_fTestR, fSphereHitDistance) ) {
+    vSphereCenter, fSphereRadius+ GetRayRadius(vSphereCenter), fSphereHitDistance) ) {
     // ignore
     return;
   }
@@ -401,7 +413,7 @@ void CCastRay::TestSkaModelFull(CEntity *penModel, CModelInstance &mi)
   // if the ray doesn't hit the sphere
   FLOAT fSphereHitDistance;
   if (!RayHitsSphere(cr_vOrigin, cr_vTarget,
-    vSphereCenter, fSphereRadius+cr_fTestR, fSphereHitDistance) ) {
+    vSphereCenter, fSphereRadius+ GetRayRadius(vSphereCenter), fSphereHitDistance) ) {
     // ignore
     return;
   }
@@ -450,7 +462,7 @@ void CCastRay::TestTerrain(CEntity *penTerrain)
   FLOAT fHitDistance = TestRayCastHit(ptrTerrain,penTerrain->en_mRotation, penTerrain->en_plPlacement.pl_PositionVector,
                                       cr_vOrigin,cr_vTarget,cr_fHitDistance,cr_bHitTerrainInvisibleTris);
 
-	if (fHitDistance<cr_fHitDistance && fHitDistance>0.0f) {
+	if (fHitDistance<cr_fHitDistance && fHitDistance>0.0f && !cr_bConicForAutoAim) {
 		// set the current entity as new hit target
 		cr_fHitDistance=fHitDistance;
 		cr_penHit = penTerrain;
@@ -557,7 +569,7 @@ void CCastRay::TestBrushSector(CBrushSector *pbscSector)
             AddSector(pbsc);
           ENDFOR}
 
-          if( cr_bHitPortals && ulFlags&(BPOF_TRANSLUCENT|BPOF_TRANSPARENT) && !cr_bPhysical)
+          if( cr_bHitPortals && ulFlags&(BPOF_TRANSLUCENT|BPOF_TRANSPARENT) && !cr_bPhysical && !cr_bConicForAutoAim)
           {
             // remember hit coordinates
             cr_fHitDistance=fHitDistance;
@@ -566,7 +578,7 @@ void CCastRay::TestBrushSector(CBrushSector *pbscSector)
             cr_pbpoBrushPolygon = &bpoPolygon;
           }
         // if the ray just plainly hit it
-        } else {
+        } else if (!cr_bConicForAutoAim) {
           // remember hit coordinates
           cr_fHitDistance=fHitDistance;
           cr_penHit = pbscSector->bsc_pbmBrushMip->bm_pbrBrush->br_penEntity;
@@ -766,6 +778,16 @@ void CCastRay::TestThroughSectors(void)
     ittr->tr_lnInActiveTerrains.Remove();
   }}
   ASSERT(_lhTestedTerrains.IsEmpty());
+}
+
+FLOAT CCastRay::GetRayRadius(const FLOAT3D& center) const
+{
+  if (!cr_bConicForAutoAim)
+    return cr_fTestR;
+
+  CPlacement3D pl_center(center, ANGLE3D(0, 0, 0));
+  pl_center.AbsoluteToRelative(cl_plRay);
+  return Abs(pl_center.pl_PositionVector(3) * cr_fTestR);
 }
 
 /*

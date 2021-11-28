@@ -4893,11 +4893,11 @@ functions:
     CPlacement3D plView;
     if (m_iViewState == PVT_PLAYEREYES) {
       // player view
-      plView = en_plViewpoint;
-      plView.RelativeToAbsolute(GetPlacement());
+      plView.Lerp(en_plLastViewpoint, en_plViewpoint, _pTimer->GetLerpFactor());
+      plView.RelativeToAbsolute(GetLerpedPlacement());
     } else if (m_iViewState == PVT_3RDPERSONVIEW) {
       // camera view
-      plView = ((CPlayerView&)*m_pen3rdPersonView).GetPlacement();
+      plView = ((CPlayerView&)*m_pen3rdPersonView).GetLerpedPlacement();
     }
     if (!bSniping) {
 	  if (GetFlags()&ENF_ALIVE) // [SSE] Hide Crosshair If Dead

@@ -41,7 +41,7 @@ public:
   /* Get the description of this object. */
   virtual CTString GetDescription(void);
   /* Load from file. */
-  void Load_t( const CTFileName fnFileName); // throw char *
+  void Load_t( const CTFileName fnFileName, CTMemoryStream* optInFileStream = NULL); // throw char *
   /* Save to file. */
   void Save_t( const CTFileName fnFileName); // throw char *
   /* Reload from file. */

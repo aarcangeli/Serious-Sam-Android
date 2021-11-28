@@ -40,7 +40,7 @@ CStock_TYPE::~CStock_TYPE(void)
  * Obtain an object from stock - loads if not loaded.
  */
 
-TYPE *CStock_TYPE::Obtain_t(const CTFileName &fnmFileName)
+TYPE *CStock_TYPE::Obtain_t(const CTFileName &fnmFileName, CTMemoryStream* optInFileData/* = NULL*/)
 {
   // find stocked object with same name
   TYPE *pExisting = st_ntObjects.Find(fnmFileName);
@@ -63,7 +63,7 @@ TYPE *CStock_TYPE::Obtain_t(const CTFileName &fnmFileName)
 
   // load it
   try {
-    ptNew->Load_t(fnmFileName);
+    ptNew->Load_t(fnmFileName, optInFileData);
   } catch ( const char *) {
     st_ctObjects.Remove(ptNew);
     st_ntObjects.Remove(ptNew);
