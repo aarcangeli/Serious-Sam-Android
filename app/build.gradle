@@ -83,7 +83,7 @@ android {
     defaultConfig {
         applicationId "com.github.aarcangeli.serioussamandroid"
         minSdkVersion 19
-        targetSdkVersion 28
+        targetSdkVersion 29
         versionCode ver.versionCode
         versionName ver.version
         setProperty("archivesBaseName", "SeriousSamAndroid-v$versionName")
