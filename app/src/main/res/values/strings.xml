@@ -1,5 +1,30 @@
 <resources>
-
+	<string name="graphics">Graphics</string>
+	<string name="screenResolution">Screen resolution</string>
+	<string name="dinUIScale">Dinamic UI Scale</string>
+	<string name="banner">Draw Banner in right top of screen</string>
+	
+	<string name="aimAssistTitle">Aim-Assistant</string>
+	<string name="useAimAssist">Use Aim-Assistant</string>
+	<string name="aimAssistDescription">Helps to shoot enemies.</string>
+	<string name="aimAssistSens">Aim-Assistant sensibility</string>
+	
+	<string name="showTouchController">Show touch controller</string>
+	<string name="controllerTitle">Controller</string>
+	<string name="controllerDeadZone">Dead zone</string>
+	<string name="controllerViewSens">View sensibility</string>
+	
+	<string name="gyroTitle">Use Gyroscope</string>
+	<string name="gyroDescription">Tilts the device to move the view.</string>
+	<string name="gyroSens">Gyroscope sensibility</string>
+	
+	<string name="dragSens">Drag sensibility</string>
+	<string name="inputOpacity">Input Opacity</string>
+	
+	<string name="debug">Debug</string>
+	<string name="showStatsTitle">Show Stats</string>
+	<string name="showStatsDescription">Draw gpu stats on screen.</string>
+	
     <string-array name="AutoYesNo">
         <item>Auto</item>
         <item>Yes</item>
