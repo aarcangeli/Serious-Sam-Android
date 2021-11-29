@@ -1,5 +1,5 @@
 {
-    "url_tse": "https://github.com/Skyrimus/Serious-Sam-Android/releases/download/v1.05/SeriousSamAndroid-v1.05-TSE-release.apk",
-    "url_tfe": "https://github.com/Skyrimus/Serious-Sam-Android/releases/download/v1.05/SeriousSamAndroid-v1.05-TFE-release.apk",
-    "versionCode": "1050",
+   "url_tse":"https://github.com/Skyrimus/Serious-Sam-Android/releases/download/v1.05/SeriousSamAndroid-v1.05-TSE-release.apk",
+   "url_tfe":"https://github.com/Skyrimus/Serious-Sam-Android/releases/download/v1.05/SeriousSamAndroid-v1.05-TFE-release.apk",
+   "versionCode":"1050"
 }
