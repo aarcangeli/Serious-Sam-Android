@@ -14,19 +14,26 @@ import android.content.SharedPreferences;
 import android.content.res.AssetManager;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.Point;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.hardware.input.InputManager;
+import android.net.Uri;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.AsyncTask;
 import android.preference.PreferenceManager;
+import androidx.fragment.app.DialogFragment;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import android.util.Log;
 import android.view.Display;
 import android.view.KeyEvent;
@@ -47,15 +54,25 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
+import java.io.BufferedReader;
 import java.io.OutputStream;
 import java.io.FileOutputStream;
+import java.io.BufferedInputStream;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.IOException;
 import java.util.Locale;
 import java.net.NetworkInterface;
 import java.net.InetAddress;
 import java.net.Inet4Address;
+import java.net.URL;
+import java.net.HttpURLConnection;
+import java.net.URLConnection;
 import java.util.Enumeration;
+import java.lang.StringBuilder;
+
+import org.json.JSONObject;
+import org.json.JSONException;
 
 import static com.github.aarcangeli.serioussamandroid.NativeEvents.EditTextEvent;
 import static com.github.aarcangeli.serioussamandroid.NativeEvents.ErrorEvent;
@@ -84,6 +101,8 @@ public class MainActivity extends Activity {
     private static final float MULT_VIEW_TRACKER = 0.4f;
     private static final float MULT_VIEW_GYROSCOPE = 0.8f;
 
+    public int curVersionCode;
+    public int latestVersionCode;
     private SeriousSamSurface glSurfaceView;
     private File homeDir;
     private boolean isGameStarted = false;
@@ -122,6 +141,184 @@ public class MainActivity extends Activity {
         }
     };
 
+	private boolean isNetworkConnected() {
+		ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+		return cm.getActiveNetworkInfo() != null;
+	}
+
+    public String getWifiIP() {
+		if (isNetworkConnected()) {
+				Enumeration<InetAddress> en;
+			try {
+				NetworkInterface wlan0 = NetworkInterface.getByName("wlan0");
+				NetworkInterface ap0 = NetworkInterface.getByName("ap0");
+				if (wlan0.isUp()) {
+				en = wlan0.getInetAddresses();
+				} else {
+				en = ap0.getInetAddresses();
+				}
+				while (en.hasMoreElements()) {
+					InetAddress inetAddress = en.nextElement();
+					if (!inetAddress.isLoopbackAddress() && inetAddress instanceof Inet4Address) {
+						return inetAddress.getHostAddress().toString();
+					}
+				}
+			} catch (Exception e) {
+				return "Wifi error, you are using mobile network?";
+			}
+		}
+		return "Wifi or AP not started";
+	}
+
+	private class DownloadUpdate extends AsyncTask<String,Integer,Void> {
+		private Context context;
+		public void setContext(Context contextf){
+			context = contextf;
+		}
+		String path = "/sdcard/YourApp.apk";
+		protected Void doInBackground(String... sUrl) {
+			try {
+				URL url = new URL(sUrl[0]);
+				HttpURLConnection connection=(HttpURLConnection)url.openConnection();
+
+				int fileLength = connection.getContentLength();
+
+				// download the file
+				InputStream input = new BufferedInputStream(url.openStream());
+				OutputStream output = new FileOutputStream(path);
+
+				byte data[] = new byte[1024];
+				long total = 0;
+				int count;
+				while ((count = input.read(data)) != -1) {
+					total += count;
+					publishProgress((int) (total * 100 / fileLength));
+					output.write(data, 0, count);
+				}
+
+				output.flush();
+				output.close();
+				input.close();
+			} catch (Exception e) {
+				Log.e("YourApp", "Well that didn't work out so well...");
+				Log.e("YourApp", e.getMessage());
+			}
+			return null;
+		}
+
+		// begin the installation by opening the resulting file
+		@Override
+		protected void onPostExecute(Void result) {
+			super.onPostExecute(result);
+			Uri uri = FileProvider.getUriForFile(context,
+                                    context.getApplicationContext().getPackageName() + ".provider", new File(path));
+			Intent intent = new Intent();
+			intent.setAction(Intent.ACTION_VIEW);
+			intent.setDataAndType(uri, "application/vnd.android.package-archive" );
+			Log.d("Lofting", "About to install new .apk");
+			intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			this.context.startActivity(intent);
+		}	
+	}
+
+	private class ReadFileTask extends AsyncTask<Void,Void,JSONObject> {
+
+		@Override
+		protected JSONObject doInBackground(Void... params)
+		{
+
+			String str = "https://raw.githubusercontent.com/Skyrimus/Serious-Sam-Android/master/update.json";
+			URLConnection urlConn = null;
+			BufferedReader bufferedReader = null;
+			try
+			{
+				URL url = new URL(str);
+				urlConn = url.openConnection();
+				bufferedReader = new BufferedReader(new InputStreamReader(urlConn.getInputStream()));
+
+				StringBuffer stringBuffer = new StringBuffer();
+				String line;
+				while ((line = bufferedReader.readLine()) != null)
+				{
+					stringBuffer.append(line);
+				}
+
+				return new JSONObject(stringBuffer.toString());
+			}
+			catch(Exception ex)
+			{
+				Log.e("App", "yourDataTask", ex);
+				return null;
+			}
+			finally
+			{
+				if(bufferedReader != null)
+				{
+					try {
+						bufferedReader.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		}
+		
+		@Override
+		protected void onPostExecute(JSONObject response) {
+		  super.onPostExecute(response);
+		  if (response != null) {
+			  String updateURL; 
+			try {
+				if (BuildConfig.home.endsWith("TSE")) {
+					updateURL = response.getString("url_tse");
+				} else {
+					updateURL = response.getString("url_tfe");
+				}
+				latestVersionCode = Integer.parseInt(response.getString("versionCode"));
+				if (latestVersionCode > curVersionCode) {
+					AlertDialog.Builder dlgAlert = new AlertDialog.Builder(MainActivity.this);
+					dlgAlert.setMessage("Game update available! Download update now?");
+					dlgAlert.setTitle("ATTENTION: UPDATE");
+					dlgAlert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							DownloadUpdate tsk=new DownloadUpdate();
+							tsk.setContext(MainActivity.this);
+							tsk.execute(updateURL);
+						}
+					});
+					 dlgAlert.setNegativeButton("No", new DialogInterface.OnClickListener() {
+						 @Override
+					   public void onClick(DialogInterface dialog, int id) {
+						   dialog.dismiss();
+					   }
+				   });
+					dlgAlert.show();
+				}
+            } catch (JSONException ex) {
+                Log.e("App", "Failure", ex);
+            }
+		  }
+		}
+		
+	}
+	
+	private void checkUpdate() {
+		if(isNetworkConnected())
+		{
+			try {
+				PackageInfo packageInfo = getPackageManager().getPackageInfo(this.getPackageName(), 0);
+				curVersionCode = packageInfo.versionCode;
+			} catch (NameNotFoundException e) {
+				   // TODO Auto-generated catch block
+			}
+		
+			ReadFileTask tsk=new ReadFileTask ();
+			tsk.execute();
+		}
+	}
+	
     private void copyFolder(String name) throws IOException {
         AssetManager assetManager = getAssets();
         String[] files = assetManager.list(name);
@@ -154,7 +351,7 @@ public class MainActivity extends Activity {
         setContentView(R.layout.main_screen);
         glSurfaceView = findViewById(R.id.main_content);
         glSurfaceView.setActivity(this);
-
+		
         Button loadBtn = findViewById(R.id.buttonLoad);
         loadBtn.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
@@ -265,7 +462,9 @@ public class MainActivity extends Activity {
             public void onAccuracyChanged(Sensor sensor, int accuracy) {
             }
         };
-
+		
+		checkUpdate();
+		
         if (!hasStoragePermission(this)) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_STORAGE);
         } else {
@@ -275,7 +474,8 @@ public class MainActivity extends Activity {
         updateSoftKeyboardVisible();
 
         keyboardHeightProvider = new KeyboardHeightProvider(this);
-
+		
+		executeShell("net_WifiIP=\""+getWifiIP()+"\"");
 //        getWindow().getDecorView().getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
 //            @Override
 //            public boolean onPreDraw() {
@@ -323,26 +523,6 @@ public class MainActivity extends Activity {
             Log.i(TAG, "DrawBanner Enabled");
         }
     }
-
-    public String getWifiIP() {
-			Enumeration<InetAddress> en;
-		try {
-			NetworkInterface wlan0 = NetworkInterface.getByName("wlan0");
-			NetworkInterface ap0 = NetworkInterface.getByName("ap0");
-			if (wlan0.isUp()) {
-			en = wlan0.getInetAddresses();
-			} else {
-			en = ap0.getInetAddresses();
-			}
-			while (en.hasMoreElements()) {
-				InetAddress inetAddress = en.nextElement();
-				if (!inetAddress.isLoopbackAddress() && inetAddress instanceof Inet4Address) {
-					return inetAddress.getHostAddress();
-				}
-			}
-		} catch (Exception e) {}
-		return "Wifi not working";
-	}
 
     public void updateSoftKeyboardVisible() {
         enableTouchController = false;
@@ -777,7 +957,7 @@ public class MainActivity extends Activity {
     // ui listeners
     public void showMenu(View view) {
         executeShell("sam_bMenu=1;");
-	executeShell("net_WifiIP=\""+getWifiIP()+"\"");
+        executeShell("net_WifiIP=\""+getWifiIP()+"\"");
     }
 
     public void doProfiling(View view) {
