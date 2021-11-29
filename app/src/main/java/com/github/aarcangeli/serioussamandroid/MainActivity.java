@@ -223,7 +223,7 @@ public class MainActivity extends Activity {
 	}
 
 	private class ReadFileTask extends AsyncTask<Void,Void,JSONObject> {
-
+		String updateURL = null; 
 		@Override
 		protected JSONObject doInBackground(Void... params)
 		{
@@ -268,7 +268,6 @@ public class MainActivity extends Activity {
 		protected void onPostExecute(JSONObject response) {
 		  super.onPostExecute(response);
 		  if (response != null) {
-			  String updateURL; 
 			try {
 				if (BuildConfig.home.endsWith("TSE")) {
 					updateURL = response.getString("url_tse");
