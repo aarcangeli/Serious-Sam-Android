@@ -22,13 +22,19 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/Changeable.h>
 #include <Engine/Base/FileName.h>
 
+#include <type_traits>
+#include <memory>
+
  /*
  * Abstract base class for objects that can be saved and loaded.
  */
 class ENGINE_API CSerial : public CChangeable {
 public:
+  using TCustomStream = std::add_pointer_t<std::unique_ptr<CTStream>()>;
+
   INDEX ser_ctUsed;         // use count
   CTFileName ser_FileName;  // last file name loaded
+  TCustomStream mp_customStream = nullptr;
 
 public:
   /* Default constructor. */
@@ -41,7 +47,7 @@ public:
   /* Get the description of this object. */
   virtual CTString GetDescription(void);
   /* Load from file. */
-  void Load_t( const CTFileName fnFileName, CTMemoryStream* optInFileStream = NULL); // throw char *
+  void Load_t( const CTFileName fnFileName, TCustomStream optCustomStream = nullptr); // throw char *
   /* Save to file. */
   void Save_t( const CTFileName fnFileName); // throw char *
   /* Reload from file. */

@@ -46,6 +46,7 @@ void CSerial::Clear(void)
 
   // clear the filename
   ser_FileName.Clear();
+  mp_customStream = nullptr;
 }
 
 /* Get the description of this object. */
@@ -57,17 +58,18 @@ CTString CSerial::GetDescription(void)
 /*
  * Load from file.
  */
-void CSerial::Load_t(const CTFileName fnFileName, CTMemoryStream* optInFileStream/* = NULL*/)  // throw char *
+void CSerial::Load_t(const CTFileName fnFileName, TCustomStream optCustomStream/* = nullptr*/)  // throw char *
 {
   ASSERT(!IsUsed());
   // mark that you have changed
   MarkChanged();
 
+
   // read object from stream
-  if (optInFileStream != NULL) {
-    Read_t(optInFileStream);
-  }
-  else {
+  if (optCustomStream) {
+    auto p_stream = optCustomStream();
+    Read_t(p_stream.get());
+  } else {
     // open a stream
     CTFileStream istrFile;
     istrFile.Open_t(fnFileName);
@@ -76,6 +78,7 @@ void CSerial::Load_t(const CTFileName fnFileName, CTMemoryStream* optInFileStrea
   // if still here (no exceptions raised)
   // remember filename
   ser_FileName = fnFileName;
+  mp_customStream = optCustomStream;
 }
 
 /*
@@ -87,14 +90,21 @@ void CSerial::Reload(void)
   MarkChanged();
 
   CTFileName fnmOldName = ser_FileName;
+  auto oldCustomStream = mp_customStream;
+
   Clear();
   // try to
   //try {
+  if (oldCustomStream) {
+    auto p_stream = oldCustomStream();
+    Read_t(p_stream.get());
+  } else {
     // open a stream
     CTFileStream istrFile;
     istrFile.Open_t(fnmOldName);
     // read object from stream
     Read_t(&istrFile);
+  }
 
   // if there is some error while reloading
   //} catch ( const char *strError) {
@@ -105,6 +115,7 @@ void CSerial::Reload(void)
   // if still here (no exceptions raised)
   // remember filename
   ser_FileName = fnmOldName;
+  mp_customStream = oldCustomStream;
 }
 
 /*
@@ -120,6 +131,7 @@ void CSerial::Save_t(const CTFileName fnFileName)  // throw char *
   // if still here (no exceptions raised)
   // remember new filename
   ser_FileName = fnFileName;
+  mp_customStream = nullptr;
 }
 
 /*
@@ -163,5 +175,12 @@ INDEX CSerial::GetUsedCount(void)
 void CSerial::AddToCRCTable(void)
 {
   // add the file to CRC table
-  CRCT_AddFile_t(ser_FileName);
+  ULONG crc = 0;
+  if (mp_customStream && !CRCT_IsFileAdded(ser_FileName))
+  {
+    auto p_stream = mp_customStream();
+    crc = p_stream->GetStreamCRC32_t();
+  }
+
+  CRCT_AddFile_t(ser_FileName, crc);
 }

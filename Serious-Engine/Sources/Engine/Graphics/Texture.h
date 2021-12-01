@@ -173,7 +173,7 @@ public:
 	void Write_t( CTStream *ostrFile); // throw char * //	write functions
 
   // obtain texture and set it for this object
-  void SetData_t(const CTFileName &fnmTexture, CTMemoryStream* optInTextureData = NULL); // throw char *
+  void SetData_t(const CTFileName &fnmTexture, CSerial::TCustomStream optCustomStream = nullptr); // throw char *
   // get filename of texture or empty string if no texture
   const CTFileName &GetName(void);
 };

@@ -1678,7 +1678,7 @@ void CTextureData::RemReference_internal(void)
 }
 
 // obtain texture and set it for this object
-void CTextureObject::SetData_t(const CTFileName &fnmTexture, CTMemoryStream* optInTextureData/* = NULL*/) // throw char *
+void CTextureObject::SetData_t(const CTFileName &fnmTexture, CSerial::TCustomStream optCustomStream/* = nullptr*/) // throw char *
 {
   // if the filename is empty
   if (fnmTexture=="") {
@@ -1688,7 +1688,7 @@ void CTextureObject::SetData_t(const CTFileName &fnmTexture, CTMemoryStream* opt
   // if the filename is not empty
   } else {
     // obtain it (adds one reference)
-    CTextureData *ptd = _pTextureStock->Obtain_t(fnmTexture, optInTextureData);
+    CTextureData *ptd = _pTextureStock->Obtain_t(fnmTexture, optCustomStream);
     // set it as data (adds one more reference, and remove old reference)
     SetData(ptd);
     // release it (removes one reference)
