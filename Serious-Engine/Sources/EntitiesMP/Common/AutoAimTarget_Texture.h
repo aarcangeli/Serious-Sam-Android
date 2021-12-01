@@ -21,4 +21,4 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 extern unsigned char g_AutoAimTarget_tex_data[];
 extern SLONG g_AutoAimTarget_tex_size;
 
-#endif AUTO_AIM_TARGET_TEXTURE_H
+#endif // AUTO_AIM_TARGET_TEXTURE_H

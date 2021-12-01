@@ -1263,8 +1263,11 @@ functions:
         // load new crosshair texture
         _toCrosshair.SetData_t( fnCrosshair);
 
-        CTMemoryStream autoAimTextureData(g_AutoAimTarget_tex_data, g_AutoAimTarget_tex_size);
-        _toAutoAimTarget.SetData_t(fnAutoAimTarget, &autoAimTextureData);
+        auto autoAimTextureGetter = []() -> std::unique_ptr<CTStream>
+        {
+          return std::make_unique<CTMemoryStream>(g_AutoAimTarget_tex_data, g_AutoAimTarget_tex_size);
+        };
+        _toAutoAimTarget.SetData_t(fnAutoAimTarget, autoAimTextureGetter);
       } catch ( const char *strError) {
         // didn't make it! - reset crosshair
         CPrintF( strError);
