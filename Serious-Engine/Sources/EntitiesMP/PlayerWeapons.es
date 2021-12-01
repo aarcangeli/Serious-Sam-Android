@@ -1080,7 +1080,7 @@ functions:
     crRayAutoAim.cr_ttHitModels = CCastRay::TT_COLLISIONBOX;
     crRayAutoAim.cr_bConicForAutoAim = TRUE;
     const FLOAT autoAimSensitivity = Clamp(plr_fAutoAimSensitivity, 0.0f, 1.0f);
-    const BOOL autoAimTurnedOn = autoAimSensitivity > 0.01f;
+    const BOOL autoAimTurnedOn = autoAimSensitivity >= 0.1f;
     if (autoAimTurnedOn) {
       crRayAutoAim.cr_fTestR = 0.125f * autoAimSensitivity;
       GetWorld()->CastRay(crRayAutoAim);

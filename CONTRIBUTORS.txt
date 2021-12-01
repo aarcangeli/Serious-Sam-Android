@@ -3,3 +3,4 @@ Android Port:
   Skyrimus <skyrimus@yandex.ru>
   Sergio R. Prado <sergiorprado@gmail.com>
   zcaliptium <zcaliptium@gmail.com>
+  SeriousAlexej <seriousalexej@gmail.com>

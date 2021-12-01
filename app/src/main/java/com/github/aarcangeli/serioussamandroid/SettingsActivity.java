@@ -22,13 +22,26 @@ public class SettingsActivity extends PreferenceActivity {
 
             final CheckBoxPreference useGyroscope = (CheckBoxPreference) findPreference("use_gyroscope");
             final Preference gyroSensibility = findPreference("gyro_sensibility");
-
+            final CheckBoxPreference useAimAssist = (CheckBoxPreference) findPreference("useAimAssist");
+            final Preference autoAimSens = findPreference("autoAimSens");
+			
             if (useGyroscope != null && gyroSensibility != null) {
                 gyroSensibility.setEnabled(useGyroscope.isChecked());
                 useGyroscope.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                     @Override
                     public boolean onPreferenceChange(Preference preference, Object newValue) {
                         gyroSensibility.setEnabled((Boolean) newValue);
+                        return true;
+                    }
+                });
+            }
+			
+			if (useAimAssist != null && autoAimSens != null) {
+                autoAimSens.setEnabled(useAimAssist.isChecked());
+                useAimAssist.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+                    @Override
+                    public boolean onPreferenceChange(Preference preference, Object newValue) {
+                        autoAimSens.setEnabled((Boolean) newValue);
                         return true;
                     }
                 });
