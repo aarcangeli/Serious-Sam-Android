@@ -1268,7 +1268,7 @@ functions:
           return std::make_unique<CTMemoryStream>(g_AutoAimTarget_tex_data, g_AutoAimTarget_tex_size);
         };
         _toAutoAimTarget.SetData_t(fnAutoAimTarget, autoAimTextureGetter);
-      } catch( const char *strError) {
+      } catch ( const char *strError) {
         // didn't make it! - reset crosshair
         CPrintF( strError);
         iCrossHair = 0;
