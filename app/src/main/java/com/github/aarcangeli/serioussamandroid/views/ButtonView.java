@@ -24,7 +24,7 @@ public class ButtonView extends Button {
     private Bitmap buttonBitmap;
     private Paint paintPadFill = new Paint();
     private Paint paintPadStroke = new Paint();
-    private float centerX, centerY, radius;
+    public float centerX, centerY, radius;
 
     // temporaney canvas for opacity
     Bitmap tempBmp;

@@ -29,6 +29,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.DialogFragment;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -40,11 +41,13 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.InputDevice;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+import com.github.aarcangeli.serioussamandroid.views.ButtonView;
 import com.github.aarcangeli.serioussamandroid.input.InputProcessor;
 import com.github.aarcangeli.serioussamandroid.views.JoystickView;
 import com.hold1.keyboardheightprovider.KeyboardHeightProvider;
@@ -124,8 +127,6 @@ public class MainActivity extends Activity {
     public float uiScale;
     public boolean ButtonsMapping = false;
     public boolean isTracking;
-	public float input_overlayX, input_overlayY;
-	public View currentView;
 	public float lastx, lasty;
     private InputProcessor processor = new InputProcessor();
     private InputMethodManager inputMethodManager;
@@ -402,21 +403,24 @@ public class MainActivity extends Activity {
             @Override
             public void onMove(float deltaX, float deltaY, MotionEvent ev) {
             if (gameState == GameState.NORMAL) {
-                float dX, dY;
-        JoystickView joystick = findViewById(R.id.input_overlay);
-        	if (ButtonsMapping) {
-					SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
-					SharedPreferences.Editor sharedPreferencesEditor = preferences.edit();
-					joystick.ButtonsMapping = true;
-					findViewById(R.id.input_overlay).setX(ev.getRawX() + -Utils.convertPixelsToDp(joystick.padPosX, MainActivity.this));
-					findViewById(R.id.input_overlay).setY(ev.getRawY() + -Utils.convertPixelsToDp(joystick.padPosY, MainActivity.this));
-					sharedPreferencesEditor.putFloat("input_overlayX", ev.getRawX() + -Utils.convertPixelsToDp(joystick.padPosX, MainActivity.this)).apply();
-					sharedPreferencesEditor.putFloat("input_overlayY", ev.getRawY() + -Utils.convertPixelsToDp(joystick.padPosY, MainActivity.this)).apply();
-                } else {
-					joystick.ButtonsMapping = false;
-					setAxisValue(AXIS_MOVE_LR, deltaX);
-					setAxisValue(AXIS_MOVE_FB, deltaY);
-                }
+				JoystickView joystick = findViewById(R.id.input_overlay);
+					if (ButtonsMapping) {
+						    String fullName = getResources().getResourceName(joystick.getId());
+							String name = fullName.substring(fullName.lastIndexOf("/") + 1);
+							SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+							SharedPreferences.Editor sharedPreferencesEditor = preferences.edit();
+							joystick.ButtonsMapping = true;
+							float X = ev.getRawX() + -Utils.convertPixelsToDp(joystick.padPosX, MainActivity.this) - joystick.radius;
+							float Y = ev.getRawY() + -Utils.convertPixelsToDp(joystick.padPosY, MainActivity.this) - joystick.radius;
+							joystick.setX(X);
+							joystick.setY(Y);
+							sharedPreferencesEditor.putFloat(name+"X", X).apply();
+							sharedPreferencesEditor.putFloat(name+"Y", Y).apply();
+						} else {
+							joystick.ButtonsMapping = false;
+							setAxisValue(AXIS_MOVE_LR, deltaX);
+							setAxisValue(AXIS_MOVE_FB, deltaY);
+					}
                 }
             }
         });
@@ -979,6 +983,41 @@ public class MainActivity extends Activity {
         executeShell("gam_bQuickSave=1;");
     }
 	
+	public void changeButtonSize(String mode) {
+		try {
+			SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+			SharedPreferences.Editor sharedPreferencesEditor = preferences.edit();
+			ConstraintLayout constraintView = findViewById(R.id.constraint_content);
+			ViewGroup parent = (ViewGroup) constraintView;
+			
+			if (parent != null) {
+				for(int i=0; i < parent.getChildCount(); i++) {
+					View child = parent.getChildAt(i);
+					if (child instanceof ButtonView) {
+						int count = 5;
+						if (mode.equals("+")) {
+							count = 5;
+						} else if (mode.equals("-")) {
+							count = -5;
+						}
+						ButtonView btn = (ButtonView) child;
+						String fullName = getResources().getResourceName(btn.getId());
+						String name = fullName.substring(fullName.lastIndexOf("/") + 1);
+						btn.getLayoutParams().width = btn.getLayoutParams().width + count;
+						btn.getLayoutParams().height = btn.getLayoutParams().height + count;
+						sharedPreferencesEditor.putInt(name+"H", btn.getLayoutParams().height).apply();
+						sharedPreferencesEditor.putInt(name+"W", btn.getLayoutParams().width).apply();
+						btn.setVisibility(View.GONE);
+						btn.setVisibility(View.VISIBLE);	
+					}
+				}
+			}
+		} catch (Exception e) {
+			Toast toast = Toast.makeText(MainActivity.this, "Error: " + e,Toast.LENGTH_SHORT);
+			toast.show();
+		}
+	}
+
     public void btnApply(View view) {
 		Toast toast = Toast.makeText(MainActivity.this, "Buttons mapping: OFF",Toast.LENGTH_SHORT);
 		toast.show();
@@ -990,42 +1029,11 @@ public class MainActivity extends Activity {
     }
 	
 	public void btnPlus(View view) {
-		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
-		SharedPreferences.Editor sharedPreferencesEditor = preferences.edit();
-		int[] id = new int[] {R.id.input_use, R.id.input_crunch, R.id.input_jump, R.id.buttonPrev, R.id.buttonNext,R.id.input_fire, R.id.input_SeriousBomb};
-		String[] buttonIdName = new String[] {"input_use", "input_crunch", "input_jump", "buttonPrev",
-										   "buttonNext", "input_fire", "input_SeriousBomb"};
-
-		for(int i=0; i<id.length; i++) {
-			findViewById(id[i]).getLayoutParams().width = findViewById(id[i]).getLayoutParams().width + 5;
-			findViewById(id[i]).getLayoutParams().height = findViewById(id[i]).getLayoutParams().height + 5;
-			sharedPreferencesEditor.putInt(buttonIdName[i]+"H", findViewById(id[i]).getLayoutParams().height).apply();
-			sharedPreferencesEditor.putInt(buttonIdName[i]+"W", findViewById(id[i]).getLayoutParams().width).apply();
-			findViewById(id[i]).setVisibility(View.GONE);
-			findViewById(id[i]).setVisibility(View.VISIBLE);
-			
-		}
-		sharedPreferencesEditor.putFloat("input_overlayH", findViewById(R.id.input_overlay).getLayoutParams().width).apply();
-		sharedPreferencesEditor.putFloat("input_overlayW", findViewById(R.id.input_overlay).getLayoutParams().width).apply();
+		changeButtonSize("+");
 	}
 	
 	public void btnMinus(View view) {
-		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
-		SharedPreferences.Editor sharedPreferencesEditor = preferences.edit();
-		int[] id = new int[] {R.id.input_use, R.id.input_crunch, R.id.input_jump, R.id.buttonPrev, R.id.buttonNext,R.id.input_fire, R.id.input_SeriousBomb};
-		String[] buttonIdName = new String[] {"input_use", "input_crunch", "input_jump", "buttonPrev",
-										   "buttonNext", "input_fire", "input_SeriousBomb"};
-										   
-		for(int i=0; i<id.length; i++) {
-			findViewById(id[i]).getLayoutParams().width = findViewById(id[i]).getLayoutParams().width - 5;
-			findViewById(id[i]).getLayoutParams().height = findViewById(id[i]).getLayoutParams().height - 5;
-			sharedPreferencesEditor.putInt(buttonIdName[i]+"H", findViewById(id[i]).getLayoutParams().height).apply();
-			sharedPreferencesEditor.putInt(buttonIdName[i]="W", findViewById(id[i]).getLayoutParams().width).apply();
-			findViewById(id[i]).setVisibility(View.GONE);
-			findViewById(id[i]).setVisibility(View.VISIBLE);
-		}	
-		sharedPreferencesEditor.putFloat("input_overlayH", findViewById(R.id.input_overlay).getLayoutParams().width).apply();
-		sharedPreferencesEditor.putFloat("input_overlayW", findViewById(R.id.input_overlay).getLayoutParams().width).apply();
+		changeButtonSize("-");
 	}
 
     @Override
@@ -1078,23 +1086,34 @@ public class MainActivity extends Activity {
         final MainActivity context = MainActivity.this;
         runOnUiThread(new Runnable() {
             public void run() {		
-			
-		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
-		
-		int[] buttonId = new int[] {R.id.input_use, R.id.input_crunch, R.id.input_jump, R.id.buttonPrev, R.id.buttonNext,R.id.input_fire, R.id.input_SeriousBomb, R.id.input_overlay};
-		String[] buttonIdName = new String[] {"input_use", "input_crunch", "input_jump", "buttonPrev",
-										   "buttonNext", "input_fire", "input_SeriousBomb", "input_overlay"};
-
-		for(int i=0; i<buttonId.length; i++) {
-			float X = preferences.getFloat(buttonIdName[i]+"X",findViewById(buttonId[i]).getX());
-			float Y = preferences.getFloat(buttonIdName[i]+"Y",findViewById(buttonId[i]).getY());
-			findViewById(buttonId[i]).setX(X);
-			findViewById(buttonId[i]).setY(Y);
-			int H = preferences.getInt(buttonIdName[i]+"H",findViewById(buttonId[i]).getLayoutParams().height);
-			int W = preferences.getInt(buttonIdName[i]+"W",findViewById(buttonId[i]).getLayoutParams().width);
-			findViewById(buttonId[i]).getLayoutParams().height = H;
-			findViewById(buttonId[i]).getLayoutParams().width = W;
-		}
+				try {
+					SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+					ConstraintLayout constraintView = findViewById(R.id.constraint_content);
+					ViewGroup parent = (ViewGroup) constraintView;
+					
+					if (parent != null) {
+						for(int i=0; i < parent.getChildCount(); i++) {
+							View child = parent.getChildAt(i);
+							if ((child instanceof ButtonView) || (child instanceof JoystickView)) { 
+								String fullName = getResources().getResourceName(child.getId());
+								String name = fullName.substring(fullName.lastIndexOf("/") + 1);
+								if (child instanceof ButtonView) {
+									int H = preferences.getInt(name+"H",child.getLayoutParams().height);
+									int W = preferences.getInt(name+"W",child.getLayoutParams().width);
+									child.getLayoutParams().height = H;
+									child.getLayoutParams().width = W;
+								}
+								float X = preferences.getFloat(name+"X",child.getX());
+								float Y = preferences.getFloat(name+"Y",child.getY());
+								child.setX(X);
+								child.setY(Y);
+							}
+						}
+					}
+				} catch (Exception e) {
+					Toast toast = Toast.makeText(MainActivity.this, "UI update error: " + e,Toast.LENGTH_SHORT);
+					toast.show();
+				}
             }
         });
 	}
@@ -1125,7 +1144,6 @@ public class MainActivity extends Activity {
                         isTracking = false;
                         dX = v.getX() - event.getRawX();
                         dY = v.getY() - event.getRawY();
-						currentView = v;
                     } else {
                         isTracking = true;
                         lastX = event.getX();
@@ -1152,18 +1170,16 @@ public class MainActivity extends Activity {
                         lastX = rawX;
                         lastY = rawY;
                     } else if (ButtonsMapping) {
-                    v.setX(event.getRawX() + dX - -Utils.convertPixelsToDp(v.getWidth() / 2, MainActivity.this));
-                    v.setY(event.getRawY() + dY - -Utils.convertPixelsToDp(v.getHeight() / 2, MainActivity.this));
-                    currentView = v;
-					String[] buttonId = new String[] {"input_use", "input_crunch", "input_jump", "buttonPrev", 
-													   "buttonNext", "input_fire", "input_SeriousBomb"};
-					for(int i=0; i<buttonId.length; i++) {
-						if (name.equals(buttonId[i])) {
-					sharedPreferencesEditor.putFloat(buttonId[i]+"X", v.getX()).apply();
-					sharedPreferencesEditor.putFloat(buttonId[i]+"Y", v.getY()).apply();
+						if (v instanceof ButtonView) {
+							ButtonView btn = (ButtonView) v;
+							float X = event.getRawX() + dX - -Utils.convertPixelsToDp(btn.getWidth() / 2, MainActivity.this) - btn.radius;
+							float Y = event.getRawY() + dY - -Utils.convertPixelsToDp(btn.getHeight() / 2, MainActivity.this) - btn.radius;
+							btn.setX(X);
+							btn.setY(Y);
+							sharedPreferencesEditor.putFloat(name+"X", btn.getX()).apply();
+							sharedPreferencesEditor.putFloat(name+"Y", btn.getY()).apply();
 						}
 					}
-                }
                     break;
                 default:
                     return false;

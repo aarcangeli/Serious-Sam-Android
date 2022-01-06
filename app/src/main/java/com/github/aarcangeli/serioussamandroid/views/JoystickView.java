@@ -30,7 +30,7 @@ public class JoystickView extends View {
     private Paint paintBgStroke = new Paint();
     private Paint paintPadFill = new Paint();
     private Paint paintPadStroke = new Paint();
-    public float padPosX, padPosY;
+    public float padPosX, padPosY, radius;
     public boolean ButtonsMapping = false;
     private float deltaX;
     private float deltaY;
@@ -102,7 +102,7 @@ public class JoystickView extends View {
         paintPadStroke.setStrokeWidth(Utils.convertDpToPixel(4, getContext()));
         paintPadStroke.setShadowLayer(Utils.convertDpToPixel(4, getContext()), 0, 0, Color.BLACK);
 
-        float radius = Utils.convertDpToPixel(sizePad, getContext());
+        radius = Utils.convertDpToPixel(sizePad, getContext());
         padShader = new RadialGradient(0, 0, radius, new int[]{COLOR_PAD, COLOR_PAD2, COLOR_PAD}, new float[]{0, 0.7f, 1}, Shader.TileMode.MIRROR);
     }
 
