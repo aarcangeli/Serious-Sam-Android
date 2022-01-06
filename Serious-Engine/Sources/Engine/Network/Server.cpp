@@ -1177,8 +1177,10 @@ void CServer::HandleAll()
 
   // for each active client
   {for( INDEX iClient=0; iClient<NET_MAXGAMECOMPUTERS; iClient++) {
-    // handle all of its messages
-    HandleAllForAClient(iClient);
+    // if the client is  connected, handle all of its messages
+    if (_cmiComm.Server_IsClientUsed(iClient)) {
+      HandleAllForAClient(iClient);
+    }
   }}
 }
 
@@ -1187,10 +1189,7 @@ void CServer::HandleAll()
 
 void CServer::HandleAllForAClient(INDEX iClient)
 {
-  // if the client is not connected skip it
-  if (!_cmiComm.Server_IsClientUsed(iClient)) {
-    return;
-  }
+  ASSERT(_cmiComm.Server_IsClientUsed(iClient));
 
 	// update the client's max BPS limit from the session socket parameters
 	cm_aciClients[iClient].ci_pbOutputBuffer.pb_pbsLimits.pbs_fBandwidthLimit = srv_assoSessions[iClient].sso_sspParams.ssp_iMaxBPS*8;
@@ -1228,8 +1227,9 @@ void CServer::HandleAllForAClient(INDEX iClient)
       // process it
       Handle(iClient, nmReceived);
 
-    // if there are no more messages then skip to receiving unreliable
+    // if there are no more messages
     } else {
+      // skip to receiving unreliable
       break;
     }
   }

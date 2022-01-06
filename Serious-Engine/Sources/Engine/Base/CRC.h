@@ -28,11 +28,8 @@ inline void CRC_Start(ULONG &ulCRC) { ulCRC = 0xFFFFFFFF; };
 
 // add data to a crc value
 inline void CRC_AddBYTE( ULONG &ulCRC, UBYTE ub)
-{	
-	ULONG	pulCRC = ulCRC;
-	pulCRC ^= ub;
-	pulCRC = crc_aulCRCTable[(UBYTE)pulCRC] ^ (pulCRC >> 8);
-	ulCRC = pulCRC;	
+{
+  ulCRC = (ulCRC>>8)^crc_aulCRCTable[UBYTE(ulCRC)^ub];
 };
 
 inline void CRC_AddWORD( ULONG &ulCRC, UWORD uw)
@@ -73,7 +70,7 @@ inline void CRC_AddBlock(ULONG &ulCRC, UBYTE *pubBlock, ULONG ulSize)
 };
 
 // end crc calculation
-inline void CRC_Finish(ULONG &ulCRC) { ulCRC ^ 0xFFFFFFFF; };
+inline void CRC_Finish(ULONG &ulCRC) { ulCRC ^= 0xFFFFFFFF; };
 
 // in 32bit mode, it just returns iPtr ULONG,
 // in 64bit mode it returns the CRC hash of iPtr (or 0 if ptr == NULL)
