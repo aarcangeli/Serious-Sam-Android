@@ -16,7 +16,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 401
 %{
 
-#include <EntitiesMP/Common/playerCommons.h>
 #include "EntitiesMP/StdH/StdH.h"
 #include "GameMP/SEColors.h"
 
@@ -284,7 +283,7 @@ static void KillAllEnemies(CEntity *penKiller)
 //extern TIME _tmSnoopingStarted;
 //extern CEntity *_penTargeting;
 
-PlayerControls pctlCurrent;
+PlayerControls pctlCurrent = g_cb.g_IncomingControls;
 
 // cheats
 static INDEX cht_iGoToMarker = -1;

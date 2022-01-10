@@ -5,6 +5,8 @@
 #include <Engine/Base/CTString.h>
 #include <config.h>
 
+#include <AndroidAdapters/playerCommons.h>
+
 enum GameState {
     GS_LOADING,
     GS_INTRO,
@@ -24,7 +26,7 @@ struct BindingCallbacks {
     void (*editText)(const CTString &string, void (*onOk)(CTString str), void (*onCancel)());
     void (*restart)();
     void (*setSeriousBombCount)(int bombs);
-
+	PlayerControls g_IncomingControls {};
     GameState gameState;
     int seriousBombCount = 0;
     int isShiftPressed = false;

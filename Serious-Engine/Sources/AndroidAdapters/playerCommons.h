@@ -43,6 +43,8 @@ struct PlayerControls {
     BOOL bFire;
     BOOL bReload;
     BOOL bUse;
+	BOOL bShowTabInfo;
+	BOOL bDropMoney;
     BOOL bComputer;
     BOOL bUseOrComputer;
     BOOL bUseOrComputerLast;  // for internal use

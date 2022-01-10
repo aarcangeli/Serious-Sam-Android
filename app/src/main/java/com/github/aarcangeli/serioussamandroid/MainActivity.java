@@ -42,6 +42,7 @@ import android.view.MotionEvent;
 import android.view.InputDevice;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
@@ -56,15 +57,21 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.util.ArrayList;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.BufferedReader;
 import java.io.OutputStream;
 import java.io.FileOutputStream;
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
+import java.io.Writer;
 import java.util.Locale;
+import java.util.List;
 import java.net.NetworkInterface;
 import java.net.InetAddress;
 import java.net.Inet4Address;
@@ -76,6 +83,9 @@ import java.lang.StringBuilder;
 
 import org.json.JSONObject;
 import org.json.JSONException;
+import com.google.gson.Gson;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.GsonBuilder;
 
 import static com.github.aarcangeli.serioussamandroid.NativeEvents.EditTextEvent;
 import static com.github.aarcangeli.serioussamandroid.NativeEvents.ErrorEvent;
@@ -88,66 +98,94 @@ import static com.github.aarcangeli.serioussamandroid.input.VirtualKeyboard.*;
 import static com.github.aarcangeli.serioussamandroid.views.JoystickView.Listener;
 
 public class MainActivity extends Activity {
-    public static final String TAG = "SeriousSamJava";
-    private final int REQUEST_WRITE_STORAGE = 1;
-    private static final int AXIS_MOVE_UD = 0;
-    private static final int AXIS_MOVE_LR = 1;
-    private static final int AXIS_MOVE_FB = 2;
-    private static final int AXIS_TURN_UD = 3;
-    private static final int AXIS_TURN_LR = 4;
-    private static final int AXIS_TURN_BK = 5;
-    private static final int AXIS_LOOK_UD = 6;
-    private static final int AXIS_LOOK_LR = 7;
-    private static final int AXIS_LOOK_BK = 8;
+	public static final String TAG = "SeriousSamJava";
+	private final int REQUEST_WRITE_STORAGE = 1;
+	private static final int AXIS_MOVE_UD = 0;
+	private static final int AXIS_MOVE_LR = 1;
+	private static final int AXIS_MOVE_FB = 2;
+	private static final int AXIS_TURN_UD = 3;
+	private static final int AXIS_TURN_LR = 4;
+	private static final int AXIS_TURN_BK = 5;
+	private static final int AXIS_LOOK_UD = 6;
+	private static final int AXIS_LOOK_LR = 7;
+	private static final int AXIS_LOOK_BK = 8;
 
-    private static final float MULT_VIEW_CONTROLLER = 2.5f;
-    private static final float MULT_VIEW_TRACKER = 0.4f;
-    private static final float MULT_VIEW_GYROSCOPE = 0.8f;
+	private static final float MULT_VIEW_CONTROLLER = 2.5f;
+	private static final float MULT_VIEW_TRACKER = 0.4f;
+	private static final float MULT_VIEW_GYROSCOPE = 0.8f;
 
-    public int curVersionCode;
-    public int latestVersionCode;
-    private SeriousSamSurface glSurfaceView;
-    private File homeDir;
-    private boolean isGameStarted = false;
-    private SensorManager sensorManager;
-    private SensorEventListener motionListener;
-    private volatile GameState gameState = GameState.LOADING;
-    private volatile int bombs;
-    private boolean useGyroscope;
-    private String showTouchController;
-    private float gyroSensibility;
-    private float aimViewSensibility;
-    private float ctrlAimSensibility;
-    public float deadZone;
-    private boolean enableTouchController;
-    private String din_uiScale;
-    private String ui_drawBanner;
-    private boolean useAimAssist;
-    private float autoAimSens;
-    public float uiScale;
-    public boolean ButtonsMapping = false;
-    public boolean isTracking;
+	public int curVersionCode;
+	public int latestVersionCode;
+	private SeriousSamSurface glSurfaceView;
+	private File homeDir;
+	private boolean isGameStarted = false;
+	private SensorManager sensorManager;
+	private SensorEventListener motionListener;
+	private volatile GameState gameState = GameState.LOADING;
+	private volatile int bombs = 0;
+	private boolean useGyroscope;
+	private String showTouchController;
+	private float gyroSensibility;
+	private float aimViewSensibility;
+	private float ctrlAimSensibility;
+	public float deadZone;
+	private boolean enableTouchController;
+	private String din_uiScale;
+	private String ui_drawBanner;
+	private boolean useAimAssist;
+	private float autoAimSens;
+	public float uiScale;
+	public boolean ButtonsMapping = false;
+	public boolean isTracking;
+	public boolean ControlsInitialized = false;
 	public float lastx, lasty;
-    private InputProcessor processor = new InputProcessor();
-    private InputMethodManager inputMethodManager;
+	public int transparency;
+	private InputProcessor processor = new InputProcessor();
+	private InputMethodManager inputMethodManager;
 
-    private KeyboardHeightProvider keyboardHeightProvider;
-    private KeyboardHeightProvider.KeyboardListener listener = new KeyboardHeightProvider.KeyboardListener() {
-        @Override
-        public void onHeightChanged(int height) {
-            Display display = getWindowManager().getDefaultDisplay();
-            Point size = new Point();
-            display.getSize(size);
-            executeShell(String.format(Locale.ENGLISH, "con_fHeightFactor = %.6f", (size.y - height) / (float) size.y));
-        }
-    };
+	public class ButtonSet
+	{
+		public List<ButtonSet> ButtonSet;
+		public String bitmap, type, action;
+		public int id, h, w;
+		public float x, y;
+		public ButtonSet(String buttonType_, int id_, float x_, float y_, int h_, int w_, String bitmap_, String keycode_) { 
+			type = buttonType_;
+			id = id_;
+			x = x_;
+			y = y_;
+			h = h_;
+			w = w_;
+			bitmap = bitmap_;
+			action = keycode_;
+		}
+		
+		public List<ButtonSet> getButtonSet() {
+			return ButtonSet;
+		}
+
+		public void setButtonSet(List<ButtonSet> ButtonSet) {
+			this.ButtonSet = ButtonSet;
+		}  
+	}
+
+	private KeyboardHeightProvider keyboardHeightProvider;
+	private KeyboardHeightProvider.KeyboardListener listener = new KeyboardHeightProvider.KeyboardListener() {
+		@Override
+		public void onHeightChanged(int height) {
+			Display display = getWindowManager().getDefaultDisplay();
+			Point size = new Point();
+			display.getSize(size);
+			executeShell(String.format(Locale.ENGLISH, "con_fHeightFactor = %.6f", (size.y - height) / (float) size.y));
+		}
+	};
 
 	private boolean isNetworkConnected() {
 		ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 		return cm.getActiveNetworkInfo() != null;
 	}
 
-    public String getWifiIP() {
+	public String getWifiIP() {
 		if (isNetworkConnected()) {
 				Enumeration<InetAddress> en;
 			try {
@@ -201,8 +239,6 @@ public class MainActivity extends Activity {
 				output.close();
 				input.close();
 			} catch (Exception e) {
-				Log.e("YourApp", "Well that didn't work out so well...");
-				Log.e("YourApp", e.getMessage());
 			}
 			return null;
 		}
@@ -212,13 +248,12 @@ public class MainActivity extends Activity {
 		protected void onPostExecute(Void result) {
 			super.onPostExecute(result);
 			Uri uri = FileProvider.getUriForFile(context,
-                                    context.getApplicationContext().getPackageName() + ".provider", new File(path));
+									context.getApplicationContext().getPackageName() + ".provider", new File(path));
 			Intent intent = new Intent();
 			intent.setAction(Intent.ACTION_VIEW);
 			intent.setDataAndType(uri, "application/vnd.android.package-archive" );
-			Log.d("Lofting", "About to install new .apk");
 			intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 			this.context.startActivity(intent);
 		}	
 	}
@@ -249,7 +284,6 @@ public class MainActivity extends Activity {
 			}
 			catch(Exception ex)
 			{
-				Log.e("App", "yourDataTask", ex);
 				return null;
 			}
 			finally
@@ -296,9 +330,8 @@ public class MainActivity extends Activity {
 				   });
 					dlgAlert.show();
 				}
-            } catch (JSONException ex) {
-                Log.e("App", "Failure", ex);
-            }
+			} catch (JSONException ex) {
+			}
 		  }
 		}
 		
@@ -319,248 +352,278 @@ public class MainActivity extends Activity {
 		}
 	}
 	
-    private void copyFolder(String name) throws IOException {
-        AssetManager assetManager = getAssets();
-        String[] files = assetManager.list(name);
-        if (files == null) {
-            return;
-        }
+	private void copyFolder(String name) throws IOException {
+		AssetManager assetManager = getAssets();
+		String[] files = assetManager.list(name);
+		if (files == null) {
+			return;
+		}
 
-        File outputFilder = new File(homeDir, name);
-        outputFilder.mkdirs();
+		File outputFilder = new File(homeDir, name);
+		outputFilder.mkdirs();
 
-        for (String filename : files) {
-            try (InputStream in = assetManager.open(name + "/" + filename);
-                 OutputStream out = new FileOutputStream(new File(outputFilder, filename))) {
-                byte[] buffer = new byte[1024];
-                int read;
-                while ((read = in.read(buffer)) != -1) {
-                    out.write(buffer, 0, read);
-                }
-            }
-        }
-    }
+		for (String filename : files) {
+			try (InputStream in = assetManager.open(name + "/" + filename);
+				 OutputStream out = new FileOutputStream(new File(outputFilder, filename))) {
+				byte[] buffer = new byte[1024];
+				int read;
+				while ((read = in.read(buffer)) != -1) {
+					out.write(buffer, 0, read);
+				}
+			}
+		}
+	}
 
-    @Override
-    @SuppressLint("ClickableViewAccessibility")
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+	@Override
+	@SuppressLint("ClickableViewAccessibility")
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
 
-        inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+		inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 
-        setContentView(R.layout.main_screen);
-        glSurfaceView = findViewById(R.id.main_content);
-        glSurfaceView.setActivity(this);
+		setContentView(R.layout.main_screen);
+		glSurfaceView = findViewById(R.id.main_content);
+		glSurfaceView.setActivity(this);
 		
-        Button loadBtn = findViewById(R.id.buttonLoad);
-        loadBtn.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                executeShell("sam_bMenuLoad=1;");
-                return true;
-            }
-        });
+		Button loadBtn = findViewById(R.id.buttonLoad);
+		loadBtn.setOnLongClickListener(new View.OnLongClickListener() {
+			@Override
+			public boolean onLongClick(View v) {
+				executeShell("sam_bMenuLoad=1;");
+				return true;
+			}
+		});
 
-        Button saveBtn = findViewById(R.id.buttonSave);
-        saveBtn.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                executeShell("sam_bMenuSave=1;");
-                return true;
-            }
-        });
+		Button saveBtn = findViewById(R.id.buttonSave);
+		saveBtn.setOnLongClickListener(new View.OnLongClickListener() {
+			@Override
+			public boolean onLongClick(View v) {
+				executeShell("sam_bMenuSave=1;");
+				return true;
+			}
+		});
 
-        Button settingsBtn = findViewById(R.id.settingsBtn);
-        settingsBtn.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
+		Button settingsBtn = findViewById(R.id.settingsBtn);
+		settingsBtn.setOnLongClickListener(new View.OnLongClickListener() {
+			@Override
+			public boolean onLongClick(View v) {
 			if (ButtonsMapping == false){
-				Toast toast = Toast.makeText(MainActivity.this, "Buttons mapping: ON",Toast.LENGTH_SHORT);
-				toast.show();
 				ButtonsMapping = true;
-				findViewById(R.id.buttonApply).setVisibility(View.VISIBLE);
+				updateSoftKeyboardVisible();
 				findViewById(R.id.input_SeriousBomb).setVisibility(View.VISIBLE);
-				findViewById(R.id.buttonPlus).setVisibility(View.VISIBLE);
-				findViewById(R.id.buttonMinus).setVisibility(View.VISIBLE);
-
 				isTracking = false;
 			}
-                return true;
-            }
-        });
+				return true;
+			}
+		});
 		
-        findViewById(R.id.input_use).setOnTouchListener(new MyBtnListener(KeyEvent.KEYCODE_BUTTON_R2));
-        findViewById(R.id.input_crunch).setOnTouchListener(new MyBtnListener(KeyEvent.KEYCODE_BUTTON_B));
-        findViewById(R.id.input_jump).setOnTouchListener(new MyBtnListener(KeyEvent.KEYCODE_BUTTON_A));
-        findViewById(R.id.buttonPrev).setOnTouchListener(new MyBtnListener(KeyEvent.KEYCODE_DPAD_LEFT));
-        findViewById(R.id.buttonNext).setOnTouchListener(new MyBtnListener(KeyEvent.KEYCODE_DPAD_RIGHT));
-        findViewById(R.id.input_fire).setOnTouchListener(new MyBtnListener(KeyEvent.KEYCODE_BUTTON_R1));
-        findViewById(R.id.input_SeriousBomb).setOnTouchListener(new MyBtnListener(KeyEvent.KEYCODE_BUTTON_Y));
-        findViewById(R.id.bgTrackerView).setOnTouchListener(new MyBtnListener());
+		ButtonView use = findViewById(R.id.input_use);
+		use.setButtonId(R.id.input_use);
+		use.setKeycode("Use");
 		
-        JoystickView joystick = findViewById(R.id.input_overlay);
-        joystick.setListener(new Listener() {
-            @Override
-            public void onMove(float deltaX, float deltaY, MotionEvent ev) {
-            if (gameState == GameState.NORMAL) {
+		ButtonView crunch = findViewById(R.id.input_crunch);
+		crunch.setButtonId(R.id.input_crunch);
+		crunch.setKeycode("Crunch");
+		
+		ButtonView jump = findViewById(R.id.input_jump);
+		jump.setButtonId(R.id.input_jump);
+		jump.setKeycode("Jump");
+		
+		ButtonView prev = findViewById(R.id.buttonPrev);
+		prev.setButtonId(R.id.buttonPrev);
+		prev.setKeycode("PrevWeapon");
+		
+		ButtonView next = findViewById(R.id.buttonNext);
+		next.setButtonId(R.id.buttonNext);
+		next.setKeycode("NextWeapon");
+		
+		ButtonView fire = findViewById(R.id.input_fire);
+		fire.setButtonId(R.id.input_fire);
+		fire.setKeycode("Fire");
+		
+		ButtonView bomb = findViewById(R.id.input_SeriousBomb);
+		bomb.setButtonId(R.id.input_SeriousBomb);
+		bomb.setKeycode("SeriousBomb");
+		
+		findViewById(R.id.bgTrackerView).setOnTouchListener(new MyBtnListener());
+
+		JoystickView joystick = findViewById(R.id.input_overlay);
+		joystick.setListener(new Listener() {
+			@Override
+			public void onMove(float deltaX, float deltaY, MotionEvent ev) {
+			if (gameState == GameState.NORMAL) {
 				JoystickView joystick = findViewById(R.id.input_overlay);
 					if (ButtonsMapping) {
-						    String fullName = getResources().getResourceName(joystick.getId());
+							String fullName = getResources().getResourceName(joystick.getId());
 							String name = fullName.substring(fullName.lastIndexOf("/") + 1);
-							SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
-							SharedPreferences.Editor sharedPreferencesEditor = preferences.edit();
 							joystick.ButtonsMapping = true;
 							float X = ev.getRawX() + -Utils.convertPixelsToDp(joystick.padPosX, MainActivity.this) - joystick.radius;
 							float Y = ev.getRawY() + -Utils.convertPixelsToDp(joystick.padPosY, MainActivity.this) - joystick.radius;
 							joystick.setX(X);
 							joystick.setY(Y);
-							sharedPreferencesEditor.putFloat(name+"X", X).apply();
-							sharedPreferencesEditor.putFloat(name+"Y", Y).apply();
 						} else {
 							joystick.ButtonsMapping = false;
 							setAxisValue(AXIS_MOVE_LR, deltaX);
 							setAxisValue(AXIS_MOVE_FB, deltaY);
 					}
-                }
-            }
-        });
+				}
+			}
+		});
 
-        InputManager systemService = (InputManager) getSystemService(Context.INPUT_SERVICE);
-        systemService.registerInputDeviceListener(new InputManager.InputDeviceListener() {
-            @Override
-            public void onInputDeviceAdded(int deviceId) {
-                updateSoftKeyboardVisible();
-            }
+		InputManager systemService = (InputManager) getSystemService(Context.INPUT_SERVICE);
+		systemService.registerInputDeviceListener(new InputManager.InputDeviceListener() {
+			@Override
+			public void onInputDeviceAdded(int deviceId) {
+				updateSoftKeyboardVisible();
+			}
 
-            @Override
-            public void onInputDeviceRemoved(int deviceId) {
-                updateSoftKeyboardVisible();
-            }
+			@Override
+			public void onInputDeviceRemoved(int deviceId) {
+				updateSoftKeyboardVisible();
+			}
 
-            @Override
-            public void onInputDeviceChanged(int deviceId) {
-                updateSoftKeyboardVisible();
-            }
-        }, null);
+			@Override
+			public void onInputDeviceChanged(int deviceId) {
+				updateSoftKeyboardVisible();
+			}
+		}, null);
 
-        homeDir = getHomeDir();
-        Log.i(TAG, "HomeDir: " + homeDir);
-        Log.i(TAG, "LibDir: " + getLibDir(this));
+		homeDir = getHomeDir();
+		Log.wtf(TAG, "HomeDir: " + homeDir);
+		Log.wtf(TAG, "LibDir: " + getLibDir(this));
 
-        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+		sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 
-        motionListener = new SensorEventListener() {
-            @Override
-            public void onSensorChanged(SensorEvent event) {
-                if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE && gameState == GameState.NORMAL && useGyroscope && enableTouchController) {
-                    float axisX = event.values[0];
-                    float axisY = event.values[1];
-                    float axisZ = event.values[2];
-                    shiftAxisValue(AXIS_LOOK_LR, axisX * MULT_VIEW_GYROSCOPE * gyroSensibility);
-                    shiftAxisValue(AXIS_LOOK_UD, -axisY * MULT_VIEW_GYROSCOPE * gyroSensibility);
-                }
-            }
+		motionListener = new SensorEventListener() {
+			@Override
+			public void onSensorChanged(SensorEvent event) {
+				if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE && gameState == GameState.NORMAL && useGyroscope && enableTouchController) {
+					float axisX = event.values[0];
+					float axisY = event.values[1];
+					float axisZ = event.values[2];
+					shiftAxisValue(AXIS_LOOK_LR, axisX * MULT_VIEW_GYROSCOPE * gyroSensibility);
+					shiftAxisValue(AXIS_LOOK_UD, -axisY * MULT_VIEW_GYROSCOPE * gyroSensibility);
+				}
+			}
 
-            @Override
-            public void onAccuracyChanged(Sensor sensor, int accuracy) {
-            }
-        };
+			@Override
+			public void onAccuracyChanged(Sensor sensor, int accuracy) {
+			}
+		};
 		
 		checkUpdate();
 		
-        if (!hasStoragePermission(this)) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_STORAGE);
-        } else {
-            startGame();
-        }
-
-        updateSoftKeyboardVisible();
-
-        keyboardHeightProvider = new KeyboardHeightProvider(this);
+		if (!hasStoragePermission(this)) {
+			ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_STORAGE);
+		} else {
+			startGame();
+		}
 		
+		updateSoftKeyboardVisible();
+
+		keyboardHeightProvider = new KeyboardHeightProvider(this);
+
 		executeShell("net_WifiIP=\""+getWifiIP()+"\"");
-//        getWindow().getDecorView().getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
-//            @Override
-//            public boolean onPreDraw() {
-//                return true;
-//            }
-//        });
+		//setupTouchControls();
+//		getWindow().getDecorView().getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+//			@Override
+//			public boolean onPreDraw() {
+//				return true;
+//			}
+//		});
 
-//        getWindow().getDecorView().getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-//            @Override
-//            public void onGlobalLayout() {
+//		getWindow().getDecorView().getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+//			@Override
+//			public void onGlobalLayout() {
 //
-//            }
-//        });
-    }
+//			}
+//		});
+	}
 
-    public void AimAssistState() {
-        if (!useAimAssist) {
-            executeShell("plr_fAutoAimSensitivity=0.0f;");		
-            Log.i(TAG, "AimAssist disabled");
-        }
-    }
+	public void AimAssistState() {
+		if (!useAimAssist) {
+			executeShell("plr_fAutoAimSensitivity=0.0f;");		
+			Log.wtf(TAG, "AimAssist disabled");
+		}
+	}
 
-    public void DinamicUI() {
-        if ("On".equalsIgnoreCase(din_uiScale)) {
-            uiScale = Utils.convertDpToPixel(1.0f, this) * glSurfaceView.getScale();
-            Log.i(TAG, "Dinamic UI Enabled");
-        } else if ("Off".equalsIgnoreCase(din_uiScale)) {
-            uiScale = 1.0f;
-            Log.i(TAG, "Dinamic UI Disabled");
-        } else {
-            uiScale = Utils.convertDpToPixel(1.0f, this) * glSurfaceView.getScale();
-            Log.i(TAG, "Dinamic UI Enabled");
-        }
-    }
+	public void DinamicUI() {
+		if ("On".equalsIgnoreCase(din_uiScale)) {
+			uiScale = Utils.convertDpToPixel(1.0f, this) * glSurfaceView.getScale();
+			Log.wtf(TAG, "Dinamic UI Enabled");
+		} else if ("Off".equalsIgnoreCase(din_uiScale)) {
+			uiScale = 1.0f;
+			Log.wtf(TAG, "Dinamic UI Disabled");
+		} else {
+			uiScale = Utils.convertDpToPixel(1.0f, this) * glSurfaceView.getScale();
+			Log.wtf(TAG, "Dinamic UI Enabled");
+		}
+	}
 
-    public void drawBanner() {
-        if ("On".equalsIgnoreCase(ui_drawBanner)) {
-            executeShell("ui_drawBanner=1;");
-            Log.i(TAG, "DrawBanner Enabled");
-        } else if ("Off".equalsIgnoreCase(ui_drawBanner)) {
-            executeShell("ui_drawBanner=0;");
-            Log.i(TAG, "DrawBanner Disabled");
-        } else {
-            executeShell("ui_drawBanner=1;");
-            Log.i(TAG, "DrawBanner Enabled");
-        }
-    }
+	public void drawBanner() {
+		if ("On".equalsIgnoreCase(ui_drawBanner)) {
+			executeShell("ui_drawBanner=1;");
+			Log.wtf(TAG, "DrawBanner Enabled");
+		} else if ("Off".equalsIgnoreCase(ui_drawBanner)) {
+			executeShell("ui_drawBanner=0;");
+			Log.wtf(TAG, "DrawBanner Disabled");
+		} else {
+			executeShell("ui_drawBanner=1;");
+			Log.wtf(TAG, "DrawBanner Enabled");
+		}
+	}
 
-    public void updateSoftKeyboardVisible() {
-        enableTouchController = false;
-        if (gameState == GameState.NORMAL) {
-            if ("Yes".equalsIgnoreCase(showTouchController)) {
-                enableTouchController = true;
-            } else if ("No".equalsIgnoreCase(showTouchController)) {
-                enableTouchController = false;
-            } else {
-                enableTouchController = !Utils.isThereControllers();
-            }
-        }
-        int keyboardVisibility = enableTouchController ? View.VISIBLE : View.GONE;
-        findViewById(R.id.input_overlay).setVisibility(keyboardVisibility);
-        findViewById(R.id.input_crunch).setVisibility(keyboardVisibility);
-        findViewById(R.id.input_jump).setVisibility(keyboardVisibility);
-        findViewById(R.id.input_fire).setVisibility(keyboardVisibility);
-        findViewById(R.id.input_use).setVisibility(keyboardVisibility);
-        findViewById(R.id.buttonPrev).setVisibility(keyboardVisibility);
-        findViewById(R.id.buttonNext).setVisibility(keyboardVisibility);
-        findViewById(R.id.bgTrackerView).setVisibility(keyboardVisibility);
-        findViewById(R.id.settingsBtn).setVisibility((gameState == GameState.NORMAL || gameState == GameState.DEMO) ? View.VISIBLE : View.GONE);
-        findViewById(R.id.buttonLoad).setVisibility(gameState == GameState.NORMAL ? View.VISIBLE : View.GONE);
-        findViewById(R.id.buttonConsole).setVisibility(gameState == GameState.NORMAL ? View.VISIBLE : View.GONE);
-        findViewById(R.id.buttonSave).setVisibility(gameState == GameState.NORMAL ? View.VISIBLE : View.GONE);
-        findViewById(R.id.input_SeriousBomb).setVisibility(enableTouchController && bombs > 0 ? View.VISIBLE : View.GONE);
-        findViewById(R.id.buttonApply).setVisibility(enableTouchController && ButtonsMapping == true ? View.VISIBLE : View.GONE);
-        findViewById(R.id.buttonPlus).setVisibility(enableTouchController && ButtonsMapping == true ? View.VISIBLE : View.GONE);
-        findViewById(R.id.buttonMinus).setVisibility(enableTouchController && ButtonsMapping == true ? View.VISIBLE : View.GONE);
+	public void updateSoftKeyboardVisible() {
+		enableTouchController = false;
+		if (gameState == GameState.NORMAL) {
+			if ("Yes".equalsIgnoreCase(showTouchController)) {
+				enableTouchController = true;
+			} else if ("No".equalsIgnoreCase(showTouchController)) {
+				enableTouchController = false;
+			} else {
+				enableTouchController = !Utils.isThereControllers();
+			}
+		}
+		int keyboardVisibility = enableTouchController ? View.VISIBLE : View.GONE;
 
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN);
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+		ConstraintLayout constraintView = findViewById(R.id.constraint_content);
+		ViewGroup parent = (ViewGroup) constraintView;
+		
+		if (parent != null) {
+			for(int i=0; i < parent.getChildCount(); i++) {
+				View child = parent.getChildAt(i);
+				child.setVisibility(keyboardVisibility);
+				if (child instanceof Button && !(child instanceof ButtonView)) {
+					if (child.getId() == R.id.buttonApply 
+						|| child.getId() == R.id.buttonPlus 
+							|| child.getId() == R.id.buttonMinus) {
+						child.setVisibility(enableTouchController && ButtonsMapping == true ? View.VISIBLE : View.GONE);
+					}
+				}
+			}
+		}
+		
+		ButtonView SeriousBomb = findViewById(R.id.input_SeriousBomb);
 
-        if (gameState == GameState.NORMAL) {
+		SeriousBomb.setVisibility(enableTouchController && bombs > 0 ? View.VISIBLE : View.INVISIBLE);
+		
+		Button settingsBtn = findViewById(R.id.settingsBtn);
+		settingsBtn.getBackground().setAlpha(255 - transparency);
+		
+		Button buttonConsole = findViewById(R.id.buttonConsole);
+		buttonConsole.getBackground().setAlpha(255 - transparency);
+		
+		Button buttonLoad = findViewById(R.id.buttonLoad);
+		buttonLoad.getBackground().setAlpha(255 - transparency);
+		
+		Button buttonSave = findViewById(R.id.buttonSave);
+		buttonSave.getBackground().setAlpha(255 - transparency);
+		
+		getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN);
+		getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+		if (gameState == GameState.NORMAL) {
 		findViewById(R.id.main_content).requestPointerCapture();
 		findViewById(R.id.main_content).setOnCapturedPointerListener(new View.OnCapturedPointerListener() {
 		  @Override
@@ -591,211 +654,210 @@ public class MainActivity extends Activity {
 			return true;
 		  }
 		});
-        } else {
+		} else {
 			findViewById(R.id.main_content).releasePointerCapture();
 		}
 
-        if (gameState == GameState.MENU || gameState == GameState.CONSOLE) {
-            getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN);
-        } else {
-            getWindow().getDecorView().setSystemUiVisibility(
-                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
-                            View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
-                            View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
-                            View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
-                            View.SYSTEM_UI_FLAG_FULLSCREEN |
-                            View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
-        }
+		if (gameState == GameState.MENU || gameState == GameState.CONSOLE) {
+			getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN);
+		} else {
+			getWindow().getDecorView().setSystemUiVisibility(
+					View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+							View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
+							View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
+							View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
+							View.SYSTEM_UI_FLAG_FULLSCREEN |
+							View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+		}
 
-        if (gameState == GameState.CONSOLE) {
-            if (glSurfaceView.requestFocus()) {
-                inputMethodManager.showSoftInput(glSurfaceView, 0);
-            }
-        }
-    }
+		if (gameState == GameState.CONSOLE) {
+			if (glSurfaceView.requestFocus()) {
+				inputMethodManager.showSoftInput(glSurfaceView, 0);
+			}
+		}
+	}
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        sensorManager.registerListener(motionListener, sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE), 10000);
-        EventBus.getDefault().register(this);
-        keyboardHeightProvider.addKeyboardListener(listener);
-    }
+	@Override
+	protected void onStart() {
+		super.onStart();
+		sensorManager.registerListener(motionListener, sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE), 10000);
+		EventBus.getDefault().register(this);
+		keyboardHeightProvider.addKeyboardListener(listener);
+	}
 
-    @Override
-    protected void onStop() {
-        super.onStop();
-        sensorManager.unregisterListener(motionListener);
-        EventBus.getDefault().unregister(this);
-        keyboardHeightProvider.removeKeyboardListener(listener);
-    }
+	@Override
+	protected void onStop() {
+		super.onStop();
+		sensorManager.unregisterListener(motionListener);
+		EventBus.getDefault().unregister(this);
+		keyboardHeightProvider.removeKeyboardListener(listener);
+	}
 
-    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
-    public void onFatalError(final ErrorEvent event) {
-        AlertDialog.Builder dlgAlert = new AlertDialog.Builder(this);
-        dlgAlert.setMessage(event.message);
-        dlgAlert.setTitle("Fatal Error");
-        dlgAlert.setPositiveButton("Close", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                if (event.fatal) {
-                    System.exit(1);
-                }
-            }
-        });
-        dlgAlert.setCancelable(false);
-        dlgAlert.create().show();
-    }
+	@Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+	public void onFatalError(final ErrorEvent event) {
+		AlertDialog.Builder dlgAlert = new AlertDialog.Builder(this);
+		dlgAlert.setMessage(event.message);
+		dlgAlert.setTitle("Fatal Error");
+		dlgAlert.setPositiveButton("Close", new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				if (event.fatal) {
+					System.exit(1);
+				}
+			}
+		});
+		dlgAlert.setCancelable(false);
+		dlgAlert.create().show();
+	}
 
-    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
-    public void onConsoleVisibilityChange(StateChangeEvent event) {
-        gameState = event.state;
-        bombs = event.bombs;
-        updateSoftKeyboardVisible();
-    }
+	@Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+	public void onConsoleVisibilityChange(StateChangeEvent event) {
+		gameState = event.state;
+		bombs = event.bombs;
+		updateSoftKeyboardVisible();
+	}
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void openSettings(OpenSettingsEvent event) {
-        startActivity(new Intent(this, SettingsActivity.class));
-    }
+	@Subscribe(threadMode = ThreadMode.MAIN)
+	public void openSettings(OpenSettingsEvent event) {
+		startActivity(new Intent(this, SettingsActivity.class));
+	}
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void editText(final EditTextEvent event) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+	@Subscribe(threadMode = ThreadMode.MAIN)
+	public void editText(final EditTextEvent event) {
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
-        // Set up the input
-        final EditText input = new EditText(this);
-        input.setText(event.defaultText);
-        builder.setView(input);
+		// Set up the input
+		final EditText input = new EditText(this);
+		input.setText(event.defaultText);
+		builder.setView(input);
 
-        // Set up the buttons
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                nConfirmEditText(input.getText().toString());
-            }
-        });
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.cancel();
-                nCancelEditText();
-            }
-        });
+		// Set up the buttons
+		builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				nConfirmEditText(input.getText().toString());
+			}
+		});
+		builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				dialog.cancel();
+				nCancelEditText();
+			}
+		});
 
-        builder.show();
-    }
+		builder.show();
+	}
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        // hide verything from the screen
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE);
+	@Override
+	protected void onResume() {
+		super.onResume();
+		// hide verything from the screen
+		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE);
 
-        if (isGameStarted) {
-            glSurfaceView.start();
-        }
+		if (isGameStarted) {
+			glSurfaceView.start();
+		}
 
-        glSurfaceView.syncOptions();
-        syncOptions();
-        keyboardHeightProvider.onResume();
-    }
+		glSurfaceView.syncOptions();
+		syncOptions();
+		keyboardHeightProvider.onResume();
+	}
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        glSurfaceView.stop();
-        executeShell("HideConsole();");
-        executeShell("HideComputer();");
-        executeShell("SaveOptions();");
-        keyboardHeightProvider.onPause();
-    }
+	@Override
+	protected void onPause() {
+		super.onPause();
+		glSurfaceView.stop();
+		executeShell("HideConsole();");
+		executeShell("HideComputer();");
+		executeShell("SaveOptions();");
+		keyboardHeightProvider.onPause();
+	}
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void restartEvent(RestartEvent event) {
-        final MainActivity context = MainActivity.this;
-        runOnUiThread(new Runnable() {
-            public void run() {
-                ProgressDialog dialog = new ProgressDialog(context);
-                dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-                dialog.setTitle("SeriousSam");
-                dialog.setMessage("Restarting");
-                dialog.setCancelable(false);
-                dialog.setMax(0);
-                dialog.show();
-            }
-        });
-        new Handler().postDelayed(new Runnable() {
-            public void run() {
-                // restart
-                PendingIntent mPendingIntent = PendingIntent.getActivity(MainActivity.this, 1000, getIntent(), PendingIntent.FLAG_CANCEL_CURRENT);
-                AlarmManager mgr = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-                mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 100, mPendingIntent);
-                System.exit(0);
-            }
-        }, 1000);
-    }
+	@Subscribe(threadMode = ThreadMode.MAIN)
+	public void restartEvent(RestartEvent event) {
+		final MainActivity context = MainActivity.this;
+		runOnUiThread(new Runnable() {
+			public void run() {
+				ProgressDialog dialog = new ProgressDialog(context);
+				dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+				dialog.setTitle("SeriousSam");
+				dialog.setMessage("Restarting");
+				dialog.setCancelable(false);
+				dialog.setMax(0);
+				dialog.show();
+			}
+		});
+		new Handler().postDelayed(new Runnable() {
+			public void run() {
+				// restart
+				PendingIntent mPendingIntent = PendingIntent.getActivity(MainActivity.this, 1000, getIntent(), PendingIntent.FLAG_CANCEL_CURRENT);
+				AlarmManager mgr = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+				mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 100, mPendingIntent);
+				System.exit(0);
+			}
+		}, 1000);
+	}
 
-    private static boolean hasStoragePermission(Context context) {
-        return ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
-    }
+	private static boolean hasStoragePermission(Context context) {
+		return ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+	}
 
-    @Override
-    public boolean dispatchGenericMotionEvent(MotionEvent ev) {
-        switch(ev.getAction()) {
-        case MotionEvent.ACTION_MOVE:
-            setAxisValue(AXIS_MOVE_FB, applyDeadZone(-ev.getAxisValue(MotionEvent.AXIS_Y)));
-            setAxisValue(AXIS_MOVE_LR, applyDeadZone(-ev.getAxisValue(MotionEvent.AXIS_X)));
-            setAxisValue(AXIS_LOOK_LR, applyDeadZone(-ev.getAxisValue(MotionEvent.AXIS_Z)) * MULT_VIEW_CONTROLLER * ctrlAimSensibility);
-            setAxisValue(AXIS_LOOK_UD, applyDeadZone(-ev.getAxisValue(MotionEvent.AXIS_RZ)) * MULT_VIEW_CONTROLLER * ctrlAimSensibility);
-            nDispatchKeyEvent(KeyEvent.KEYCODE_BUTTON_R2, ev.getAxisValue(MotionEvent.AXIS_RTRIGGER) > .5f ? 1 : 0);
-            nDispatchKeyEvent(KeyEvent.KEYCODE_BUTTON_L2, ev.getAxisValue(MotionEvent.AXIS_RTRIGGER) < -.5f ? 1 : 0);
-            nDispatchKeyEvent(KeyEvent.KEYCODE_DPAD_LEFT, ev.getAxisValue(MotionEvent.AXIS_HAT_X) < -.5f ? 1 : 0);
-            nDispatchKeyEvent(KeyEvent.KEYCODE_DPAD_RIGHT, ev.getAxisValue(MotionEvent.AXIS_HAT_X) > .5f ? 1 : 0);
-            nDispatchKeyEvent(KeyEvent.KEYCODE_DPAD_UP, ev.getAxisValue(MotionEvent.AXIS_HAT_Y) < -.5f ? 1 : 0);
-            nDispatchKeyEvent(KeyEvent.KEYCODE_DPAD_DOWN, ev.getAxisValue(MotionEvent.AXIS_HAT_Y) > .5f ? 1 : 0);
+	@Override
+	public boolean dispatchGenericMotionEvent(MotionEvent ev) {
+		switch(ev.getAction()) {
+		case MotionEvent.ACTION_MOVE:
+			setAxisValue(AXIS_MOVE_FB, applyDeadZone(-ev.getAxisValue(MotionEvent.AXIS_Y)));
+			setAxisValue(AXIS_MOVE_LR, applyDeadZone(-ev.getAxisValue(MotionEvent.AXIS_X)));
+			setAxisValue(AXIS_LOOK_LR, applyDeadZone(-ev.getAxisValue(MotionEvent.AXIS_Z)) * MULT_VIEW_CONTROLLER * ctrlAimSensibility);
+			setAxisValue(AXIS_LOOK_UD, applyDeadZone(-ev.getAxisValue(MotionEvent.AXIS_RZ)) * MULT_VIEW_CONTROLLER * ctrlAimSensibility);
+			nDispatchKeyEvent(KeyEvent.KEYCODE_BUTTON_R2, ev.getAxisValue(MotionEvent.AXIS_RTRIGGER) > .5f ? 1 : 0);
+			nDispatchKeyEvent(KeyEvent.KEYCODE_BUTTON_L2, ev.getAxisValue(MotionEvent.AXIS_RTRIGGER) < -.5f ? 1 : 0);
+			nDispatchKeyEvent(KeyEvent.KEYCODE_DPAD_LEFT, ev.getAxisValue(MotionEvent.AXIS_HAT_X) < -.5f ? 1 : 0);
+			nDispatchKeyEvent(KeyEvent.KEYCODE_DPAD_RIGHT, ev.getAxisValue(MotionEvent.AXIS_HAT_X) > .5f ? 1 : 0);
+			nDispatchKeyEvent(KeyEvent.KEYCODE_DPAD_UP, ev.getAxisValue(MotionEvent.AXIS_HAT_Y) < -.5f ? 1 : 0);
+			nDispatchKeyEvent(KeyEvent.KEYCODE_DPAD_DOWN, ev.getAxisValue(MotionEvent.AXIS_HAT_Y) > .5f ? 1 : 0);
 			break;
 		default:
 			return false;
-        }
-        return true;
-    }
+		}
+		return true;
+	}
 
-    private float applyDeadZone(float input) {
-        if (input < -deadZone) {
-            return (input + deadZone) / (1 - deadZone);
-        } else if (input > deadZone) {
-            return (input - deadZone) / (1 - deadZone);
-        } else {
-            return 0;
-        }
-    }
+	private float applyDeadZone(float input) {
+		if (input < -deadZone) {
+			return (input + deadZone) / (1 - deadZone);
+		} else if (input > deadZone) {
+			return (input - deadZone) / (1 - deadZone);
+		} else {
+			return 0;
+		}
+	}
 
-    public static void tryPremain(Context context) {
-        if (hasStoragePermission(context)) {
-            File homeDir = getHomeDir();
-            if (!homeDir.exists()) homeDir.mkdirs();
-            SeriousSamSurface.initializeLibrary(homeDir.getAbsolutePath(), getLibDir(context));
-        }
-    }
+	public static void tryPremain(Context context) {
+		if (hasStoragePermission(context)) {
+			File homeDir = getHomeDir();
+			if (!homeDir.exists()) homeDir.mkdirs();
+			SeriousSamSurface.initializeLibrary(homeDir.getAbsolutePath(), getLibDir(context));
+		}
+	}
 
-    @NonNull
-    private static String getLibDir(Context context) {
-        return context.getApplicationInfo().dataDir + "/lib";
-    }
+	@NonNull
+	private static String getLibDir(Context context) {
+		return context.getApplicationInfo().dataDir + "/lib";
+	}
 
-    @NonNull
-    private static File getHomeDir() {
-        return new File(Environment.getExternalStorageDirectory(), BuildConfig.home).getAbsoluteFile();
-    }
+	@NonNull
+	private static File getHomeDir() {
+		return new File(Environment.getExternalStorageDirectory(), BuildConfig.home).getAbsoluteFile();
+	}
 
-    @Override
-    public boolean dispatchKeyEvent(KeyEvent event) {
-        int keyCode = event.getKeyCode();
+	@Override
+	public boolean dispatchKeyEvent(KeyEvent event) {
+		int keyCode = event.getKeyCode();
 		int deviceId = event.getDeviceId();
-        int source = event.getSource();
-		Log.i(TAG, "Source: " + source);
-       /* if (event.getRepeatCount() == 0 && ((source & InputDevice.SOURCE_KEYBOARD) != 0)) {
+		int source = event.getSource();
+	   /* if (event.getRepeatCount() == 0 && ((source & InputDevice.SOURCE_KEYBOARD) != 0)) {
 			executeShell("input_iIsShiftPressed = " + (event.isShiftPressed() ? 1 : 0));
 			switch (event.getAction()) {
 				case KeyEvent.ACTION_DOWN:
@@ -814,16 +876,16 @@ public class MainActivity extends Activity {
 				default:
 					return false;
 			}
-        } */
+		} */
 		if ((source & InputDevice.SOURCE_MOUSE) != 0) {
-            if ((keyCode == KeyEvent.KEYCODE_FORWARD)) {
-                switch (event.getAction()) {
-                case KeyEvent.ACTION_DOWN:
-                case KeyEvent.ACTION_UP:
-                    return true;
-                }
-            }
-        }
+			if ((keyCode == KeyEvent.KEYCODE_FORWARD)) {
+				switch (event.getAction()) {
+				case KeyEvent.ACTION_DOWN:
+				case KeyEvent.ACTION_UP:
+					return true;
+				}
+			}
+		}
 		if (keyCode == KeyEvent.KEYCODE_VOLUME_UP || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
 			return false;
 		}
@@ -940,53 +1002,51 @@ public class MainActivity extends Activity {
 		if (event.getAction() == KeyEvent.ACTION_DOWN && unicodeChar > 0) {
 			executeShell("MenuChar(" + unicodeChar + ")");
 		}
-        return true;
-    }
+		return true;
+	}
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == REQUEST_WRITE_STORAGE) {
-            if (grantResults.length > 0) {
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Log.d(TAG,"Permission is granted");
-                    startGame();
-                } else {
-                    finish();
-                }
-            }
-        }
-    }
+	@Override
+	public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+		if (requestCode == REQUEST_WRITE_STORAGE) {
+			if (grantResults.length > 0) {
+				if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+				Log.wtf(TAG,"Permission is granted");
+					startGame();
+				} else {
+					finish();
+				}
+			}
+		}
+	}
 
-    // ui listeners
-    public void showMenu(View view) {
-        executeShell("sam_bMenu=1;");
-        executeShell("net_WifiIP=\""+getWifiIP()+"\"");
-    }
+	// ui listeners
+	public void showMenu(View view) {
+		executeShell("sam_bMenu=1;");
+		executeShell("net_WifiIP=\""+getWifiIP()+"\"");
+	}
 
-    public void doProfiling(View view) {
-        executeShell("RecordProfile();");
-    }
+	public void doProfiling(View view) {
+		executeShell("RecordProfile();");
+	}
 
-    public void doConsole(View view) {
-        executeShell("ToggleConsole();");
-    }
+	public void doConsole(View view) {
+		executeShell("ToggleConsole();");
+	}
 
-    public void keyboardHidden() {
-        executeShell("HideConsole();");
-    }
+	public void keyboardHidden() {
+		executeShell("HideConsole();");
+	}
 
-    public void doQuickLoad(View view) {
-        executeShell("gam_bQuickLoad=1;");
-    }
+	public void doQuickLoad(View view) {
+		executeShell("gam_bQuickLoad=1;");
+	}
 
-    public void doQuickSave(View view) {
-        executeShell("gam_bQuickSave=1;");
-    }
+	public void doQuickSave(View view) {
+		executeShell("gam_bQuickSave=1;");
+	}
 	
 	public void changeButtonSize(String mode) {
 		try {
-			SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
-			SharedPreferences.Editor sharedPreferencesEditor = preferences.edit();
 			ConstraintLayout constraintView = findViewById(R.id.constraint_content);
 			ViewGroup parent = (ViewGroup) constraintView;
 			
@@ -1005,199 +1065,355 @@ public class MainActivity extends Activity {
 						String name = fullName.substring(fullName.lastIndexOf("/") + 1);
 						btn.getLayoutParams().width = btn.getLayoutParams().width + count;
 						btn.getLayoutParams().height = btn.getLayoutParams().height + count;
-						sharedPreferencesEditor.putInt(name+"H", btn.getLayoutParams().height).apply();
-						sharedPreferencesEditor.putInt(name+"W", btn.getLayoutParams().width).apply();
 						btn.setVisibility(View.GONE);
 						btn.setVisibility(View.VISIBLE);	
 					}
 				}
 			}
 		} catch (Exception e) {
-			Toast toast = Toast.makeText(MainActivity.this, "Error: " + e,Toast.LENGTH_SHORT);
+			Toast toast = Toast.makeText(MainActivity.this, "Change button size error: " + e,Toast.LENGTH_SHORT);
 			toast.show();
 		}
 	}
 
-    public void btnApply(View view) {
-		Toast toast = Toast.makeText(MainActivity.this, "Buttons mapping: OFF",Toast.LENGTH_SHORT);
-		toast.show();
-		findViewById(R.id.buttonApply).setVisibility(View.GONE);
-		findViewById(R.id.buttonPlus).setVisibility(View.GONE);
-		findViewById(R.id.buttonMinus).setVisibility(View.GONE);
-		findViewById(R.id.input_SeriousBomb).setVisibility(View.GONE);
+	public void btnApply(View view) {
+		generateControlsJson();
 		ButtonsMapping = false;
-    }
+		updateSoftKeyboardVisible();
+	}
+
+	void restoreControls() {
+		File homeDir = getHomeDir();
+		File controlsFolder = new File(homeDir + "/TouchControls");
+		String jsonF = controlsFolder  + "/Controls.json";
+		File jsonFile = new File(jsonF);
+		
+		if (jsonFile.exists()) {
+			ConstraintLayout constraintView = findViewById(R.id.constraint_content);
+			ViewGroup parent = (ViewGroup) constraintView;
+			
+			StringBuilder text = new StringBuilder();
+			try {
+				BufferedReader br = new BufferedReader(new FileReader(jsonFile));
+				String line;
+
+				while ((line = br.readLine()) != null) {
+					text.append(line);
+					text.append('\n');
+				}
+				br.close();
+
+				Gson gson = new Gson();
+
+				ButtonSet[] listItems = gson.fromJson(String.valueOf(text), ButtonSet[].class);
+
+				for (ButtonSet item : listItems)
+				{
+					switch (item.type) {
+						case "BitmapButton":
+							InitBitmapButton(item.id, item.bitmap, item.x, item.y, item.h, item.w, item.action);
+							break;
+						case "Joystick":
+							JoystickView joystick = findViewById(R.id.input_overlay);
+							joystick.setX(item.x);
+							joystick.setY(item.y);
+							break;
+					}
+				}
+
+			} catch (Exception e) {
+				Toast toast = Toast.makeText(MainActivity.this, "Restore controls error:" + e,Toast.LENGTH_SHORT);
+				toast.show();
+			}
+		}
+		return;
+	}
+
+	public List<View> getAllButtons(ViewGroup layout){
+			List<View> btn = new ArrayList<>();
+			for(int i =0; i< layout.getChildCount(); i++){
+				View v =layout.getChildAt(i);
+				btn.add((View) v);
+			}
+			return btn;
+	}
+
+	void generateControlsJson() {
+		ConstraintLayout constraintView = findViewById(R.id.constraint_content);
+		ViewGroup parent = (ViewGroup) constraintView;
+
+		File homeDir = getHomeDir();
+		File controlsFolder = new File(homeDir + "/TouchControls");
+		
+		String jsonF = controlsFolder + "/Controls.json";
+		File jsonFile = new File(jsonF);
+		Gson gson = new Gson();
+		ArrayList<ButtonSet> buttons = new ArrayList<>();
+		
+		List<View> btn_list = getAllButtons(constraintView);
+		
+		try (Writer writer = new FileWriter(jsonF)) {
+			if (btn_list != null) {
+				for(int i=0; i < btn_list.size(); i++) {
+					View child = btn_list.get(i);
+					if (child instanceof ButtonView) {
+						ButtonView btn = (ButtonView) child;
+						int bitmapId = btn.getBitmap();
+						String fullBitmapName = getResources().getResourceName(bitmapId);
+						String bitmapName = fullBitmapName.substring(fullBitmapName.lastIndexOf("/") + 1);
+						buttons.add(new ButtonSet("BitmapButton", btn.getButtonId(), btn.getX(), btn.getY(), btn.getLayoutParams().height, 
+						btn.getLayoutParams().width, bitmapName, btn.getKeycode()));
+					}
+					if (child instanceof JoystickView) {
+						JoystickView joystick = (JoystickView) child;
+						buttons.add(new ButtonSet("Joystick", 0, joystick.getX(), joystick.getY(), 0, 0, "", ""));
+					}
+				}
+			}
+			Gson gsonWrite = new GsonBuilder().setPrettyPrinting().create();
+			gsonWrite.toJson(buttons, writer);
+			Toast toast = Toast.makeText(MainActivity.this, "Touch Controls saved!",Toast.LENGTH_SHORT);
+			toast.show();
+		} catch (IOException e) {
+			Toast toast = Toast.makeText(MainActivity.this, "Generate default controls error: " + e,Toast.LENGTH_SHORT);
+			toast.show();
+		}
+		if (!ButtonsMapping) {
+			restoreControls();	
+		}
+	}
+
+	void setupTouchControls() {
+		File homeDir = getHomeDir();
+		File controlsFolder = new File(homeDir + "/TouchControls");
+		if (!controlsFolder.exists()) controlsFolder.mkdirs();
+		
+		String jsonF = controlsFolder  + "/Controls.json";
+		File jsonFile = new File(jsonF);
+		
+		if (!jsonFile.exists()) {
+			generateControlsJson();
+		} else {
+			restoreControls();
+		}
+		updateSoftKeyboardVisible();
+	}
+
+	public void createTextButton(String text, float x, float y, String keyCode, int id) {
+		ConstraintLayout constraintView = findViewById(R.id.constraint_content);
+		Button btn = new Button(this);
+		btn.setLayoutParams(new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.WRAP_CONTENT, ConstraintLayout.LayoutParams.WRAP_CONTENT));
+		btn.setX(x);
+		btn.setY(y);
+		btn.setText(text);
+		btn.setId(id);
+		constraintView.addView(btn);
+		btn.setVisibility(View.VISIBLE);
+		btn.setOnTouchListener(new MyBtnListener(keyCode));
+	}
+
+	public void InitBitmapButton(int id, String bitmap, float x, float y, int h, int w, String keyCode) {
+		ConstraintLayout constraintView = findViewById(R.id.constraint_content);
+		try {
+				View check = findViewById(id);
+				if (check instanceof ButtonView) {
+					ButtonView btn = findViewById(id);
+					int bitmapId = getResources().getIdentifier(bitmap, "drawable",this.getPackageName());
+					btn.setX(x);
+					btn.setY(y);
+					btn.getLayoutParams().height = h;
+					btn.getLayoutParams().width = w;
+					if (bitmapId > 0) {
+						btn.setBitmap(bitmapId);
+					}
+					btn.getBackground().setAlpha(255 - transparency);
+					btn.setKeycode(keyCode);
+					btn.setOnTouchListener(new MyBtnListener(keyCode));
+				} else {
+					ButtonView btn = new ButtonView(this);
+					btn.setKeycode(keyCode);
+					btn.setOnTouchListener(new MyBtnListener(keyCode));
+					int bitmapId = getResources().getIdentifier(bitmap, "drawable",this.getPackageName());
+					String tag = String.valueOf(id);
+					ConstraintLayout.LayoutParams layoutParams = new ConstraintLayout.LayoutParams(140, 140);
+					layoutParams.setMargins(5, 3, 0, 0); // left, top, right, bottom
+					btn.setLayoutParams(layoutParams);
+					btn.setX(x);
+					btn.setY(y);
+				//	btn.setId(id);
+					btn.setButtonId(id);
+					btn.setTag(tag);
+					btn.getLayoutParams().height = h;
+					btn.getLayoutParams().width = w;
+					if (bitmapId > 0) {
+						btn.setBitmap(bitmapId);
+					}
+					btn.getBackground().setAlpha(255 - transparency);
+					constraintView.addView(btn);
+					btn.setVisibility(View.VISIBLE);
+				}
+		} catch (Exception e) {
+			
+		}
+	}
 	
 	public void btnPlus(View view) {
 		changeButtonSize("+");
+		//ConstraintLayout constraintView = findViewById(R.id.constraint_content);
+		//float  centreX=constraintView.getX() + constraintView.getWidth()  / 2;
+		//float centreY=constraintView.getY() + constraintView.getHeight() / 2;
+		//InitBitmapButton(123, "ic_fire", centreX, centreY, 140, 140, "Tab");
+		//createTextButton("Test", centreX, centreY, KeyEvent.KEYCODE_BUTTON_R1);
 	}
 	
 	public void btnMinus(View view) {
 		changeButtonSize("-");
 	}
 
-    @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
-        super.onWindowFocusChanged(hasFocus);
-        if (hasFocus) {
-            updateSoftKeyboardVisible();
-        }
-    }
+	@Override
+	public void onWindowFocusChanged(boolean hasFocus) {
+		super.onWindowFocusChanged(hasFocus);
+		if (hasFocus) {
+			updateSoftKeyboardVisible();
+		}
+	}
 
-    private void startGame() {
-        if (!homeDir.exists()) homeDir.mkdirs();
-        try {
-            copyFolder("Scripts/Menu");
-            copyFolder("Scripts/NetSettings");
-            copyFolder("Classes/AdvancedItemClasses");
-            copyFolder("Classes/AdvancedMonsterClasses");
-        } catch (IOException e) {
-            Log.e(TAG, "Error while copying resources", e);
-        }
-        SeriousSamSurface.initializeLibrary(homeDir.getAbsolutePath(), getLibDir(this));
-        isGameStarted = true;
-        glSurfaceView.start();
-    }
+	private void startGame() {
+		if (!homeDir.exists()) homeDir.mkdirs();
+		try {
+			copyFolder("Scripts/Menu");
+			copyFolder("Scripts/NetSettings");
+			copyFolder("Classes/AdvancedItemClasses");
+			copyFolder("Classes/AdvancedMonsterClasses");
+		} catch (IOException e) {
+			Log.e(TAG, "Error while copying resources", e);
+		}
+		SeriousSamSurface.initializeLibrary(homeDir.getAbsolutePath(), getLibDir(this));
+		isGameStarted = true;
+		glSurfaceView.start();
+	}
 
-    public void syncOptions() {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        useGyroscope = preferences.getBoolean("use_gyroscope", false);
-        showTouchController = preferences.getString("showTouchController", "Auto");
-        gyroSensibility = preferences.getInt("gyro_sensibility", 50) / 100.f;
-        aimViewSensibility = preferences.getInt("aimView_sensibility", 100) / 100.f;
-        ctrlAimSensibility = preferences.getInt("ctrl_aimSensibility", 100) / 100.f;
-        deadZone = preferences.getInt("ctrl_deadZone", 20) / 100.f;
-        din_uiScale = preferences.getString("din_uiScale", "On");
-        ui_drawBanner = preferences.getString("ui_drawBanner", "On");
-        useAimAssist = preferences.getBoolean("useAimAssist", true);
-        autoAimSens = preferences.getInt("autoAimSens", 100) / 100.f;
-        DinamicUI();
-        drawBanner();
-        executeShell("plr_fAutoAimSensitivity=" + autoAimSens + ";");
-        AimAssistState();		
-        executeShell("hud_iStats=" + (preferences.getBoolean("hud_iStats", false) ? 2 : 0) + ";");
-        executeShell("input_uiScale=" + uiScale + ";");
-        Log.i(TAG, "uiScale: " + uiScale);
-        updateSoftKeyboardVisible();
-    }
-	
-    @Subscribe(threadMode = ThreadMode.MAIN)
-	public void updateUI(UpdateUIEvent event) {
-        final MainActivity context = MainActivity.this;
-        runOnUiThread(new Runnable() {
-            public void run() {		
-				try {
-					SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
-					ConstraintLayout constraintView = findViewById(R.id.constraint_content);
-					ViewGroup parent = (ViewGroup) constraintView;
-					
-					if (parent != null) {
-						for(int i=0; i < parent.getChildCount(); i++) {
-							View child = parent.getChildAt(i);
-							if ((child instanceof ButtonView) || (child instanceof JoystickView)) { 
-								String fullName = getResources().getResourceName(child.getId());
-								String name = fullName.substring(fullName.lastIndexOf("/") + 1);
-								if (child instanceof ButtonView) {
-									int H = preferences.getInt(name+"H",child.getLayoutParams().height);
-									int W = preferences.getInt(name+"W",child.getLayoutParams().width);
-									child.getLayoutParams().height = H;
-									child.getLayoutParams().width = W;
-								}
-								float X = preferences.getFloat(name+"X",child.getX());
-								float Y = preferences.getFloat(name+"Y",child.getY());
-								child.setX(X);
-								child.setY(Y);
-							}
-						}
-					}
-				} catch (Exception e) {
-					Toast toast = Toast.makeText(MainActivity.this, "UI update error: " + e,Toast.LENGTH_SHORT);
-					toast.show();
-				}
-            }
-        });
+	public void syncOptions() {
+		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+		useGyroscope = preferences.getBoolean("use_gyroscope", false);
+		showTouchController = preferences.getString("showTouchController", "Auto");
+		gyroSensibility = preferences.getInt("gyro_sensibility", 50) / 100.f;
+		aimViewSensibility = preferences.getInt("aimView_sensibility", 100) / 100.f;
+		ctrlAimSensibility = preferences.getInt("ctrl_aimSensibility", 100) / 100.f;
+		deadZone = preferences.getInt("ctrl_deadZone", 20) / 100.f;
+		din_uiScale = preferences.getString("din_uiScale", "On");
+		ui_drawBanner = preferences.getString("ui_drawBanner", "On");
+		useAimAssist = preferences.getBoolean("useAimAssist", true);
+		autoAimSens = preferences.getInt("autoAimSens", 100) / 100.f;
+		transparency = preferences.getInt("input_opacity", 50) * 255 / 100;
+		DinamicUI();
+		drawBanner();
+		executeShell("plr_fAutoAimSensitivity=" + autoAimSens + ";");
+		AimAssistState();		
+		executeShell("hud_iStats=" + (preferences.getBoolean("hud_iStats", false) ? 2 : 0) + ";");
+		executeShell("input_uiScale=" + uiScale + ";");
+		Log.wtf(TAG, "uiScale: " + uiScale);
+		updateSoftKeyboardVisible();
 	}
 	
-    private class MyBtnListener implements View.OnTouchListener {
-        float lastX, lastY;
-        private int btnToBind;
-	SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
-    SharedPreferences.Editor sharedPreferencesEditor = preferences.edit();
+	@Subscribe(threadMode = ThreadMode.MAIN)
+	public void updateUI(UpdateUIEvent event) {
+		final MainActivity context = MainActivity.this;
+		runOnUiThread(new Runnable() {
+			public void run() {				
+				if (gameState == GameState.NORMAL && !ControlsInitialized) { 
+					ButtonView Fire = findViewById(R.id.input_fire);
+					if ((Fire.getX() != 0.0f && Fire.getY() != 0.0f) && !ControlsInitialized) {
+						setupTouchControls();
+						ControlsInitialized = true;
+					}
+				}
+			}
+		});
+	}
 	
-        public MyBtnListener() {
-            this.btnToBind = 0;
-        }
+	private class MyBtnListener implements View.OnTouchListener {
+		float lastX, lastY;
+		private String btnToBind;
+	
+		public MyBtnListener() {
+			this.btnToBind = "";
+		}
 
-        public MyBtnListener(int btnToBind) {
-            this.btnToBind = btnToBind;
-        }
+		public MyBtnListener(String btnToBind) {
+			this.btnToBind = btnToBind;
+		}
 		
-        float dX, dY;
+		float dX, dY;
 
-        @Override
-        public boolean onTouch(View v, MotionEvent event) {
-            String fullName = getResources().getResourceName(v.getId());
-            String name = fullName.substring(fullName.lastIndexOf("/") + 1);
-            switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN:
-                    if (ButtonsMapping && (!name.equals("bgTrackerView"))){
-                        isTracking = false;
-                        dX = v.getX() - event.getRawX();
-                        dY = v.getY() - event.getRawY();
-                    } else {
-                        isTracking = true;
-                        lastX = event.getX();
-                        lastY = event.getY();
-                        if (this.btnToBind != 0) {
-                            nDispatchKeyEvent(btnToBind, 1);
-                        }
-                    }
-                    break;
-                case MotionEvent.ACTION_UP:
-                    if (this.btnToBind != 0) {
-                        nDispatchKeyEvent(btnToBind, 0);
-                    }
-                    break;
-                case MotionEvent.ACTION_POINTER_UP:
-                    isTracking = false;
-                    break;
-                case MotionEvent.ACTION_MOVE:
-                    if (isTracking) {
-                        float rawX = event.getX();
-                        float rawY = event.getY();
-                        shiftAxisValue(AXIS_LOOK_LR, -Utils.convertPixelsToDp(rawX - lastX, MainActivity.this) * MULT_VIEW_TRACKER * aimViewSensibility);
-                        shiftAxisValue(AXIS_LOOK_UD, -Utils.convertPixelsToDp(rawY - lastY, MainActivity.this) * MULT_VIEW_TRACKER * aimViewSensibility);
-                        lastX = rawX;
-                        lastY = rawY;
-                    } else if (ButtonsMapping) {
-						if (v instanceof ButtonView) {
-							ButtonView btn = (ButtonView) v;
-							float X = event.getRawX() + dX - -Utils.convertPixelsToDp(btn.getWidth() / 2, MainActivity.this) - btn.radius;
-							float Y = event.getRawY() + dY - -Utils.convertPixelsToDp(btn.getHeight() / 2, MainActivity.this) - btn.radius;
-							btn.setX(X);
-							btn.setY(Y);
-							sharedPreferencesEditor.putFloat(name+"X", btn.getX()).apply();
-							sharedPreferencesEditor.putFloat(name+"Y", btn.getY()).apply();
+		@Override
+		public boolean onTouch(View v, MotionEvent event) {
+			switch (event.getAction()) {
+				case MotionEvent.ACTION_DOWN:
+					if (ButtonsMapping && v instanceof Button){
+						isTracking = false;
+						dX = v.getX() - event.getRawX();
+						dY = v.getY() - event.getRawY();
+					} else {
+						isTracking = true;
+						lastX = event.getX();
+						lastY = event.getY();
+						if (this.btnToBind != "") {
+							nTouchKeyEvent(btnToBind, 1);
 						}
 					}
-                    break;
-                default:
-                    return false;
+					break;
+				case MotionEvent.ACTION_UP:
+					if (this.btnToBind != "") {
+						nTouchKeyEvent(btnToBind, 0);
+					}
+					break;
+				case MotionEvent.ACTION_POINTER_UP:
+					isTracking = false;
+					break;
+				case MotionEvent.ACTION_MOVE:
+					if (isTracking) {
+						float rawX = event.getX();
+						float rawY = event.getY();
+						shiftAxisValue(AXIS_LOOK_LR, -Utils.convertPixelsToDp(rawX - lastX, MainActivity.this) * MULT_VIEW_TRACKER * aimViewSensibility);
+						shiftAxisValue(AXIS_LOOK_UD, -Utils.convertPixelsToDp(rawY - lastY, MainActivity.this) * MULT_VIEW_TRACKER * aimViewSensibility);
+						lastX = rawX;
+						lastY = rawY;
+					} else if (ButtonsMapping) {
+						if ((v instanceof ButtonView) || (v instanceof Button)) {
+							float X = 0.0f;
+							float Y = 0.0f;
+							if (v instanceof ButtonView) {
+								ButtonView btn = (ButtonView) v;
+								X = event.getRawX() + dX - -Utils.convertPixelsToDp(v.getWidth() / 2, MainActivity.this) - btn.radius;
+								Y = event.getRawY() + dY - -Utils.convertPixelsToDp(v.getHeight() / 2, MainActivity.this) - btn.radius;
+							} else if (v instanceof Button) {
+								X = event.getRawX() + dX - -Utils.convertPixelsToDp(v.getWidth() / 2, MainActivity.this);
+								Y = event.getRawY() + dY - -Utils.convertPixelsToDp(v.getHeight() / 2, MainActivity.this);	
+							}
+							v.setX(X);
+							v.setY(Y);
+						}
+					}
+					break;
+				default:
+					return false;
 				}
-           return true;
-        }
-    }
+		   return true;
+		}
+	}
 
-    public static void executeShell(String command) {
-        nShellExecute(command);
-    }
+	public static void executeShell(String command) {
+		nShellExecute(command);
+	}
 
-    private static native void setAxisValue(int key, float value);
-    private static native void shiftAxisValue(int key, float value);
-    private static native void nShellExecute(String command);
-    private static native void nDispatchKeyEvent(int key, int isPressed);
-    private static native void nConfirmEditText(String newText);
-    private static native void nCancelEditText();
+	private static native void setAxisValue(int key, float value);
+	private static native void shiftAxisValue(int key, float value);
+	private static native void nShellExecute(String command);
+	private static native void nDispatchKeyEvent(int key, int isPressed);
+	private static native void nTouchKeyEvent(String key, int isPressed);
+	private static native void nConfirmEditText(String newText);
+	private static native void nCancelEditText();
 	private static native void nSendMouseNative(int button, int action, float scroll);
 	private static native void nSendKeyboardButtonDown(int button);
 	private static native void nSendKeyboardButtonUp(int button);

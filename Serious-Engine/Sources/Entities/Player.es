@@ -1,7 +1,6 @@
 401
 %{
 
-#include <Entities/Common/playerCommons.h>
 #include "Entities/StdH/StdH.h"
 
 #include <Engine/Build.h>
@@ -246,7 +245,7 @@ static void KillAllEnemies(CEntity *penKiller)
 //extern TIME _tmSnoopingStarted;
 //extern CEntity *_penTargeting;
 
-PlayerControls pctlCurrent;
+PlayerControls pctlCurrent = g_cb.g_IncomingControls;
 
 // cheats
 static INDEX cht_iGoToMarker = -1;

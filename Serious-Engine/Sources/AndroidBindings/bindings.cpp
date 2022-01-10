@@ -42,7 +42,6 @@ pthread_t g_mySeriousThreadId;
 bool g_gameRunning = false;
 ANativeWindow *g_currentWindow;
 bool g_somethingChanged = false;
-PlayerControls g_IncomingControls {};
 JavaVM *g_javaWM;
 jclass g_NativeEvents;
 jmethodID g_reportFatalError;
@@ -115,7 +114,7 @@ JNIEXPORT void JNICALL
 Java_com_github_aarcangeli_serioussamandroid_MainActivity_setAxisValue(JNIEnv *env, jobject obj, jint key, jfloat value) {
   ASSERT(key >= 0 && key < 10);
   pthread_mutex_lock(&g_mySeriousMutex);
-  g_IncomingControls.axisValue[key] = value;
+  g_cb.g_IncomingControls.axisValue[key] = value;
   pthread_mutex_unlock(&g_mySeriousMutex);
 }
 
@@ -124,8 +123,39 @@ JNIEXPORT void JNICALL
 Java_com_github_aarcangeli_serioussamandroid_MainActivity_shiftAxisValue(JNIEnv *env, jobject obj, jint key, jfloat value) {
   ASSERT(key >= 0 && key < 10);
   pthread_mutex_lock(&g_mySeriousMutex);
-  g_IncomingControls.shiftAxisValue[key] += value;
+  g_cb.g_IncomingControls.shiftAxisValue[key] += value;
   pthread_mutex_unlock(&g_mySeriousMutex);
+}
+
+constexpr unsigned int hash(const char *s, int off = 0) {                        
+    return !s[off] ? 5381 : (hash(s, off+1)*33) ^ s[off];                           
+} 
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_github_aarcangeli_serioussamandroid_MainActivity_nTouchKeyEvent(JNIEnv *env, jobject obj, jstring key_, jint isPressed) {
+#define BTN_CASE(cod, name) case cod: name = isPressed != 0; break;
+  pthread_mutex_lock(&g_mySeriousMutex);
+  const char *key = env->GetStringUTFChars(key_, 0);
+  switch(hash(key)) {
+	// additional keys
+	BTN_CASE(hash("Tab"), g_cb.g_IncomingControls.bShowTabInfo)
+	BTN_CASE(hash("DropMoney"), g_cb.g_IncomingControls.bDropMoney)
+	// end
+    BTN_CASE(hash("Fire"), g_cb.g_IncomingControls.bFire)
+    BTN_CASE(hash("Use"), g_cb.g_IncomingControls.bUse)
+    BTN_CASE(hash("Flip"), g_cb.g_IncomingControls.bWeaponFlip)
+    BTN_CASE(hash("SeriousBomb"), g_cb.g_IncomingControls.bFireBomb)
+    BTN_CASE(hash("Reload"), g_cb.g_IncomingControls.bReload)
+    BTN_CASE(hash("Jump"), g_cb.g_IncomingControls.bMoveUp)
+    BTN_CASE(hash("Crunch"), g_cb.g_IncomingControls.bMoveDown)
+    BTN_CASE(hash("PrevWeapon"), g_cb.g_IncomingControls.bWeaponPrev)
+    BTN_CASE(hash("NextWeapon"), g_cb.g_IncomingControls.bWeaponNext)
+    BTN_CASE(hash("Computer"), g_cb.g_IncomingControls.bComputer)
+    BTN_CASE(hash("Start"), g_cb.g_IncomingControls.bStart)
+  }
+  pthread_mutex_unlock(&g_mySeriousMutex);
+#undef BTN_CASE
 }
 
 extern "C"
@@ -135,17 +165,17 @@ Java_com_github_aarcangeli_serioussamandroid_MainActivity_nDispatchKeyEvent(JNIE
   pthread_mutex_lock(&g_mySeriousMutex);
   switch(key) {
     // Xbox 360
-    BTN_CASE(KEYCODE_BUTTON_R1, g_IncomingControls.bFire)
-    BTN_CASE(KEYCODE_BUTTON_R2, g_IncomingControls.bUse)
-    BTN_CASE(KEYCODE_BUTTON_L1, g_IncomingControls.bWeaponFlip)
-    BTN_CASE(KEYCODE_BUTTON_Y, g_IncomingControls.bFireBomb)
-    BTN_CASE(KEYCODE_BUTTON_X, g_IncomingControls.bReload)
-    BTN_CASE(KEYCODE_BUTTON_A, g_IncomingControls.bMoveUp)
-    BTN_CASE(KEYCODE_BUTTON_B, g_IncomingControls.bMoveDown)
-    BTN_CASE(KEYCODE_DPAD_LEFT, g_IncomingControls.bWeaponPrev)
-    BTN_CASE(KEYCODE_DPAD_RIGHT, g_IncomingControls.bWeaponNext)
-    BTN_CASE(KEYCODE_BACK, g_IncomingControls.bComputer)
-    BTN_CASE(KEYCODE_BUTTON_START, g_IncomingControls.bStart)
+    BTN_CASE(KEYCODE_BUTTON_R1, g_cb.g_IncomingControls.bFire)
+    BTN_CASE(KEYCODE_BUTTON_R2, g_cb.g_IncomingControls.bUse)
+    BTN_CASE(KEYCODE_BUTTON_L1, g_cb.g_IncomingControls.bWeaponFlip)
+    BTN_CASE(KEYCODE_BUTTON_Y, g_cb.g_IncomingControls.bFireBomb)
+    BTN_CASE(KEYCODE_BUTTON_X, g_cb.g_IncomingControls.bReload)
+    BTN_CASE(KEYCODE_BUTTON_A, g_cb.g_IncomingControls.bMoveUp)
+    BTN_CASE(KEYCODE_BUTTON_B, g_cb.g_IncomingControls.bMoveDown)
+    BTN_CASE(KEYCODE_DPAD_LEFT, g_cb.g_IncomingControls.bWeaponPrev)
+    BTN_CASE(KEYCODE_DPAD_RIGHT, g_cb.g_IncomingControls.bWeaponNext)
+    BTN_CASE(KEYCODE_BACK, g_cb.g_IncomingControls.bComputer)
+    BTN_CASE(KEYCODE_BUTTON_START, g_cb.g_IncomingControls.bStart)
   }
   pthread_mutex_unlock(&g_mySeriousMutex);
 #undef BTN_CASE
@@ -171,21 +201,21 @@ int TranslateButton(int state)
 void changeWeapon(int weapon)
 {
 	if (weapon == 1) {
-		if (g_IncomingControls.bWeaponNext == 0) {
-			g_IncomingControls.bWeaponNext = 1;
+		if (g_cb.g_IncomingControls.bWeaponNext == 0) {
+			g_cb.g_IncomingControls.bWeaponNext = 1;
 		} else {
-			g_IncomingControls.bWeaponNext = 1;
-			g_IncomingControls.bWeaponNext = 0;
+			g_cb.g_IncomingControls.bWeaponNext = 1;
+			g_cb.g_IncomingControls.bWeaponNext = 0;
 		}
-		//CPrintF("Button right = %d\n", g_IncomingControls.bWeaponNext);
+		//CPrintF("Button right = %d\n", g_cb.g_IncomingControls.bWeaponNext);
 	} else {
-		if (g_IncomingControls.bWeaponPrev == 0) {
-			g_IncomingControls.bWeaponPrev = 1;
+		if (g_cb.g_IncomingControls.bWeaponPrev == 0) {
+			g_cb.g_IncomingControls.bWeaponPrev = 1;
 		} else {
-			g_IncomingControls.bWeaponPrev = 1;
-			g_IncomingControls.bWeaponPrev = 0;
+			g_cb.g_IncomingControls.bWeaponPrev = 1;
+			g_cb.g_IncomingControls.bWeaponPrev = 0;
 		}
-		//CPrintF("Button left = %d\n", g_IncomingControls.bWeaponPrev);
+		//CPrintF("Button left = %d\n", g_cb.g_IncomingControls.bWeaponPrev);
 	}
 	return;
 }
@@ -202,7 +232,7 @@ Java_com_github_aarcangeli_serioussamandroid_MainActivity_nSendMouseNative(JNIEn
             button = TranslateButton(changes);	
 			//CPrintF("Mouse button clicked - %d\n", button);
 			if (button == 1) {
-			g_IncomingControls.bFire = 1;
+			g_cb.g_IncomingControls.bFire = 1;
 			}
             break;
         case ACTION_UP:
@@ -210,24 +240,24 @@ Java_com_github_aarcangeli_serioussamandroid_MainActivity_nSendMouseNative(JNIEn
             button = TranslateButton(changes);
 			//CPrintF("Mouse button released\n");
 			if (button == 0) {
-			g_IncomingControls.bFire = 0;
+			g_cb.g_IncomingControls.bFire = 0;
 			}
             break;
         case ACTION_SCROLL:
 			if (scroll > 0.0f) {
 				//CPrintF("Mouse scrolling up\n");
-				//g_IncomingControls.bWeaponNext = 1;
+				//g_cb.g_IncomingControls.bWeaponNext = 1;
 				changeWeapon(1);
 				} 
 				
 			if (scroll < 0.0f) {
 				//CPrintF("Mouse scrolling down\n");
-				//g_IncomingControls.bWeaponPrev = 1;
+				//g_cb.g_IncomingControls.bWeaponPrev = 1;
 				changeWeapon(2);	
 				}
 			
-				//CPrintF("g_IncomingControls.bWeaponNext= %f\n", g_IncomingControls.bWeaponNext);
-				//CPrintF("g_IncomingControls.bWeaponPrev= %f\n", g_IncomingControls.bWeaponPrev);
+				//CPrintF("g_cb.g_IncomingControls.bWeaponNext= %f\n", g_cb.g_IncomingControls.bWeaponNext);
+				//CPrintF("g_cb.g_IncomingControls.bWeaponPrev= %f\n", g_cb.g_IncomingControls.bWeaponPrev);
 				//CPrintF("Mouse scroll= %f\n", scroll); 
 				break;
         default:
@@ -243,7 +273,7 @@ Java_com_github_aarcangeli_serioussamandroid_MainActivity_nSendKeyboardButtonDow
     switch(key) {
         case KEYCODE_W:		
 			CPrintF("W pressed!");
-			//g_IncomingControls.bFire = 1;
+			//g_cb.g_IncomingControls.bFire = 1;
             break;
         case KEYCODE_A:
 			CPrintF("A pressed!");
@@ -261,7 +291,7 @@ Java_com_github_aarcangeli_serioussamandroid_MainActivity_nSendKeyboardButtonUp(
     switch(key) {
         case KEYCODE_W:
 			CPrintF("W released!\n");
-			//g_IncomingControls.bFire = 1;
+			//g_cb.g_IncomingControls.bFire = 1;
             break;
         case KEYCODE_A:
 			CPrintF("A released!\n");
@@ -323,9 +353,6 @@ void syncSeriousThreads() {
       somethingChanged = g_somethingChanged;
       g_somethingChanged = false;
     }
-
-    // resolve input
-    setControls(g_IncomingControls);
 	
     CTString cmdToExecute = g_command;
     g_command = "";

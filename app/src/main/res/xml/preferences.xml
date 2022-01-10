@@ -65,7 +65,7 @@
             android:text="%"
             android:title="@string/dragSens" />
         <com.github.aarcangeli.serioussamandroid.preferences.SeekBarPreference
-            android:defaultValue="70"
+            android:defaultValue="50"
             android:key="input_opacity"
             android:max="100"
             android:summary="%s%%"

@@ -536,7 +536,7 @@ void InitializeGame(void)
   try {
 
 #ifndef STATIC_LINKING
-    void *libGameMP = dlopen("libGameMP.so", RTLD_NOW);
+    void *libGameMP = dlopen("libGame" + _strModExt + ".so", RTLD_NOW);
     if (!libGameMP) {
       FatalError("  Cannot load GameMP");
     }
@@ -1324,7 +1324,7 @@ void seriousSubMain() {
 
   while(_bRunning && !_fnmModToLoad.Length()) {
     g_cb.syncSeriousThreads();
-
+	setControls(g_cb.g_IncomingControls);
     // when all messages are removed, window has surely changed
     _bWindowChanging = FALSE;
 

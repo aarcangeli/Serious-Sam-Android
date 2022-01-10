@@ -19,7 +19,7 @@
 	<string name="gyroSens">Gyroscope sensibility</string>
 	
 	<string name="dragSens">Drag sensibility</string>
-	<string name="inputOpacity">Input Opacity</string>
+	<string name="inputOpacity">Input Transparency</string>
 	
 	<string name="debug">Debug</string>
 	<string name="showStatsTitle">Show Stats</string>
