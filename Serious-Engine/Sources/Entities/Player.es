@@ -368,14 +368,7 @@ DECL_DLL void ctl_ComposeActionPacket(const CPlayerCharacter &pc, CPlayerAction 
     // move rotation left/right into translation left/right
     paAction.pa_vTranslation(1) = -paAction.pa_aRotation(1)*ctl_fAxisStrafingModifier;
     paAction.pa_aRotation(1) = 0;
-  }
-  // if strafing forward/backward
-  if (pctlCurrent.bStrafeFB) {
-    // move rotation up/down into translation forward/backward
-    paAction.pa_vTranslation(3) = -paAction.pa_aRotation(2)*ctl_fAxisStrafingModifier;
-    paAction.pa_aRotation(2) = 0;
-  }
-  
+  } 
   // if centering view
   if (pctlCurrent.bCenterView) {
     // don't allow moving view up/down
@@ -418,8 +411,8 @@ DECL_DLL void ctl_ComposeActionPacket(const CPlayerCharacter &pc, CPlayerAction 
   }
 
   // add button movement/rotation/look actions to the axis actions
-  if(pctlCurrent.bMoveForward  || (pctlCurrent.bStrafeFB&&pctlCurrent.bTurnUp)  ) paAction.pa_vTranslation(3) -= plr_fSpeedForward;
-  if(pctlCurrent.bMoveBackward || (pctlCurrent.bStrafeFB&&pctlCurrent.bTurnDown)) paAction.pa_vTranslation(3) += plr_fSpeedBackward;
+  if(pctlCurrent.bMoveForward  ) paAction.pa_vTranslation(3) -= plr_fSpeedForward;
+  if(pctlCurrent.bMoveBackward ) paAction.pa_vTranslation(3) += plr_fSpeedBackward;
   if(pctlCurrent.bMoveLeft  || (pctlCurrent.bStrafe&&pctlCurrent.bTurnLeft) ) paAction.pa_vTranslation(1) -= plr_fSpeedSide;
   if(pctlCurrent.bMoveRight || (pctlCurrent.bStrafe&&pctlCurrent.bTurnRight)) paAction.pa_vTranslation(1) += plr_fSpeedSide;
   if(pctlCurrent.bMoveUp       ) paAction.pa_vTranslation(2) += plr_fSpeedUp;
@@ -428,8 +421,8 @@ DECL_DLL void ctl_ComposeActionPacket(const CPlayerCharacter &pc, CPlayerAction 
   const FLOAT fQuantum = _pTimer->TickQuantum;
   if(pctlCurrent.bTurnLeft  && !pctlCurrent.bStrafe) penThis->m_aLocalRotation(1) += ctl_fButtonRotationSpeedH*fQuantum;
   if(pctlCurrent.bTurnRight && !pctlCurrent.bStrafe) penThis->m_aLocalRotation(1) -= ctl_fButtonRotationSpeedH*fQuantum;
-  if(pctlCurrent.bTurnUp    && !pctlCurrent.bStrafeFB) penThis->m_aLocalRotation(2) += ctl_fButtonRotationSpeedP*fQuantum;
-  if(pctlCurrent.bTurnDown  && !pctlCurrent.bStrafeFB) penThis->m_aLocalRotation(2) -= ctl_fButtonRotationSpeedP*fQuantum;
+  if(pctlCurrent.bTurnUp           ) penThis->m_aLocalRotation(2) += ctl_fButtonRotationSpeedP*fQuantum;
+  if(pctlCurrent.bTurnDown         ) penThis->m_aLocalRotation(2) -= ctl_fButtonRotationSpeedP*fQuantum;
   if(pctlCurrent.bTurnBankingLeft  ) penThis->m_aLocalRotation(3) += ctl_fButtonRotationSpeedB*fQuantum;
   if(pctlCurrent.bTurnBankingRight ) penThis->m_aLocalRotation(3) -= ctl_fButtonRotationSpeedB*fQuantum;
 
@@ -582,7 +575,6 @@ void CPlayer_OnInitClass(void)
   _pShell->DeclareSymbol("user INDEX ctl_bLookBankingRight;",(void*) &pctlCurrent.bLookBankingRight );
   _pShell->DeclareSymbol("user INDEX ctl_bWalk;",     (void*)      &pctlCurrent.bWalk);
   _pShell->DeclareSymbol("user INDEX ctl_bStrafe;",    (void*)     &pctlCurrent.bStrafe);
-  _pShell->DeclareSymbol("user INDEX ctl_bStrafeFB;",   (void*)     &pctlCurrent.bStrafeFB);
   _pShell->DeclareSymbol("user INDEX ctl_bFire;",      (void*)     &pctlCurrent.bFire);
   _pShell->DeclareSymbol("user INDEX ctl_bReload;",    (void*)     &pctlCurrent.bReload);
   _pShell->DeclareSymbol("user INDEX ctl_bUse;",       (void*)     &pctlCurrent.bUse);

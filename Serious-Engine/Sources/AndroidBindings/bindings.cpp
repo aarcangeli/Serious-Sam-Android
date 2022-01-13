@@ -317,7 +317,7 @@ void refreshJavaState() {
   JNIEnv* env = getEnv();
   jmethodID method = env->GetStaticMethodID(g_NativeEvents, "reportStateChange", "(II)V");
   ASSERT(method);
-  env->CallStaticVoidMethod(g_NativeEvents, method, (int) g_cb.gameState, g_cb.seriousBombCount);
+  env->CallStaticVoidMethod(g_NativeEvents, method, (int) g_cb.gameState, (int) g_cb.seriousBombCount);
 }
 
 void updateUI() {

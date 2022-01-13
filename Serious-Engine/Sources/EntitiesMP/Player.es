@@ -458,7 +458,7 @@ DECL_DLL void ctl_ComposeActionPacket(const CPlayerCharacter &pc, CPlayerAction 
   // add button movement/rotation/look actions to the axis actions
   if(pctlCurrent.bMoveForward  ) paAction.pa_vTranslation(3) -= plr_fSpeedForward;
   if(pctlCurrent.bMoveBackward ) paAction.pa_vTranslation(3) += plr_fSpeedBackward;
-  if(pctlCurrent.bMoveLeft  || (pctlCurrent.bStrafe&&pctlCurrent.bTurnLeft)) paAction.pa_vTranslation(1) -= plr_fSpeedSide;
+  if(pctlCurrent.bMoveLeft  || (pctlCurrent.bStrafe&&pctlCurrent.bTurnLeft) ) paAction.pa_vTranslation(1) -= plr_fSpeedSide;
   if(pctlCurrent.bMoveRight || (pctlCurrent.bStrafe&&pctlCurrent.bTurnRight)) paAction.pa_vTranslation(1) += plr_fSpeedSide;
   if(pctlCurrent.bMoveUp       ) paAction.pa_vTranslation(2) += plr_fSpeedUp;
   if(pctlCurrent.bMoveDown     ) paAction.pa_vTranslation(2) -= plr_fSpeedUp;

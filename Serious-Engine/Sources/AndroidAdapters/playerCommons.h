@@ -40,7 +40,6 @@ struct PlayerControls {
 
 	BOOL bWalk;
 	BOOL bStrafe;
-	BOOL bStrafeFB;
 	BOOL bFire;
 	BOOL bReload;
 	BOOL bUse;
