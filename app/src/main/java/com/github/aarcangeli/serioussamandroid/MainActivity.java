@@ -147,11 +147,10 @@ public class MainActivity extends Activity {
 	{
 		public List<ButtonSet> ButtonSet;
 		public String bitmap, type, action;
-		public int id, h, w;
+		public int h, w;
 		public float x, y;
-		public ButtonSet(String buttonType_, int id_, float x_, float y_, int h_, int w_, String bitmap_, String keycode_) { 
+		public ButtonSet(String buttonType_, float x_, float y_, int h_, int w_, String bitmap_, String keycode_) { 
 			type = buttonType_;
-			id = id_;
 			x = x_;
 			y = y_;
 			h = h_;
@@ -410,7 +409,6 @@ public class MainActivity extends Activity {
 			if (ButtonsMapping == false){
 				ButtonsMapping = true;
 				updateSoftKeyboardVisible();
-				findViewById(R.id.input_SeriousBomb).setVisibility(View.VISIBLE);
 				isTracking = false;
 			}
 				return true;
@@ -418,31 +416,24 @@ public class MainActivity extends Activity {
 		});
 		
 		ButtonView use = findViewById(R.id.input_use);
-		use.setButtonId(R.id.input_use);
 		use.setKeycode("Use");
 		
 		ButtonView crunch = findViewById(R.id.input_crunch);
-		crunch.setButtonId(R.id.input_crunch);
 		crunch.setKeycode("Crunch");
 		
 		ButtonView jump = findViewById(R.id.input_jump);
-		jump.setButtonId(R.id.input_jump);
 		jump.setKeycode("Jump");
 		
 		ButtonView prev = findViewById(R.id.buttonPrev);
-		prev.setButtonId(R.id.buttonPrev);
 		prev.setKeycode("PrevWeapon");
 		
 		ButtonView next = findViewById(R.id.buttonNext);
-		next.setButtonId(R.id.buttonNext);
 		next.setKeycode("NextWeapon");
 		
 		ButtonView fire = findViewById(R.id.input_fire);
-		fire.setButtonId(R.id.input_fire);
 		fire.setKeycode("Fire");
 		
 		ButtonView bomb = findViewById(R.id.input_SeriousBomb);
-		bomb.setButtonId(R.id.input_SeriousBomb);
 		bomb.setKeycode("SeriousBomb");
 		
 		findViewById(R.id.bgTrackerView).setOnTouchListener(new MyBtnListener());
@@ -588,7 +579,7 @@ public class MainActivity extends Activity {
 
 		ConstraintLayout constraintView = findViewById(R.id.constraint_content);
 		ViewGroup parent = (ViewGroup) constraintView;
-		
+
 		if (parent != null) {
 			for(int i=0; i < parent.getChildCount(); i++) {
 				View child = parent.getChildAt(i);
@@ -597,15 +588,41 @@ public class MainActivity extends Activity {
 					if (child.getId() == R.id.buttonApply 
 						|| child.getId() == R.id.buttonPlus 
 							|| child.getId() == R.id.buttonMinus) {
-						child.setVisibility(enableTouchController && ButtonsMapping == true ? View.VISIBLE : View.GONE);
+						child.setVisibility(enableTouchController && ButtonsMapping ? View.VISIBLE : View.GONE);
 					}
-				}
+				} 
 			}
 		}
 		
-		ButtonView SeriousBomb = findViewById(R.id.input_SeriousBomb);
-
-		SeriousBomb.setVisibility(enableTouchController && bombs > 0 ? View.VISIBLE : View.INVISIBLE);
+		try {
+			ButtonView bomb = findViewById(R.id.input_SeriousBomb);
+			if (bomb != null) {
+				bomb.setVisibility(View.INVISIBLE);
+			}
+		} finally {}
+		
+		//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		// DYNAMICALLY CREATED SERIOUS BOMB BUTTON VISIBILITY BUG I DON T KNOW REASON
+		// THE CONDITION IS TRIGGERED EVEN IF NUMBER OF BOMBS == 0
+		//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		
+		/* 
+		if (parent != null) {
+			for(int i=0; i < parent.getChildCount(); i++) {
+				View child = parent.getChildAt(i);
+				if (child instanceof ButtonView) {
+					ButtonView btn = (ButtonView) child;
+					if (btn != null) {
+						String key = btn.getKeycode();
+						int currentBombs = bombs;
+						if (key == "SeriousBomb") {
+							btn.setVisibility(enableTouchController && currentBombs != 0 ? View.VISIBLE : View.GONE);
+							break;
+						}
+					}
+				}
+			}
+		} */
 		
 		Button settingsBtn = findViewById(R.id.settingsBtn);
 		settingsBtn.getBackground().setAlpha(255 - transparency);
@@ -713,7 +730,11 @@ public class MainActivity extends Activity {
 	@Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
 	public void onConsoleVisibilityChange(StateChangeEvent event) {
 		gameState = event.state;
-		bombs = event.bombs;
+		if (event.bombs > 0) {
+			bombs = event.bombs;
+		} else {
+			bombs = 0;
+		}
 		updateSoftKeyboardVisible();
 	}
 
@@ -1061,8 +1082,6 @@ public class MainActivity extends Activity {
 							count = -5;
 						}
 						ButtonView btn = (ButtonView) child;
-						String fullName = getResources().getResourceName(btn.getId());
-						String name = fullName.substring(fullName.lastIndexOf("/") + 1);
 						btn.getLayoutParams().width = btn.getLayoutParams().width + count;
 						btn.getLayoutParams().height = btn.getLayoutParams().height + count;
 						btn.setVisibility(View.GONE);
@@ -1080,6 +1099,18 @@ public class MainActivity extends Activity {
 		generateControlsJson();
 		ButtonsMapping = false;
 		updateSoftKeyboardVisible();
+	}
+
+	void removeLayoutControls() {
+		ConstraintLayout constraintView = findViewById(R.id.constraint_content);
+		ViewGroup parent = (ViewGroup) constraintView;
+		int[] id = new int[] {R.id.input_use, R.id.input_crunch, R.id.input_jump, R.id.buttonPrev, R.id.buttonNext,R.id.input_fire, R.id.input_SeriousBomb};
+		if (parent != null) {
+			for(int i=0; i < id.length; i++) {
+				View child = findViewById(id[i]);
+				parent.removeView(child);
+			}
+		}
 	}
 
 	void restoreControls() {
@@ -1111,7 +1142,7 @@ public class MainActivity extends Activity {
 				{
 					switch (item.type) {
 						case "BitmapButton":
-							InitBitmapButton(item.id, item.bitmap, item.x, item.y, item.h, item.w, item.action);
+							InitBitmapButton(item.bitmap, item.x, item.y, item.h, item.w, item.action);
 							break;
 						case "Joystick":
 							JoystickView joystick = findViewById(R.id.input_overlay);
@@ -1153,7 +1184,7 @@ public class MainActivity extends Activity {
 		List<View> btn_list = getAllButtons(constraintView);
 		
 		try (Writer writer = new FileWriter(jsonF)) {
-			if (btn_list != null) {
+			if (btn_list != null && parent != null) {
 				for(int i=0; i < btn_list.size(); i++) {
 					View child = btn_list.get(i);
 					if (child instanceof ButtonView) {
@@ -1161,12 +1192,13 @@ public class MainActivity extends Activity {
 						int bitmapId = btn.getBitmap();
 						String fullBitmapName = getResources().getResourceName(bitmapId);
 						String bitmapName = fullBitmapName.substring(fullBitmapName.lastIndexOf("/") + 1);
-						buttons.add(new ButtonSet("BitmapButton", btn.getButtonId(), btn.getX(), btn.getY(), btn.getLayoutParams().height, 
+						buttons.add(new ButtonSet("BitmapButton", btn.getX(), btn.getY(), btn.getLayoutParams().height, 
 						btn.getLayoutParams().width, bitmapName, btn.getKeycode()));
+						parent.removeView(child);
 					}
 					if (child instanceof JoystickView) {
 						JoystickView joystick = (JoystickView) child;
-						buttons.add(new ButtonSet("Joystick", 0, joystick.getX(), joystick.getY(), 0, 0, "", ""));
+						buttons.add(new ButtonSet("Joystick", joystick.getX(), joystick.getY(), 0, 0, "", ""));
 					}
 				}
 			}
@@ -1178,7 +1210,7 @@ public class MainActivity extends Activity {
 			Toast toast = Toast.makeText(MainActivity.this, "Generate default controls error: " + e,Toast.LENGTH_SHORT);
 			toast.show();
 		}
-		if (!ButtonsMapping) {
+		if (!ControlsInitialized || ButtonsMapping) {
 			restoreControls();	
 		}
 	}
@@ -1194,8 +1226,10 @@ public class MainActivity extends Activity {
 		if (!jsonFile.exists()) {
 			generateControlsJson();
 		} else {
+			removeLayoutControls();
 			restoreControls();
 		}
+		ControlsInitialized = true;
 		updateSoftKeyboardVisible();
 	}
 
@@ -1212,46 +1246,26 @@ public class MainActivity extends Activity {
 		btn.setOnTouchListener(new MyBtnListener(keyCode));
 	}
 
-	public void InitBitmapButton(int id, String bitmap, float x, float y, int h, int w, String keyCode) {
+	public void InitBitmapButton(String bitmap, float x, float y, int h, int w, String keyCode) {
 		ConstraintLayout constraintView = findViewById(R.id.constraint_content);
 		try {
-				View check = findViewById(id);
-				if (check instanceof ButtonView) {
-					ButtonView btn = findViewById(id);
-					int bitmapId = getResources().getIdentifier(bitmap, "drawable",this.getPackageName());
-					btn.setX(x);
-					btn.setY(y);
-					btn.getLayoutParams().height = h;
-					btn.getLayoutParams().width = w;
-					if (bitmapId > 0) {
-						btn.setBitmap(bitmapId);
-					}
-					btn.getBackground().setAlpha(255 - transparency);
-					btn.setKeycode(keyCode);
-					btn.setOnTouchListener(new MyBtnListener(keyCode));
-				} else {
-					ButtonView btn = new ButtonView(this);
-					btn.setKeycode(keyCode);
-					btn.setOnTouchListener(new MyBtnListener(keyCode));
-					int bitmapId = getResources().getIdentifier(bitmap, "drawable",this.getPackageName());
-					String tag = String.valueOf(id);
-					ConstraintLayout.LayoutParams layoutParams = new ConstraintLayout.LayoutParams(140, 140);
-					layoutParams.setMargins(5, 3, 0, 0); // left, top, right, bottom
-					btn.setLayoutParams(layoutParams);
-					btn.setX(x);
-					btn.setY(y);
-				//	btn.setId(id);
-					btn.setButtonId(id);
-					btn.setTag(tag);
-					btn.getLayoutParams().height = h;
-					btn.getLayoutParams().width = w;
-					if (bitmapId > 0) {
-						btn.setBitmap(bitmapId);
-					}
-					btn.getBackground().setAlpha(255 - transparency);
-					constraintView.addView(btn);
-					btn.setVisibility(View.VISIBLE);
-				}
+			ButtonView btn = new ButtonView(this);
+			btn.setKeycode(keyCode);
+			btn.setOnTouchListener(new MyBtnListener(keyCode));
+			int bitmapId = getResources().getIdentifier(bitmap, "drawable",this.getPackageName());
+			ConstraintLayout.LayoutParams layoutParams = new ConstraintLayout.LayoutParams(140, 140);
+			layoutParams.setMargins(5, 3, 0, 0); // left, top, right, bottom
+			btn.setLayoutParams(layoutParams);
+			btn.setX(x);
+			btn.setY(y);
+			btn.getLayoutParams().height = h;
+			btn.getLayoutParams().width = w;
+			if (bitmapId > 0) {
+				btn.setBitmap(bitmapId);
+			}
+			btn.getBackground().setAlpha(255 - transparency);
+			constraintView.addView(btn);
+			btn.setVisibility(View.VISIBLE);
 		} catch (Exception e) {
 			
 		}
@@ -1325,7 +1339,6 @@ public class MainActivity extends Activity {
 					ButtonView Fire = findViewById(R.id.input_fire);
 					if ((Fire.getX() != 0.0f && Fire.getY() != 0.0f) && !ControlsInitialized) {
 						setupTouchControls();
-						ControlsInitialized = true;
 					}
 				}
 			}

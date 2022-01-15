@@ -25,7 +25,7 @@ public class ButtonView extends Button {
 	private Paint paintPadFill = new Paint();
 	private Paint paintPadStroke = new Paint();
 	public float centerX, centerY, radius;
-	public int bitmapId, buttonId;
+	public int bitmapId;
 	public String keycode;
 	
 	// temporaney canvas for transparency
@@ -57,14 +57,6 @@ public class ButtonView extends Button {
 	
 	public int getBitmap() {
 		return bitmapId;
-	}
-	
-	public void setButtonId(int id) {
-		buttonId = id;
-	}
-	
-	public int getButtonId() {
-		return buttonId;
 	}
 	
 	public void setKeycode(String id) {
