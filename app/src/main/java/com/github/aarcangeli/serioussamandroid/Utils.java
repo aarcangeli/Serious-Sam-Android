@@ -17,9 +17,8 @@ public class Utils {
 		for (int id : InputDevice.getDeviceIds()) {
 			InputDevice dev = InputDevice.getDevice(id);
 			int sources = dev.getSources();
-			if ((sources & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD) {
-				return true;
-			} else if ((sources & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK) {
+			if (((sources & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD)
+                || ((sources & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK)) {
 				return true;
 			}
 		}

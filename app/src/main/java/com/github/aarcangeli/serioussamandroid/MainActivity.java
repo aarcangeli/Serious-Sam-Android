@@ -1096,7 +1096,7 @@ public class MainActivity extends Activity {
 	}
 
 	public void btnApply(View view) {
-		generateControlsJson();
+		generateTouchControlsJson();
 		ButtonsMapping = false;
 		updateSoftKeyboardVisible();
 	}
@@ -1115,8 +1115,8 @@ public class MainActivity extends Activity {
 
 	void restoreControls() {
 		File homeDir = getHomeDir();
-		File controlsFolder = new File(homeDir + "/TouchControls");
-		String jsonF = controlsFolder  + "/Controls.json";
+		File controlsFolder = new File(homeDir + "/MobileControls");
+		String jsonF = controlsFolder  + "/TouchControls.json";
 		File jsonFile = new File(jsonF);
 		
 		if (jsonFile.exists()) {
@@ -1169,14 +1169,14 @@ public class MainActivity extends Activity {
 			return btn;
 	}
 
-	void generateControlsJson() {
+	void generateTouchControlsJson() {
 		ConstraintLayout constraintView = findViewById(R.id.constraint_content);
 		ViewGroup parent = (ViewGroup) constraintView;
 
 		File homeDir = getHomeDir();
-		File controlsFolder = new File(homeDir + "/TouchControls");
+		File controlsFolder = new File(homeDir + "/MobileControls");
 		
-		String jsonF = controlsFolder + "/Controls.json";
+		String jsonF = controlsFolder + "/TouchControls.json";
 		File jsonFile = new File(jsonF);
 		Gson gson = new Gson();
 		ArrayList<ButtonSet> buttons = new ArrayList<>();
@@ -1217,14 +1217,14 @@ public class MainActivity extends Activity {
 
 	void setupTouchControls() {
 		File homeDir = getHomeDir();
-		File controlsFolder = new File(homeDir + "/TouchControls");
+		File controlsFolder = new File(homeDir + "/MobileControls");
 		if (!controlsFolder.exists()) controlsFolder.mkdirs();
 		
-		String jsonF = controlsFolder  + "/Controls.json";
+		String jsonF = controlsFolder  + "/TouchControls.json";
 		File jsonFile = new File(jsonF);
 		
 		if (!jsonFile.exists()) {
-			generateControlsJson();
+			generateTouchControlsJson();
 		} else {
 			removeLayoutControls();
 			restoreControls();
