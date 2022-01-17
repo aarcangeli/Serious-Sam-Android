@@ -1189,12 +1189,16 @@ public class MainActivity extends Activity {
 					View child = btn_list.get(i);
 					if (child instanceof ButtonView) {
 						ButtonView btn = (ButtonView) child;
-						int bitmapId = btn.getBitmap();
-						String fullBitmapName = getResources().getResourceName(bitmapId);
-						String bitmapName = fullBitmapName.substring(fullBitmapName.lastIndexOf("/") + 1);
-						buttons.add(new ButtonSet("BitmapButton", btn.getX(), btn.getY(), btn.getLayoutParams().height, 
-						btn.getLayoutParams().width, bitmapName, btn.getKeycode()));
-						parent.removeView(child);
+						if (btn.getKeycode() == "SeriousBomb" && BuildConfig.home.endsWith("TFE")){
+							continue;
+						} else {
+							int bitmapId = btn.getBitmap();
+							String fullBitmapName = getResources().getResourceName(bitmapId);
+							String bitmapName = fullBitmapName.substring(fullBitmapName.lastIndexOf("/") + 1);
+							buttons.add(new ButtonSet("BitmapButton", btn.getX(), btn.getY(), btn.getLayoutParams().height, 
+							btn.getLayoutParams().width, bitmapName, btn.getKeycode()));
+							parent.removeView(child);	
+						}
 					}
 					if (child instanceof JoystickView) {
 						JoystickView joystick = (JoystickView) child;
