@@ -536,7 +536,11 @@ void InitializeGame(void)
   try {
 
 #ifndef STATIC_LINKING
-    void *libGameMP = dlopen("libGame" + _strModExt + ".so", RTLD_NOW);
+#ifdef FIRST_ENCOUNTER
+	void *libGameMP = dlopen("libGameMP.so", RTLD_NOW);
+#else
+	void *libGameMP = dlopen("libGame" + _strModExt + ".so", RTLD_NOW);
+#endif
     if (!libGameMP) {
       FatalError("  Cannot load GameMP");
     }
