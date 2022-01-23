@@ -9,6 +9,11 @@
 	<string name="aimAssistDescription">Помогает попадать во врагов.</string>
 	<string name="aimAssistSens">Чувствительность Аим-Ассистента</string>
 	
+	<string name="useVolumeKeys">Использовать кнопки громкости</string>
+	<string name="volumeKeysDescription">Назначение действия кнопок громкости.</string>
+	<string name="volumeUpAction">Действие кнопки Volume +</string>
+	<string name="volumeDownAction">Действие кнопки Volume -</string>
+	
 	<string name="showTouchController">Показывать сенсорное управление</string>
 	<string name="controllerTitle">Геймпад</string>
 	<string name="controllerDeadZone">Мертвая зона</string>
@@ -40,6 +45,21 @@
         <item>Автоматически (когда нет геймпада)</item>
         <item>Всегда на экране</item>
         <item>Скрыт</item>
+    </string-array>
+
+    <string-array name="KeyActions">
+		<item>Fire</item>
+		<item>Use</item>
+		<item>Jump</item>
+		<item>Crouch</item>
+		<item>PrevWeapon</item>
+		<item>NextWeapon</item>
+		<item>SeriousBomb</item>
+		<item>Computer</item>
+		<item>Tab</item>
+		<item>DropMoney</item>
+		<item>Start</item>
+		<item>Flip</item>
     </string-array>
 
     <string-array name="ResolutionScaleFactorEntries">

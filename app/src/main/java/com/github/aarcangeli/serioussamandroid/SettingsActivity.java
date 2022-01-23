@@ -24,6 +24,9 @@ public class SettingsActivity extends PreferenceActivity {
 			final Preference gyroSensibility = findPreference("gyro_sensibility");
 			final CheckBoxPreference useAimAssist = (CheckBoxPreference) findPreference("useAimAssist");
 			final Preference autoAimSens = findPreference("autoAimSens");
+			final CheckBoxPreference useVolumeKeys = (CheckBoxPreference) findPreference("useVolumeKeys");
+			final Preference volumeUpAction = findPreference("volumeUpAction");
+			final Preference volumeDownAction = findPreference("volumeDownAction");
 			
 			if (useGyroscope != null && gyroSensibility != null) {
 				gyroSensibility.setEnabled(useGyroscope.isChecked());
@@ -42,6 +45,19 @@ public class SettingsActivity extends PreferenceActivity {
 					@Override
 					public boolean onPreferenceChange(Preference preference, Object newValue) {
 						autoAimSens.setEnabled((Boolean) newValue);
+						return true;
+					}
+				});
+			}
+			
+			if (useVolumeKeys != null) {
+				volumeUpAction.setEnabled(useVolumeKeys.isChecked());
+				volumeDownAction.setEnabled(useVolumeKeys.isChecked());
+				useVolumeKeys.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+					@Override
+					public boolean onPreferenceChange(Preference preference, Object newValue) {
+						volumeUpAction.setEnabled((Boolean) newValue);
+						volumeDownAction.setEnabled((Boolean) newValue);
 						return true;
 					}
 				});

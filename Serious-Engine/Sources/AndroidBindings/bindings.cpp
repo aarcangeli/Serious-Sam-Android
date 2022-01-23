@@ -148,7 +148,7 @@ Java_com_github_aarcangeli_serioussamandroid_MainActivity_nTouchKeyEvent(JNIEnv 
     BTN_CASE(hash("SeriousBomb"), g_cb.g_IncomingControls.bFireBomb)
     BTN_CASE(hash("Reload"), g_cb.g_IncomingControls.bReload)
     BTN_CASE(hash("Jump"), g_cb.g_IncomingControls.bMoveUp)
-    BTN_CASE(hash("Crunch"), g_cb.g_IncomingControls.bMoveDown)
+    BTN_CASE(hash("Crouch"), g_cb.g_IncomingControls.bMoveDown)
     BTN_CASE(hash("PrevWeapon"), g_cb.g_IncomingControls.bWeaponPrev)
     BTN_CASE(hash("NextWeapon"), g_cb.g_IncomingControls.bWeaponNext)
     BTN_CASE(hash("Computer"), g_cb.g_IncomingControls.bComputer)

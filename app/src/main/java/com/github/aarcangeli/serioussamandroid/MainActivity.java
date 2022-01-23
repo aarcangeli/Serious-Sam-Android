@@ -140,6 +140,8 @@ public class MainActivity extends Activity {
 	public boolean ControlsInitialized = false;
 	public float lastx, lasty;
 	public int transparency;
+	private boolean useVolumeKeys;
+	public String volumeUpKey, volumeDownKey;
 	private InputProcessor processor = new InputProcessor();
 	private InputMethodManager inputMethodManager;
 
@@ -418,8 +420,8 @@ public class MainActivity extends Activity {
 		ButtonView use = findViewById(R.id.input_use);
 		use.setKeycode("Use");
 		
-		ButtonView crunch = findViewById(R.id.input_crunch);
-		crunch.setKeycode("Crunch");
+		ButtonView crouch = findViewById(R.id.input_crouch);
+		crouch.setKeycode("Crouch");
 		
 		ButtonView jump = findViewById(R.id.input_jump);
 		jump.setKeycode("Jump");
@@ -601,12 +603,6 @@ public class MainActivity extends Activity {
 			}
 		} finally {}
 		
-		//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-		// DYNAMICALLY CREATED SERIOUS BOMB BUTTON VISIBILITY BUG I DON T KNOW REASON
-		// THE CONDITION IS TRIGGERED EVEN IF NUMBER OF BOMBS == 0
-		//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-		
-		/* 
 		if (parent != null) {
 			for(int i=0; i < parent.getChildCount(); i++) {
 				View child = parent.getChildAt(i);
@@ -615,14 +611,14 @@ public class MainActivity extends Activity {
 					if (btn != null) {
 						String key = btn.getKeycode();
 						int currentBombs = bombs;
-						if (key == "SeriousBomb") {
+						if (key.equals("SeriousBomb")) {
 							btn.setVisibility(enableTouchController && currentBombs != 0 ? View.VISIBLE : View.GONE);
 							break;
 						}
 					}
 				}
 			}
-		} */
+		} 
 		
 		Button settingsBtn = findViewById(R.id.settingsBtn);
 		settingsBtn.getBackground().setAlpha(255 - transparency);
@@ -907,9 +903,37 @@ public class MainActivity extends Activity {
 				}
 			}
 		}
-		if (keyCode == KeyEvent.KEYCODE_VOLUME_UP || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
-			return false;
+		
+		if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+			if (!useVolumeKeys) {
+				return false;			
+			} else {
+				switch(event.getAction()) {
+					case KeyEvent.ACTION_DOWN:
+						nTouchKeyEvent(volumeUpKey, 1);
+						return true;
+					case KeyEvent.ACTION_UP:
+						nTouchKeyEvent(volumeUpKey, 0);
+						return true;
+				}
+			}
 		}
+		
+		if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+			if (!useVolumeKeys) {
+				return false;			
+			} else {
+				switch(event.getAction()) {
+					case KeyEvent.ACTION_DOWN:
+						nTouchKeyEvent(volumeDownKey, 1);
+						return true;
+					case KeyEvent.ACTION_UP:
+						nTouchKeyEvent(volumeDownKey, 0);
+						return true;
+				}
+			}
+		}
+		
 		if (gameState == GameState.MENU || gameState == GameState.CONSOLE) {
 			executeShell("input_iIsShiftPressed = " + (event.isShiftPressed() ? 1 : 0));
 			if (event.getAction() == KeyEvent.ACTION_DOWN) {
@@ -1104,7 +1128,7 @@ public class MainActivity extends Activity {
 	void removeLayoutControls() {
 		ConstraintLayout constraintView = findViewById(R.id.constraint_content);
 		ViewGroup parent = (ViewGroup) constraintView;
-		int[] id = new int[] {R.id.input_use, R.id.input_crunch, R.id.input_jump, R.id.buttonPrev, R.id.buttonNext,R.id.input_fire, R.id.input_SeriousBomb};
+		int[] id = new int[] {R.id.input_use, R.id.input_crouch, R.id.input_jump, R.id.buttonPrev, R.id.buttonNext,R.id.input_fire, R.id.input_SeriousBomb};
 		if (parent != null) {
 			for(int i=0; i < id.length; i++) {
 				View child = findViewById(id[i]);
@@ -1323,6 +1347,9 @@ public class MainActivity extends Activity {
 		ui_drawBanner = preferences.getString("ui_drawBanner", "On");
 		useAimAssist = preferences.getBoolean("useAimAssist", true);
 		autoAimSens = preferences.getInt("autoAimSens", 100) / 100.f;
+		useVolumeKeys = preferences.getBoolean("useVolumeKeys", false);
+		volumeUpKey = preferences.getString("volumeUpAction", "PrevWeapon");
+		volumeDownKey = preferences.getString("volumeDownAction", "NextWeapon");
 		transparency = preferences.getInt("input_opacity", 50) * 255 / 100;
 		DinamicUI();
 		drawBanner();

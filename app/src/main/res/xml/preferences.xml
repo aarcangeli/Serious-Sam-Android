@@ -45,6 +45,25 @@
             android:key="showTouchController"
             android:summary="%s"
             android:title="@string/showTouchController" />
+		<CheckBoxPreference
+            android:defaultValue="false"
+            android:key="useVolumeKeys"
+            android:summary="@string/volumeKeysDescription"
+            android:title="@string/useVolumeKeys" />
+        <ListPreference
+            android:defaultValue="PrevWeapon"
+            android:entries="@array/KeyActions"
+            android:entryValues="@array/KeyActions"
+            android:key="volumeUpAction"
+            android:summary="%s"
+            android:title="@string/volumeUpAction" />
+		<ListPreference
+            android:defaultValue="NextWeapon"
+            android:entries="@array/KeyActions"
+            android:entryValues="@array/KeyActions"
+            android:key="volumeDownAction"
+            android:summary="%s"
+            android:title="@string/volumeDownAction" />
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="use_gyroscope"

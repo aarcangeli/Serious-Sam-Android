@@ -8,6 +8,11 @@
 	<string name="useAimAssist">Use Aim-Assistant</string>
 	<string name="aimAssistDescription">Helps to shoot enemies.</string>
 	<string name="aimAssistSens">Aim-Assistant sensibility</string>
+
+	<string name="useVolumeKeys">Use Volume Buttons</string>
+	<string name="volumeKeysDescription">Use volume buttons to some action.</string>
+	<string name="volumeUpAction">Volume + action</string>
+	<string name="volumeDownAction">Volume - action</string>
 	
 	<string name="showTouchController">Show touch controller</string>
 	<string name="controllerTitle">Controller</string>
@@ -26,41 +31,56 @@
 	<string name="showStatsDescription">Draw gpu stats on screen.</string>
 	
     <string-array name="AutoYesNo">
-        <item>Auto</item>
-        <item>Yes</item>
-        <item>No</item>
+		<item>Auto</item>
+		<item>Yes</item>
+		<item>No</item>
     </string-array>
 	
     <string-array name="OnOff">
-        <item>On</item>
-        <item>Off</item>
+		<item>On</item>
+		<item>Off</item>
     </string-array>
 
     <string-array name="ShowTouchControllerEntries">
-        <item>Auto (when there is no controller)</item>
-        <item>Always</item>
-        <item>Never</item>
+		<item>Auto (when there is no controller)</item>
+		<item>Always</item>
+		<item>Never</item>
+    </string-array>
+
+    <string-array name="KeyActions">
+		<item>Fire</item>
+		<item>Use</item>
+		<item>Jump</item>
+		<item>Crouch</item>
+		<item>PrevWeapon</item>
+		<item>NextWeapon</item>
+		<item>SeriousBomb</item>
+		<item>Computer</item>
+		<item>Tab</item>
+		<item>DropMoney</item>
+		<item>Start</item>
+		<item>Flip</item>
     </string-array>
 
     <string-array name="ResolutionScaleFactorEntries">
-        <item>Normal resolution</item>
-        <item>Half resolution (improve performance)</item>
+		<item>Normal resolution</item>
+		<item>Half resolution (improve performance)</item>
 	<item>Quarter resolution :)</item>
     </string-array>
 	
 	 <string-array name="FullHalf">
-        <item>Full</item>
-        <item>Half</item>
+		<item>Full</item>
+		<item>Half</item>
 	<item>Quarter</item>
     </string-array>
 
     <string-array name="DinamicUIScaleEntries">
-        <item>On</item>
-        <item>Off (use if UI is so large)</item>
+		<item>On</item>
+		<item>Off (use if UI is so large)</item>
     </string-array>
 
     <string-array name="DrawBannerScaleEntries">
-        <item>On (show version, fps, ping)</item>
-        <item>Off</item>
+		<item>On (show version, fps, ping)</item>
+		<item>Off</item>
     </string-array>
 </resources>
