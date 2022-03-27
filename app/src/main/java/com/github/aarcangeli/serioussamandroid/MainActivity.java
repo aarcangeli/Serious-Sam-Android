@@ -39,7 +39,6 @@ import android.util.Log;
 import android.view.Display;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
-import android.view.InputDevice;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -138,7 +137,6 @@ public class MainActivity extends Activity {
 	public boolean ButtonsMapping = false;
 	public boolean isTracking;
 	public boolean ControlsInitialized = false;
-	public float lastx, lasty;
 	public int transparency;
 	private boolean useVolumeKeys;
 	public String volumeUpKey, volumeDownKey;
@@ -636,41 +634,6 @@ public class MainActivity extends Activity {
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-		if (gameState == GameState.NORMAL) {
-		findViewById(R.id.main_content).requestPointerCapture();
-		findViewById(R.id.main_content).setOnCapturedPointerListener(new View.OnCapturedPointerListener() {
-		  @Override
-		  public boolean onCapturedPointer (View view, MotionEvent event) {
-				int action = event.getActionMasked();
-				int mouseButton = 1;
-				try {
-					Object object = event.getClass().getMethod("getButtonState").invoke(event);
-					if (object != null) {
-						mouseButton = (Integer) object;
-					}
-				} catch(Exception ignored) {
-				}
-			   			   
-				//nDispatchKeyEvent(KeyEvent.KEYCODE_DPAD_LEFT, event.getAxisValue(MotionEvent.AXIS_VSCROLL) < -.0f ? 1 : 0);
-				//nDispatchKeyEvent(KeyEvent.KEYCODE_DPAD_RIGHT, event.getAxisValue(MotionEvent.AXIS_VSCROLL) > .0f ? 1 : 0);
-				float scroll = event.getAxisValue(MotionEvent.AXIS_VSCROLL);
-				
-				float x = event.getX();
-				float y = event.getY();	
-				
-				shiftAxisValue(AXIS_LOOK_LR, -x * MULT_VIEW_TRACKER * aimViewSensibility);
-				shiftAxisValue(AXIS_LOOK_UD, -y * MULT_VIEW_TRACKER * aimViewSensibility);
-				
-				nSendMouseNative(mouseButton, action, scroll);
-				lastx = x;
-				lasty = y;
-			return true;
-		  }
-		});
-		} else {
-			findViewById(R.id.main_content).releasePointerCapture();
-		}
-
 		if (gameState == GameState.MENU || gameState == GameState.CONSOLE) {
 			getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN);
 		} else {
@@ -871,39 +834,7 @@ public class MainActivity extends Activity {
 
 	@Override
 	public boolean dispatchKeyEvent(KeyEvent event) {
-		int keyCode = event.getKeyCode();
-		int deviceId = event.getDeviceId();
-		int source = event.getSource();
-	   /* if (event.getRepeatCount() == 0 && ((source & InputDevice.SOURCE_KEYBOARD) != 0)) {
-			executeShell("input_iIsShiftPressed = " + (event.isShiftPressed() ? 1 : 0));
-			switch (event.getAction()) {
-				case KeyEvent.ACTION_DOWN:
-					//if (keyCode == KeyEvent.KEYCODE_ESCAPE) {
-					//	executeShell("sam_bMenu=1;");
-					//}
-					//nDispatchKeyEvent(keyCode, 1);
-					nSendKeyboardButtonDown(keyCode);
-					
-					break;
-				case KeyEvent.ACTION_UP:
-				
-					nSendKeyboardButtonUp(keyCode);
-					//nDispatchKeyEvent(keyCode, 0);
-					break;
-				default:
-					return false;
-			}
-		} */
-		if ((source & InputDevice.SOURCE_MOUSE) != 0) {
-			if ((keyCode == KeyEvent.KEYCODE_FORWARD)) {
-				switch (event.getAction()) {
-				case KeyEvent.ACTION_DOWN:
-				case KeyEvent.ACTION_UP:
-					return true;
-				}
-			}
-		}
-		
+		int keyCode = event.getKeyCode();	
 		if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
 			if (!useVolumeKeys) {
 				return false;			
@@ -1458,7 +1389,4 @@ public class MainActivity extends Activity {
 	private static native void nTouchKeyEvent(String key, int isPressed);
 	private static native void nConfirmEditText(String newText);
 	private static native void nCancelEditText();
-	private static native void nSendMouseNative(int button, int action, float scroll);
-	private static native void nSendKeyboardButtonDown(int button);
-	private static native void nSendKeyboardButtonUp(int button);
 }
