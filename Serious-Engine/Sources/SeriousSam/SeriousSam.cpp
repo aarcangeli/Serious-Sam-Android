@@ -301,7 +301,12 @@ void HideConsole() {
 
 void HideComputer() {
   if (_pGame->gm_csComputerState == CS_ON || _pGame->gm_csComputerState == CS_TURNINGON) {
-    _pGame->gm_csComputerState = CS_TURNINGOFF;
+    //_pGame->gm_csComputerState = CS_TURNINGOFF;
+	_pInput->ClearInput();
+	MSG msg;
+	msg.message = WM_KEYDOWN;
+	msg.wParam = VK_ESCAPE;
+	_pGame->ComputerKeyDown(msg);
   }
 }
 
