@@ -18,6 +18,7 @@
         android:name="android.hardware.touchscreen"
         android:required="false" />
 
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -30,7 +31,14 @@
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
-            android:screenOrientation="userLandscape" />
+            android:screenOrientation="userLandscape">
+				<intent-filter>
+					<action android:name="android.hardware.usb.action.USB_ACCESSORY_ATTACHED " />
+				</intent-filter>
+
+				<meta-data android:name="android.hardware.usb.action.USB_ACCESSORY_ATTACHED "
+					android:resource="@xml/device_filter" />			
+			</activity>
 
         <activity android:name=".SplashScreen" android:theme="@style/SplashTheme">
             <intent-filter>

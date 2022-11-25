@@ -3017,18 +3017,31 @@ void CGame::LCDDrawPointer(PIX pixI, PIX pixJ)
 }
 COLOR CGame::LCDGetColor(COLOR colDefault, const char *strName)
 {
+	COLOR LIGHT;
+	COLOR NEUTRAL;
+	COLOR DARK; 
+  if (g_cb.tfe) {
+	LIGHT = C_GREEN;
+	NEUTRAL = C_GREEN;
+	DARK = C_GREEN; 
+  } else {
+	LIGHT = SE_COL_ORANGE_LIGHT;
+	NEUTRAL = SE_COL_ORANGE_NEUTRAL;
+	DARK = SE_COL_ORANGE_DARK;  
+  }
+  
   if (!strcmp(strName, "thumbnail border")) {
     colDefault = SE_COL_BLUE_NEUTRAL|255;
   } else if (!strcmp(strName, "no thumbnail")) {
-    colDefault = SE_COL_ORANGE_NEUTRAL|255;
+    colDefault = NEUTRAL|255;
   } else if (!strcmp(strName, "popup box")) {
     colDefault = SE_COL_BLUE_NEUTRAL|255;
   } else if (!strcmp(strName, "tool tip")) {
-    colDefault = SE_COL_ORANGE_LIGHT|255;
+    colDefault = LIGHT|255;
   } else if (!strcmp(strName, "unselected")) {
-    colDefault = SE_COL_ORANGE_NEUTRAL|255;
+    colDefault = NEUTRAL|255;
   } else if (!strcmp(strName, "selected")) {
-    colDefault = SE_COL_ORANGE_LIGHT|255;
+    colDefault = LIGHT|255;
   } else if (!strcmp(strName, "disabled selected")) {
     colDefault = SE_COL_ORANGE_DARK_LT |255;
   } else if (!strcmp(strName, "disabled unselected")) {
@@ -3038,29 +3051,29 @@ COLOR CGame::LCDGetColor(COLOR colDefault, const char *strName)
   } else if (!strcmp(strName, "title")) {
     colDefault = C_WHITE|255;
   } else if (!strcmp(strName, "editing")) {
-    colDefault = SE_COL_ORANGE_NEUTRAL|255;
+    colDefault = NEUTRAL|255;
   } else if (!strcmp(strName, "hilited")) {
-    colDefault = SE_COL_ORANGE_LIGHT|255;
+    colDefault = LIGHT|255;
   } else if (!strcmp(strName, "hilited rectangle")) {
-    colDefault = SE_COL_ORANGE_NEUTRAL|255;
+    colDefault = NEUTRAL|255;
   } else if (!strcmp(strName, "edit fill")) {
     colDefault = SE_COL_BLUE_DARK_LT|75;
   } else if (!strcmp(strName, "editing cursor")) {
-    colDefault = SE_COL_ORANGE_NEUTRAL|255;
+    colDefault = NEUTRAL|255;
   } else if (!strcmp(strName, "model box")) {
-    colDefault = SE_COL_ORANGE_NEUTRAL|255;
+    colDefault = NEUTRAL|255;
   } else if (!strcmp(strName, "hiscore header")) {
-    colDefault = SE_COL_ORANGE_LIGHT|255;
+    colDefault = LIGHT|255;
   } else if (!strcmp(strName, "hiscore data")) {
-    colDefault = SE_COL_ORANGE_NEUTRAL|255;
+    colDefault = NEUTRAL|255;
   } else if (!strcmp(strName, "hiscore last set")) {
-    colDefault = SE_COL_ORANGE_NEUTRAL|255;
+    colDefault = NEUTRAL|255;
   } else if (!strcmp(strName, "slider box")) {
-    colDefault = SE_COL_ORANGE_NEUTRAL|255;
+    colDefault = NEUTRAL|255;
   } else if (!strcmp(strName, "file info")) {
-    colDefault = SE_COL_ORANGE_NEUTRAL|255;
+    colDefault = NEUTRAL|255;
   } else if (!strcmp(strName, "display mode")) {
-    colDefault = SE_COL_ORANGE_NEUTRAL|255;
+    colDefault = NEUTRAL|255;
   } else if (!strcmp(strName, "bcg fill")) {
     colDefault = SE_COL_BLUE_DARK|255;
   }
