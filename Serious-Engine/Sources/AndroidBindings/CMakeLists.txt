@@ -5,7 +5,7 @@ set(
 )
 
 add_library(SeriousSamNatives SHARED ${SOURCES})
-target_link_libraries(SeriousSamNatives EGL GLESv2 log)
+target_link_libraries(SeriousSamNatives EGL GLESv2 GLESv3 log)
 
 # attach serious engine
 target_link_libraries(SeriousSamNatives Engine)

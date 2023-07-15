@@ -23,7 +23,7 @@
 	<string name="gyroDescription">Наклон телефона для прицеливания</string>
 	<string name="gyroSens">Чувствительность гироскопа</string>
 	
-	<string name="dragSens">Чувствительность стика перемещения</string>
+	<string name="dragSens">Чувствительность камеры</string>
 	<string name="inputOpacity">Прозрачность сенсорных кнопок</string>
 	
 	<string name="debug">Отладка</string>

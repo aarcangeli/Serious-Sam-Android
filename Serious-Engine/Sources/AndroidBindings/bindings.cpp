@@ -2,6 +2,7 @@
 #include <AndroidBindings/bindings.h>
 #include <Engine/Graphics/ViewPort.h>
 #include <GLES2/gl2.h>
+#include <GLES3/gl3.h>
 #include <Engine/Base/CTString.h>
 #include "key_codes.h"
 

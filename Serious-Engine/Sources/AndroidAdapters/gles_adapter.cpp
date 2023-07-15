@@ -2,6 +2,7 @@ typedef double GLdouble;
 typedef double GLclampd;
 
 #include <GLES2/gl2.h>
+#include <GLES3/gl3.h>
 #include <AndroidAdapters/gles_adapter.h>
 #include <stdlib.h>
 #include <glm/glm.hpp>
@@ -92,7 +93,7 @@ namespace gles_adapter {
   GenericBuffer vp, tp, cp;
 
   const char *VERTEX_SHADER = R"***(
-    precision highp float;
+    precision mediump float;
 
     attribute vec3 position;
     attribute vec3 normal;
@@ -114,7 +115,7 @@ namespace gles_adapter {
   )***";
 
   const char *FRAGMENT_SHADER = R"***(
-    precision highp float;
+	precision mediump float;  // Use mediump instead of highp
 
     uniform sampler2D mainTexture;
     uniform float enableTexture;

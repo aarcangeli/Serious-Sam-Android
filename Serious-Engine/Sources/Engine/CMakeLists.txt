@@ -269,7 +269,7 @@ endif ()
 add_dependencies(Engine se-ecc)
 target_link_libraries(Engine android-adapters)
 target_link_libraries(Engine vorbis amp11lib)
-target_link_libraries(Engine GLESv2 EGL log android OpenSLES)
+target_link_libraries(Engine GLESv2 GLESv3 EGL log android OpenSLES)
 
 target_compile_options(Engine PRIVATE "-I${CMAKE_CURRENT_SOURCE_DIR}")
 

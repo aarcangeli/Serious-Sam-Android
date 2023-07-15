@@ -237,7 +237,7 @@ extern INDEX shd_bCacheAll;
 
 // input
 INDEX inp_iKeyboardReadingMethod = 2;  // 0=getasynckey, 1=virtkeytrap, 2=scancodetrap
-INDEX inp_bAllowMouseAcceleration = TRUE;
+INDEX inp_bAllowMouseAcceleration = FALSE;
 FLOAT inp_fMouseSensitivity = 1.0f;
 INDEX inp_bMousePrecision = FALSE;
 FLOAT inp_fMousePrecisionFactor = 4.0f;

@@ -99,15 +99,10 @@ import static com.github.aarcangeli.serioussamandroid.views.JoystickView.Listene
 public class MainActivity extends Activity {
 	public static final String TAG = "SeriousSamJava";
 	private final int REQUEST_WRITE_STORAGE = 1;
-	private static final int AXIS_MOVE_UD = 0;
 	private static final int AXIS_MOVE_LR = 1;
 	private static final int AXIS_MOVE_FB = 2;
-	private static final int AXIS_TURN_UD = 3;
-	private static final int AXIS_TURN_LR = 4;
-	private static final int AXIS_TURN_BK = 5;
 	private static final int AXIS_LOOK_UD = 6;
 	private static final int AXIS_LOOK_LR = 7;
-	private static final int AXIS_LOOK_BK = 8;
 
 	private static final float MULT_VIEW_CONTROLLER = 2.5f;
 	private static final float MULT_VIEW_TRACKER = 0.4f;

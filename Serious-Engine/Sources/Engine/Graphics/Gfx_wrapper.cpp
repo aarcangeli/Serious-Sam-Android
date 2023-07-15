@@ -854,6 +854,7 @@ void GFX_SetFunctionPointers( INDEX iAPI)
 // gles functions
 // TODO: move in a better place
 #include <GLES2/gl2.h>
+#include <GLES3/gl3.h>
 #include <vector>
 #include <AndroidAdapters/gles_adapter.h>
 
