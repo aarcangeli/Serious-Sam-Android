@@ -578,7 +578,12 @@ public class MainActivity extends Activity {
 		if (parent != null) {
 			for(int i=0; i < parent.getChildCount(); i++) {
 				View child = parent.getChildAt(i);
-				child.setVisibility(keyboardVisibility);
+				if (gameState != GameState.NORMAL) {
+					child.setVisibility(keyboardVisibility);
+				} else {
+					child.setVisibility(View.VISIBLE);
+					child.setAlpha(enableTouchController ? 255 - transparency : 0);
+				}
 				if (child instanceof Button && !(child instanceof ButtonView)) {
 					if (child.getId() == R.id.buttonApply 
 						|| child.getId() == R.id.buttonPlus 

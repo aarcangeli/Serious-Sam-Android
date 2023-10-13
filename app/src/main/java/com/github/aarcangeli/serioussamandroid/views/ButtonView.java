@@ -20,7 +20,7 @@ import com.github.aarcangeli.serioussamandroid.Utils;
 
 @SuppressLint("AppCompatCustomView")
 public class ButtonView extends Button {
-	public static final int COLOR_PAD = 0xFF5a5a5a;
+	public static final int COLOR_PAD = 0xEEEEEEEE;
 	private Bitmap buttonBitmap;
 	private Paint paintPadFill = new Paint();
 	private Paint paintPadStroke = new Paint();

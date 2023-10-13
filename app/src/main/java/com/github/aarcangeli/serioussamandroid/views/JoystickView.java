@@ -22,8 +22,8 @@ public class JoystickView extends View {
 	public static float sizePadBg;
 	public static float sizePadBg2;
 
-	public static final int COLOR_PAD = 0xFF343434;
-	public static final int COLOR_PAD2 = 0xFF404040;
+	public static final int COLOR_PAD = 0xEEEEEEEE;
+	public static final int COLOR_PAD2 = 0xEEEEEEEE;
 	public static final int COLOR_BG = 0xFF1b1b1b;
 	public static final int COLOR_BG2 = 0xFF343434;
 	private Paint paintBgFill = new Paint();

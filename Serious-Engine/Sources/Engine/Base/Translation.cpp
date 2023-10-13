@@ -108,52 +108,59 @@ ENGINE_API void InitTranslation(void)
 ENGINE_API void ReadTranslationTable_t(
   CDynamicArray<CTranslationPair> &atpPairs, const CTFileName &fnmTable) // throw char *
 {
-  _iLine = 0;
+  try {
+    // read the zip directories
+      _iLine = 0;
 
-  CTFileStream strm;
-  strm.Open_t(fnmTable);
+	  CTFileStream strm;
+	  strm.Open_t(fnmTable);
 
-  // read number of pairs
-  INDEX ctPairs;
-  CTString strPairs = ReadOneString_t(strm);
-  strPairs.ScanF("%d", &ctPairs);
+	  // read number of pairs
+	  INDEX ctPairs;
+	  CTString strPairs = ReadOneString_t(strm);
+	  strPairs.ScanF("%d", &ctPairs);
 
-  // instance that much
-  CTranslationPair *atp = atpPairs.New(ctPairs);
+	  // instance that much
+	  CTranslationPair *atp = atpPairs.New(ctPairs);
 
-  // for each pair
-  for(INDEX iPair=0; iPair<ctPairs; iPair++) {
-    CTranslationPair &tp = atp[iPair];
-    // read one token
-    int iToken = ReadOneChar_t(strm);
-    // otherwise it must be source
-    if (iToken!=CHAR_SRC) {
-      if (iToken==CHAR_EOF) {
-        ThrowF_t(TRANS("error in file <%s>, premature EOF in line #%d!"),
-          (const char *)fnmTable, _iLine);
-      } else {
-        ThrowF_t(TRANS("error in file <%s>, line #%d (pair #%d): expected '<' but found '%c'"),
-          (const char *)fnmTable, _iLine, iPair, iToken);
-      }
-    }
-    // read source
-    tp.tp_strSrc = ReadOneString_t(strm);
-    // next token must be destination
-    if (ReadOneChar_t(strm)!=CHAR_DST) {
-      if (iToken==CHAR_EOF) {
-        ThrowF_t(TRANS("error in file <%s>, premature EOF in line #%d!"),
-          (const char *)fnmTable, _iLine);
-      } else {
-        ThrowF_t(TRANS("error in file <%s>, line #%d (pair #%d): expected '>' but found '%c'"),
-          (const char *)fnmTable, _iLine, iPair, iToken);
-      }
-    }
-    // read destination
-    tp.tp_strDst = ReadOneString_t(strm);
-  };
-  // last token must be eof
-  if (ReadOneChar_t(strm)!=CHAR_EOF) {
-    ThrowF_t(TRANS("error in file <%s>: end of file marker not found in line #%d!"), (const char *)fnmTable, _iLine);
+	  // for each pair
+	  for(INDEX iPair=0; iPair<ctPairs; iPair++) {
+		CTranslationPair &tp = atp[iPair];
+		// read one token
+		int iToken = ReadOneChar_t(strm);
+		// otherwise it must be source
+		if (iToken!=CHAR_SRC) {
+		  if (iToken==CHAR_EOF) {
+			ThrowF_t(TRANS("error in file <%s>, premature EOF in line #%d!"),
+			  (const char *)fnmTable, _iLine);
+		  } else {
+			ThrowF_t(TRANS("error in file <%s>, line #%d (pair #%d): expected '<' but found '%c'"),
+			  (const char *)fnmTable, _iLine, iPair, iToken);
+		  }
+		}
+		// read source
+		tp.tp_strSrc = ReadOneString_t(strm);
+		// next token must be destination
+		if (ReadOneChar_t(strm)!=CHAR_DST) {
+		  if (iToken==CHAR_EOF) {
+			ThrowF_t(TRANS("error in file <%s>, premature EOF in line #%d!"),
+			  (const char *)fnmTable, _iLine);
+		  } else {
+			ThrowF_t(TRANS("error in file <%s>, line #%d (pair #%d): expected '>' but found '%c'"),
+			  (const char *)fnmTable, _iLine, iPair, iToken);
+		  }
+		}
+		// read destination
+		tp.tp_strDst = ReadOneString_t(strm);
+	  };
+	  // last token must be eof
+	  if (ReadOneChar_t(strm)!=CHAR_EOF) {
+		ThrowF_t(TRANS("error in file <%s>: end of file marker not found in line #%d!"), (const char *)fnmTable, _iLine);
+	  }
+    // if failed
+  } catch (const char *strError) {
+    // report warning
+    CPrintF(TRANS("Reading translations from <%s> failed:\n%s"), (const char *)fnmTable, strError);
   }
 }
 

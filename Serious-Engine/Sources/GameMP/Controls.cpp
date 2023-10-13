@@ -99,7 +99,7 @@ void CControls::SwitchAxesToDefaults(void)
   ctrl_aaAxisActions[ AXIS_TURN_UD].aa_iAxisAction = MOUSE_Y_AXIS;
   ctrl_aaAxisActions[ AXIS_TURN_UD].aa_fSensitivity = 45;
   ctrl_aaAxisActions[ AXIS_TURN_UD].aa_bInvert = TRUE;
-  ctrl_aaAxisActions[ AXIS_TURN_UD].aa_bRelativeControler = TRUE;
+  ctrl_aaAxisActions[ AXIS_TURN_UD].aa_bRelativeControler = FALSE;
 
   ctrl_fSensitivity = 50;
   ctrl_bInvertLook = FALSE;
@@ -256,8 +256,8 @@ void CControls::Load_t( CTFileName fnFile)
         ctrl_aaAxisActions[ iActionAxisNo].aa_fSensitivity = fSensitivity;
         ctrl_aaAxisActions[ iActionAxisNo].aa_fDeadZone = fDeadZone;
         ctrl_aaAxisActions[ iActionAxisNo].aa_bInvert = ( CTString( "Inverted") == achrIfInverted);
-        ctrl_aaAxisActions[ iActionAxisNo].aa_bRelativeControler = ( CTString( "Relative") == achrIfRelative);
-        ctrl_aaAxisActions[ iActionAxisNo].aa_bSmooth = ( CTString( "Smooth") == achrIfRelative);
+        ctrl_aaAxisActions[ iActionAxisNo].aa_bRelativeControler = FALSE;
+        ctrl_aaAxisActions[ iActionAxisNo].aa_bSmooth = FALSE;
       }
     // read global parameters
     } else if( CTString( achrID) == "GlobalInvertLook") {
@@ -265,7 +265,7 @@ void CControls::Load_t( CTFileName fnFile)
     } else if( CTString( achrID) == "GlobalDontInvertLook") {
       ctrl_bInvertLook = FALSE;
     } else if( CTString( achrID) == "GlobalSmoothAxes") {
-      ctrl_bSmoothAxes = TRUE;
+      ctrl_bSmoothAxes = FALSE;
     } else if( CTString( achrID) == "GlobalDontSmoothAxes") {
       ctrl_bSmoothAxes = FALSE;
     } else if( CTString( achrID) == "GlobalSensitivity") {
