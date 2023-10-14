@@ -23,7 +23,7 @@ public class SplashScreen extends Activity {
 			public void run() {
 				startSeriousSam();
 			}
-		}, 2000);
+		}, 1500);
 	}
 
 	private void startSeriousSam() {

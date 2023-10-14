@@ -27,14 +27,13 @@ import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.DialogFragment;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.content.FileProvider;
+
 import android.util.Log;
 import android.view.Display;
 import android.view.KeyEvent;
@@ -47,10 +46,13 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+import com.github.aarcangeli.serioussamandroid.lists.*;
 import com.github.aarcangeli.serioussamandroid.views.ButtonView;
 import com.github.aarcangeli.serioussamandroid.input.InputProcessor;
 import com.github.aarcangeli.serioussamandroid.views.JoystickView;
 import com.hold1.keyboardheightprovider.KeyboardHeightProvider;
+
+import com.github.aarcangeli.serioussamandroid.Updater;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -71,17 +73,12 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.Locale;
 import java.util.List;
-import java.net.NetworkInterface;
-import java.net.InetAddress;
-import java.net.Inet4Address;
-import java.net.URL;
-import java.net.HttpURLConnection;
-import java.net.URLConnection;
+import java.net.*;
+
 import java.util.Enumeration;
 import java.lang.StringBuilder;
 
-import org.json.JSONObject;
-import org.json.JSONException;
+
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.GsonBuilder;
@@ -109,7 +106,6 @@ public class MainActivity extends Activity {
 	private static final float MULT_VIEW_GYROSCOPE = 0.8f;
 
 	public int curVersionCode;
-	public int latestVersionCode;
 	private SeriousSamSurface glSurfaceView;
 	private File homeDir;
 	private boolean isGameStarted = false;
@@ -137,32 +133,6 @@ public class MainActivity extends Activity {
 	public String volumeUpKey, volumeDownKey;
 	private InputProcessor processor = new InputProcessor();
 	private InputMethodManager inputMethodManager;
-
-	public class ButtonSet
-	{
-		public List<ButtonSet> ButtonSet;
-		public String bitmap, type, action;
-		public int h, w;
-		public float x, y;
-		public ButtonSet(String buttonType_, float x_, float y_, int h_, int w_, String bitmap_, String keycode_) { 
-			type = buttonType_;
-			x = x_;
-			y = y_;
-			h = h_;
-			w = w_;
-			bitmap = bitmap_;
-			action = keycode_;
-		}
-		
-		public List<ButtonSet> getButtonSet() {
-			return ButtonSet;
-		}
-
-		public void setButtonSet(List<ButtonSet> ButtonSet) {
-			this.ButtonSet = ButtonSet;
-		}  
-	}
-
 	private KeyboardHeightProvider keyboardHeightProvider;
 	private KeyboardHeightProvider.KeyboardListener listener = new KeyboardHeightProvider.KeyboardListener() {
 		@Override
@@ -179,158 +149,29 @@ public class MainActivity extends Activity {
 		return cm.getActiveNetworkInfo() != null;
 	}
 
-	public String getWifiIP() {
-		if (isNetworkConnected()) {
-				Enumeration<InetAddress> en;
-			try {
-				NetworkInterface wlan0 = NetworkInterface.getByName("wlan0");
-				NetworkInterface ap0 = NetworkInterface.getByName("ap0");
-				if (wlan0.isUp()) {
-				en = wlan0.getInetAddresses();
-				} else {
-				en = ap0.getInetAddresses();
-				}
-				while (en.hasMoreElements()) {
-					InetAddress inetAddress = en.nextElement();
-					if (!inetAddress.isLoopbackAddress() && inetAddress instanceof Inet4Address) {
-						return inetAddress.getHostAddress().toString();
-					}
-				}
-			} catch (Exception e) {
-				return "Wifi error, you are using mobile network?";
-			}
-		}
-		return "Wifi or AP not started";
-	}
+    public String getWifiIP() {
+        try {
+            Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
+            while (networkInterfaces.hasMoreElements()) {
+                NetworkInterface networkInterface = networkInterfaces.nextElement();
+                if (networkInterface.getName().equals("wlan0") || networkInterface.getName().equals("ap0")) {
+                    if (networkInterface.isUp()) {
+                        Enumeration<InetAddress> addresses = networkInterface.getInetAddresses();
+                        while (addresses.hasMoreElements()) {
+                            InetAddress address = addresses.nextElement();
+                            if (!address.isLoopbackAddress() && address instanceof Inet4Address) {
+                                return address.getHostAddress();
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (SocketException e) {
+            return "Error occurred while retrieving IP: " + e.getMessage();
+        }
+        return "Wifi or AP not started";
+    }
 
-	private class DownloadUpdate extends AsyncTask<String,Integer,Void> {
-		private Context context;
-		public void setContext(Context contextf){
-			context = contextf;
-		}
-		String path = "/sdcard/YourApp.apk";
-		protected Void doInBackground(String... sUrl) {
-			try {
-				URL url = new URL(sUrl[0]);
-				HttpURLConnection connection=(HttpURLConnection)url.openConnection();
-
-				int fileLength = connection.getContentLength();
-
-				// download the file
-				InputStream input = new BufferedInputStream(url.openStream());
-				OutputStream output = new FileOutputStream(path);
-
-				byte data[] = new byte[1024];
-				long total = 0;
-				int count;
-				while ((count = input.read(data)) != -1) {
-					total += count;
-					publishProgress((int) (total * 100 / fileLength));
-					output.write(data, 0, count);
-				}
-
-				output.flush();
-				output.close();
-				input.close();
-			} catch (Exception e) {
-			}
-			return null;
-		}
-
-		// begin the installation by opening the resulting file
-		@Override
-		protected void onPostExecute(Void result) {
-			super.onPostExecute(result);
-			Uri uri = FileProvider.getUriForFile(context,
-									context.getApplicationContext().getPackageName() + ".provider", new File(path));
-			Intent intent = new Intent();
-			intent.setAction(Intent.ACTION_VIEW);
-			intent.setDataAndType(uri, "application/vnd.android.package-archive" );
-			intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-			this.context.startActivity(intent);
-		}	
-	}
-
-	private class ReadFileTask extends AsyncTask<Void,Void,JSONObject> {
-		String updateURL = null; 
-		@Override
-		protected JSONObject doInBackground(Void... params)
-		{
-
-			String str = "https://raw.githubusercontent.com/Skyrimus/Serious-Sam-Android/master/update.json";
-			URLConnection urlConn = null;
-			BufferedReader bufferedReader = null;
-			try
-			{
-				URL url = new URL(str);
-				urlConn = url.openConnection();
-				bufferedReader = new BufferedReader(new InputStreamReader(urlConn.getInputStream()));
-
-				StringBuffer stringBuffer = new StringBuffer();
-				String line;
-				while ((line = bufferedReader.readLine()) != null)
-				{
-					stringBuffer.append(line);
-				}
-
-				return new JSONObject(stringBuffer.toString());
-			}
-			catch(Exception ex)
-			{
-				return null;
-			}
-			finally
-			{
-				if(bufferedReader != null)
-				{
-					try {
-						bufferedReader.close();
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				}
-			}
-		}
-		
-		@Override
-		protected void onPostExecute(JSONObject response) {
-		  super.onPostExecute(response);
-		  if (response != null) {
-			try {
-				if (BuildConfig.home.endsWith("TSE")) {
-					updateURL = response.getString("url_tse");
-				} else {
-					updateURL = response.getString("url_tfe");
-				}
-				latestVersionCode = Integer.parseInt(response.getString("versionCode"));
-				if (latestVersionCode > curVersionCode) {
-					AlertDialog.Builder dlgAlert = new AlertDialog.Builder(MainActivity.this);
-					dlgAlert.setMessage("Game update available! Download update now?");
-					dlgAlert.setTitle("ATTENTION: UPDATE");
-					dlgAlert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							DownloadUpdate tsk=new DownloadUpdate();
-							tsk.setContext(MainActivity.this);
-							tsk.execute(updateURL);
-						}
-					});
-					 dlgAlert.setNegativeButton("No", new DialogInterface.OnClickListener() {
-						 @Override
-					   public void onClick(DialogInterface dialog, int id) {
-						   dialog.dismiss();
-					   }
-				   });
-					dlgAlert.show();
-				}
-			} catch (JSONException ex) {
-			}
-		  }
-		}
-		
-	}
-	
 	private void checkUpdate() {
 		if(isNetworkConnected())
 		{
@@ -340,8 +181,10 @@ public class MainActivity extends Activity {
 			} catch (NameNotFoundException e) {
 				   // TODO Auto-generated catch block
 			}
+			
+			Updater updater = new Updater(this, curVersionCode);
 		
-			ReadFileTask tsk=new ReadFileTask ();
+			Updater.ReadFileTask tsk = updater.new ReadFileTask();
 			tsk.execute();
 		}
 	}
