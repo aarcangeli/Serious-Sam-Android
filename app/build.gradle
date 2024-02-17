@@ -81,6 +81,31 @@ android {
         println("Signing as '${signing.keyAlias}' (keyStore: $signing.storeFile)")
     }
 
+	task copyH3DLibs64(type: Copy) {
+		println("Copying H3D x64 libs")
+		def arm64V8aDir = file("${buildDir}/intermediates/cmake/TSERelease/obj/arm64-v8a")
+		// Copy libraries for arm64-v8a
+		from(arm64V8aDir) {
+			include '*H3D*'
+		}
+		into("src/main/libs_tse_h3d/arm64-v8a")
+	}
+
+	task copyH3DLibs32(type: Copy) {
+		println("Copying H3D x32 libs")
+		// Define source directories for different architectures
+		def armeabiV7aDir = file("${buildDir}/intermediates/cmake/TSERelease/obj/armeabi-v7a")
+		// Copy libraries for armeabi-v7a
+		from(armeabiV7aDir) {
+			include '*H3D*'
+		}
+		into("src/main/libs_tse_h3d/armeabi-v7a")
+	}
+
+	task copyAllH3DLibs {
+		dependsOn 'copyH3DLibs64', 'copyH3DLibs32'
+	}
+
     compileSdkVersion 28
     defaultConfig {
         applicationId "com.github.aarcangeli.serioussamandroid"
@@ -130,6 +155,10 @@ android {
 				jniLibs.srcDirs = ['src/main/libs_tse_adv/']
 				if(!H3D_FOLDER.exists()) {
 					jniLibs.srcDirs += ['src/main/libs_tse_h3d/']
+				} else {
+					afterEvaluate {
+						tasks.findByName('externalNativeBuildTSERelease')?.finalizedBy(copyAllH3DLibs)
+					}
 				}
 			}
 		}
