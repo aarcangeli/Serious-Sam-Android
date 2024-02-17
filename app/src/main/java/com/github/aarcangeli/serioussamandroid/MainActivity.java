@@ -189,23 +189,39 @@ public class MainActivity extends Activity {
 		}
 	}
 	
-	private void copyFolder(String name) throws IOException {
+	private void copyFile(String filename)  throws IOException {
+		AssetManager assetManager = getAssets();
+		try (InputStream in = assetManager.open(filename);
+			 OutputStream out = new FileOutputStream(new File(homeDir, filename))) {
+			byte[] buffer = new byte[1024];
+			int read;
+			while ((read = in.read(buffer)) != -1) {
+				out.write(buffer, 0, read);
+			}
+		}
+	}
+	
+	private void copyFolderOrFile(String name) throws IOException {
 		AssetManager assetManager = getAssets();
 		String[] files = assetManager.list(name);
 		if (files == null) {
 			return;
 		}
+		
+		if (files.length == 0) {
+			copyFile(name);
+		} else {
+			File outputFolder = new File(homeDir, name);
+			outputFolder.mkdirs();
 
-		File outputFilder = new File(homeDir, name);
-		outputFilder.mkdirs();
-
-		for (String filename : files) {
-			try (InputStream in = assetManager.open(name + "/" + filename);
-				 OutputStream out = new FileOutputStream(new File(outputFilder, filename))) {
-				byte[] buffer = new byte[1024];
-				int read;
-				while ((read = in.read(buffer)) != -1) {
-					out.write(buffer, 0, read);
+			for (String filename : files) {
+				try (InputStream in = assetManager.open(name + "/" + filename);
+					 OutputStream out = new FileOutputStream(new File(outputFolder, filename))) {
+					byte[] buffer = new byte[1024];
+					int read;
+					while ((read = in.read(buffer)) != -1) {
+						out.write(buffer, 0, read);
+					}
 				}
 			}
 		}
@@ -1097,10 +1113,11 @@ public class MainActivity extends Activity {
 	private void startGame() {
 		if (!homeDir.exists()) homeDir.mkdirs();
 		try {
-			copyFolder("Scripts/Menu");
-			copyFolder("Scripts/NetSettings");
-			copyFolder("Classes/AdvancedItemClasses");
-			copyFolder("Classes/AdvancedMonsterClasses");
+			copyFolderOrFile("Scripts/Menu");
+			copyFolderOrFile("Scripts/NetSettings");
+			copyFolderOrFile("Classes/AdvancedItemClasses");
+			copyFolderOrFile("Classes/AdvancedMonsterClasses");
+			copyFolderOrFile("Mods");
 		} catch (IOException e) {
 			Log.e(TAG, "Error while copying resources", e);
 		}
