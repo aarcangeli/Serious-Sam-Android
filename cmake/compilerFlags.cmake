@@ -1,6 +1,5 @@
 if (ANDROID)
-	add_compile_options("-g")
-	add_compile_options("-O3")
+	add_compile_options("-O2")
 	add_compile_options("-faligned-new")
     add_compile_options("-Wno-format")
 	add_compile_options("-Wno-parentheses")

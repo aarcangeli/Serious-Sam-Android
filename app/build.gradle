@@ -1,5 +1,7 @@
 apply plugin: 'com.android.application'
 
+def H3D_FOLDER = file('../Serious-Engine/Sources/H3D')
+
 /**
  * Get version and version code from environment or version.properties
  */
@@ -124,8 +126,11 @@ android {
 		buildConfigField('String','home','"SeriousSamTSE"')
 		sourceSets {
 			TSE {
-			res.srcDirs = ['src/main/res_tse','src/main/res']
-			jniLibs.srcDirs = ['src/main/libs_tse/']
+				res.srcDirs = ['src/main/res_tse','src/main/res']
+				jniLibs.srcDirs = ['src/main/libs_tse_adv/']
+				if(!H3D_FOLDER.exists()) {
+					jniLibs.srcDirs += ['src/main/libs_tse_h3d/']
+				}
 			}
 		}
 	}
