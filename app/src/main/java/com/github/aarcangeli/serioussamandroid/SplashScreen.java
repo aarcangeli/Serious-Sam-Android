@@ -12,7 +12,7 @@ public class SplashScreen extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// speed up bootstrap if we have already storage permission
-		MainActivity.tryPremain(this);
+		//MainActivity.tryPremain(this);
 
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.splash_layout);

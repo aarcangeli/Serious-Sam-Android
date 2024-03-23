@@ -47,23 +47,3 @@ allprojects {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
-
-// logger
-def fileLogger = [
-        onOutput: {
-            File logfile = new File('logs\\' + 'build_' + curDate + '.log')
-            logfile << it
-        }
-] as org.gradle.api.logging.StandardOutputListener
-
-// for configuration phase
-logging.addStandardOutputListener(fileLogger)
-
-// for execution phase
-gradle.taskGraph.whenReady { taskGraph ->
-    taskGraph.allTasks.each { Task t ->
-        t.doFirst {
-            logging.addStandardOutputListener(fileLogger)
-        }
-    }
-}

@@ -22,14 +22,12 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.hardware.input.InputManager;
-import android.net.Uri;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.fragment.app.DialogFragment;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -40,7 +38,6 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
@@ -52,12 +49,12 @@ import com.github.aarcangeli.serioussamandroid.input.InputProcessor;
 import com.github.aarcangeli.serioussamandroid.views.JoystickView;
 import com.hold1.keyboardheightprovider.KeyboardHeightProvider;
 
-import com.github.aarcangeli.serioussamandroid.Updater;
-
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.io.File;
 import java.io.FileReader;
@@ -66,9 +63,7 @@ import java.io.BufferedReader;
 import java.io.OutputStream;
 import java.io.FileOutputStream;
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Locale;
@@ -77,10 +72,11 @@ import java.net.*;
 
 import java.util.Enumeration;
 import java.lang.StringBuilder;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 
 import com.google.gson.Gson;
-import com.google.gson.stream.JsonReader;
 import com.google.gson.GsonBuilder;
 
 import static com.github.aarcangeli.serioussamandroid.NativeEvents.EditTextEvent;
@@ -200,7 +196,7 @@ public class MainActivity extends Activity {
 			}
 		}
 	}
-	
+
 	private void copyFolderOrFile(String name) throws IOException {
 		AssetManager assetManager = getAssets();
 		String[] files = assetManager.list(name);
@@ -357,11 +353,82 @@ public class MainActivity extends Activity {
 		};
 		
 		checkUpdate();
-		
+
 		if (!hasStoragePermission(this)) {
 			ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_STORAGE);
 		} else {
-			startGame();
+			CacheDownloader showalarm = new CacheDownloader(this);
+			showalarm.checkFolderAndDownloadFile(new CacheDownloader.DownloadCallback() {
+				@Override
+				public void onDownloadComplete(Boolean downloaded) {
+					if (downloaded) {
+						final ProgressDialog dialog = new ProgressDialog(MainActivity.this);
+						runOnUiThread(new Runnable() {
+							public void run() {
+								dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+								dialog.setTitle("Serious Sam Android Edition ");
+								dialog.setMessage("Распаковка кэша, ждите...");
+								dialog.setCancelable(false);
+								dialog.show();
+							}
+						});
+						new Thread(new Runnable() {
+							public void run() {
+								try {
+									File zipFile = new File(Environment.getExternalStorageDirectory(),BuildConfig.home + ".zip");
+									InputStream inputStream = new FileInputStream(zipFile);
+									ZipInputStream zipInputStream = new ZipInputStream(new BufferedInputStream(inputStream));
+									byte[] buffer = new byte[8192];
+									while (true) {
+										ZipEntry nextEntry = zipInputStream.getNextEntry();
+										if (nextEntry == null) {
+											zipInputStream.close();
+											inputStream.close();
+											dialog.dismiss();
+											startGame();
+											return;
+										}
+										final File file = new File(Environment.getExternalStorageDirectory(), nextEntry.getName());
+										if (!file.exists()) {
+											runOnUiThread(new Runnable() {
+												public void run() {
+													Toast.makeText(MainActivity.this, "Распаковка: " + file.getName(),Toast.LENGTH_SHORT).show();
+												}
+											});
+											File parentFile = nextEntry.isDirectory() ? file : file.getParentFile();
+											if (!parentFile.isDirectory() && !parentFile.mkdirs()) {
+												throw new FileNotFoundException("Failed to ensure directory: " + parentFile.getAbsolutePath());
+											} else if (!nextEntry.isDirectory()) {
+												FileOutputStream fileOutputStream = new FileOutputStream(file);
+												while (true) {
+													int read = zipInputStream.read(buffer);
+													if (read == -1) {
+														break;
+													}
+													fileOutputStream.write(buffer, 0, read);
+												}
+												fileOutputStream.close();
+											}
+										}
+									}
+								} catch (Throwable th) {
+									final String mess = th.getMessage();
+									th.printStackTrace();
+									Log.wtf(TAG, "Error: " + mess);
+									runOnUiThread(new Runnable() {
+										public void run() {
+											dialog.setMessage("Ошибка: " + mess);
+											Toast.makeText(MainActivity.this, "Ошибка: " + mess,Toast.LENGTH_LONG).show();
+										}
+									});
+								}
+							}
+						}).start();
+					} else {
+						startGame();
+					}
+				}
+			});
 		}
 		
 		updateSoftKeyboardVisible();
@@ -1112,15 +1179,16 @@ public class MainActivity extends Activity {
 
 	private void startGame() {
 		if (!homeDir.exists()) homeDir.mkdirs();
+
 		try {
 			copyFolderOrFile("Scripts/Menu");
 			copyFolderOrFile("Scripts/NetSettings");
 			copyFolderOrFile("Classes/AdvancedItemClasses");
 			copyFolderOrFile("Classes/AdvancedMonsterClasses");
-			copyFolderOrFile("Mods");
 		} catch (IOException e) {
 			Log.e(TAG, "Error while copying resources", e);
 		}
+
 		SeriousSamSurface.initializeLibrary(homeDir.getAbsolutePath(), getLibDir(this));
 		isGameStarted = true;
 		glSurfaceView.start();
