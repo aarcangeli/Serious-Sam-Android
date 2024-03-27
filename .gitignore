@@ -5,7 +5,7 @@
 .DS_Store
 /build
 /captures
-.externalNativeBuild
+.cxx
 extracted
 shots
 /signing.properties
@@ -14,3 +14,4 @@ app/debug
 app/release
 /cmake-*
 release.keystore
+logs

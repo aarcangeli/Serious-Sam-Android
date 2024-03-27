@@ -38,8 +38,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 extern CStaticStackArray<GFXVertex>   _avtxCommon;
 extern CStaticStackArray<GFXTexCoord> _atexCommon;
 extern CStaticStackArray<GFXColor>    _acolCommon;
-extern CStaticStackArray<INDEX>       _aiCommonElements;
-extern CStaticStackArray<INDEX>       _aiCommonQuads;
+extern CStaticStackArray<INDEX_T>       _aiCommonElements;
+extern CStaticStackArray<INDEX_T>       _aiCommonQuads;
 
 
 #include <Engine/Graphics/Gfx_wrapper.h>
@@ -48,9 +48,9 @@ extern CStaticStackArray<INDEX>       _aiCommonQuads;
 #define SQRTTABLESIZE   8192
 #define SQRTTABLESIZELOG2 13
 
-#define GFX_MAXTEXUNITS (4L) // maximum number of supported texture units for multitexturing
-#define GFX_MINSTREAMS  (3L) // minimum number of D3D streams in order to support HW T&L
-#define GFX_MAXLAYERS   (5L) // suggested maximum number of multi-passes per one polygon
+#define GFX_MAXTEXUNITS (4) // maximum number of supported texture units for multitexturing
+#define GFX_MINSTREAMS  (3) // minimum number of D3D streams in order to support HW T&L
+#define GFX_MAXLAYERS   (5) // suggested maximum number of multi-passes per one polygon
 
 // D3D vertex for simple draw functions
 struct CTVERTEX {
@@ -71,6 +71,17 @@ enum GfxAPIType
 #endif // SE1_D3D
   GAT_CURRENT = 9,   // current API
 };
+
+
+__forceinline bool GfxValidApi(GfxAPIType eAPI)
+{
+#ifdef SE1_D3D
+  return(eAPI==GAT_OGL || eAPI==GAT_D3D || eAPI==GAT_NONE);
+#else
+  return(eAPI==GAT_OGL || eAPI==GAT_NONE);
+#endif
+}
+
 
 
 // vertex type (for lock/unlock function)
@@ -204,6 +215,7 @@ private:
   void SwapBuffers_OGL( CViewPort *pvpToSwap);
 
   // Direct3D specific
+#ifdef SE1_D3D
   BOOL InitDriver_D3D(void);
   void EndDriver_D3D(void);
   BOOL InitDisplay_D3D( INDEX iAdapter, PIX pixSizeI, PIX pixSizeJ, enum DisplayDepth eColorDepth);
@@ -211,6 +223,7 @@ private:
   BOOL SetCurrentViewport_D3D( CViewPort *pvp);
   void UploadPattern_D3D( ULONG ulPatternEven);
   void SwapBuffers_D3D( CViewPort *pvpToSwap);
+#endif
 
 public:
 

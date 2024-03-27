@@ -37,7 +37,15 @@ public:
   // convert value of an enum to its name
   ENGINE_API const char *NameForValue(INDEX iValue);
 };
-#define EP_ENUMBEG(typename) CEntityPropertyEnumValue typename##_values[] = {
+
+/* rcg10072001 */
+#ifdef _MSC_VER
+  #define ENUMEXTERN extern _declspec (dllexport)
+#else
+  #define ENUMEXTERN
+#endif
+
+#define EP_ENUMBEG(typename) ENUMEXTERN CEntityPropertyEnumValue typename##_values[] = {
 #define EP_ENUMVALUE(value, name) {value, name}
 #define EP_ENUMEND(typename) }; CEntityPropertyEnumType typename##_enum = { \
   typename##_values, sizeof(typename##_values)/sizeof(CEntityPropertyEnumValue ) }
@@ -57,7 +65,11 @@ typedef CTString CTStringTrans;
 /////////////////////////////////////////////////////////////////////
 // Classes and macros for defining entity properties
 
-#define EPROPF_HIDEINPERSPECTIVE    (1UL<<0)  // not visualized in perspective view (for ranges)
+#define EPROPF_HIDEINPERSPECTIVE    (1UL << 0)  // not visualized in perspective view (for ranges)
+
+// [SSE] Read Only Entity Properties
+#define EPROPF_READONLY             (1UL << 10)
+//
 
 class ENGINE_API CEntityProperty {
 public:
@@ -194,7 +206,7 @@ public:
 
   char *dec_strName;                  // descriptive name of the class
   char *dec_strIconFileName;          // filename of texture or thumbnail
-  INDEX dec_iID;                      // class ID
+  ULONG dec_ulID;                     // class ID
 
   CDLLEntityClass *dec_pdecBase;      // pointer to the base class
 
@@ -211,6 +223,11 @@ public:
   class CEntityProperty *PropertyForName(const CTString &strPropertyName);
   /* Get pointer to entity property from its packed identifier. */
   class CEntityProperty *PropertyForTypeAndID(CEntityProperty::PropertyType eptType, ULONG ulID);
+
+  // [SSE]
+  // Get pointer to entity property from its packed ID.
+  class CEntityProperty *PropertyForID(ULONG ulID);
+
   /* Get event handler given state and event code. */
   CEntity::pEventHandler HandlerForStateAndEvent(SLONG slState, SLONG slEvent);
   /* Get event handler name for given state. */
@@ -270,7 +287,7 @@ public:
 
 inline ENGINE_API void ClearToDefault(FLOAT &f) { f = 0.0f; };
 inline ENGINE_API void ClearToDefault(INDEX &i) { i = 0; };
-inline ENGINE_API void ClearToDefault(BOOL &b) { b = FALSE; };
+//inline ENGINE_API void ClearToDefault(BOOL &b) { b = FALSE; };
 inline ENGINE_API void ClearToDefault(CEntityPointer &pen) { pen = NULL; };
 inline ENGINE_API void ClearToDefault(CTString &str) { str = ""; };
 inline ENGINE_API void ClearToDefault(FLOATplane3D &pl) { pl = FLOATplane3D(FLOAT3D(0,1,0), 0); };

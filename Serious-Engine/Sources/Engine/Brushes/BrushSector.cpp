@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 
 #include <Engine/Brushes/Brush.h>
 #include <Engine/Brushes/BrushTransformed.h>
@@ -30,13 +30,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Entities/Entity.h>
 #include <Engine/Templates/BSP.h>
 #include <Engine/Templates/BSP_internal.h>
-#include <Engine/Templates/BSP.cpp>
-#include <Engine/Templates/Selection.cpp>
 
 //template CDynamicArray<CBrushVertex>;
 
 CBrushSector::CBrushSector(const CBrushSector &c) 
-: bsc_bspBSPTree(*new DOUBLEbsptree3D)
+: bsc_bspBSPTree(*new FLOATbsptree3D)
 { 
   ASSERT(FALSE);
 };
@@ -56,7 +54,7 @@ CBrushSector::CBrushSector(void)
 , bsc_ulTempFlags(0)
 , bsc_ulVisFlags(0)
 , bsc_strName("")
-, bsc_bspBSPTree(*new DOUBLEbsptree3D)
+, bsc_bspBSPTree(*new FLOATbsptree3D)
 {
 
 };
@@ -142,7 +140,7 @@ void CBrushSector::CalculateBoundingBoxes(CSimpleProjection3D_DOUBLE &prRelative
       ((pen->en_ulFlags&ENF_ZONING) || pen->en_RenderType==CEntity::RT_FIELDBRUSH) ) {
       // create an array of bsp polygons for sector polygons
       INDEX ctPolygons = bsc_abpoPolygons.Count();
-      CDynamicArray< BSPPolygon<DOUBLE, 3> > arbpoPolygons;
+      CDynamicArray< BSPPolygon<FLOAT, 3> > arbpoPolygons;
       arbpoPolygons.New(ctPolygons);
 
       // for all polygons in this sector
@@ -150,7 +148,7 @@ void CBrushSector::CalculateBoundingBoxes(CSimpleProjection3D_DOUBLE &prRelative
       {for(INDEX iPolygon=0; iPolygon<ctPolygons; iPolygon++){
         // create a BSP polygon from the brush polygon
         CBrushPolygon         &brpo = bsc_abpoPolygons[iPolygon];
-        BSPPolygon<DOUBLE, 3> &bspo = arbpoPolygons[iPolygon];
+        BSPPolygon<FLOAT, 3> &bspo = arbpoPolygons[iPolygon];
         brpo.CreateBSPPolygon(bspo);
       }}
       arbpoPolygons.Unlock();
@@ -205,7 +203,7 @@ void CBrushSector::UncacheLightMaps(void)
 void CBrushSector::FindEntitiesInSector(void)
 {
   // assure that floating point precision is 53 bits
-  CSetFPUPrecision sfp(FPT_53BIT);
+  //CSetFPUPrecision sfp(FPT_53BIT);
 
   // get the entity of this sector's brush
   CEntity *penEntity = bsc_pbmBrushMip->bm_pbrBrush->br_penEntity;
@@ -236,14 +234,14 @@ void CBrushSector::FindEntitiesInSector(void)
       
       // if the sphere is inside the sector
       if (bsc_bspBSPTree.TestSphere(
-          FLOATtoDOUBLE(vSphereCenter), FLOATtoDOUBLE(fSphereRadius))>=0) {
+          vSphereCenter, fSphereRadius)>=0) {
         // make oriented bounding box of the entity
         FLOATobbox3D boxEntity(iten->en_boxSpatialClassification, 
           iten->en_plPlacement.pl_PositionVector, iten->en_mRotation);
 
         // if the box is inside the sector
         if (boxSector.HasContactWith(boxEntity) &&
-          bsc_bspBSPTree.TestBox(FLOATtoDOUBLE(boxEntity))>=0) {
+          bsc_bspBSPTree.TestBox(boxEntity)>=0) {
           // relate the entity to the sector
           if (iten->en_RenderType==CEntity::RT_BRUSH
             ||iten->en_RenderType==CEntity::RT_FIELDBRUSH
@@ -624,9 +622,9 @@ void CBrushSector::TriangularizeMarkedPolygons( void)
         bpoNew.bpo_abpePolygonEdges[2].bpe_pbedEdge = &abedEdgesNew[iEdge+2];
         bpoNew.bpo_abpePolygonEdges[2].bpe_bReverse = FALSE;
 
-        CBrushEdge &edg0 = *bpoNew.bpo_abpePolygonEdges[0].bpe_pbedEdge;
-        CBrushEdge &edg1 = *bpoNew.bpo_abpePolygonEdges[1].bpe_pbedEdge;
-        CBrushEdge &edg2 = *bpoNew.bpo_abpePolygonEdges[2].bpe_pbedEdge;
+        //CBrushEdge &edg0 = *bpoNew.bpo_abpePolygonEdges[0].bpe_pbedEdge;
+        //CBrushEdge &edg1 = *bpoNew.bpo_abpePolygonEdges[1].bpe_pbedEdge;
+        //CBrushEdge &edg2 = *bpoNew.bpo_abpePolygonEdges[2].bpe_pbedEdge;
 
         // set brush vertex ptrs
         bpoNew.bpo_apbvxTriangleVertices.New(3);

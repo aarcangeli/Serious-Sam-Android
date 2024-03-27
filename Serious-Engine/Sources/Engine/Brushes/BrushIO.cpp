@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 
 #include <Engine/Base/Stream.h>
 #include <Engine/Base/ReplaceFile.h>
@@ -25,7 +25,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Graphics/Color.h>
 #include <Engine/Templates/StaticArray.cpp>
 #include <Engine/Templates/DynamicArray.cpp>
-#include <Engine/Templates/BSP.cpp>
 
 static const INDEX _iSupportedVersion = 14;
 
@@ -237,22 +236,22 @@ void CBrushPolygonTexture::Read_t( CTStream &strm) // throw char *
   if (bpt_toTexture.GetData()!=NULL) {
     bpt_toTexture.GetData()->AddToCRCTable();
   }
-  strm.Read_t(&bpt_mdMapping, sizeof(bpt_mdMapping));
-  strm>>bpt.s.bpt_ubScroll;
-  strm>>bpt.s.bpt_ubBlend;
-  strm>>bpt.s.bpt_ubFlags;
-  strm>>bpt.s.bpt_ubDummy;
-  strm>>bpt.s.bpt_colColor;
+  strm>>bpt_mdMapping;
+  strm>>s.bpt_ubScroll;
+  strm>>s.bpt_ubBlend;
+  strm>>s.bpt_ubFlags;
+  strm>>s.bpt_ubDummy;
+  strm>>s.bpt_colColor;
 }
 void CBrushPolygonTexture::Write_t( CTStream &strm)  // throw char *
 {
   strm<<bpt_toTexture.GetName();
   strm.Write_t(&bpt_mdMapping, sizeof(bpt_mdMapping));
-  strm<<bpt.s.bpt_ubScroll;
-  strm<<bpt.s.bpt_ubBlend;
-  strm<<bpt.s.bpt_ubFlags;
-  strm<<bpt.s.bpt_ubDummy;
-  strm<<bpt.s.bpt_colColor;
+  strm<<s.bpt_ubScroll;
+  strm<<s.bpt_ubBlend;
+  strm<<s.bpt_ubFlags;
+  strm<<s.bpt_ubDummy;
+  strm<<s.bpt_colColor;
 }
 
 /*
@@ -416,7 +415,7 @@ void CBrushSector::Read_t( CTStream *pistrm) // throw char *
   // for each vertex
   {FOREACHINSTATICARRAY(bsc_abvxVertices, CBrushVertex, itbvx) {
     // read precise vertex coordinates
-    pistrm->Read_t(&itbvx->bvx_vdPreciseRelative, sizeof(DOUBLE3D));
+    (*pistrm)>>itbvx->bvx_vdPreciseRelative;
     // remember sector pointer
     itbvx->bvx_pbscSector = this;
   }}
@@ -431,7 +430,7 @@ void CBrushSector::Read_t( CTStream *pistrm) // throw char *
   // for each plane
   {FOREACHINSTATICARRAY(bsc_abplPlanes, CBrushPlane, itbpl) {
     // read precise plane coordinates
-    pistrm->Read_t(&itbpl->bpl_pldPreciseRelative, sizeof(DOUBLEplane3D));
+    (*pistrm)>>itbpl->bpl_pldPreciseRelative;
   }}
 
   (*pistrm).ExpectID_t("EDGs");  // 'edges'
@@ -492,7 +491,7 @@ void CBrushSector::Read_t( CTStream *pistrm) // throw char *
       bpo.bpo_abptTextures[2].Read_t(*pistrm);
 
       // read other polygon properties
-      (*pistrm).Read_t(&bpo.bpo_bppProperties, sizeof(bpo.bpo_bppProperties));
+      (*pistrm)>>bpo.bpo_bppProperties;
 
     } else {
       // read textures
@@ -509,26 +508,26 @@ void CBrushSector::Read_t( CTStream *pistrm) // throw char *
       // read texture mapping
       bpo.bpo_mdShadow.ReadOld_t(*pistrm);
       // read other polygon properties
-      (*pistrm).Read_t(&bpo.bpo_bppProperties, sizeof(bpo.bpo_bppProperties));
+      (*pistrm)>>bpo.bpo_bppProperties;
 
       // adjust polygon and texture properties
       bpo.bpo_abptTextures[0].bpt_mdMapping = bpo.bpo_mdShadow;
-      bpo.bpo_abptTextures[0].bpt.s.bpt_ubBlend = BPT_BLEND_OPAQUE;
-      bpo.bpo_abptTextures[0].bpt.s.bpt_colColor = C_WHITE|CT_OPAQUE;
+      bpo.bpo_abptTextures[0].s.bpt_ubBlend = BPT_BLEND_OPAQUE;
+      bpo.bpo_abptTextures[0].s.bpt_colColor = C_WHITE|CT_OPAQUE;
 
       bpo.bpo_abptTextures[1].bpt_mdMapping = bpo.bpo_mdShadow;
-      bpo.bpo_abptTextures[1].bpt.s.bpt_ubBlend = BPT_BLEND_SHADE;
-      bpo.bpo_abptTextures[1].bpt.s.bpt_colColor = C_WHITE|CT_OPAQUE;
+      bpo.bpo_abptTextures[1].s.bpt_ubBlend = BPT_BLEND_SHADE;
+      bpo.bpo_abptTextures[1].s.bpt_colColor = C_WHITE|CT_OPAQUE;
 
       bpo.bpo_abptTextures[2].bpt_mdMapping = bpo.bpo_mdShadow;
-      bpo.bpo_abptTextures[2].bpt.s.bpt_ubBlend = BPT_BLEND_SHADE;
-      bpo.bpo_abptTextures[2].bpt.s.bpt_colColor = C_WHITE|CT_OPAQUE;
+      bpo.bpo_abptTextures[2].s.bpt_ubBlend = BPT_BLEND_SHADE;
+      bpo.bpo_abptTextures[2].s.bpt_colColor = C_WHITE|CT_OPAQUE;
 
       bpo.bpo_bppProperties.bpp_ubShadowBlend = BPT_BLEND_SHADE;
 
       if (bpo.bpo_ulFlags&BPOF_PORTAL) {
-        bpo.bpo_abptTextures[0].bpt.s.bpt_ubBlend = BPT_BLEND_BLEND;
-        bpo.bpo_abptTextures[1].bpt.s.bpt_ubBlend = BPT_BLEND_ADD;
+        bpo.bpo_abptTextures[0].s.bpt_ubBlend = BPT_BLEND_BLEND;
+        bpo.bpo_abptTextures[1].s.bpt_ubBlend = BPT_BLEND_ADD;
         bpo.bpo_bppProperties.bpp_ubShadowBlend = BPT_BLEND_ADD;
       }
     }
@@ -593,7 +592,9 @@ void CBrushSector::Read_t( CTStream *pistrm) // throw char *
       bpo.bpo_aiTriangleElements.New(ctElements);
       // read all element indices
       if (ctElements>0) {
-        (*pistrm).Read_t(&bpo.bpo_aiTriangleElements[0], ctElements*sizeof(INDEX));
+        for (INDEX i = 0; i < ctElements; i++) {
+          (*pistrm)>>bpo.bpo_aiTriangleElements[i];
+        }
       }
     }
 

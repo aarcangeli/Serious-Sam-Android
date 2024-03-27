@@ -36,6 +36,17 @@ enum ShellTypeType {
 
 // data type structure
 struct ShellType {
+  ShellType() :
+    st_sttType(STT_ILLEGAL),
+    st_ctArraySize(0),
+    st_istBaseType(0),
+    st_istFirstArgument(0),
+    st_istLastArgument(0),
+    st_istNextInArguments(0),
+    st_istPrevInArguments(0)
+  {
+  }
+
   enum ShellTypeType st_sttType; 
 
   INDEX st_ctArraySize;             // number of members if an array

@@ -21,6 +21,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Templates/Stock_CTextureData.h>
 #include <Engine/Templates/Stock_CModelData.h>
 #include <GameMP/Game.h>
+#include <config.h>
 
 /* rcg10042001 protect against Visual C-isms. */
 #ifdef _MSC_VER
@@ -31,10 +32,17 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #define DECL_DLL 
 #endif
 
+#ifdef FIRST_ENCOUNTER
+#include <Entities/Global.h>
+#include <Entities/Common/Common.h>
+#include <Entities/Common/GameInterface.h>
+#include <Entities/Player.h>
+#else
 #include <EntitiesMP/Global.h>
 #include <EntitiesMP/Common/Common.h>
 #include <EntitiesMP/Common/GameInterface.h>
 #include <EntitiesMP/Player.h>
+#endif
 #undef DECL_DLL
 
 #include "SeriousSam.h"

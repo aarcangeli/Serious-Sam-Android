@@ -63,7 +63,7 @@ set(
   "${SE_BASE}/Math/Geometry_DOUBLE.cpp"
   "${SE_BASE}/Math/Object3D.cpp"
   "${SE_BASE}/Math/Object3D_CSG.cpp"
-  "${SE_BASE}/Math/Object3D_IO.cpp"
+  #"${SE_BASE}/Math/Object3D_IO.cpp"
   "${SE_BASE}/Math/ObjectSector.cpp"
   "${SE_BASE}/Math/Placement.cpp"
   "${SE_BASE}/Math/Projection.cpp"
@@ -73,7 +73,7 @@ set(
   "${SE_BASE}/Math/Projection_Simple.cpp"
   "${SE_BASE}/Math/Projection_Simple_DOUBLE.cpp"
   "${SE_BASE}/Math/TextureMapping.cpp"
-  #                "${SE_BASE}/Graphics/Benchmark.cpp"
+  #"${SE_BASE}/Graphics/Benchmark.cpp"
   "${SE_BASE}/Graphics/Color.cpp"
   "${SE_BASE}/Graphics/DepthCheck.cpp"
   "${SE_BASE}/Graphics/DisplayMode.cpp"
@@ -106,7 +106,7 @@ set(
   "${SE_BASE}/Sound/SoundObject.cpp"
   "${SE_BASE}/Sound/SoundProfile.cpp"
   "${SE_BASE}/Sound/Wave.cpp"
-  "${SE_BASE}/Models/EditModel.cpp"
+  #"${SE_BASE}/Models/EditModel.cpp"
   "${SE_BASE}/Models/MipMaker.cpp"
   "${SE_BASE}/Models/Model.cpp"
   "${SE_BASE}/Models/ModelProfile.cpp"
@@ -136,9 +136,11 @@ set(
   "${SE_BASE}/Templates/Stock_CSoundData.cpp"
   "${SE_BASE}/Templates/Stock_CTextureData.cpp"
   "${SE_BASE}/Network/ActionBuffer.cpp"
-  "${SE_BASE}/Network/ClientInterface.cpp"
-  "${SE_BASE}/Network/Compression.cpp"
+  "${SE_BASE}/Network/Buffer.cpp"
   "${SE_BASE}/Network/CPacket.cpp"
+  "${SE_BASE}/Network/Compression.cpp"
+  "${SE_BASE}/Network/ClientInterface.cpp"
+  "${SE_BASE}/Network/CommunicationInterface_android.cpp"
   "${SE_BASE}/Network/Diff.cpp"
   "${SE_BASE}/Network/MessageDispatcher.cpp"
   "${SE_BASE}/Network/Network.cpp"
@@ -206,7 +208,11 @@ set(
   "${SE_BASE}/StdH.cpp"
   "${SE_BASE}/Base/Synchronization.cpp"
   "${SE_BASE}/Base/Synchronization_win32_fallback.cpp"
-
+  "${SE_BASE}/Query/DarkPlacesMasterServer.cpp"
+  "${SE_BASE}/Query/GameAgentMasterServer.cpp"
+  "${SE_BASE}/Query/LegacyMasterServer.cpp"
+  "${SE_BASE}/Query/MasterServerMgr.cpp"
+  
   ${SE_GEN_SOURCES}
 
   # reimplemented custom
@@ -217,18 +223,16 @@ set(
   #"${SE_BASE}/Base/ErrorReporting.cpp"
   #"${SE_BASE}/Network/CommunicationInterface.cpp"
   #"${SE_BASE}/Graphics/ViewPort.cpp"
-  #"${SE_BASE}/Graphics/Adapter.cpp"
+  "${SE_BASE}/Graphics/Adapter.cpp"
   #"${SE_BASE}/GameAgent/GameAgent.cpp"
 
   ${SE_BASE}/_android/ErrorReporting.cpp
   ${SE_BASE}/_android/Input.cpp
   ${SE_BASE}/Sound/SoundLibrary_android.cpp
-  ${SE_BASE}/_android/Registry.cpp
   ${SE_BASE}/_android/MultiMonitor.cpp
-  ${SE_BASE}/Network/CommunicationInterface_android.cpp
   ${SE_BASE}/Graphics/ViewPort_android.cpp
-  ${SE_BASE}/_android/CGfxLibrary.cpp
-  ${SE_BASE}/_android/GameAgent.cpp
+  #${SE_BASE}/_android/CGfxLibrary.cpp
+  #${SE_BASE}/_android/GameAgent.cpp
 
   # excluded sources
   #"${SE_BASE}/Graphics/Gfx_wrapper_Direct3D.cpp"
@@ -265,7 +269,7 @@ endif ()
 add_dependencies(Engine se-ecc)
 target_link_libraries(Engine android-adapters)
 target_link_libraries(Engine vorbis amp11lib)
-target_link_libraries(Engine GLESv2 EGL log android OpenSLES)
+target_link_libraries(Engine GLESv2 GLESv3 EGL log android OpenSLES)
 
 target_compile_options(Engine PRIVATE "-I${CMAKE_CURRENT_SOURCE_DIR}")
 

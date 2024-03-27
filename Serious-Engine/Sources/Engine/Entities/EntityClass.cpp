@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 
 #include <Engine/Base/Stream.h>
 #include <Engine/Entities/EntityClass.h>
@@ -35,6 +35,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <dlfcn.h>
 #include <map>
 #include <string>
+
+extern INDEX ent_bReportClassLoad; // [SSE] Extended Class Check
+
 
 /////////////////////////////////////////////////////////////////////
 // CEntityClass
@@ -69,12 +72,12 @@ CEntityClass::~CEntityClass(void)
 /////////////////////////////////////////////////////////////////////
 // Reference counting functions
 void CEntityClass::AddReference(void) {
-    ASSERT(this!=NULL);
-    MarkUsed();
+  ASSERT(this!=NULL);
+  MarkUsed();
 };
 void CEntityClass::RemReference(void) {
-    ASSERT(this!=NULL);
-    _pEntityClassStock->Release(this);
+  ASSERT(this!=NULL);
+  _pEntityClassStock->Release(this);
 };
 
 /*
@@ -94,8 +97,8 @@ void CEntityClass::Clear(void)
      * must stay avaliable, since they cannot be undeclared.
      */
     // free it
-    int result = dlclose(ec_hiClassDLL);
-    ASSERT(!result); // opposite of FreeLibrary
+    //BOOL bSuccess = FreeLibrary(ec_hiClassDLL);
+    //ASSERT(bSuccess);
   }
   ec_pdecDLLClass = NULL;
   ec_hiClassDLL = NULL;
@@ -122,9 +125,12 @@ void CEntityClass::CheckClassProperties(void)
         // for all properties
         for(INDEX iProperty2=0; iProperty2<pdecDLLClass2->dec_ctProperties; iProperty2++) {
           CEntityProperty &epProperty2 = pdecDLLClass2->dec_aepProperties[iProperty2];
+
+          CTString strMsg;
+          strMsg.PrintF("No two properties may have same id!\nCLASS 1: %s\nCLASS 2: %s\nPropCycleID: %d\nID 1: %lu\nID 2: %lu\nOffset: %d\nType 1: %d\nType 2: %d", pdecDLLClass1->dec_strName, pdecDLLClass2->dec_strName, iProperty1, epProperty1.ep_ulID, epProperty2.ep_ulID, epProperty2.ep_slOffset, epProperty1.ep_eptType, epProperty2.ep_eptType);
           // the two properties must not have same id unless they are same property
           ASSERTMSG(&epProperty1==&epProperty2 || epProperty1.ep_ulID!=epProperty2.ep_ulID,
-            "No two properties may have same id!");
+            strMsg.str_String);
         }
       }
     }
@@ -227,11 +233,14 @@ void CEntityClass::ReleaseComponents(void)
 /*
  * Load a Dynamic Link Library.
  */
-HINSTANCE LoadDLL_t(const char *strFileName) // throw char *
+HINSTANCE LoadDLL_t(CTString &strFileName) // throw char *
 {
 #ifdef STATIC_LINKING
   FatalError("LoadDLL_t not supported with STATIC_LINKING");
 #else
+  if (strFileName.FindSubstr("EntitiesAdv") != -1) {
+	strFileName = "libEntitiesAdvMP.so"; 
+  }
   void *hiDLL = dlopen(strFileName, RTLD_NOW);
   if (hiDLL == NULL) {
     char *err = dlerror();
@@ -325,7 +334,8 @@ void CEntityClass::Read_t( CTStream *istr) // throw char *
 
 #else
 
-  fnmDLL = "lib" + fnmDLL.FileName() + _strModExt + ".so";
+  fnmDLL = "lib" + fnmDLL.FileName() + _strModExt + ".so"; 
+  
   ec_hiClassDLL = LoadDLL_t(fnmDLL);
   ec_fnmClassDLL = fnmDLL;
 
@@ -349,12 +359,18 @@ void CEntityClass::Read_t( CTStream *istr) // throw char *
     CTmpPrecachingNow tpn;
     ObtainComponents_t();
   }
+  
+  ec_pdecDLLClass->dec_ulID = 0; // [SSE] Extended Class Check
 
   // attach the DLL
   ec_pdecDLLClass->dec_OnInitClass();
 
   // check that the class properties have been properly declared
   CheckClassProperties();
+
+  if (ent_bReportClassLoad) {
+    CPrintF("  Loaded Class: %d [%s]\n", ec_pdecDLLClass->dec_ulID, strClassName);
+  }
 }
 
 /*
@@ -399,6 +415,15 @@ class CEntityProperty *CEntityClass::PropertyForName(const CTString &strProperty
 class CEntityProperty *CEntityClass::PropertyForTypeAndID(
   ULONG ulType, ULONG ulID) {
   return ec_pdecDLLClass->PropertyForTypeAndID((CEntityProperty::PropertyType)ulType, ulID);
+};
+
+// --------------------------------------------------------------------------------------
+// [SSE]
+// Get pointer to entity property from its packed ID.
+// --------------------------------------------------------------------------------------
+class CEntityProperty *CEntityClass::PropertyForID(ULONG ulID)
+{
+  return ec_pdecDLLClass->PropertyForID(ulID);
 };
 
 /* Get event handler for given state and event code. */
@@ -484,6 +509,30 @@ class CEntityProperty *CDLLEntityClass::PropertyForTypeAndID(
     return NULL;
   }
 };
+
+// --------------------------------------------------------------------------------------
+// [SSE]
+// Get pointer to entity property from its packed ID.
+// --------------------------------------------------------------------------------------
+class CEntityProperty *CDLLEntityClass::PropertyForID(ULONG ulID)
+{
+  // For each property...
+  for (INDEX iProperty = 0; iProperty < dec_ctProperties; iProperty++)
+  {
+    // If it has that same identifier then return it.
+    if (dec_aepProperties[iProperty].ep_ulID == ulID) {
+      return &dec_aepProperties[iProperty];
+    }
+  }
+
+  // If base class exists then look in the base class.
+  if (dec_pdecBase != NULL) {
+    return dec_pdecBase->PropertyForID(ulID);
+  }
+
+  return NULL; // Otherwise - nothing found!
+};
+
 
 /*
  * Get pointer to component from its identifier.

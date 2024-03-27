@@ -42,13 +42,14 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 // https://www.gatewan.com/2018/12/slbufferqueuestate.html
 // https://android.googlesource.com/platform/system/media/+/gingerbread/opensles/tests/sandbox
 #include <SLES/OpenSLES.h>
+#include <SLES/OpenSLES_Android.h>
 
 // Mixer
 // set master volume and resets mixer buffer (wipes it with zeroes and keeps pointers)
 void ResetMixer( const SLONG *pslBuffer, const SLONG slBufferSize);
 // copy mixer buffer to the output buffer(s)
-void CopyMixerBuffer_stereo( const SLONG slSrcOffset, const void *pDstBuffer, const SLONG slBytes);
-void CopyMixerBuffer_mono(   const SLONG slSrcOffset, const void *pDstBuffer, const SLONG slBytes);
+void CopyMixerBuffer_stereo( const SLONG slSrcOffset, void *pDstBuffer, const SLONG slBytes);
+void CopyMixerBuffer_mono(   const SLONG slSrcOffset, void *pDstBuffer, const SLONG slBytes);
 // normalize mixed sounds
 void NormalizeMixerBuffer( const FLOAT snd_fNormalizer, const SLONG slBytes, FLOAT &_fLastNormalizeValue);
 // mix in one sound object to mixer buffer
@@ -110,8 +111,8 @@ public:
   SLONG *sl_pslMixerBuffer;              // buffer for mixing sounds (32-bit!)
   UBYTE *sl_pubBuffersMemory;            // memory allocated for the sound buffer(s) output
 
-  int64_t sl_sentSamples;                 // total number of samples sent to buffer
-  int64_t sl_lastPosition;                // position of device in last loop
+  SLONG sl_sentSamples;                 // total number of samples sent to buffer
+  SLONG sl_lastPosition;                // position of device in last loop
 
   CListHead sl_ClhAwareList;	 					         // list of sound mode aware objects
   CListHead sl_lhActiveListeners;                // active listeners for current frame of listening

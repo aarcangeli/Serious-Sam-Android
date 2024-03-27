@@ -19,10 +19,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <SeriousSam/LCDDrawing.h>
 #include "MGServerList.h"
 #include "MGEdit.h"
+#include "AndroidAdapters/binding-callbacks.h"
 
 extern CSoundData *_psdSelect;
 extern CSoundData *_psdPress;
-
 
 FLOATaabbox2D GetBoxPartHoriz(const FLOATaabbox2D &box, FLOAT fMin, FLOAT fMax)
 {
@@ -34,10 +34,9 @@ FLOATaabbox2D GetBoxPartHoriz(const FLOATaabbox2D &box, FLOAT fMin, FLOAT fMax)
     FLOAT2D(fBoxMin + fBoxSize*fMax, box.Max()(2)));
 }
 
-void PrintInBox(CDrawPort *pdp, PIX pixI, PIX pixJ, PIX pixSizeI, CTString str, COLOR col)
+void PrintInBox(CDrawPort *pdp, PIX pixI, PIX pixJ, PIX pixSizeI, PIX pixCharSize, CTString str, COLOR col)
 {
   str = str.Undecorated();
-  PIX pixCharSize = pdp->dp_pixTextCharSpacing + pdp->dp_FontData->fd_pixCharWidth;
   str.TrimRight(pixSizeI / pixCharSize);
 
   // print text
@@ -63,13 +62,13 @@ CMGServerList::CMGServerList()
 void CMGServerList::AdjustFirstOnScreen(void)
 {
   INDEX ctSessions = _lhServers.Count();
-  mg_iSelected = Clamp(mg_iSelected, 0L, ClampDn(ctSessions - 1L, 0L));
-  mg_iFirstOnScreen = Clamp(mg_iFirstOnScreen, 0L, ClampDn(ctSessions - mg_ctOnScreen, 0L));
+  mg_iSelected = Clamp(mg_iSelected, 0, ClampDn(ctSessions - 1, 0));
+  mg_iFirstOnScreen = Clamp(mg_iFirstOnScreen, 0, ClampDn(ctSessions - mg_ctOnScreen, 0));
 
   if (mg_iSelected<mg_iFirstOnScreen) {
-    mg_iFirstOnScreen = ClampUp(mg_iSelected, ClampDn(ctSessions - mg_ctOnScreen - 1L, 0L));
+    mg_iFirstOnScreen = ClampUp(mg_iSelected, ClampDn(ctSessions - mg_ctOnScreen - 1, 0));
   } else if (mg_iSelected >= mg_iFirstOnScreen + mg_ctOnScreen) {
-    mg_iFirstOnScreen = ClampDn(mg_iSelected - mg_ctOnScreen + 1L, 0L);
+    mg_iFirstOnScreen = ClampDn(mg_iSelected - mg_ctOnScreen + 1, 0);
   }
 }
 
@@ -148,6 +147,8 @@ void SortAndFilterServers(void)
 
 void CMGServerList::Render(CDrawPort *pdp)
 {
+	
+  float uiScale = g_cb.globalScale;
   _iSort = mg_iSort;
   _bSortDown = mg_bSortDown;
   SortAndFilterServers();
@@ -161,10 +162,10 @@ void CMGServerList::Render(CDrawPort *pdp)
 
   PIX pixDPSizeI = pdp->GetWidth();
   PIX pixDPSizeJ = pdp->GetHeight();
-  PIX pixCharSizeI = pdp->dp_pixTextCharSpacing + pdp->dp_FontData->fd_pixCharWidth;
-  PIX pixCharSizeJ = pdp->dp_pixTextLineSpacing + pdp->dp_FontData->fd_pixCharHeight + 1;
-  PIX pixLineSize = 1;
-  PIX pixSliderSizeI = 10;
+  PIX pixCharSizeI = (PIX) ((pdp->dp_pixTextCharSpacing + pdp->dp_FontData->fd_pixCharWidth) * uiScale);
+  PIX pixCharSizeJ = (PIX) ((pdp->dp_pixTextLineSpacing + pdp->dp_FontData->fd_pixCharHeight + 1) * uiScale);
+  PIX pixLineSize = (PIX) (1 * uiScale);
+  PIX pixSliderSizeI = (PIX) (10 * uiScale);
   PIX pixOuterMargin = 20;
 
   INDEX ctSessions = _lhServers.Count();
@@ -242,8 +243,10 @@ void CMGServerList::Render(CDrawPort *pdp)
     if (_pNetwork->ga_strEnumerationStatus != "") {
       mg_bFocused = TRUE;
       COLOR colItem = GetCurrentColor();
-      PrintInBox(pdp, apixSeparatorI[0] + pixCharSizeI, pixListTopJ + pixCharSizeJ + pixLineSize + 1, apixSeparatorI[1] - apixSeparatorI[0],
-        TRANS("searching..."), colItem);
+	  PIX searchPixI = apixSeparatorI[0] + pixCharSizeI;
+	  PIX searchPixJ = pixListTopJ + pixCharSizeJ + pixLineSize + 1;
+	  PIX searchPixSizeI = apixSeparatorI[1] - apixSeparatorI[0];
+      PrintInBox(pdp, searchPixI, searchPixJ, searchPixSizeI, pixCharSizeI, TRANS("searching..."), colItem);
     }
   } else {
     FOREACHINLIST(CNetworkSession, ns_lnNode, _lhServers, itns) {
@@ -269,13 +272,37 @@ void CMGServerList::Render(CDrawPort *pdp)
       if (strMod == "") {
         strMod = "SeriousSam";
       }
-      PrintInBox(pdp, apixSeparatorI[0] + pixCharSizeI / 2, pixJ, apixSeparatorI[1] - apixSeparatorI[0] - pixCharSizeI, ns.ns_strSession, colItem);
-      PrintInBox(pdp, apixSeparatorI[1] + pixCharSizeI / 2, pixJ, apixSeparatorI[2] - apixSeparatorI[1] - pixCharSizeI, TranslateConst(ns.ns_strWorld), colItem);
-      PrintInBox(pdp, apixSeparatorI[2] + pixCharSizeI / 2, pixJ, apixSeparatorI[3] - apixSeparatorI[2] - pixCharSizeI, strPing, colItem);
-      PrintInBox(pdp, apixSeparatorI[3] + pixCharSizeI / 2, pixJ, apixSeparatorI[4] - apixSeparatorI[3] - pixCharSizeI, strPlayersCt, colItem);
-      PrintInBox(pdp, apixSeparatorI[4] + pixCharSizeI / 2, pixJ, apixSeparatorI[5] - apixSeparatorI[4] - pixCharSizeI, TranslateConst(ns.ns_strGameType), colItem);
-      PrintInBox(pdp, apixSeparatorI[5] + pixCharSizeI / 2, pixJ, apixSeparatorI[6] - apixSeparatorI[5] - pixCharSizeI, TranslateConst(strMod), colItem);
-      PrintInBox(pdp, apixSeparatorI[6] + pixCharSizeI / 2, pixJ, apixSeparatorI[7] - apixSeparatorI[6] - pixCharSizeI, ns.ns_strVer, colItem);
+	  
+	  pdp->SetTextScaling(uiScale);
+	  
+	  PIX sessionPixI = apixSeparatorI[0] + pixCharSizeI / 2;
+	  PIX sessionPixSizeI = apixSeparatorI[1] - apixSeparatorI[0] - pixCharSizeI;
+	  
+	  PIX WorldNamePixI = apixSeparatorI[1] + pixCharSizeI / 2;
+	  PIX WorldNamePixSizeI = apixSeparatorI[2] - apixSeparatorI[1] - pixCharSizeI;
+	  
+	  PIX pingPixI = apixSeparatorI[2] + pixCharSizeI / 2;
+	  PIX pingPixSizeI = apixSeparatorI[3] - apixSeparatorI[2] - pixCharSizeI;
+	  
+	  PIX PlayersCtPixI = apixSeparatorI[3] + pixCharSizeI / 2;
+	  PIX PlayersCtPixSizeI = apixSeparatorI[4] - apixSeparatorI[3] - pixCharSizeI;
+	  
+	  PIX GameTypePixI = apixSeparatorI[4] + pixCharSizeI / 2;
+	  PIX GameTypePixSizeI = apixSeparatorI[5] - apixSeparatorI[4] - pixCharSizeI;
+	  
+	  PIX StrModPixI = apixSeparatorI[5] + pixCharSizeI / 2;
+	  PIX StrModPixSizeI = apixSeparatorI[6] - apixSeparatorI[5] - pixCharSizeI;
+	  
+	  PIX StrVerPixI = apixSeparatorI[6] + pixCharSizeI / 2;
+	  PIX StrVerPixSizeI = apixSeparatorI[7] - apixSeparatorI[6] - pixCharSizeI;
+	  
+      PrintInBox(pdp, sessionPixI, pixJ, sessionPixSizeI, pixCharSizeI, ns.ns_strSession, colItem);
+      PrintInBox(pdp, WorldNamePixI, pixJ, WorldNamePixSizeI, pixCharSizeI, TranslateConst(ns.ns_strWorld), colItem);
+      PrintInBox(pdp, pingPixI, pixJ, pingPixSizeI, pixCharSizeI, strPing, colItem);
+      PrintInBox(pdp, PlayersCtPixI, pixJ, PlayersCtPixSizeI, pixCharSizeI, strPlayersCt, colItem);
+      PrintInBox(pdp, GameTypePixI, pixJ, GameTypePixSizeI, pixCharSizeI, TranslateConst(ns.ns_strGameType), colItem);
+      PrintInBox(pdp, StrModPixI, pixJ, StrModPixSizeI, pixCharSizeI, TranslateConst(strMod), colItem);
+      PrintInBox(pdp, StrVerPixI, pixJ, StrVerPixSizeI, pixCharSizeI, ns.ns_strVer, colItem);
 
       iSession++;
     }
@@ -336,8 +363,8 @@ void CMGServerList::OnMouseOver(PIX pixI, PIX pixJ)
     INDEX ctSessions = _lhServers.Count();
     INDEX iWantedLine = mg_iDragLine +
       SliderPixToIndex(pixDelta, mg_ctOnScreen, ctSessions, GetScrollBarFullBox());
-    mg_iFirstOnScreen = Clamp(iWantedLine, 0L, ClampDn(ctSessions - mg_ctOnScreen, 0L));
-    mg_iSelected = Clamp(mg_iSelected, mg_iFirstOnScreen, mg_iFirstOnScreen + mg_ctOnScreen - 1L);
+    mg_iFirstOnScreen = Clamp(iWantedLine, 0, ClampDn(ctSessions - mg_ctOnScreen, 0));
+    mg_iSelected = Clamp(mg_iSelected, mg_iFirstOnScreen, mg_iFirstOnScreen + mg_ctOnScreen - 1);
     //    AdjustFirstOnScreen();
     return;
   }

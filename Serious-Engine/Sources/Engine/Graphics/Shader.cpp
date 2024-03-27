@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include <Engine/StdH.h>
 #include <Engine/Base/Stream.h>
 #include <Engine/Math/Projection.h>
 #include <Engine/Ska/Render.h>
@@ -45,14 +45,14 @@ static GFXTexCoord *_paHazeUVMap = NULL;   // UVMap for haze pass
 static GFXColor    *_pacolVtxHaze = NULL;  // array of vertex colors for haze
 
 static CTextureObject **_paTextures = NULL;// array of textures to chose from
-static INDEX       *_paIndices   = NULL;   // current array of triangle indices
+static INDEX_T       *_paIndices   = NULL;   // current array of triangle indices
 
 static GFXColor    _colAmbient = 0x000000FF;     // Ambient color
 static COLOR       _colModel   = 0x000000FF;     // Model color
 static GFXColor    _colLight   = 0x000000FF;     // Light color
 static FLOAT3D     _vLightDir  = FLOAT3D(0,0,0); // Light direction
 
-static COLOR       _colConstant   = 0; // current set color
+static COLOR       _colConstant  = 0;     // current set color
 static COLOR       *_paColors    = NULL;  // array of colors to chose from
 static FLOAT       *_paFloats    = NULL;  // array of floats to chose from
 static ULONG       _ulFlags      = 0;
@@ -191,7 +191,7 @@ void shaCalculateLight(void)
       colAmbient = 0xFFFFFFFF;
     }
     colConstant.MultiplyRGBA(colLight,colAmbient);
-    shaSetConstantColor(ByteSwap(colConstant.gfxcol.ul.abgr));
+    shaSetConstantColor(ByteSwap(colConstant.ul.abgr));
     // no vertex colors
     return;
   }
@@ -208,14 +208,14 @@ void shaCalculateLight(void)
   colModel.MultiplyRGBA(colModel,colSurface);
 
   UBYTE ubColShift = 8;
-  SLONG slar = colAmbient.gfxcol.ub.r;
-  SLONG slag = colAmbient.gfxcol.ub.g;
-  SLONG slab = colAmbient.gfxcol.ub.b;
+  SLONG slar = colAmbient.ub.r;
+  SLONG slag = colAmbient.ub.g;
+  SLONG slab = colAmbient.ub.b;
 
   if(shaOverBrightningEnabled()) {
-    slar = ClampUp(slar,127L);
-    slag = ClampUp(slag,127L);
-    slab = ClampUp(slab,127L);
+    slar = ClampUp(slar,127);
+    slag = ClampUp(slag,127);
+    slab = ClampUp(slab,127);
     ubColShift = 8;
   } else {
     slar*=2;
@@ -227,15 +227,15 @@ void shaCalculateLight(void)
   // for each vertex color
   for(INDEX ivx=0;ivx<_ctVertices;ivx++) {
     // calculate vertex light
-    FLOAT3D vNorm = FLOAT3D(_paNormals[ivx].nx,_paNormals[ivx].ny,_paNormals[ivx].nz);
+    const FLOAT3D &vNorm = FLOAT3D(_paNormals[ivx].nx,_paNormals[ivx].ny,_paNormals[ivx].nz);
     FLOAT fDot = vNorm % _vLightDir;
     fDot = Clamp(fDot,0.0f,1.0f);
     SLONG slDot = NormFloatToByte(fDot);
 
-    _acolVtxColors[ivx].gfxcol.ub.r = ClampUp(colModel.gfxcol.ub.r * (slar + ((colLight.gfxcol.ub.r * slDot)>>ubColShift))>>8,255L);
-    _acolVtxColors[ivx].gfxcol.ub.g = ClampUp(colModel.gfxcol.ub.g * (slag + ((colLight.gfxcol.ub.g * slDot)>>ubColShift))>>8,255L);
-    _acolVtxColors[ivx].gfxcol.ub.b = ClampUp(colModel.gfxcol.ub.b * (slab + ((colLight.gfxcol.ub.b * slDot)>>ubColShift))>>8,255L);
-    _acolVtxColors[ivx].gfxcol.ub.a = colModel.gfxcol.ub.a;//slDot;
+    _acolVtxColors[ivx].ub.r = ClampUp(colModel.ub.r * (slar + ((colLight.ub.r * slDot)>>ubColShift))>>8,255);
+    _acolVtxColors[ivx].ub.g = ClampUp(colModel.ub.g * (slag + ((colLight.ub.g * slDot)>>ubColShift))>>8,255);
+    _acolVtxColors[ivx].ub.b = ClampUp(colModel.ub.b * (slab + ((colLight.ub.b * slDot)>>ubColShift))>>8,255);
+    _acolVtxColors[ivx].ub.a = colModel.ub.a;//slDot;
   }
   // Set current vertex color array 
   _pcolVtxColors = &_acolVtxColors[0];
@@ -253,18 +253,18 @@ void shaCalculateLightForSpecular(void)
   const GFXColor &colLight   = (GFXColor)_colLight;   // Light color
   const GFXColor &colSurface = (GFXColor)_colConstant; // shader color
 
-  // colModel = MulColors(colModel.gfxcol.ub.r,colSurface.gfxcol.ul.abgr);
+  // colModel = MulColors(colModel.r,colSurface.abgr);
   colModel.MultiplyRGBA(colModel,colSurface);
 
   UBYTE ubColShift = 8;
-  SLONG slar = colAmbient.gfxcol.ub.r;
-  SLONG slag = colAmbient.gfxcol.ub.g;
-  SLONG slab = colAmbient.gfxcol.ub.b;
+  SLONG slar = colAmbient.ub.r;
+  SLONG slag = colAmbient.ub.g;
+  SLONG slab = colAmbient.ub.b;
 
   if(shaOverBrightningEnabled()) {
-    slar = ClampUp(slar,127L);
-    slag = ClampUp(slag,127L);
-    slab = ClampUp(slab,127L);
+    slar = ClampUp(slar,127);
+    slag = ClampUp(slag,127);
+    slab = ClampUp(slab,127);
     ubColShift = 8;
   } else {
     slar*=2;
@@ -276,15 +276,15 @@ void shaCalculateLightForSpecular(void)
   // for each vertex color
   for(INDEX ivx=0;ivx<_ctVertices;ivx++) {
     // calculate vertex light
-    FLOAT3D vNorm = FLOAT3D(_paNormals[ivx].nx,_paNormals[ivx].ny,_paNormals[ivx].nz);
+    const FLOAT3D &vNorm = FLOAT3D(_paNormals[ivx].nx,_paNormals[ivx].ny,_paNormals[ivx].nz);
     FLOAT fDot = vNorm % _vLightDir;
     fDot = Clamp(fDot,0.0f,1.0f);
     SLONG slDot = NormFloatToByte(fDot);
 
-    _acolVtxColors[ivx].gfxcol.ub.r = ClampUp(colModel.gfxcol.ub.r * (slar + ((colLight.gfxcol.ub.r * slDot)>>ubColShift))>>8,255L);
-    _acolVtxColors[ivx].gfxcol.ub.g = ClampUp(colModel.gfxcol.ub.g * (slag + ((colLight.gfxcol.ub.g * slDot)>>ubColShift))>>8,255L);
-    _acolVtxColors[ivx].gfxcol.ub.b = ClampUp(colModel.gfxcol.ub.b * (slab + ((colLight.gfxcol.ub.b * slDot)>>ubColShift))>>8,255L);
-    _acolVtxColors[ivx].gfxcol.ub.a = slDot;//colModel.gfxcol.ub.a;//slDot;
+    _acolVtxColors[ivx].ub.r = ClampUp(colModel.ub.r * (slar + ((colLight.ub.r * slDot)>>ubColShift))>>8,255);
+    _acolVtxColors[ivx].ub.g = ClampUp(colModel.ub.g * (slag + ((colLight.ub.g * slDot)>>ubColShift))>>8,255);
+    _acolVtxColors[ivx].ub.b = ClampUp(colModel.ub.b * (slab + ((colLight.ub.b * slDot)>>ubColShift))>>8,255);
+    _acolVtxColors[ivx].ub.a = slDot;//colModel.ub.a;//slDot;
   }
   // Set current wertex array 
   _pcolVtxColors = &_acolVtxColors[0];
@@ -352,7 +352,7 @@ void shaSetNormalArray(GFXNormal *paNormals)
 }
 
 // Set array of indices
-void shaSetIndices(INDEX *paIndices,INDEX ctIndices)
+void shaSetIndices(INDEX_T *paIndices,INDEX ctIndices)
 {
   ASSERT(paIndices!=NULL);
   ASSERT(ctIndices>0);
@@ -554,13 +554,13 @@ FLOAT3D &shaGetLightDirection(void)
 // Get current light color
 COLOR &shaGetLightColor(void)
 {
-  return _colLight.gfxcol.ul.abgr;
+  return _colLight.ul.abgr;
 }
 
 // Get current ambient volor
 COLOR &shaGetAmbientColor(void)
 {
-  return _colAmbient.gfxcol.ul.abgr;
+  return _colAmbient.ul.abgr;
 }
 
 // Get current set color
@@ -576,7 +576,7 @@ GFXVertex4 *shaGetVertexArray(void)
 }
 
 // Get index array
-INDEX *shaGetIndexArray(void)
+INDEX_T *shaGetIndexArray(void)
 {
   return _paIndices;
 }

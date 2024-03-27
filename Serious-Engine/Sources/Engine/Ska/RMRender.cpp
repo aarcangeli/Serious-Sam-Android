@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include <Engine/StdH.h>
 #include <Engine/Base/Console.h>
 #include <Engine/Math/Projection.h>
 #include <Engine/Math/Float.h>
@@ -251,9 +251,9 @@ static void GetFogMapInVertex( GFXVertex4 &vtx, GFXTexCoord &tex)
 {
   const FLOAT fD = vtx.x*_vZDirView(1) + vtx.y*_vZDirView(2) + vtx.z*_vZDirView(3);
   const FLOAT fH = vtx.x*_vHDirView(1) + vtx.y*_vHDirView(2) + vtx.z*_vHDirView(3);
-  tex.gfxtc.st.s = (fD+_fFogAddZ) * _fog_fMulZ;
-//  tex.gfxtc.st.s = (vtx.z) * _fog_fMulZ;
-  tex.gfxtc.st.t = (fH+_fFogAddH) * _fog_fMulH;
+  tex.st.s = (fD+_fFogAddZ) * _fog_fMulZ;
+//  tex.st.s = (vtx.z) * _fog_fMulZ;
+  tex.st.t = (fH+_fFogAddH) * _fog_fMulH;
 }
 
 // check vertex against haze
@@ -263,19 +263,20 @@ static void GetHazeMapInVertex( GFXVertex4 &vtx, FLOAT &tx1)
   tx1 = (fD+_fHazeAdd) * _haze_fMul;
 }
 
+#if 0 // DG: unused
 // check model's bounding box against fog
 static BOOL IsModelInFog( FLOAT3D &vMin, FLOAT3D &vMax)
 {
   GFXTexCoord tex;
   GFXVertex4  vtx;
-  vtx.x=vMin(1); vtx.y=vMin(2); vtx.z=vMin(3); GetFogMapInVertex(vtx,tex); if(InFog(tex.gfxtc.st.t)) return TRUE;
-  vtx.x=vMin(1); vtx.y=vMin(2); vtx.z=vMax(3); GetFogMapInVertex(vtx,tex); if(InFog(tex.gfxtc.st.t)) return TRUE;
-  vtx.x=vMin(1); vtx.y=vMax(2); vtx.z=vMin(3); GetFogMapInVertex(vtx,tex); if(InFog(tex.gfxtc.st.t)) return TRUE;
-  vtx.x=vMin(1); vtx.y=vMax(2); vtx.z=vMax(3); GetFogMapInVertex(vtx,tex); if(InFog(tex.gfxtc.st.t)) return TRUE;
-  vtx.x=vMax(1); vtx.y=vMin(2); vtx.z=vMin(3); GetFogMapInVertex(vtx,tex); if(InFog(tex.gfxtc.st.t)) return TRUE;
-  vtx.x=vMax(1); vtx.y=vMin(2); vtx.z=vMax(3); GetFogMapInVertex(vtx,tex); if(InFog(tex.gfxtc.st.t)) return TRUE;
-  vtx.x=vMax(1); vtx.y=vMax(2); vtx.z=vMin(3); GetFogMapInVertex(vtx,tex); if(InFog(tex.gfxtc.st.t)) return TRUE;
-  vtx.x=vMax(1); vtx.y=vMax(2); vtx.z=vMax(3); GetFogMapInVertex(vtx,tex); if(InFog(tex.gfxtc.st.t)) return TRUE;
+  vtx.x=vMin(1); vtx.y=vMin(2); vtx.z=vMin(3); GetFogMapInVertex(vtx,tex); if(InFog(tex.st.t)) return TRUE;
+  vtx.x=vMin(1); vtx.y=vMin(2); vtx.z=vMax(3); GetFogMapInVertex(vtx,tex); if(InFog(tex.st.t)) return TRUE;
+  vtx.x=vMin(1); vtx.y=vMax(2); vtx.z=vMin(3); GetFogMapInVertex(vtx,tex); if(InFog(tex.st.t)) return TRUE;
+  vtx.x=vMin(1); vtx.y=vMax(2); vtx.z=vMax(3); GetFogMapInVertex(vtx,tex); if(InFog(tex.st.t)) return TRUE;
+  vtx.x=vMax(1); vtx.y=vMin(2); vtx.z=vMin(3); GetFogMapInVertex(vtx,tex); if(InFog(tex.st.t)) return TRUE;
+  vtx.x=vMax(1); vtx.y=vMin(2); vtx.z=vMax(3); GetFogMapInVertex(vtx,tex); if(InFog(tex.st.t)) return TRUE;
+  vtx.x=vMax(1); vtx.y=vMax(2); vtx.z=vMin(3); GetFogMapInVertex(vtx,tex); if(InFog(tex.st.t)) return TRUE;
+  vtx.x=vMax(1); vtx.y=vMax(2); vtx.z=vMax(3); GetFogMapInVertex(vtx,tex); if(InFog(tex.st.t)) return TRUE;
   return FALSE;
 }
 
@@ -294,6 +295,7 @@ static BOOL IsModelInHaze( FLOAT3D &vMin, FLOAT3D &vMax)
   vtx.x=vMax(1); vtx.y=vMax(2); vtx.z=vMax(3); GetHazeMapInVertex(vtx,fS); if(InHaze(fS)) return TRUE;
   return FALSE;
 }
+#endif // 0 (unused)
 
 BOOL PrepareHaze(void)
 {
@@ -382,8 +384,8 @@ void RM_DoFogAndHaze(BOOL bOpaqueSurface)
 
       // setup haze tex coords and color
       for( INDEX ivtx=0; ivtx<ctVertices; ivtx++) {
-        GetHazeMapInVertex( paVertices[ivtx], _aTexMipHazey[ivtx].gfxtc.st.s);
-        _aTexMipHazey[ivtx].gfxtc.st.t = 0.0f;
+        GetHazeMapInVertex( paVertices[ivtx], _aTexMipHazey[ivtx].st.s);
+        _aTexMipHazey[ivtx].st.t = 0.0f;
         paHazeColors[ivtx] = colHaze;
       }
       shaSetHazeUVMap(&_aTexMipHazey[0]);
@@ -698,15 +700,15 @@ void RM_AddSimpleShadow_View(CModelInstance &mi, const FLOAT fIntensity, const F
     pvtx[3].x = v10(1);  pvtx[3].y = v10(2);  pvtx[3].z = v10(3);
   }
   // texture coords
-  ptex[0].gfxtc.st.s = 0;  ptex[0].gfxtc.st.t = 0;
-  ptex[1].gfxtc.st.s = 0;  ptex[1].gfxtc.st.t = 1;
-  ptex[2].gfxtc.st.s = 1;  ptex[2].gfxtc.st.t = 1;
-  ptex[3].gfxtc.st.s = 1;  ptex[3].gfxtc.st.t = 0;
+  ptex[0].st.s = 0;  ptex[0].st.t = 0;
+  ptex[1].st.s = 0;  ptex[1].st.t = 1;
+  ptex[2].st.s = 1;  ptex[2].st.t = 1;
+  ptex[3].st.s = 1;  ptex[3].st.t = 0;
   // colors
-  pcol[0].gfxcol.ul.abgr = ulAAAA;
-  pcol[1].gfxcol.ul.abgr = ulAAAA;
-  pcol[2].gfxcol.ul.abgr = ulAAAA;
-  pcol[3].gfxcol.ul.abgr = ulAAAA;
+  pcol[0].ul.abgr = ulAAAA;
+  pcol[1].ul.abgr = ulAAAA;
+  pcol[2].ul.abgr = ulAAAA;
+  pcol[3].ul.abgr = ulAAAA;
 
   // if this model has fog
   if( _ulRenFlags & SRMF_FOG)
@@ -716,8 +718,8 @@ void RM_AddSimpleShadow_View(CModelInstance &mi, const FLOAT fIntensity, const F
       GFXVertex &vtx = pvtx[i];
       // get distance along viewer axis and fog axis and map to texture and attenuate shadow color
       const FLOAT fH = vtx.x*_fog_vHDirView(1) + vtx.y*_fog_vHDirView(2) + vtx.z*_fog_vHDirView(3);
-      tex.gfxtc.st.s = -vtx.z *_fog_fMulZ;
-      tex.gfxtc.st.t = (fH+_fog_fAddH) *_fog_fMulH;
+      tex.st.s = -vtx.z *_fog_fMulZ;
+      tex.st.t = (fH+_fog_fAddH) *_fog_fMulH;
       pcol[i].AttenuateRGB(GetFogAlpha(tex)^255);
     }
   }
@@ -765,7 +767,7 @@ void RM_RenderGround(CTextureObject &to)
 
   GFXVertex vBoxVtxs[4];
   GFXTexCoord tcBoxTex[4];
-  INDEX aiIndices[6];
+  INDEX_T aiIndices[6] = {0, 2, 1, 0 ,3 ,2};
 
   // set ground vertices
   vBoxVtxs[0].x =  vVtx(1); vBoxVtxs[0].y =  vVtx(2); vBoxVtxs[0].z = -vVtx(3);
@@ -773,16 +775,16 @@ void RM_RenderGround(CTextureObject &to)
   vBoxVtxs[2].x = -vVtx(1); vBoxVtxs[2].y =  vVtx(2); vBoxVtxs[2].z =  vVtx(3);
   vBoxVtxs[3].x =  vVtx(1); vBoxVtxs[3].y =  vVtx(2); vBoxVtxs[3].z =  vVtx(3);
   // set ground texcoords
-  tcBoxTex[0].gfxtc.uv.u =  vVtx(1); tcBoxTex[0].gfxtc.uv.v =  0;
-  tcBoxTex[1].gfxtc.uv.u =        0; tcBoxTex[1].gfxtc.uv.v =  0;
-  tcBoxTex[2].gfxtc.uv.u =        0; tcBoxTex[2].gfxtc.uv.v =  vVtx(3);
-  tcBoxTex[3].gfxtc.uv.u =  vVtx(1); tcBoxTex[3].gfxtc.uv.v =  vVtx(3);
+  tcBoxTex[0].uv.u =  vVtx(1); tcBoxTex[0].uv.v =  0;
+  tcBoxTex[1].uv.u =        0; tcBoxTex[1].uv.v =  0;
+  tcBoxTex[2].uv.u =        0; tcBoxTex[2].uv.v =  vVtx(3);
+  tcBoxTex[3].uv.u =  vVtx(1); tcBoxTex[3].uv.v =  vVtx(3);
 
   for(INDEX ivx=0;ivx<4;ivx++) {
     TransformVertex(vBoxVtxs[ivx],_mAbsToViewer);
   }
-  aiIndices[0] = 0; aiIndices[1] = 2; aiIndices[2] = 1;
-  aiIndices[3] = 0; aiIndices[4] = 3; aiIndices[5] = 2;
+  /*aiIndices[0] = 0; aiIndices[1] = 2; aiIndices[2] = 1;
+  aiIndices[3] = 0; aiIndices[4] = 3; aiIndices[5] = 2;*/
 
   gfxSetVertexArray(vBoxVtxs,4);
   gfxSetTexCoordArray(tcBoxTex, FALSE);
@@ -850,8 +852,21 @@ static void RenderBox(FLOAT3D vMinVtx, FLOAT3D vMaxVtx, COLOR col)
   for(INDEX iwx=0;iwx<8;iwx++) {
     TransformVertex(vBoxVtxs[iwx],_mObjToViewStretch);
   }
-  INDEX aiIndices[36];
-  aiIndices[ 0] = 0; aiIndices[ 1] = 3; aiIndices[ 2] = 1;
+  INDEX_T aiIndices[36] = { 
+    0, 3, 1,
+    0, 2, 3,
+    5, 1, 3,
+    7, 5, 3,
+    2, 7, 3,
+    6, 7, 2,
+    4, 2, 0,
+    4, 6, 2,
+    5, 0, 1,
+    5, 4, 0,
+    4, 5, 7,
+    6, 4, 7
+  };
+  /*aiIndices[ 0] = 0; aiIndices[ 1] = 3; aiIndices[ 2] = 1;
   aiIndices[ 3] = 0; aiIndices[ 4] = 2; aiIndices[ 5] = 3;
   aiIndices[ 6] = 5; aiIndices[ 7] = 1; aiIndices[ 8] = 3;
   aiIndices[ 9] = 7; aiIndices[10] = 5; aiIndices[11] = 3;
@@ -862,7 +877,7 @@ static void RenderBox(FLOAT3D vMinVtx, FLOAT3D vMaxVtx, COLOR col)
   aiIndices[24] = 5; aiIndices[25] = 0; aiIndices[26] = 1;
   aiIndices[27] = 5; aiIndices[28] = 4; aiIndices[29] = 0;
   aiIndices[30] = 4; aiIndices[31] = 5; aiIndices[32] = 7;
-  aiIndices[33] = 6; aiIndices[34] = 4; aiIndices[35] = 7;
+  aiIndices[33] = 6; aiIndices[34] = 4; aiIndices[35] = 7;*/
 
   gfxSetVertexArray(vBoxVtxs,8);
   gfxDrawElements(36,aiIndices);
@@ -964,8 +979,8 @@ static void RenderBone(RenBone &rb, COLOR col)
   TransformVector(vRingPt[3].vector,rb.rb_mBonePlacement);
 
   // connect start point of bone with end point
-  INDEX il=0;
-  for(;il<4;il++) {
+  INDEX il;
+  for(il=0;il<4;il++) {
     _pdp->DrawLine3D(vBoneStart,vRingPt[il],col);
     _pdp->DrawLine3D(vBoneEnd,vRingPt[il],col);
   }
@@ -1043,7 +1058,7 @@ void RM_RenderBone(CModelInstance &mi,INDEX iBoneID)
 
       // all vertices by default are not visible ( have alpha set to 0 )
       for(INDEX ivx=0;ivx<ctVertices;ivx++) {
-        _aMeshColors[ivx].gfxcol.ub.a = 0;
+        _aMeshColors[ivx].ub.a = 0;
       }
     
       INDEX ctwm = rmsh.rmsh_iFirstWeight+rmsh.rmsh_ctWeights;
@@ -1058,10 +1073,10 @@ void RM_RenderBone(CModelInstance &mi,INDEX iBoneID)
           // modify color and alpha value of this vertex 
           MeshVertexWeight &vw = rw.rw_pwmWeightMap->mwm_aVertexWeight[ivw];
           INDEX ivx = vw.mww_iVertex;
-          _aMeshColors[ivx].gfxcol.ub.r = 255;
-          _aMeshColors[ivx].gfxcol.ub.g = 127;
-          _aMeshColors[ivx].gfxcol.ub.b = 0;
-          _aMeshColors[ivx].gfxcol.ub.a += vw.mww_fWeight*255; // _aMeshColors[ivx].gfxcol.ub.a = 255;
+          _aMeshColors[ivx].ub.r = 255;
+          _aMeshColors[ivx].ub.g = 127;
+          _aMeshColors[ivx].ub.b = 0;
+          _aMeshColors[ivx].ub.a += vw.mww_fWeight*255; // _aMeshColors[ivx].ub.a = 255;
         }
       }
 
@@ -1122,8 +1137,8 @@ static void RenderActiveBones(RenModel &rm)
   // find newes animlist that has fully faded in
   INDEX iFirstAnimList = 0;
   // loop from newer to older
-  INDEX ial=ctal-1;
-  for(;ial>=0;ial--) {
+  INDEX ial;
+  for(ial=ctal-1;ial>=0;ial--) {
     AnimList &alList = pmi->mi_aqAnims.aq_Lists[ial];
     // calculate fade factor
     FLOAT fFadeFactor = CalculateFadeFactor(alList);
@@ -1165,7 +1180,7 @@ static void RenderActiveBones(void)
   gfxSetViewMatrix(NULL);
   // for each renmodel
   INDEX ctrm = _aRenModels.Count();
-  for(INT irm=0;irm<ctrm;irm++) {
+  for(SLONG irm=0;irm<ctrm;irm++) {
     RenModel &rm = _aRenModels[irm];
     RenderActiveBones(rm);
   }
@@ -1379,7 +1394,7 @@ void RM_BeginRenderingView(CAnyProjection3D &apr, CDrawPort *pdp)
 
   // make FPU precision low
   _fpuOldPrecision = GetFPUPrecision(); 
-  SetFPUPrecision(FPT_24BIT);
+  //CSetFPUPrecision(FPT_24BIT);
 
 }
 
@@ -1391,7 +1406,7 @@ void RM_EndRenderingView( BOOL bRestoreOrtho/*=TRUE*/)
 
   // assure that FPU precision was low all the model rendering time, then revert to old FPU precision
   ASSERT( GetFPUPrecision()==FPT_24BIT);
-  SetFPUPrecision(_fpuOldPrecision);
+  //CSetFPUPrecision(_fpuOldPrecision);
 
   // back to 2D projection?
   if( bRestoreOrtho) _pdp->SetOrtho();
@@ -1764,8 +1779,8 @@ static void CalculateBoneTransforms()
 
   Matrix12 mStretch;
   // for each renbone after first dummy one
-  int irb=1;
-  for(; irb<_aRenBones.Count(); irb++) {
+  int irb;
+  for(irb=1; irb<_aRenBones.Count(); irb++) {
     Matrix12 mRelPlacement;
     Matrix12 mOffset;
     RenBone &rb = _aRenBones[irb];
@@ -1843,8 +1858,8 @@ static void MatchAnims(RenModel &rm)
   // find newes animlist that has fully faded in
   INDEX iFirstAnimList = 0;
   // loop from newer to older
-  INDEX ial=ctal-1;
-  for(;ial>=0;ial--) {
+  INDEX ial;
+  for(ial=ctal-1;ial>=0;ial--) {
     AnimList &alList = rm.rm_pmiModel->mi_aqAnims.aq_Lists[ial];
     // calculate fade factor
     FLOAT fFadeFactor = CalculateFadeFactor(alList);
@@ -1907,8 +1922,8 @@ static void MatchAnims(RenModel &rm)
         } else {
           if(f>an.an_iFrames) f = an.an_iFrames-1;
           iCurentFrame = INDEX(f);
-          iAnimFrame = ClampUp(iCurentFrame,an.an_iFrames-1L);
-          iNextAnimFrame = ClampUp(iCurentFrame+1L,an.an_iFrames-1L);
+          iAnimFrame = ClampUp(iCurentFrame,an.an_iFrames-1);
+          iNextAnimFrame = ClampUp(iCurentFrame+1,an.an_iFrames-1);
         }
         
         // for each bone envelope
@@ -2087,7 +2102,7 @@ static void RenderMesh(RenMesh &rmsh,RenModel &rm)
 
       // clamp surface texture count to max number of textrues in mesh
       INDEX cttx = pShaderParams->sp_aiTextureIDs.Count();
-      INDEX cttxMax = rmsh.rmsh_pMeshInst->mi_tiTextures.Count();
+      //INDEX cttxMax = rmsh.rmsh_pMeshInst->mi_tiTextures.Count();
       // cttx = ClampUp(cttx,cttxMax);
 
       _patoTextures.PopAll();
@@ -2250,7 +2265,7 @@ static void PrepareMeshForRendering(RenMesh &rmsh, INDEX iSkeletonlod)
         } else {
           // blend absolute (1-f)*cur + f*dst
           INDEX vtx = rm.rmp_pmmmMorphMap->mmp_aMorphMap[ivx].mwm_iVxIndex;
-          MeshVertex &mvSrc = mlod.mlod_aVertices[vtx];
+          //MeshVertex &mvSrc = mlod.mlod_aVertices[vtx];
           MeshVertexMorph &mvmDst = rm.rmp_pmmmMorphMap->mmp_aMorphMap[ivx];
           // blend vertices
           _aMorphedVtxs[vtx].x = (1.0f-rm.rmp_fFactor) * _aMorphedVtxs[vtx].x + rm.rmp_fFactor*mvmDst.mwm_x;

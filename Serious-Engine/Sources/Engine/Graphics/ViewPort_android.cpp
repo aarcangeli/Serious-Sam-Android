@@ -71,7 +71,7 @@ void CViewPort::Initialize(ANativeWindow *window) {
 
     const EGLint context_attrib_list[] = {
       // request a context using Open GL ES 2.0
-      EGL_CONTEXT_CLIENT_VERSION, 2,
+      EGL_CONTEXT_CLIENT_VERSION, 3,
       EGL_NONE
     };
     if (!(context = eglCreateContext(display, config, 0, context_attrib_list))) {

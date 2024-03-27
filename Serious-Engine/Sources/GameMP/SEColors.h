@@ -27,5 +27,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #define SE_COL_BLUE_NEUTRAL_LT  0x6097cc00
 #define SE_COL_BLUE_LIGHT       0x64b4ff00
 #define SE_COL_BLUEGREEN_LT     0x6cff6c00
+#define SE_COL_WHITE            0xffffff00
 
 #endif

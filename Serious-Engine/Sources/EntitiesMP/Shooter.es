@@ -356,11 +356,11 @@ procedures:
     ClampDn(m_fCannonBallPower, 0.0f);
     
     if (m_penSoundLaunch!=NULL && !IsOfClass(m_penSoundLaunch, "SoundHolder")) {
-      WarningMessage( "Entity '%s' is not of class SoundHolder!", m_penSoundLaunch);
+      WarningMessage( "Entity '%s' is not of class SoundHolder!", (const char *) m_penSoundLaunch->GetName());
       m_penSoundLaunch=NULL;
     }
     if (m_penDestruction!=NULL && !IsOfClass(m_penDestruction, "ModelDestruction")) {
-      WarningMessage( "Entity '%s' is not of class ModelDestruction!", m_penDestruction);
+      WarningMessage( "Entity '%s' is not of class ModelDestruction!", (const char *) m_penDestruction->GetName());
       m_penDestruction=NULL;
     }
 

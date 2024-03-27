@@ -58,3 +58,4 @@ with this program; if not, write to the Free Software Foundation, Inc.,
   #define ENGINE_API
 #endif
 
+#define INDEX_T uint16_t

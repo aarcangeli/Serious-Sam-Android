@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 
 #include <Engine/Brushes/Brush.h>
 #include <Engine/World/World.h>
@@ -308,7 +308,7 @@ void CBrushMip::RemoveDummyPortals(BOOL bClearPortalFlags)
         {
           bpo.bpo_ulFlags &= ~(BPOF_PASSABLE|BPOF_PORTAL);
         }
-        bpo.bpo_abptTextures[0].bpt.s.bpt_ubBlend = BPT_BLEND_OPAQUE;
+        bpo.bpo_abptTextures[0].s.bpt_ubBlend = BPT_BLEND_OPAQUE;
         bpo.bpo_bppProperties.bpp_ubShadowBlend = BPT_BLEND_SHADE;
 
         // remove all of its links

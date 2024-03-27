@@ -97,7 +97,7 @@ procedures:
     if (m_bQuickStart) {
       m_strName.PrintF("Player Quick Start");
     } else {
-      m_strName.PrintF("Player Start - %s", m_strGroup);
+      m_strName.PrintF("Player Start - %s", (const char *) m_strGroup);
     }
 
     return;

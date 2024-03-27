@@ -110,6 +110,7 @@ public:
   BOOL ses_bWaitingForServer;        // wait for server after level change
   CTString ses_strDisconnected; // explanation of disconnection or empty string if not disconnected
 
+  INDEX ses_ctMinPlayers; // [SSE] Minimum Players Option
   INDEX ses_ctMaxPlayers; // maximum number of players allowed in game
   BOOL ses_bWaitAllPlayers; // if set, wait for all players to join before starting
   FLOAT ses_fRealTimeFactor;  // enables slower or faster time for special effects

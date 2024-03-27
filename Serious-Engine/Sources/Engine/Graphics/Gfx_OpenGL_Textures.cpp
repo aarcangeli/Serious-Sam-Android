@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 
 #include <Engine/Graphics/GfxLibrary.h>
 
@@ -119,7 +119,7 @@ extern void MimicTexParams_OGL( CTexParams &tpLocal)
 
 // upload context for current texture to accelerator's memory
 // (returns format in which texture was really uploaded)
-extern void UploadTexture_OGL( ULONG *pulTexture, PIX pixSizeU, PIX pixSizeV,
+void UploadTexture_OGL( ULONG *pulTexture, PIX pixSizeU, PIX pixSizeV,
                                GLenum eInternalFormat, BOOL bUseSubImage)
 {
   // safeties
@@ -137,6 +137,7 @@ extern void UploadTexture_OGL( ULONG *pulTexture, PIX pixSizeU, PIX pixSizeV,
     // check that memory is readable
     ASSERT( pulTexture[pixOffset +pixSizeU*pixSizeV -1] != 0xDEADBEEF);
     #endif
+
     // upload mipmap as fast as possible
     if( bUseSubImage) {
       pglTexSubImage2D( GL_TEXTURE_2D, iMip, 0, 0, pixSizeU, pixSizeV,

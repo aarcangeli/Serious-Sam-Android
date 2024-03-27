@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 
 #include <Engine/Graphics/GfxLibrary.h>
 #include <Engine/Base/Translation.h>
@@ -30,6 +30,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/ListIterator.inl>
 #include <EGL/egl.h>
 #include <GLES2/gl2.h>
+#include <GLES3/gl3.h>
 #include <AndroidAdapters/gles_adapter.h>
 
 extern INDEX ogl_iTBufferEffect;
@@ -116,7 +117,7 @@ GLboolean (__stdcall *pglIsOcclusionQueryNV)( GLuint id);
 void (__stdcall *pglPNTrianglesiATI)( GLenum pname, GLint param);
 void (__stdcall *pglPNTrianglesfATI)( GLenum pname, GLfloat param);
 
-
+#ifdef PLATFORM_WIN32
 void WIN_CheckError(BOOL bRes, const char *strDescription)
 {
   if( bRes) return;
@@ -124,7 +125,7 @@ void WIN_CheckError(BOOL bRes, const char *strDescription)
   if( dwWindowsErrorCode==ERROR_SUCCESS) return; // ignore stupid 'successful' error
   WarningMessage("%s: %s", strDescription, GetWindowsError(dwWindowsErrorCode));
 }
-
+#endif
 
 static void FailFunction_t(const char *strName) {
   ThrowF_t(TRANS("Required function %s not found."), strName);
@@ -327,7 +328,7 @@ BOOL CGfxLibrary::SetupPixelFormat_OGL( HDC hdc, BOOL bReport/*=FALSE*/)
   pfd.cStencilBits = gap_iStencilBits;
 
   // must be required and works only in full screen via GDI functions
-  ogl_iTBufferEffect = Clamp( ogl_iTBufferEffect, 0L, 2L);
+  ogl_iTBufferEffect = Clamp( ogl_iTBufferEffect, 0, 2);
   if( ogl_iTBufferEffect>0 && pixResWidth>0 && pixResHeight>0)
   { // lets T-buffer ... :)
     //CPrintF( "TBuffer init...\n");
@@ -508,6 +509,7 @@ void CGfxLibrary::InitContext_OGL(void)
                                   GFX_fMaxDepthRange = 1.0f;
   // (re)set some OpenGL defaults
   gfxPolygonMode( GFX_FILL);
+  pglFrontFace( GL_CCW);
   pglShadeModel( GL_SMOOTH);
   pglEnable( GL_SCISSOR_TEST);
   pglDrawBuffer( GL_BACK);
@@ -537,7 +539,7 @@ void CGfxLibrary::InitContext_OGL(void)
 
   // report
   CPrintF( TRANS("\n* OpenGL context created: *----------------------------------\n"));
-  CPrintF( "  (%s, %s, %s)\n\n", da.da_strVendor, da.da_strRenderer, da.da_strVersion);
+  CPrintF( "  (%s, %s, %s)\n\n", (const char *) da.da_strVendor, (const char *) da.da_strRenderer, (const char *) da.da_strVersion);
 
   // test for used extensions
   GLint   gliRet;
@@ -927,7 +929,7 @@ BOOL CGfxLibrary::SetCurrentViewport_OGL(CViewPort *pvp)
 extern void SetTBufferEffect( BOOL bEnable)
 {
   // adjust console vars
-  ogl_iTBufferEffect  = Clamp( ogl_iTBufferEffect, 0L, 2L);
+  ogl_iTBufferEffect  = Clamp( ogl_iTBufferEffect, 0, 2);
   ogl_iTBufferSamples = (1L) << FastLog2(ogl_iTBufferSamples);
   if( ogl_iTBufferSamples<2) ogl_iTBufferSamples = 4;
   // if supported
@@ -937,9 +939,9 @@ extern void SetTBufferEffect( BOOL bEnable)
     if( ogl_iTBufferEffect==0 || _pGfx->go_ctSampleBuffers<2 || !bEnable) pglDisable( GL_MULTISAMPLE_3DFX);
     else {
       pglEnable( GL_MULTISAMPLE_3DFX);
-      UINT uiMask = 0xFFFFFFFF;
+      //UINT uiMask = 0xFFFFFFFF;
       // set one buffer in case of motion-blur
-      if( ogl_iTBufferEffect==2) uiMask = (1UL) << _pGfx->go_iCurrentWriteBuffer;
+      //if( ogl_iTBufferEffect==2) uiMask = (1UL) << _pGfx->go_iCurrentWriteBuffer;
       //pglTBufferMask3DFX(uiMask);
     }
   }

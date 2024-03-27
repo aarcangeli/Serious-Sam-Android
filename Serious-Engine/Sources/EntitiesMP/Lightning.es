@@ -89,7 +89,7 @@ functions:
     }
     else
     {
-      WarningMessage("Target '%s' is not of light class!", m_penLight->GetName());
+      WarningMessage("Target '%s' is not of light class!", (const char *) m_penLight->GetName());
     }
     return NULL;
   };
@@ -107,7 +107,11 @@ functions:
       // render lightning particles
       FLOAT3D vSrc = GetPlacement().pl_PositionVector;
       FLOAT3D vDst = m_penTarget->GetPlacement().pl_PositionVector;
-      Particles_Lightning( vSrc, vDst, m_tmLightningStart);
+	  
+      // [SSE] Lightning - Potential Crash Fix
+      if (vSrc != vDst) {
+        Particles_Lightning( vSrc, vDst, m_tmLightningStart);
+      }
     }
   }
 
@@ -225,7 +229,7 @@ procedures:
     {
       if( m_penTarget != NULL)
       {
-        WarningMessage("Target '%s' is not of Marker class!", m_penTarget->GetName());
+        WarningMessage("Target '%s' is not of Marker class!", (const char *) m_penTarget->GetName());
       }
       // don't do anything
       return;

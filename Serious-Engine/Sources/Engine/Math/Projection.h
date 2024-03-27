@@ -434,19 +434,19 @@ public:
   inline CAnyProjection3D(void) : ap_CurrentProjection(NULL) {};
   /* Copy constructor. */
   inline CAnyProjection3D(const CAnyProjection3D &apOriginal) { operator=(apOriginal);}
-  /* Start beeing CSimpleProjection3D. */
+  /* Start being CSimpleProjection3D. */
   inline void BeSimple(void);
   /* Test if CSimpleProjection3D. */
   inline BOOL IsSimple(void);
-  /* Start beeing CIsometricProjection3D. */
+  /* Start being CIsometricProjection3D. */
   inline void BeIsometric(void);
   /* Test if CIsometricProjection3D. */
   inline BOOL IsIsometric(void);
-  /* Start beeing CPerspectiveProjection3D. */
+  /* Start being CPerspectiveProjection3D. */
   inline void BePerspective(void);
   /* Test if CPerspectiveProjection3D. */
   inline BOOL IsPerspective(void);
-  /* Start beeing CParallelProjection3D. */
+  /* Start being CParallelProjection3D. */
   inline void BeParallel(void);
   /* Test if CParallelProjection3D. */
   inline BOOL IsParallel(void);
@@ -670,7 +670,7 @@ ENGINE_API inline const FLOAT &CIsometricProjection3D::ZoomFactorR(void) const {
 //  CAnyProjection3D
 /////////////////////////////////////////////////////////////////////
 /*
- * Start beeing CSimpleProjection3D.
+ * Start being CSimpleProjection3D.
  */
 ENGINE_API inline void CAnyProjection3D::BeSimple(void)
 {
@@ -678,7 +678,7 @@ ENGINE_API inline void CAnyProjection3D::BeSimple(void)
 }
 
 /*
- * Start beeing CIsometricProjection3D.
+ * Start being CIsometricProjection3D.
  */
 ENGINE_API inline void CAnyProjection3D::BeIsometric(void)
 {

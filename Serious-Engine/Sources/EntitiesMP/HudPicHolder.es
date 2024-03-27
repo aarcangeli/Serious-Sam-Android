@@ -52,7 +52,7 @@ components:
 
 functions:
   const CTString &GetDescription(void) const {
-    ((CTString&)m_strDescription).PrintF("%s", m_fnmPicture.FileName());
+    ((CTString&)m_strDescription).PrintF("%s", (const char *) m_fnmPicture.FileName());
     return m_strDescription;
   }
 
@@ -140,8 +140,8 @@ functions:
       fPicRatioW = 1.0f;
       fPicRatioH = mexTexH/mexTexW;
     }
-    PIX picW = 128*m_fPictureStretch*fResScale*fPicRatioW;
-    PIX picH = 128*m_fPictureStretch*fResScale*fPicRatioH;
+    PIX picW = (PIX) (128*m_fPictureStretch*fResScale*fPicRatioW);
+    PIX picH = (PIX) (128*m_fPictureStretch*fResScale*fPicRatioH);
 
     FLOAT fXCenter = m_fXRatio * pdpCurr->GetWidth();
     FLOAT fYCenter = m_fYRatio * pdpCurr->GetHeight();

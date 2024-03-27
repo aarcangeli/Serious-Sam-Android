@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include <Engine/StdH.h>
 
 #include <Engine/Base/Console.h>
 #include <Engine/Math/Float.h>
@@ -38,6 +38,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/ProgressHook.h>
 #include <Engine/Templates/StaticArray.cpp>
 #include <Engine/Templates/Selection.cpp>
+#include <Engine/Base/ReplaceFile.h>
 #include <Engine/Terrain/Terrain.h>
 
 #include <Engine/Templates/Stock_CEntityClass.h>
@@ -51,6 +52,7 @@ extern BOOL _bPortalSectorLinksPreLoaded;
 extern BOOL _bEntitySectorLinksPreLoaded;
 extern INDEX _ctPredictorEntities;
 
+#if 0 // DG: unused.
 // calculate ray placement from origin and target positions (obsolete?)
 static inline CPlacement3D CalculateRayPlacement(
   const FLOAT3D &vOrigin, const FLOAT3D &vTarget)
@@ -65,6 +67,7 @@ static inline CPlacement3D CalculateRayPlacement(
   DirectionVectorToAngles(vDirection, plRay.pl_OrientationAngle);
   return plRay;
 }
+#endif // 0
 
 /* Constructor. */
 CTextureTransformation::CTextureTransformation(void)
@@ -84,12 +87,12 @@ CTextureBlending::CTextureBlending(void)
  * Constructor.
  */
 CWorld::CWorld(void)
-  : wo_colBackground(C_lGRAY)       // clear background color
-  , wo_pecWorldBaseClass(NULL)      // worldbase class must be obtained before using the world
-  , wo_bPortalLinksUpToDate(FALSE)  // portal-sector links must be updated
+  : wo_pecWorldBaseClass(NULL)      // worldbase class must be obtained before using the world
   , wo_baBrushes(*new CBrushArchive)
   , wo_taTerrains(*new CTerrainArchive)
+  , wo_colBackground(C_lGRAY)       // clear background color
   , wo_ulSpawnFlags(0)
+  , wo_bPortalLinksUpToDate(FALSE)  // portal-sector links must be updated
 {
   wo_baBrushes.ba_pwoWorld = this;
   wo_taTerrains.ta_pwoWorld = this;
@@ -157,7 +160,7 @@ void CWorld::Clear(void)
 
   {
     // must be in 24bit mode when managing entities
-    CSetFPUPrecision FPUPrecision(FPT_24BIT);
+   // CSetFPUPrecision FPUPrecision(FPT_24BIT);
 
     // clear background viewer
     SetBackgroundViewer(NULL);
@@ -195,7 +198,7 @@ void CWorld::Clear(void)
 CEntity *CWorld::CreateEntity(const CPlacement3D &plPlacement, CEntityClass *pecClass)
 {
   // must be in 24bit mode when managing entities
-  CSetFPUPrecision FPUPrecision(FPT_24BIT);
+//  CSetFPUPrecision FPUPrecision(FPT_24BIT);
   
   // if the world base class is not yet remembered and this class is world base
   if (wo_pecWorldBaseClass==NULL
@@ -245,8 +248,11 @@ CEntity *CWorld::CreateEntity(const CPlacement3D &plPlacement, CEntityClass *pec
 CEntity *CWorld::CreateEntity_t(const CPlacement3D &plPlacement,
                                 const CTFileName &fnmClass) // throw char *
 {
+  CTFileName fnmReplacement = fnmClass;
+  GetReplacingClassFile_t(fnmReplacement);
+
   // obtain a new entity class from global stock
-  CEntityClass *pecClass = _pEntityClassStock->Obtain_t(fnmClass);
+  CEntityClass *pecClass = _pEntityClassStock->Obtain_t(fnmReplacement);
   // create entity with that class (obtains it once more)
   CEntity *penNew = CreateEntity(plPlacement, pecClass);
   // release the class
@@ -275,7 +281,7 @@ void CWorld::DestroyOneEntity( CEntity *penToDestroy)
 void CWorld::DestroyEntities(CEntitySelection &senToDestroy)
 {
   // must be in 24bit mode when managing entities
-  CSetFPUPrecision FPUPrecision(FPT_24BIT);
+ // CSetFPUPrecision FPUPrecision(FPT_24BIT);
 
   // for each entity in selection
   FOREACHINDYNAMICCONTAINER(senToDestroy, CEntity, iten) {
@@ -364,7 +370,7 @@ CPlayerEntity *CWorld::FindEntityWithCharacter(CPlayerCharacter &pcCharacter)
  */
 void CWorld::AddTimer(CRationalEntity *penThinker)
 {
-  ASSERT(penThinker->en_timeTimer>_pTimer->CurrentTick());
+  ASSERT(penThinker->en_timeTimer>=_pTimer->CurrentTick());
   ASSERT(GetFPUPrecision()==FPT_24BIT);
 
   // if the entity is already in the list
@@ -388,7 +394,7 @@ void CWorld::AddTimer(CRationalEntity *penThinker)
 void CWorld::AdjustLateTimers(TIME tmCurrentTime)
 {
   // must be in 24bit mode when managing entities
-  CSetFPUPrecision FPUPrecision(FPT_24BIT);
+ // CSetFPUPrecision FPUPrecision(FPT_24BIT);
 
   // for each entity in the thinker list
   FOREACHINLIST(CRationalEntity, en_lnInTimers, wo_lhTimers, iten) {
@@ -544,7 +550,7 @@ void CWorld::FindShadowLayers(
     CLightSource *pls = iten->GetLightSource();
     if (pls!=NULL) {
       FLOATaabbox3D boxLight(iten->en_plPlacement.pl_PositionVector, pls->ls_rFallOff);
-      if ( bDirectional && (pls->ls_ulFlags &LSF_DIRECTIONAL)
+      if ( (bDirectional && (pls->ls_ulFlags & LSF_DIRECTIONAL))
         ||boxLight.HasContactWith(boxNear)) {
         // find layers for that light source
         pls->FindShadowLayers(bSelectedOnly);
@@ -758,7 +764,7 @@ void CWorld::ReinitializeEntities(void)
   _pfWorldEditingProfile.StartTimer(CWorldEditingProfile::PTI_REINITIALIZEENTITIES);
 
   // must be in 24bit mode when managing entities
-  CSetFPUPrecision FPUPrecision(FPT_24BIT);
+ // CSetFPUPrecision FPUPrecision(FPT_24BIT);
 
   CTmpPrecachingNow tpn;
 
@@ -787,7 +793,7 @@ void CWorld::PrecacheEntities_t(void)
 void CWorld::FilterEntitiesBySpawnFlags(ULONG ulFlags)
 {
   // must be in 24bit mode when managing entities
-  CSetFPUPrecision FPUPrecision(FPT_24BIT);
+ // CSetFPUPrecision FPUPrecision(FPT_24BIT);
 
   BOOL bOldAllowRandom = _pNetwork->ga_sesSessionState.ses_bAllowRandom;
   _pNetwork->ga_sesSessionState.ses_bAllowRandom = TRUE;
@@ -821,7 +827,7 @@ void CWorld::LinkEntitiesToSectors(void)
 {
   _pfWorldEditingProfile.StartTimer(CWorldEditingProfile::PTI_LINKENTITIESTOSECTORS);
   // must be in 24bit mode when managing entities
-  CSetFPUPrecision FPUPrecision(FPT_24BIT);
+ // CSetFPUPrecision FPUPrecision(FPT_24BIT);
   // for each entity in the world
   FOREACHINDYNAMICCONTAINER(wo_cenEntities, CEntity, iten) {
     CEntity &en = *iten;
@@ -845,7 +851,7 @@ void CWorld::LinkEntitiesToSectors(void)
       en.en_pbrBrush->CalculateBoundingBoxes();
       _bDontDiscardLinks = FALSE;
       // FPU must be in 53-bit mode
-      CSetFPUPrecision FPUPrecision(FPT_53BIT);
+      //CSetFPUPrecision FPUPrecision(FPT_53BIT);
 
       // for all brush mips
       FOREACHINLIST(CBrushMip, bm_lnInBrush, en.en_pbrBrush->br_lhBrushMips, itbm) {
@@ -934,10 +940,11 @@ void CWorld::TriangularizeForVertices( CBrushVertexSelection &selVertex)
 // add this entity to prediction
 void CEntity::AddToPrediction(void)
 {
-  // this function may be called even for NULLs - so ignore it
-  if (this==NULL) {
-    return;
-  }
+  // this function may be called even for NULLs - TODO: fix those cases
+  //   (The compiler is free to assume that "this" is never NULL and optimize
+  //   based on that assumption. For example, an "if (this==NULL) {...}" could
+  //   be optimized away completely.)
+  ASSERT(this!=NULL);
   // if already added
   if (en_ulFlags&ENF_WILLBEPREDICTED) {
     // do nothing
@@ -968,8 +975,8 @@ void CWorld::MarkForPrediction(void)
       // find whether it is local
       BOOL bLocal = _pNetwork->IsPlayerLocal(pen);
       // if allowed for prediction
-      if (  bLocal && cli_bPredictLocalPlayers
-        || !bLocal && cli_bPredictRemotePlayers) {
+      if (  (bLocal && cli_bPredictLocalPlayers)
+        || (!bLocal && cli_bPredictRemotePlayers)) {
         // add it
         pen->AddToPrediction();
       }
@@ -1063,7 +1070,7 @@ void CWorld::CreatePredictors(void)
 void CWorld::DeletePredictors(void)
 {
   // must be in 24bit mode when managing entities
-  CSetFPUPrecision FPUPrecision(FPT_24BIT);
+  //CSetFPUPrecision FPUPrecision(FPT_24BIT);
 
   // first remember eventual predicted player positions
   _pNetwork->ga_sesSessionState.RememberPlayerPredictorPositions();

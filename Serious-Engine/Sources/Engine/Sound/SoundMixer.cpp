@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 
 #include <Engine/Sound/SoundProfile.h>
 #include <Engine/Sound/SoundDecoder.h>
@@ -133,32 +133,23 @@ void ResetMixer( const SLONG *pslBuffer, const SLONG slBufferSize)
 
 
 // plain conversion of mixer buffer from 32-bit to 16-bit clamped
-static void ConvertMixerBuffer(SLONG slBytes)
+static void ConvertMixerBuffer( const SLONG slBytes)
 {
   ASSERT( slBytes%4==0);
   if( slBytes<4) return;
-  int32_t *src = (int32_t *) pvMixerBuffer;
-  int16_t *dst = (int16_t *) pvMixerBuffer;
-  while (slBytes) {
-    *(dst++) = (int16_t) Clamp(*(src++), -0x7FFF, +0x7FFF);
-    slBytes -= 2;
+  
+  SWORD *dest = (SWORD *) pvMixerBuffer;
+  SLONG *src = (SLONG *) pvMixerBuffer;
+  SLONG max = slBytes / 2;
+  int tmp;
+  for (SLONG i = 0; i < max; i++) {
+      tmp = *src;
+      if (tmp>32767) tmp=32767;
+      if (tmp<-32767) tmp=-32767;
+      *dest=tmp;
+      dest++;    // move 16 bits.
+      src++;     // move 32 bits.
   }
-//  __asm {
-//    cld
-//    mov     esi,D [pvMixerBuffer]
-//    mov     edi,D [pvMixerBuffer]
-//    mov     ecx,D [slBytes]
-//    shr     ecx,2 // bytes to samples (2 channels)
-//copyLoop:
-//    movq    mm0,Q [esi]
-//    packssdw mm0,mm0
-//    movd    D [edi],mm0
-//    add     esi,8
-//    add     edi,4
-//    dec     ecx
-//    jnz     copyLoop
-//    emms
-//  }
 }
 
 
@@ -180,15 +171,8 @@ void NormalizeMixerBuffer( const FLOAT fNormStrength, const SLONG slBytes, FLOAT
   const INDEX iSamples = slBytes/2; // 16-bit was assumed -> samples (treat as mono)
   for( i=0; i<iSamples; i++) slPeak = Max( Abs(pslSrc[i]), slPeak);
 
-  // muted channel
-  if (!slPeak) {
-    fLastNormValue = Lerp(1.0f, fLastNormValue, fNormStrength);
-    ConvertMixerBuffer(slBytes);
-    return;
-  }
-
   // determine normalize value and skip normalization if maximize is required (do not increase volume!)
-  FLOAT fNormValue = (FLOAT) 0x7FFF / (FLOAT)slPeak;
+  FLOAT fNormValue = 32767.0f / (FLOAT)slPeak;
   if( fNormValue>0.99f && fLastNormValue>0.99f) { // should be enough to tolerate
     fLastNormValue = 1.0f;
     ConvertMixerBuffer(slBytes);
@@ -205,7 +189,7 @@ void NormalizeMixerBuffer( const FLOAT fNormStrength, const SLONG slBytes, FLOAT
   FLOAT fCurrentNormValue = fLastNormValue;
   for( i=0; i<iSamples; i++) {
     SLONG slSample = FloatToInt(pslSrc[i]*fCurrentNormValue);
-    pswDst[i] = (SWORD)Clamp( slSample, -0x7FFFL, +0x7FFFL);
+    pswDst[i] = (SWORD)Clamp( slSample, -32767, +32767);
     fCurrentNormValue = fCurrentNormValue+fNormAdd; // interpolate normalizer
          if( fCurrentNormValue<fNormValue && fNormAdd<0) fCurrentNormValue = fNormValue; // clamp interpolated value
     else if( fCurrentNormValue>fNormValue && fNormAdd>0) fCurrentNormValue = fNormValue;
@@ -214,8 +198,6 @@ void NormalizeMixerBuffer( const FLOAT fNormStrength, const SLONG slBytes, FLOAT
   // remember normalization value
   fLastNormValue = fCurrentNormValue;
 }
- 
-
 
 // mixes one mono 16-bit signed sound to destination buffer
 inline void MixMono( CSoundObject *pso)
@@ -368,6 +350,9 @@ loopEnd:
   __int64 fixSoundBufferSize = ((__int64)slSoundBufferSize)<<16;
   mmSurroundFactor = (__int64)(SWORD)mmSurroundFactor;
 
+  SLONG slLeftVolume_ = slLeftVolume >> 16;
+  SLONG slRightVolume_ = slRightVolume >> 16;
+
   // loop thru source buffer
   INDEX iCt = slMixerBufferSize;
   FOREVER
@@ -401,20 +386,21 @@ loopEnd:
     slLastRightSample += ((slRightSample-slLastRightSample)*slRightFilter)>>15;
 
     // apply stereo volume to current sample
-    slLeftSample  = ((int64_t) slLastLeftSample  * slLeftVolume / 65536) >>15;
-    slRightSample = ((int64_t) slLastRightSample * slRightVolume / 65536)>>15;
+    slLeftSample  = (slLastLeftSample  * slLeftVolume_) >>15;
+    slRightSample = (slLastRightSample * slRightVolume_)>>15;
 
-    slRightSample = slRightSample ^ mmSurroundFactor;
+    slLeftSample  ^= (SLONG)((mmSurroundFactor>> 0)&0xFFFFFFFF);
+    slRightSample ^= (SLONG)((mmSurroundFactor>>32)&0xFFFFFFFF);
 
     // mix in current sample
     slLeftSample  += pslDstBuffer[0];
     slRightSample += pslDstBuffer[1];
     // upper clamp
-//    if( slLeftSample  > MAX_SWORD) slLeftSample  = MAX_SWORD;
-//    if( slRightSample > MAX_SWORD) slRightSample = MAX_SWORD;
-//    // lower clamp
-//    if( slLeftSample  < MIN_SWORD) slLeftSample  = MIN_SWORD;
-//    if( slRightSample < MIN_SWORD) slRightSample = MIN_SWORD;
+    if( slLeftSample  > MAX_SWORD) slLeftSample  = MAX_SWORD;
+    if( slRightSample > MAX_SWORD) slRightSample = MAX_SWORD;
+    // lower clamp
+    if( slLeftSample  < MIN_SWORD) slLeftSample  = MIN_SWORD;
+    if( slRightSample < MIN_SWORD) slRightSample = MIN_SWORD;
 
     // store samples (both channels)
     pslDstBuffer[0] = slLeftSample;
@@ -590,6 +576,9 @@ loopEnd:
   __int64 fixSoundBufferSize = ((__int64)slSoundBufferSize)<<16;
   mmSurroundFactor = (__int64)(SWORD)mmSurroundFactor;
 
+  SLONG slLeftVolume_ = slLeftVolume >> 16;
+  SLONG slRightVolume_ = slRightVolume >> 16;
+
   // loop thru source buffer
   INDEX iCt = slMixerBufferSize;
   FOREVER
@@ -610,12 +599,12 @@ loopEnd:
     if( iCt<=0 || bEndOfSound) break;
 
     // fetch one lineary interpolated sample on left channel
-    slLeftSample = pswSrcBuffer[((fixLeftOfs>>16)+0)*2+0];
-    slNextSample = pswSrcBuffer[((fixLeftOfs>>16)+1)*2+0];
+    slLeftSample = pswSrcBuffer[(fixLeftOfs>>15)+0];
+    slNextSample = pswSrcBuffer[(fixLeftOfs>>15)+2];
     slLeftSample = (slLeftSample*(65535-(fixLeftOfs&65535)) + slNextSample*(fixLeftOfs&65535)) >>16;
     // fetch one lineary interpolated sample on right channel
-    slRightSample = pswSrcBuffer[((fixRightOfs>>16)+0)*2+1];
-    slNextSample  = pswSrcBuffer[((fixRightOfs>>16)+1)*2+1];
+    slRightSample = pswSrcBuffer[(fixRightOfs>>15)+0];
+    slNextSample  = pswSrcBuffer[(fixRightOfs>>15)+2];
     slRightSample = (slRightSample*(65535-(fixRightOfs&65535)) + slNextSample*(fixRightOfs&65535)) >>16;
 
     // filter samples
@@ -623,20 +612,21 @@ loopEnd:
     slLastRightSample += ((slRightSample-slLastRightSample)*slRightFilter)>>15;
 
     // apply stereo volume to current sample
-    slLeftSample  = ((int64_t) slLastLeftSample  * slLeftVolume / 65536) >>15;
-    slRightSample = ((int64_t) slLastRightSample * slRightVolume / 65536)>>15;
+    slLeftSample  = (slLastLeftSample  * slLeftVolume_) >>15;
+    slRightSample = (slLastRightSample * slRightVolume_)>>15;
 
-    slRightSample = slRightSample ^ mmSurroundFactor;
+    slLeftSample  ^= (SLONG)((mmSurroundFactor>> 0)&0xFFFFFFFF);
+    slRightSample ^= (SLONG)((mmSurroundFactor>>32)&0xFFFFFFFF);
 
     // mix in current sample
     slLeftSample  += pslDstBuffer[0];
     slRightSample += pslDstBuffer[1];
     // upper clamp
-//    if( slLeftSample  > MAX_SWORD) slLeftSample  = MAX_SWORD;
-//    if( slRightSample > MAX_SWORD) slRightSample = MAX_SWORD;
-//    // lower clamp
-//    if( slLeftSample  < MIN_SWORD) slLeftSample  = MIN_SWORD;
-//    if( slRightSample < MIN_SWORD) slRightSample = MIN_SWORD;
+    if( slLeftSample  > MAX_SWORD) slLeftSample  = MAX_SWORD;
+    if( slRightSample > MAX_SWORD) slRightSample = MAX_SWORD;
+    // lower clamp
+    if( slLeftSample  < MIN_SWORD) slLeftSample  = MIN_SWORD;
+    if( slRightSample < MIN_SWORD) slRightSample = MIN_SWORD;
 
     // store samples (both channels)
     pslDstBuffer[0] = slLeftSample;
@@ -723,7 +713,7 @@ void MixSound( CSoundObject *pso)
       pso->so_fRightOffset += fOfsDelta;
       const FLOAT fMinOfs = Min( pso->so_fLeftOffset, pso->so_fRightOffset);
       ASSERT( fMinOfs>=0);
-      if( fMinOfs<0) CPrintF( "BUG: negative offset (%.2g) encountered in sound: '%s' !\n", fMinOfs, (CTString&)psd->GetName());
+      if( fMinOfs<0) CPrintF( "BUG: negative offset (%.2g) encountered in sound: '%s' !\n", fMinOfs, (const char *) (CTString&)psd->GetName());
       // if looping
       if (pso->so_slFlags & SOF_LOOP) {
         // adjust offset ptrs inside sound
@@ -849,7 +839,7 @@ void MixSound( CSoundObject *pso)
     // safety check (needed because of bad-bug!)
     FLOAT fMinOfs = Min( fLeftOfs, fRightOfs);
     ASSERT( fMinOfs>=0);
-    if( fMinOfs<0) CPrintF( "BUG: negative offset (%.2g) encountered in sound: '%s' !\n", fMinOfs, (CTString&)psd->GetName());
+    if( fMinOfs<0) CPrintF( "BUG: negative offset (%.2g) encountered in sound: '%s' !\n", fMinOfs, (const char *) (CTString&)psd->GetName());
     // adjust offset ptrs inside sound to match those of phase shift
     while( fLeftOfs  < 0) fLeftOfs  += slSoundBufferSize;
     while( fRightOfs < 0) fRightOfs += slSoundBufferSize;

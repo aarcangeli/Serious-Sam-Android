@@ -88,10 +88,10 @@ functions:
   {
     ((CTString&)m_strDescription).PrintF("-><none>");
     if (m_penTarget!=NULL) {
-      ((CTString&)m_strDescription).PrintF("->%s", m_penTarget->GetName());
+      ((CTString&)m_strDescription).PrintF("->%s", (const char *) m_penTarget->GetName());
       if (m_penSeriousTarget!=NULL) {
         ((CTString&)m_strDescription).PrintF("->%s, %s", 
-          m_penTarget->GetName(), m_penSeriousTarget->GetName());
+          (const char *) m_penTarget->GetName(), (const char *) m_penSeriousTarget->GetName());
       }
     }
     ((CTString&)m_strDescription) = EnemySpawnerType_enum.NameForValue(INDEX(m_estType))
@@ -187,7 +187,14 @@ functions:
       // calculate new position
       FLOAT fR = fInnerCircle + FRnd()*(fOuterCircle-fInnerCircle);
       FLOAT fA = FRnd()*360.0f;
-      CPlacement3D pl(FLOAT3D(CosFast(fA)*fR, 0.05f, SinFast(fA)*fR), ANGLE3D(0, 0, 0));
+
+      // This line needs to be split up, since it triggers a bug in gcc 2.95.3.  --ryan.
+      //CPlacement3D pl(FLOAT3D(CosFast(fA)*fR, 0.05f, SinFast(fA)*fR), ANGLE3D(0, 0, 0));
+
+      FLOAT3D f3d(CosFast(fA)*fR, 0.05f, SinFast(fA)*fR);
+      ANGLE3D a3d(0, 0, 0);
+      CPlacement3D pl(f3d, a3d);
+
       pl.RelativeToAbsolute(GetPlacement());
 
       // teleport back
@@ -462,13 +469,13 @@ procedures:
     // check target
     if (m_penTarget!=NULL) {
       if (!IsDerivedFromClass(m_penTarget, "Enemy Base")) {
-        WarningMessage("Target '%s' is of wrong class!", m_penTarget->GetName());
+        WarningMessage("Target '%s' is of wrong class!", (const char *) m_penTarget->GetName());
         m_penTarget = NULL;
       }
     }
     if (m_penSeriousTarget!=NULL) {
       if (!IsDerivedFromClass(m_penSeriousTarget, "Enemy Base")) {
-        WarningMessage("Target '%s' is of wrong class!", m_penSeriousTarget->GetName());
+        WarningMessage("Target '%s' is of wrong class!", (const char *) m_penSeriousTarget->GetName());
         m_penSeriousTarget = NULL;
       }
     }

@@ -18,7 +18,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
  */
 1
 %{
-#include "StdH.h"
+#include <Engine/StdH.h>
 #include <Engine/Entities/InternalClasses.h>
 #include <Engine/World/PhysicsProfile.h>
 #include <Engine/Math/Geometry.inl>
@@ -42,7 +42,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Network/SessionState.h>
 #include <Engine/Terrain/TerrainMisc.h>
 #define CLEARMEM(var) memset(&var, 0, sizeof(var))
-#include <Engine/Templates/BSP.cpp>
 
 %}
 
@@ -900,8 +899,8 @@ functions:
       }
 
       // get min/max parameters of entity inside sector
-      double dMin, dMax;
-      bsc.bsc_bspBSPTree.FindLineMinMax(FLOATtoDOUBLE(vMin), FLOATtoDOUBLE(vMax), dMin, dMax);
+      float dMin, dMax;
+      bsc.bsc_bspBSPTree.FindLineMinMax(vMin, vMax, dMin, dMax);
 
       // if sector content is not default
       INDEX iContent = bsc.GetContentType();
@@ -1010,8 +1009,8 @@ functions:
     }
     // find current breathing parameters
     BOOL bCanBreathe = 
-      (ctUp.ct_ulFlags&CTF_BREATHABLE_LUNGS) && (en_ulPhysicsFlags&EPF_HASLUNGS) ||
-      (ctUp.ct_ulFlags&CTF_BREATHABLE_GILLS) && (en_ulPhysicsFlags&EPF_HASGILLS);
+      ((ctUp.ct_ulFlags&CTF_BREATHABLE_LUNGS) && (en_ulPhysicsFlags&EPF_HASLUNGS)) ||
+      ((ctUp.ct_ulFlags&CTF_BREATHABLE_GILLS) && (en_ulPhysicsFlags&EPF_HASGILLS));
     TIME tmNow = _pTimer->CurrentTick();
     TIME tmBreathDelay = tmNow-en_tmLastBreathed;
     // if entity can breathe now
@@ -1121,12 +1120,12 @@ functions:
 
   BOOL IsStandingOnPolygon(CBrushPolygon *pbpo)
   {
-    _pfPhysicsProfile.StartTimer(CPhysicsProfile::PTI_ISSTANDINGONPOLYGON);
+    _pfPhysicsProfile.StartTimer((INDEX) CPhysicsProfile::PTI_ISSTANDINGONPOLYGON);
     // if cannot optimize for standing on handle
     if (en_pciCollisionInfo==NULL 
       ||!(en_pciCollisionInfo->ci_ulFlags&CIF_CANSTANDONHANDLE)) {
       // not standing on polygon
-      _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_ISSTANDINGONPOLYGON);
+      _pfPhysicsProfile.StopTimer((INDEX) CPhysicsProfile::PTI_ISSTANDINGONPOLYGON);
       return FALSE;
     }
 
@@ -1147,7 +1146,7 @@ functions:
     // if handle is not on the plane
     if (plPolygon.PointDistance(vHandle)>0.01f) {
       // not standing on polygon
-      _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_ISSTANDINGONPOLYGON);
+      _pfPhysicsProfile.StopTimer((INDEX) CPhysicsProfile::PTI_ISSTANDINGONPOLYGON);
       return FALSE;
     }
 
@@ -1171,12 +1170,12 @@ functions:
     // if the point is inside polygon
     if (isIntersector.IsIntersecting()) {
       // entity is standing on polygon
-      _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_ISSTANDINGONPOLYGON);
+      _pfPhysicsProfile.StopTimer((INDEX) CPhysicsProfile::PTI_ISSTANDINGONPOLYGON);
       return TRUE;
     // if the point is outside polygon
     } else {
       // entity is not standing on polygon
-      _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_ISSTANDINGONPOLYGON);
+      _pfPhysicsProfile.StopTimer((INDEX) CPhysicsProfile::PTI_ISSTANDINGONPOLYGON);
       return FALSE;
     }
   }
@@ -1184,13 +1183,13 @@ functions:
   // check whether a polygon is below given point, but not too far away
   BOOL IsPolygonBelowPoint(CBrushPolygon *pbpo, const FLOAT3D &vPoint, FLOAT fMaxDist)
   {
-    _pfPhysicsProfile.StartTimer(CPhysicsProfile::PTI_ISSTANDINGONPOLYGON);
+    _pfPhysicsProfile.StartTimer((INDEX) CPhysicsProfile::PTI_ISSTANDINGONPOLYGON);
 
     // if passable or not allowed as ground
     if ((pbpo->bpo_ulFlags&BPOF_PASSABLE)
       ||!AllowForGroundPolygon(pbpo)) {
       // it cannot be below
-      _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_ISSTANDINGONPOLYGON);
+      _pfPhysicsProfile.StopTimer((INDEX) CPhysicsProfile::PTI_ISSTANDINGONPOLYGON);
       return FALSE;
     }
 
@@ -1202,16 +1201,16 @@ functions:
     // if polygon is vertical or upside down
     if (fCos>-0.01f) {
       // it cannot be below
-      _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_ISSTANDINGONPOLYGON);
+      _pfPhysicsProfile.StopTimer((INDEX) CPhysicsProfile::PTI_ISSTANDINGONPOLYGON);
       return FALSE;
     }
 
     // if polygon's steepness is too high
     CSurfaceType &stReference = en_pwoWorld->wo_astSurfaceTypes[pbpo->bpo_bppProperties.bpp_ubSurfaceType];
-    if (fCos>=-stReference.st_fClimbSlopeCos&&fCos<0
-      ||stReference.st_ulFlags&STF_SLIDEDOWNSLOPE) {
+    if ((fCos >= -stReference.st_fClimbSlopeCos && fCos<0)
+      || stReference.st_ulFlags&STF_SLIDEDOWNSLOPE) {
       // it cannot be below
-      _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_ISSTANDINGONPOLYGON);
+      _pfPhysicsProfile.StopTimer((INDEX) CPhysicsProfile::PTI_ISSTANDINGONPOLYGON);
       return FALSE;
     }
 
@@ -1220,7 +1219,7 @@ functions:
     // if the point is behind the plane
     if (fD<-0.01f) {
       // it cannot be below
-      _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_ISSTANDINGONPOLYGON);
+      _pfPhysicsProfile.StopTimer((INDEX) CPhysicsProfile::PTI_ISSTANDINGONPOLYGON);
       return FALSE;
     }
 
@@ -1229,7 +1228,7 @@ functions:
     // if too far away
     if (fDistance > fMaxDist) {
       // it cannot be below
-      _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_ISSTANDINGONPOLYGON);
+      _pfPhysicsProfile.StopTimer((INDEX) CPhysicsProfile::PTI_ISSTANDINGONPOLYGON);
       return FALSE;
     }
     // project point to the polygon along gravity vector
@@ -1255,12 +1254,12 @@ functions:
     // if the point is inside polygon
     if (isIntersector.IsIntersecting()) {
       // it is below
-      _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_ISSTANDINGONPOLYGON);
+      _pfPhysicsProfile.StopTimer((INDEX) CPhysicsProfile::PTI_ISSTANDINGONPOLYGON);
       return TRUE;
     // if the point is outside polygon
     } else {
       // it is not below
-      _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_ISSTANDINGONPOLYGON);
+      _pfPhysicsProfile.StopTimer((INDEX) CPhysicsProfile::PTI_ISSTANDINGONPOLYGON);
       return FALSE;
     }
   }
@@ -1413,9 +1412,9 @@ out:;
   // set current placement from next position
   void SetPlacementFromNextPosition(void)
   {
-    _pfPhysicsProfile.StartTimer(CPhysicsProfile::PTI_SETPLACEMENTFROMNEXTPOSITION);
+    _pfPhysicsProfile.StartTimer((INDEX) CPhysicsProfile::PTI_SETPLACEMENTFROMNEXTPOSITION);
 
-    _pfPhysicsProfile.IncrementTimerAveragingCounter(CPhysicsProfile::PTI_SETPLACEMENTFROMNEXTPOSITION);
+    _pfPhysicsProfile.IncrementTimerAveragingCounter((INDEX) CPhysicsProfile::PTI_SETPLACEMENTFROMNEXTPOSITION);
     CPlacement3D plNew;
     plNew.pl_PositionVector = en_vNextPosition;
     DecomposeRotationMatrixNoSnap(plNew.pl_OrientationAngle, en_mNextRotation);
@@ -1435,14 +1434,14 @@ out:;
     }
     */
 
-    _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_SETPLACEMENTFROMNEXTPOSITION);
+    _pfPhysicsProfile.StopTimer((INDEX) CPhysicsProfile::PTI_SETPLACEMENTFROMNEXTPOSITION);
   }
 
   BOOL TryToGoUpstairs(const FLOAT3D &vTranslationAbsolute, const CSurfaceType &stHit,
     BOOL bHitStairsOrg)
   {
-    _pfPhysicsProfile.StartTimer(CPhysicsProfile::PTI_TRYTOGOUPSTAIRS);
-    _pfPhysicsProfile.IncrementTimerAveragingCounter(CPhysicsProfile::PTI_TRYTOGOUPSTAIRS);
+    _pfPhysicsProfile.StartTimer((INDEX) CPhysicsProfile::PTI_TRYTOGOUPSTAIRS);
+    _pfPhysicsProfile.IncrementTimerAveragingCounter((INDEX) CPhysicsProfile::PTI_TRYTOGOUPSTAIRS);
 
     // use only horizontal components of the movement
     FLOAT3D vTranslationHorizontal;
@@ -1453,7 +1452,7 @@ out:;
     if(vTranslationHorizontal.Length()<0.001f) {
       //CPrintF("no value\n");
       // don't do it
-      _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_TRYTOGOUPSTAIRS);
+      _pfPhysicsProfile.StopTimer((INDEX) CPhysicsProfile::PTI_TRYTOGOUPSTAIRS);
       return FALSE;
     }
     FLOAT3D vTranslationHorizontalOrg = vTranslationHorizontal;
@@ -1530,11 +1529,11 @@ out:;
           // going up or
           iStep==0 || 
           // going forward and hit stairs or
-          iStep==1 && bHitStairsNow || 
+          (iStep==1 && bHitStairsNow) || 
           // going down and ends on something that is not high slope
-          iStep==2 && 
+          (iStep==2 && 
             (vHitPlane%en_vGravityDir<-stHit.st_fClimbSlopeCos ||
-             bHitStairsNow);
+             bHitStairsNow));
 
         // if early clip is allowed
         if (bEarlyClipAllowed || bSlidingAllowed) {
@@ -1571,7 +1570,7 @@ out:;
         en_vNextPosition = plOriginal.pl_PositionVector;
         SetPlacementFromNextPosition();
         // move is unsuccessful
-        _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_TRYTOGOUPSTAIRS);
+        _pfPhysicsProfile.StopTimer((INDEX) CPhysicsProfile::PTI_TRYTOGOUPSTAIRS);
         //CPrintF("FAILED\n");
         return FALSE;
       }
@@ -1586,7 +1585,7 @@ out:;
       en_vAppliedTranslation += vTranslationHorizontalOrg;
     }
     // move is successful
-    _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_TRYTOGOUPSTAIRS);
+    _pfPhysicsProfile.StopTimer((INDEX) CPhysicsProfile::PTI_TRYTOGOUPSTAIRS);
     //CPrintF("done\n");
     return TRUE;
   }
@@ -1606,9 +1605,9 @@ out:;
       // fail the move
       return FALSE;
     }
-    _pfPhysicsProfile.StartTimer(CPhysicsProfile::PTI_TRYTOTRANSLATE);
-    _pfPhysicsProfile.IncrementTimerAveragingCounter(CPhysicsProfile::PTI_TRYTOTRANSLATE);
-    _pfPhysicsProfile.IncrementCounter(CPhysicsProfile::PCI_TRYTOMOVE);
+    _pfPhysicsProfile.StartTimer((INDEX) CPhysicsProfile::PTI_TRYTOTRANSLATE);
+    _pfPhysicsProfile.IncrementTimerAveragingCounter((INDEX) CPhysicsProfile::PTI_TRYTOTRANSLATE);
+    _pfPhysicsProfile.IncrementCounter((INDEX) CPhysicsProfile::PCI_TRYTOMOVE);
 
     // create new placement with movement
     if (bTranslate) {
@@ -1651,7 +1650,7 @@ out:;
     // clip the movement to the entity's world
     if (!bTranslate && bIgnoreRotation) {
       cmMove.cm_fMovementFraction = 2.0f;
-      _pfPhysicsProfile.IncrementCounter(CPhysicsProfile::PCI_TRYTOMOVE_FAST);
+      _pfPhysicsProfile.IncrementCounter((INDEX) CPhysicsProfile::PCI_TRYTOMOVE_FAST);
     } else {
       en_pwoWorld->ClipMove(cmMove);
     }
@@ -1679,14 +1678,14 @@ out:;
         en_mAppliedRotation = en_mMoveRotation*en_mAppliedRotation;
       }
       // move is successful
-      _pfPhysicsProfile.IncrementCounter(CPhysicsProfile::PCI_TRYTOMOVE_PASS);
-      _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_TRYTOTRANSLATE);
+      _pfPhysicsProfile.IncrementCounter((INDEX) CPhysicsProfile::PCI_TRYTOMOVE_PASS);
+      _pfPhysicsProfile.StopTimer((INDEX) CPhysicsProfile::PTI_TRYTOTRANSLATE);
       //CPrintF("  successful\n");
       return TRUE;
 
     // if the move is clipped
     } else {
-      _pfPhysicsProfile.IncrementCounter(CPhysicsProfile::PCI_TRYTOMOVE_CLIP);
+      _pfPhysicsProfile.IncrementCounter((INDEX) CPhysicsProfile::PCI_TRYTOMOVE_CLIP);
 
       /* STREAMDUMP START
         if(GetRenderType()==RT_MODEL)
@@ -1708,7 +1707,7 @@ out:;
       // if must not retry
       if (_ctTryToMoveCheckCounter<=0) {
         // fail
-        _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_TRYTOTRANSLATE);
+        _pfPhysicsProfile.StopTimer((INDEX) CPhysicsProfile::PTI_TRYTOTRANSLATE);
         return FALSE;
       }
 
@@ -1795,20 +1794,20 @@ out:;
         // make sure it is added to the movers list
         penBlocking->AddToMoversDuringMoving();
         // push the blocking entity
-        _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_TRYTOTRANSLATE);
+        _pfPhysicsProfile.StopTimer((INDEX) CPhysicsProfile::PTI_TRYTOTRANSLATE);
         BOOL bUnblocked = penBlocking->TryToMove(penPusher, bTranslate, bRotate);
-        _pfPhysicsProfile.StartTimer(CPhysicsProfile::PTI_TRYTOTRANSLATE);
+        _pfPhysicsProfile.StartTimer((INDEX) CPhysicsProfile::PTI_TRYTOTRANSLATE);
         // if it has removed itself
         if (bUnblocked) {
           // retry the movement
           ClearNextPosition();
-          _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_TRYTOTRANSLATE);
+          _pfPhysicsProfile.StopTimer((INDEX) CPhysicsProfile::PTI_TRYTOTRANSLATE);
           return TryToMove(penPusher, bTranslate, bRotate);
         } else {
           // move is unsuccessful
           SendBlockEvent(cmMove);
           ClearNextPosition();
-          _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_TRYTOTRANSLATE);
+          _pfPhysicsProfile.StopTimer((INDEX) CPhysicsProfile::PTI_TRYTOTRANSLATE);
           return FALSE;
         }
       // if entity slides if blocked
@@ -1863,7 +1862,7 @@ out:;
           if (cmMove.cm_pbpoHit!=NULL) {
             CSurfaceType &stHit = en_pwoWorld->wo_astSurfaceTypes[
               cmMove.cm_pbpoHit->bpo_bppProperties.bpp_ubSurfaceType];
-            // if it is not beeing pushed, and it can climb stairs
+            // if it is not being pushed, and it can climb stairs
             if (penPusher==NULL
              &&(en_ulPhysicsFlags&EPF_ONBLOCK_MASK)==EPF_ONBLOCK_CLIMBORSLIDE) {
               // NOTE: originally, the polygon's plane was considered here.
@@ -1888,7 +1887,7 @@ out:;
                 // if can go upstairs
                   && TryToGoUpstairs(en_vMoveTranslation, stHit, bHitStairs)) {
                   // movement is ok
-                  _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_TRYTOTRANSLATE);
+                  _pfPhysicsProfile.StopTimer((INDEX) CPhysicsProfile::PTI_TRYTOTRANSLATE);
                   return FALSE;
                 }
               }
@@ -1909,19 +1908,19 @@ out:;
           // if initial movement has some substantial value
           if(en_vMoveTranslation.Length()>0.001f && cmMove.cm_fMovementFraction>0.002f) {
             // go to where it is clipped (little bit before)
-            vSliding += en_vMoveTranslation*(cmMove.cm_fMovementFraction*0.985f);
+            vSliding += en_vMoveTranslation*(cmMove.cm_fMovementFraction*0.98f);
           }
 
           // ignore extremely small sliding
           if (vSliding.ManhattanNorm()<0.001f) {
-            _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_TRYTOTRANSLATE);
+            _pfPhysicsProfile.StopTimer((INDEX) CPhysicsProfile::PTI_TRYTOTRANSLATE);
             return FALSE;
           }
 
           // recurse
           en_vMoveTranslation = vSliding;
           ClearNextPosition();
-          _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_TRYTOTRANSLATE);
+          _pfPhysicsProfile.StopTimer((INDEX) CPhysicsProfile::PTI_TRYTOTRANSLATE);
           TryToMove(penPusher, bTranslate, bRotate);
           // if bouncer
           if (bBounce) {
@@ -1945,7 +1944,7 @@ out:;
             if (en_aDesiredRotationRelative.Length()<10) {
               en_aDesiredRotationRelative = ANGLE3D(0,0,0);
             }
-            _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_TRYTOTRANSLATE);
+            _pfPhysicsProfile.StopTimer((INDEX) CPhysicsProfile::PTI_TRYTOTRANSLATE);
             // move is not successful
             return FALSE;
           }
@@ -1953,13 +1952,13 @@ out:;
           en_vMoveTranslation = cmMove.cm_vClippedLine*-1.2f;
           // recurse
           ClearNextPosition();
-          _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_TRYTOTRANSLATE);
+          _pfPhysicsProfile.StopTimer((INDEX) CPhysicsProfile::PTI_TRYTOTRANSLATE);
           TryToMove(penPusher, TRUE, bRotate);
           // move is not entirely successful
           return FALSE;
         }
         // not translating and not rotating? -  move is unsuccessful
-        _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_TRYTOTRANSLATE);
+        _pfPhysicsProfile.StopTimer((INDEX) CPhysicsProfile::PTI_TRYTOTRANSLATE);
         return FALSE;
 
       // if entity has some other behaviour when blocked
@@ -1967,7 +1966,7 @@ out:;
         // move is unsuccessful (EPF_ONBLOCK_STOP is assumed)
         SendBlockEvent(cmMove);
         ClearNextPosition();
-        _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_TRYTOTRANSLATE);
+        _pfPhysicsProfile.StopTimer((INDEX) CPhysicsProfile::PTI_TRYTOTRANSLATE);
         return FALSE;
       }
     }
@@ -2033,8 +2032,8 @@ out:;
       ExportEntityPlacementAndSpeed( *(CMovableEntity *)this, "Pre moving (start of function)");
     STREAMDUMP END */
 
-    _pfPhysicsProfile.StartTimer(CPhysicsProfile::PTI_PREMOVING);
-    _pfPhysicsProfile.IncrementTimerAveragingCounter(CPhysicsProfile::PTI_PREMOVING);
+    _pfPhysicsProfile.StartTimer((INDEX) CPhysicsProfile::PTI_PREMOVING);
+    _pfPhysicsProfile.IncrementTimerAveragingCounter((INDEX) CPhysicsProfile::PTI_PREMOVING);
 
     // remember old placement for lerping
     en_plLastPlacement = en_plPlacement;
@@ -2274,7 +2273,7 @@ out:;
 
       // if gravity can cause the entity to fall
       if (!bGravityAlongPolygon) {
-        _pfPhysicsProfile.IncrementCounter(CPhysicsProfile::PCI_GRAVITY_NONTRIVIAL);
+        _pfPhysicsProfile.IncrementCounter((INDEX) CPhysicsProfile::PCI_GRAVITY_NONTRIVIAL);
 
         // add gravity acceleration
         FLOAT fGV=en_fGravityV*fTickQuantum*fSpeedModifier;
@@ -2282,7 +2281,7 @@ out:;
         AddGAcceleration(vTranslationAbsolute, en_vGravityDir, fGA, fGV);
       // if entity can only slide down its stand-on polygon
       } else {
-        _pfPhysicsProfile.IncrementCounter(CPhysicsProfile::PCI_GRAVITY_TRIVIAL);
+        _pfPhysicsProfile.IncrementCounter((INDEX) CPhysicsProfile::PCI_GRAVITY_TRIVIAL);
 
         // disassemble gravity to parts parallel and normal to plane
         FLOAT3D vPolygonDir = -en_vReferencePlane;
@@ -2323,8 +2322,8 @@ out:;
         FLOAT fPlaneYAbs = Abs(fPlaneY);
         FLOAT fFriction = stReference.st_fFriction;
         // if on a steep slope
-        if (fPlaneY>=-stReference.st_fClimbSlopeCos&&fPlaneY<0
-          ||(stReference.st_ulFlags&STF_SLIDEDOWNSLOPE)&&fPlaneY>-0.99f) {
+        if ((fPlaneY>=-stReference.st_fClimbSlopeCos&&fPlaneY<0)
+          ||((stReference.st_ulFlags&STF_SLIDEDOWNSLOPE)&&fPlaneY>-0.99f)) {
           en_ulPhysicsFlags|=EPF_ONSTEEPSLOPE;
           // accellerate horizontaly towards desired absolute translation
           AddAccelerationOnPlane2(
@@ -2433,7 +2432,7 @@ out:;
     // clear applied movement to be updated during movement
     en_vAppliedTranslation = FLOAT3D(0.0f, 0.0f, 0.0f);
     en_mAppliedRotation.Diagonal(1.0f);
-    _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_PREMOVING);
+    _pfPhysicsProfile.StopTimer((INDEX) CPhysicsProfile::PTI_PREMOVING);
 // STREAMDUMP     ExportEntityPlacementAndSpeed( *(CMovableEntity *)this, "Pre moving (end of function)");
   }
 
@@ -2738,8 +2737,8 @@ out:;
 /* old */        FLOAT fPlaneYAbs = Abs(fPlaneY);
 /* old */        FLOAT fFriction = stReference.st_fFriction;
 /* old */        // if on a steep slope
-/* old */        if (fPlaneY>=-stReference.st_fClimbSlopeCos&&fPlaneY<0
-/* old */          ||(stReference.st_ulFlags&STF_SLIDEDOWNSLOPE)&&fPlaneY>-0.99f) {
+/* old */        if ((fPlaneY>=-stReference.st_fClimbSlopeCos&&fPlaneY<0)
+/* old */          ||((stReference.st_ulFlags&STF_SLIDEDOWNSLOPE)&&fPlaneY>-0.99f)) {
 /* old */          en_ulPhysicsFlags|=EPF_ONSTEEPSLOPE;
 /* old */          // accellerate horizontaly towards desired absolute translation
 /* old */          AddAccelerationOnPlane2(
@@ -2859,16 +2858,16 @@ out:;
     }
 // STREAMDUMP     ExportEntityPlacementAndSpeed(*(CMovableEntity *)this, "Do moving (start of function)");
 
-    _pfPhysicsProfile.StartTimer(CPhysicsProfile::PTI_DOMOVING);
-    _pfPhysicsProfile.IncrementTimerAveragingCounter(CPhysicsProfile::PTI_DOMOVING);
+    _pfPhysicsProfile.StartTimer((INDEX) CPhysicsProfile::PTI_DOMOVING);
+    _pfPhysicsProfile.IncrementTimerAveragingCounter((INDEX) CPhysicsProfile::PTI_DOMOVING);
 
-    _pfPhysicsProfile.IncrementCounter(CPhysicsProfile::PCI_DOMOVING);
+    _pfPhysicsProfile.IncrementCounter((INDEX) CPhysicsProfile::PCI_DOMOVING);
 
-    FLOAT fTickQuantum=_pTimer->TickQuantum; // used for normalizing from SI units to game ticks
+    //FLOAT fTickQuantum=_pTimer->TickQuantum; // used for normalizing from SI units to game ticks
 
     // if rotation and translation are synchronized
     if (en_ulPhysicsFlags&EPF_RT_SYNCHRONIZED) {
-      _pfPhysicsProfile.IncrementCounter(CPhysicsProfile::PCI_DOMOVING_SYNC);
+      _pfPhysicsProfile.IncrementCounter((INDEX) CPhysicsProfile::PCI_DOMOVING_SYNC);
 
       // move both in translation and rotation
       en_vMoveTranslation = en_vIntendedTranslation-en_vAppliedTranslation;
@@ -2879,16 +2878,16 @@ out:;
       if ((en_ulPhysicsFlags&EPF_ONBLOCK_MASK)==EPF_ONBLOCK_PUSH) {
         penPusher = this;
       }
-      BOOL bMoveSuccessfull = TryToMove(penPusher, TRUE, TRUE);
+      /* BOOL bMoveSuccessfull = */ TryToMove(penPusher, TRUE, TRUE);
 
     // if rotation and translation are asynchronious
     } else {
       ASSERT((en_ulPhysicsFlags&EPF_ONBLOCK_MASK)!=EPF_ONBLOCK_PUSH);
-      _pfPhysicsProfile.IncrementCounter(CPhysicsProfile::PCI_DOMOVING_ASYNC);
+      _pfPhysicsProfile.IncrementCounter((INDEX) CPhysicsProfile::PCI_DOMOVING_ASYNC);
 
       // if there is no reference
       if (en_penReference == NULL) {
-        _pfPhysicsProfile.IncrementCounter(CPhysicsProfile::PCI_DOMOVING_ASYNC_SYNCTRY);
+        _pfPhysicsProfile.IncrementCounter((INDEX) CPhysicsProfile::PCI_DOMOVING_ASYNC_SYNCTRY);
 
         // try to do simple move both in translation and rotation
         en_vMoveTranslation = en_vIntendedTranslation-en_vAppliedTranslation;
@@ -2899,14 +2898,14 @@ out:;
         // if it passes
         if (bMoveSuccessfull) {
           // finish
-          _pfPhysicsProfile.IncrementCounter(CPhysicsProfile::PCI_DOMOVING_ASYNC_SYNCPASS);
-          _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_DOMOVING);
+          _pfPhysicsProfile.IncrementCounter((INDEX) CPhysicsProfile::PCI_DOMOVING_ASYNC_SYNCPASS);
+          _pfPhysicsProfile.StopTimer((INDEX) CPhysicsProfile::PTI_DOMOVING);
 // STREAMDUMP           ExportEntityPlacementAndSpeed(*(CMovableEntity *)this, "Do moving (return: if it passes)");
           return;
         }
       }
 
-      _pfPhysicsProfile.IncrementCounter(CPhysicsProfile::PCI_DOMOVING_ASYNC_TRANSLATE);
+      _pfPhysicsProfile.IncrementCounter((INDEX) CPhysicsProfile::PCI_DOMOVING_ASYNC_TRANSLATE);
       // translate
       en_vMoveTranslation = en_vIntendedTranslation-en_vAppliedTranslation;
       InitTryToMove();
@@ -2918,13 +2917,13 @@ out:;
           en_mMoveRotation(1,1)!=1 || en_mMoveRotation(1,2)!=0 || en_mMoveRotation(1,3)!=0 ||
           en_mMoveRotation(2,1)!=0 || en_mMoveRotation(2,2)!=1 || en_mMoveRotation(2,3)!=0 ||
           en_mMoveRotation(3,1)!=0 || en_mMoveRotation(3,2)!=0 || en_mMoveRotation(3,3)!=1) {
-        _pfPhysicsProfile.IncrementCounter(CPhysicsProfile::PCI_DOMOVING_ASYNC_ROTATE);
+        _pfPhysicsProfile.IncrementCounter((INDEX) CPhysicsProfile::PCI_DOMOVING_ASYNC_ROTATE);
         InitTryToMove();
         TryToMove(NULL, FALSE, TRUE);
       }
     }
 
-    _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_DOMOVING);
+    _pfPhysicsProfile.StopTimer((INDEX) CPhysicsProfile::PTI_DOMOVING);
 // STREAMDUMP     ExportEntityPlacementAndSpeed(*(CMovableEntity *)this, "Do moving (end of function)");
   }
 
@@ -2944,8 +2943,8 @@ out:;
 
 // STREAMDUMP     ExportEntityPlacementAndSpeed(*(CMovableEntity *)this, "Post moving (start of function)");
 
-    _pfPhysicsProfile.StartTimer(CPhysicsProfile::PTI_POSTMOVING);
-    _pfPhysicsProfile.IncrementTimerAveragingCounter(CPhysicsProfile::PTI_POSTMOVING);
+    _pfPhysicsProfile.StartTimer((INDEX) CPhysicsProfile::PTI_POSTMOVING);
+    _pfPhysicsProfile.IncrementTimerAveragingCounter((INDEX) CPhysicsProfile::PTI_POSTMOVING);
 
     // remember valid reference if valid
     if (en_penReference!=NULL) {
@@ -3088,7 +3087,7 @@ out:;
     }
 
     //CPrintF("\n%f", _pTimer->CurrentTick());
-    _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_POSTMOVING);
+    _pfPhysicsProfile.StopTimer((INDEX) CPhysicsProfile::PTI_POSTMOVING);
 
 // STREAMDUMP     ExportEntityPlacementAndSpeed(*(CMovableEntity *)this, "Post moving (end of function)");
   }

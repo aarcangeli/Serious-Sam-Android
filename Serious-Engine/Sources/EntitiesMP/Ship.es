@@ -83,7 +83,7 @@ functions:
   const CTString &GetDescription(void) const {
     ((CTString&)m_strDescription).PrintF("-><none>");
     if (m_penTarget!=NULL) {
-      ((CTString&)m_strDescription).PrintF("->%s", m_penTarget->GetName());
+      ((CTString&)m_strDescription).PrintF("->%s", (const char *) m_penTarget->GetName());
     }
     return m_strDescription;
   }
@@ -313,12 +313,12 @@ procedures:
 
     // assure valid target
     if (m_penTarget!=NULL && !IsOfClass(m_penTarget, "Ship Marker")) {
-      WarningMessage("Target '%s' is not of ShipMarker class!", m_penTarget->GetName());
+      WarningMessage("Target '%s' is not of ShipMarker class!", (const char *) m_penTarget->GetName());
       m_penTarget = NULL;
     }
     // assure valid sail
     if (m_penSail!=NULL && m_penSail->GetRenderType()!=RT_MODEL) {
-      WarningMessage("Sail '%s' is not a model!", m_penSail->GetName());
+      WarningMessage("Sail '%s' is not a model!", (const char *) m_penSail->GetName());
       m_penSail = NULL;
     }
 

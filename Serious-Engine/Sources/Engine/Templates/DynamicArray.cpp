@@ -19,6 +19,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
   #pragma once
 #endif
 
+#include <stddef.h>
+
 #include <Engine/Base/Memory.h>
 #include <Engine/Base/ListIterator.inl>
 
@@ -112,16 +114,6 @@ void CDynamicArray<Type>::Clear(void) {
     delete &itBlock.Current();
   }
 }
-
-/* Random access operator. */
-template<class Type>
-Type &CDynamicArray<Type>::operator[](INDEX iObject) {
-  return *Pointer(iObject); 
-};
-template<class Type>
-const Type &CDynamicArray<Type>::operator[](INDEX iObject) const {
-  return *Pointer(iObject); 
-};
 
 /*
  * Grow pointer array by a given number of members.

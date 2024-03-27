@@ -69,10 +69,10 @@ functions:
   {
     if (m_penTarget1!=NULL && m_penTarget2!=NULL) {
       ((CTString&)m_strDescription).PrintF("->%s,%s", 
-        m_penTarget1->GetName(), m_penTarget2->GetName());
+        (const char *) m_penTarget1->GetName(), (const char *) m_penTarget2->GetName());
     } else if (m_penTarget1!=NULL) {
       ((CTString&)m_strDescription).PrintF("->%s", 
-        m_penTarget1->GetName());
+        (const char *) m_penTarget1->GetName());
     } else {
       ((CTString&)m_strDescription).PrintF("-><none>");
     }
@@ -280,7 +280,7 @@ procedures:
               /*
               // tell the key bearer that the key was used
               CTString strMsg;
-              strMsg.PrintF(TRANS("%s used"), GetKeyName(m_kitKey));
+              strMsg.PrintF(TRANSV("%s used"), GetKeyName(m_kitKey));
               PrintCenterMessage(this, ePass.penOther, strMsg, 3.0f, MSS_INFO);
               */
               // become automatic door

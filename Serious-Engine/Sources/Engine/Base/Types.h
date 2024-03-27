@@ -19,18 +19,21 @@ with this program; if not, write to the Free Software Foundation, Inc.,
   #pragma once
 #endif
 
+#define __stdcall
+#define __cdecl
+
 #include <Engine/Base/Base.h>
 #include <Engine/Graphics/gl_types.h>
+#include <stdint.h>
+typedef int32_t   SLONG;
+typedef int16_t   SWORD;
+typedef int8_t    SBYTE;
+typedef int32_t   SINT;
 
-typedef signed long  int    SLONG;
-typedef signed short int    SWORD;
-typedef signed char	        SBYTE;
-typedef signed int          SINT;
-
-typedef unsigned long  int  ULONG;
-typedef unsigned short int  UWORD;
-typedef unsigned char       UBYTE;
-typedef unsigned int        UINT;
+typedef uint32_t  ULONG;
+typedef uint16_t  UWORD;
+typedef uint8_t   UBYTE;
+typedef uint32_t  UINT;
 
 
 #ifdef PLATFORM_UNIX  /* rcg10042001 */
@@ -40,15 +43,19 @@ typedef unsigned int        UINT;
       #define MAX_PATH 256
     #endif
 
-    typedef long long  __int64;
-    typedef unsigned long  int  DWORD;
-    typedef signed long  int    LONG;
+	typedef uint64_t __uint64;
+    typedef int64_t __int64;
+    typedef uint32_t  DWORD;
+	typedef uint16_t WORD;
+    typedef int32_t    LONG;
 
     typedef void *HWND;  /* !!! FIXME this sucks. */
     typedef void *HINSTANCE;  /* !!! FIXME this sucks. */
     typedef void *HGLRC;  /* !!! FIXME this sucks. */
     typedef ULONG COLORREF;  /* !!! FIXME this sucks. */
-
+	typedef char CHAR;
+	
+	
     typedef struct
     {
         LONG x;
@@ -62,12 +69,21 @@ typedef unsigned int        UINT;
         LONG right;
         LONG bottom;
     } RECT;
+	
+	#define WAVE_FORMAT_PCM  0x0001
+	
+	typedef struct
+    {
+        SWORD wFormatTag;
+        WORD  nChannels;
+        DWORD nSamplesPerSec;
+        WORD  wBitsPerSample;
+        WORD  nBlockAlign;
+        DWORD nAvgBytesPerSec;
+        WORD  cbSize;
+    } WAVEFORMATEX;
+	
 #endif
-
-inline ULONG _rotl(ULONG ul, int bits)
-{
-   return (ul<<bits) | (ul>>(-bits&31));
-}
 
 #define MAX_SLONG ((SLONG)0x7FFFFFFFL)
 #define MAX_SWORD ((UWORD)0x7FFF)
@@ -85,9 +101,9 @@ inline ULONG _rotl(ULONG ul, int bits)
 #define MAX_UWORD ((UWORD)0xFFFF)
 #define MAX_UBYTE ((UBYTE)0xFF)
 
-typedef int BOOL;		        // this is for TRUE/FALSE
-typedef long int RESULT;		// for error codes
-typedef long int INDEX;     // for indexed values and quantities
+typedef int32_t BOOL;		        // this is for TRUE/FALSE
+typedef int32_t RESULT;		// for error codes
+typedef int32_t INDEX;     // for indexed values and quantities
 
 #define FALSE 0
 #define TRUE  1
@@ -110,7 +126,6 @@ typedef long int INDEX;     // for indexed values and quantities
 #define ANGLE_270  (270.0f)
 #define ANGLE_360  (360.0f)
 
-// you need <stddef.h> for this!
 #define structptr(structure, member, ptr) \
 ( (struct structure *) ( ((UBYTE *)(ptr)) - \
  offsetof(struct structure, member)) )
@@ -425,6 +440,24 @@ inline void Clear(double i) {};
 inline void Clear(void *pv) {};
 
 #define SYMBOLLOCATOR(symbol)
+
+// DG: screw macros, use inline functions instead - they're even safe for signed values
+inline UWORD BYTESWAP16_unsigned(UWORD x)
+{
+  return __builtin_bswap16(x);
+}
+
+inline ULONG BYTESWAP32_unsigned(ULONG x)
+{
+  return __builtin_bswap32(x);
+}
+
+inline __uint64 BYTESWAP64_unsigned(__uint64 x)
+{
+  return __builtin_bswap64(x);
+}
+
+#define BYTESWAP(x)
 
 #endif  /* include-once check. */
 

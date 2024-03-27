@@ -15,6 +15,17 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 // common headers for flesh entity classes
 
+#ifndef SE_INCL_ENTITIESMP_COMMON_H
+#define SE_INCL_ENTITIESMP_COMMON_H
+#ifdef PRAGMA_ONCE
+#pragma once
+#endif
+
+#if 0
+#include <EntitiesMP/Debris.h>   /* rcg01202003 need enum definition... */
+#include <EntitiesMP/KeyItem.h>  /* rcg01202003 need enum definition... */
+#endif
+
 #define SURFACE_SAND 9
 #define SURFACE_WATER 12
 #define SURFACE_RED_SAND 13
@@ -134,8 +145,7 @@ struct EntityStats {
   INDEX es_ctAmmount;
   FLOAT es_fValue;
   INDEX es_iScore;
-
-  inline void Clear() {es_strName.Clear();};
+  inline void Clear() { es_strName.Clear(); }
 };
 
 // statistics data for player stats management
@@ -155,6 +165,27 @@ struct DECL_DLL PlayerStats {
     ps_tmTime = 0.0f;
   }
 };
+
+static inline CTStream &operator>>(CTStream &strm, PlayerStats &ps)
+{
+  strm>>ps.ps_iScore;
+  strm>>ps.ps_iKills;
+  strm>>ps.ps_iDeaths;
+  strm>>ps.ps_iSecrets;
+  strm>>ps.ps_tmTime;
+  return strm;
+}
+
+static inline CTStream &operator<<(CTStream &strm, const PlayerStats &ps)
+{
+  strm<<ps.ps_iScore;
+  strm<<ps.ps_iKills;
+  strm<<ps.ps_iDeaths;
+  strm<<ps.ps_iSecrets;
+  strm<<ps.ps_tmTime;
+  return strm;
+}
+
 
 // get info position for entity
 DECL_DLL void GetEntityInfoPosition(CEntity *pen, FLOAT *pf, FLOAT3D &vPos);
@@ -318,3 +349,7 @@ void SpawnHitTypeEffect(CEntity *pen, enum BulletHitType bhtType, BOOL bSound, F
   FLOAT3D vIncommingBulletDir, FLOAT3D vDistance);
 
 #define FRndIn(a, b) (a + FRnd()*(b - a))
+
+#endif  // include-once blocker.
+
+

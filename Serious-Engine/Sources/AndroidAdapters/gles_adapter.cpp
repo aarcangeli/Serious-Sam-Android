@@ -2,6 +2,7 @@ typedef double GLdouble;
 typedef double GLclampd;
 
 #include <GLES2/gl2.h>
+#include <GLES3/gl3.h>
 #include <AndroidAdapters/gles_adapter.h>
 #include <stdlib.h>
 #include <glm/glm.hpp>
@@ -92,7 +93,7 @@ namespace gles_adapter {
   GenericBuffer vp, tp, cp;
 
   const char *VERTEX_SHADER = R"***(
-    precision highp float;
+    precision mediump float;
 
     attribute vec3 position;
     attribute vec3 normal;
@@ -114,7 +115,7 @@ namespace gles_adapter {
   )***";
 
   const char *FRAGMENT_SHADER = R"***(
-    precision highp float;
+	precision mediump float;  // Use mediump instead of highp
 
     uniform sampler2D mainTexture;
     uniform float enableTexture;
@@ -214,10 +215,13 @@ namespace gles_adapter {
   };
 
   void gles_adp_init() {
-
+	reportError("[gles_adapter] Initializing");
     // create program
     program = glCreateProgram();
+	reportError("[gles_adapter] Start glCreateProgram");
+	reportError("[gles_adapter] Compile vertex shader");
     glAttachShader(program, compileShader(GL_VERTEX_SHADER, "vertex shader", VERTEX_SHADER));
+	reportError("[gles_adapter] Compile fragment shader");
     glAttachShader(program, compileShader(GL_FRAGMENT_SHADER, "fragment shader", FRAGMENT_SHADER));
     glBindAttribLocation(program, INDEX_POSITION, "position");
     glBindAttribLocation(program, INDEX_NORMAL, "normal");
@@ -232,7 +236,9 @@ namespace gles_adapter {
     }
     setError(glGetError());
     glUseProgram(program);
-
+	if (success) {
+	reportError("[gles_adapter] Initialized successful!");
+	}
     // get uniforms
     projMatIdx = glGetUniformLocation(program, "projMat");
     modelViewMatIdx = glGetUniformLocation(program, "modelViewMat");

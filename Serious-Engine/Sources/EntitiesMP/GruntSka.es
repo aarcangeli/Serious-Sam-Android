@@ -269,7 +269,7 @@ functions:
   virtual CTString GetPlayerKillDescription(const CTString &strPlayerName, const EDeath &eDeath)
   {
     CTString str;
-    str.PrintF(TRANS("A Grunt sent %s into the halls of Valhalla"), strPlayerName);
+    str.PrintF(TRANSV("A Grunt sent %s into the halls of Valhalla"), (const char *) strPlayerName);
     return str;
   }
 
@@ -280,7 +280,7 @@ functions:
     } else if (m_gtType==GT_COMMANDER) {
       return &eiGruntSoldier;
     } else {
-      ASSERT("Unknown grunt type!");
+      ASSERTALWAYS("Unknown grunt type!");
       return NULL;
     }
   };

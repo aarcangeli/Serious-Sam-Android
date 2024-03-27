@@ -34,7 +34,6 @@ void CRenderer::AddAddListToActiveList(INDEX iScanLine)
   // allocate space in destination for sum of source and add
   INDEX ctActiveEdges = re_aaceActiveEdges.Count();
   re_aaceActiveEdgesTmp.Push(ctAddEdges+ctActiveEdges);
-
   // check that the add list is sorted right
   #if ASER_EXTREME_CHECKING
   {
@@ -66,18 +65,18 @@ void CRenderer::AddAddListToActiveList(INDEX iScanLine)
   // start at begining of add list, source active list and destination active list
   LISTITER(CAddEdge, ade_lnInAdd) itadeAdd(lhAdd);
   CActiveEdge *paceSrc = &re_aaceActiveEdges[0];
+  CActiveEdge *paceEnd = &re_aaceActiveEdges[re_aaceActiveEdges.Count()-1];
   CActiveEdge *paceDst = &re_aaceActiveEdgesTmp[0];
 
   IFDEBUG(INDEX ctNewActive=0);
   IFDEBUG(INDEX ctOldActive1=0);
   IFDEBUG(INDEX ctOldActive2=0);
-
   // for each edge in add list
   while(!itadeAdd.IsPastEnd()) {
     CAddEdge &ade = *itadeAdd;
 
     // while the edge in active list is left of the edge in add list
-    while (paceSrc->ace_xI.slHolder < itadeAdd->ade_xI.slHolder) {
+    while ((paceSrc->ace_xI.slHolder < ade.ade_xI.slHolder) && (paceSrc!=paceEnd)) {
       // copy the active edge
       ASSERT(paceSrc<=&re_aaceActiveEdges[ctActiveEdges-1]);
       *paceDst++=*paceSrc++;
@@ -338,7 +337,7 @@ void CRenderer::AddActiveSector(CBrushSector &bscSector)
 
   CBrush3D &br = *bscSector.bsc_pbmBrushMip->bm_pbrBrush;
   // if should render field brush sector
-  if (br.br_penEntity->en_RenderType==CEntity::RT_FIELDBRUSH
+  if (br.br_penEntity->en_RenderType==CEntity::RT_FIELDBRUSH 
       && !_wrpWorldRenderPrefs.IsFieldBrushesOn()) {
     // skip it
     bscSector.bsc_ulFlags|=BSCF_INVISIBLE;
@@ -760,7 +759,7 @@ CScreenPolygon *CRenderer::ScanOneLine(void)
     }
     // remove all left-over polygons from stack
     do {
-      BOOL bWasTop = RemPolygonFromSurfaceStack(*pspoTop);
+      /* BOOL bWasTop = */ RemPolygonFromSurfaceStack(*pspoTop);
       pspoTop = LIST_HEAD(re_lhSurfaceStack, CScreenPolygon, spo_lnInStack);
     } while (&re_spoFarSentinel != pspoTop);
     // mark start of background span at right border

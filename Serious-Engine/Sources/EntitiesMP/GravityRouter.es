@@ -88,7 +88,7 @@ procedures:
     }
 
     if( m_penTarget!=NULL && !IsOfClass( m_penTarget, "Gravity Marker")) {
-      WarningMessage( "Entity '%s' is not of Gravity Marker class!", m_penTarget);
+      WarningMessage( "Entity '%s' is not of Gravity Marker class!", (const char *) m_penTarget->GetName());
       m_penTarget = NULL;
     }
 

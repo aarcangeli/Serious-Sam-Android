@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include <Engine/StdH.h>
 
 #include <Engine/Entities/Entity.h>
 #include <Engine/Entities/EntityClass.h>
@@ -66,7 +66,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Templates/Stock_CTextureData.h>
 #include <Engine/Templates/Stock_CModelData.h>
 #include <Engine/Templates/Stock_CSoundData.h>
-#include <Engine/Templates/BSP.cpp>
 
 // a reference to a void event for use as default parameter
 const EVoid _evVoid;
@@ -80,15 +79,31 @@ extern INDEX _ctPredictorEntities;
 // check if entity is of given class
 BOOL IsOfClass(CEntity *pen, const char *pstrClassName)
 {
-  if (pen==NULL || pstrClassName==NULL) {
+  if (pen == NULL || pstrClassName == NULL) {
     return FALSE;
   }
-  if (strcmp(pen->GetClass()->ec_pdecDLLClass->dec_strName, pstrClassName)==0) {
+
+  if (strcmp(pen->GetClass()->ec_pdecDLLClass->dec_strName, pstrClassName) == 0) {
     return TRUE;
   } else {
     return FALSE;
   }
 }
+
+// [SSE] Extended Class Check
+BOOL ENGINE_API IsOfClassID(CEntity *pen, ULONG ulID)
+{
+  if (pen == NULL) {
+    return FALSE;
+  }
+  
+  if (pen->GetClass()->ec_pdecDLLClass->dec_ulID == ulID) {
+    return TRUE;
+  } else {
+    return FALSE;
+  }
+}
+
 BOOL IsOfSameClass(CEntity *pen1, CEntity *pen2)
 {
   if (pen1==NULL || pen2==NULL) {
@@ -101,22 +116,61 @@ BOOL IsOfSameClass(CEntity *pen1, CEntity *pen2)
   }
 }
 
+// [SSE] Extended Class Check
+BOOL IsOfSameClassID(CEntity *pen1, CEntity *pen2)
+{
+  if (pen1 == NULL || pen2 == NULL) {
+    return FALSE;
+  }
+
+  if (pen1->GetClass()->ec_pdecDLLClass->dec_ulID == pen2->GetClass()->ec_pdecDLLClass->dec_ulID) {
+    return TRUE;
+  } else {
+    return FALSE;
+  }
+}
+
 // check if entity is of given class or derived from
 BOOL IsDerivedFromClass(CEntity *pen, const char *pstrClassName)
 {
-  if (pen==NULL || pstrClassName==NULL) {
+  if (pen == NULL || pstrClassName == NULL) {
     return FALSE;
   }
+
   // for all classes in hierarchy of the entity
   for(CDLLEntityClass *pdecDLLClass = pen->GetClass()->ec_pdecDLLClass;
-      pdecDLLClass!=NULL;
+      pdecDLLClass != NULL;
       pdecDLLClass = pdecDLLClass->dec_pdecBase) {
-    // if it is the wanted class
-    if (strcmp(pdecDLLClass->dec_strName, pstrClassName)==0) {
-      // it is derived
+
+    // If it is the wanted class then it is derived.
+    if (strcmp(pdecDLLClass->dec_strName, pstrClassName) == 0) {
+      //
       return TRUE;
     }
   }
+
+  // otherwise, it is not derived
+  return FALSE;
+}
+
+// [SSE] Extended Class Check
+BOOL IsDerivedFromClassID(CEntity *pen, ULONG ulID)
+{
+  if (pen == NULL) {
+    return FALSE;
+  }
+
+  // for all classes in hierarchy of the entity
+  for(CDLLEntityClass *pdecDLLClass = pen->GetClass()->ec_pdecDLLClass;
+      pdecDLLClass != NULL;
+      pdecDLLClass = pdecDLLClass->dec_pdecBase) {
+
+    // If it is the wanted class then it is derived.
+    if (pdecDLLClass->dec_ulID == ulID) {
+      return TRUE;
+    }
+  }
+
   // otherwise, it is not derived
   return FALSE;
 }
@@ -482,7 +536,7 @@ void CEntity::GetCollisionBoxParameters(INDEX iBox, FLOATaabbox3D &box, INDEX &i
   if(en_RenderType==RT_SKAMODEL || en_RenderType==RT_SKAEDITORMODEL) {
     box.minvect = GetModelInstance()->GetCollisionBoxMin(iBox);
     box.maxvect = GetModelInstance()->GetCollisionBoxMax(iBox);
-    FLOATaabbox3D boxNS = box;
+    //FLOATaabbox3D boxNS = box;
     box.StretchByVector(GetModelInstance()->mi_vStretch);
     iEquality = GetModelInstance()->GetCollisionBoxDimensionEquality(iBox);
   } else {
@@ -694,7 +748,7 @@ const char *CEntity::PrintStackDebug(void)
  */
 void CEntity::Initialize(const CEntityEvent &eeInput)
 {
-  CSetFPUPrecision FPUPrecision(FPT_24BIT);
+  //CSetFPUPrecision FPUPrecision(FPT_24BIT);
 
   // make sure we are not deleted during intialization
   CEntityPointer penThis = this;
@@ -751,7 +805,7 @@ void CEntity::Initialize_internal(const CEntityEvent &eeInput)
  */
 void CEntity::End(void)
 {
-  CSetFPUPrecision FPUPrecision(FPT_24BIT);
+  //CSetFPUPrecision FPUPrecision(FPT_24BIT);
   /* NOTE: Must not remove from thinker/mover list here, or CServer::ProcessGameTick()
    * might crash!
    */
@@ -889,7 +943,7 @@ void CEntity::Teleport(const CPlacement3D &plNew, BOOL bTelefrag /*=TRUE*/)
         CEntity *ppenObstacleDummy;
         if (pmme->CheckForCollisionNow(pmme->en_iCollisionBox, &ppenObstacleDummy)) {
           CPrintF("Entity '%s' was teleported inside a wall at (%g,%g,%g)!\n", 
-            GetName(), 
+            (const char *) GetName(),
             en_plPlacement.pl_PositionVector(1),
             en_plPlacement.pl_PositionVector(2),
             en_plPlacement.pl_PositionVector(3));
@@ -904,7 +958,7 @@ void CEntity::Teleport(const CPlacement3D &plNew, BOOL bTelefrag /*=TRUE*/)
  */
 void CEntity::SetPlacement(const CPlacement3D &plNew)
 {
-  CSetFPUPrecision FPUPrecision(FPT_24BIT);
+  //CSetFPUPrecision FPUPrecision(FPT_24BIT);
   // check if orientation is changed
   BOOL bSameOrientation = (plNew.pl_OrientationAngle==en_plPlacement.pl_OrientationAngle);
 
@@ -1072,7 +1126,7 @@ void CEntity::SetPlacement_internal(const CPlacement3D &plNew, const FLOATmatrix
     // if it is zoning
     if (en_ulFlags&ENF_ZONING) {
       // FPU must be in 53-bit mode
-      CSetFPUPrecision FPUPrecision(FPT_53BIT);
+      //CSetFPUPrecision FPUPrecision(FPT_53BIT);
 
       // for all brush mips
       FOREACHINLIST(CBrushMip, bm_lnInBrush, en_pbrBrush->br_lhBrushMips, itbm) {
@@ -1206,6 +1260,20 @@ void CEntity::SetParent(CEntity *penNewParent)
   }
 }
 
+// --------------------------------------------------------------------------------------
+// [SSE] Extended Engine API
+// Get child entities count
+// --------------------------------------------------------------------------------------
+INDEX CEntity::GetChildCount(void)
+{
+  INDEX ctChild = 0;
+
+  {FOREACHINLIST(CEntity, en_lnInParent, en_lhChildren, itenChild) {
+    ctChild++;
+  }}
+  
+  return ctChild;
+}
 
 // find first child of given class
 CEntity *CEntity::GetChildOfClass(const char *strClass)
@@ -1446,8 +1514,8 @@ void CEntity::FindShadingInfo(void)
     INDEX iMipLevel = bsm.sm_iFirstMipLevel;
     FLOAT fpixU = FLOAT(vmexShadow(1)+bsm.sm_mexOffsetX)*(1.0f/(1<<iMipLevel));
     FLOAT fpixV = FLOAT(vmexShadow(2)+bsm.sm_mexOffsetY)*(1.0f/(1<<iMipLevel));
-    en_psiShadingInfo->si_pixShadowU = floor(fpixU);
-    en_psiShadingInfo->si_pixShadowV = floor(fpixV);
+    en_psiShadingInfo->si_pixShadowU = (PIX) floor(fpixU);
+    en_psiShadingInfo->si_pixShadowV = (PIX) floor(fpixV);
     en_psiShadingInfo->si_fUDRatio = fpixU-en_psiShadingInfo->si_pixShadowU;
     en_psiShadingInfo->si_fLRRatio = fpixV-en_psiShadingInfo->si_pixShadowV;
 
@@ -1458,8 +1526,8 @@ void CEntity::FindShadingInfo(void)
     en_psiShadingInfo->si_vNearPoint = _vNearPoint;
     
     FLOAT2D vTc = CalculateShadingTexCoords(_ptrTerrainNear,_vNearPoint);
-    en_psiShadingInfo->si_pixShadowU = floor(vTc(1));
-    en_psiShadingInfo->si_pixShadowV = floor(vTc(2));
+    en_psiShadingInfo->si_pixShadowU = (PIX) floor(vTc(1));
+    en_psiShadingInfo->si_pixShadowV = (PIX) floor(vTc(2));
     en_psiShadingInfo->si_fLRRatio   = vTc(1) - en_psiShadingInfo->si_pixShadowU;
     en_psiShadingInfo->si_fUDRatio   = vTc(2) - en_psiShadingInfo->si_pixShadowV;
 
@@ -1763,7 +1831,7 @@ void CEntity::CopyCollisionInfo(CEntity &enOrg)
 /* Get box and sphere for spatial clasification. */
 void CEntity::UpdateSpatialRange(void)
 {
-  CSetFPUPrecision FPUPrecision(FPT_24BIT);
+  //CSetFPUPrecision FPUPrecision(FPT_24BIT);
 
   en_fSpatialClassificationRadius = -1.0f;
 
@@ -1814,7 +1882,7 @@ void CEntity::UpdateSpatialRange(void)
 /* Find and remember all sectors that this entity is in. */
 void CEntity::FindSectorsAroundEntity(void)
 {
-  CSetFPUPrecision sfp(FPT_53BIT);
+  //CSetFPUPrecision sfp(FPT_53BIT);
 
   // if not in spatial clasification
   if (en_fSpatialClassificationRadius<0) {
@@ -1827,14 +1895,13 @@ void CEntity::FindSectorsAroundEntity(void)
   // make oriented bounding box of the entity
   FLOATobbox3D boxEntity = FLOATobbox3D(en_boxSpatialClassification, 
     en_plPlacement.pl_PositionVector, en_mRotation);
-  DOUBLEobbox3D boxdEntity = FLOATtoDOUBLE(boxEntity);
 
   // unset spatial clasification
   en_rdSectors.Clear();
 
   // for each brush in the world
   FOREACHINDYNAMICARRAY(en_pwoWorld->wo_baBrushes.ba_abrBrushes, CBrush3D, itbr) {
-    CBrush3D &br=*itbr;
+    //CBrush3D &br=*itbr;
     // if the brush entity is not zoning
     if (itbr->br_penEntity==NULL || !(itbr->br_penEntity->en_ulFlags&ENF_ZONING)) {
       // skip it
@@ -1851,10 +1918,10 @@ void CEntity::FindSectorsAroundEntity(void)
           
           // if the sphere is inside the sector
           if (itbsc->bsc_bspBSPTree.TestSphere(
-              FLOATtoDOUBLE(vSphereCenter), FLOATtoDOUBLE(fSphereRadius))>=0) {
+              vSphereCenter, fSphereRadius)>=0) {
 
             // if the box is inside the sector
-            if (itbsc->bsc_bspBSPTree.TestBox(boxdEntity)>=0) {
+            if (itbsc->bsc_bspBSPTree.TestBox(boxEntity)>=0) {
               // relate the entity to the sector
               if (en_RenderType==RT_BRUSH
                 ||en_RenderType==RT_FIELDBRUSH
@@ -1891,7 +1958,6 @@ void CEntity::FindSectorsAroundEntityNear(void)
   // make oriented bounding box of the entity
   FLOATobbox3D oboxEntity = FLOATobbox3D(en_boxSpatialClassification, 
     en_plPlacement.pl_PositionVector, en_mRotation);
-  DOUBLEobbox3D oboxdEntity = FLOATtoDOUBLE(oboxEntity);
 
   CListHead lhActive;
   // for each sector around this entity
@@ -1922,13 +1988,13 @@ void CEntity::FindSectorsAroundEntityNear(void)
         (pbsc->bsc_boxBoundingBox.HasContactWith(boxEntity))&&
         // the sphere is inside the sector
         (pbsc->bsc_bspBSPTree.TestSphere(
-              FLOATtoDOUBLE(vSphereCenter), FLOATtoDOUBLE(fSphereRadius))>=0)&&
+              vSphereCenter, fSphereRadius)>=0)&&
         // (use more detailed testing for moving brushes)
         (en_RenderType!=RT_BRUSH||
           // oriented box touches box of sector
-          (oboxEntity.HasContactWith(FLOATobbox3D(pbsc->bsc_boxBoundingBox)))&&
+          ((oboxEntity.HasContactWith(FLOATobbox3D(pbsc->bsc_boxBoundingBox)))&&
           // oriented box is in bsp
-          (pbsc->bsc_bspBSPTree.TestBox(oboxdEntity)>=0));
+          (pbsc->bsc_bspBSPTree.TestBox(oboxEntity)>=0)));
     // if it is not
     if (!bIn) {
       // if it has link
@@ -2159,9 +2225,8 @@ void CEntity::SendEventInRange(const CEntityEvent &ee, const FLOATaabbox3D &boxR
 /* Handle all sent events. */
 void CEntity::HandleSentEvents(void)
 {
-  _pfPhysicsProfile.StartTimer(CPhysicsProfile::PTI_HANDLESENTEVENTS);
 
-  CSetFPUPrecision FPUPrecision(FPT_24BIT);
+  //CSetFPUPrecision FPUPrecision(FPT_24BIT);
 
   // while there are any unhandled events
   INDEX iFirstEvent = 0;
@@ -2194,7 +2259,6 @@ void CEntity::HandleSentEvents(void)
   // flush all events
   _aseSentEvents.PopAll();
 
-  _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_HANDLESENTEVENTS);
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -2371,7 +2435,7 @@ void CEntity::SetModel(const CTFileName &fnmModel)
     // if failed
     } catch ( const char *strErrorDefault) {
       FatalError(TRANS("Cannot load default model '%s':\n%s"),
-        (CTString&)fnmDefault, strErrorDefault);
+        (const char *) (CTString&)fnmDefault, strErrorDefault);
     }
   }
   UpdateSpatialRange();
@@ -2434,7 +2498,7 @@ BOOL CEntity::SetSkaModel(const CTString &fnmModel)
     // if failed
     } catch ( const char *strErrorDefault) {
       FatalError(TRANS("Cannot load default model '%s':\n%s"),
-        (CTString&)fnmDefault, strErrorDefault);
+        (const char *) (CTString&)fnmDefault, strErrorDefault);
     }
     // set colision info for default model
     SetSkaColisionInfo();
@@ -2491,7 +2555,7 @@ void CEntity::SetModelMainTexture(const CTFileName &fnmTexture)
     // if failed
     } catch ( const char *strErrorDefault) {
       FatalError(TRANS("Cannot load default texture '%s':\n%s"),
-        (CTString&)fnmDefault, strErrorDefault);
+        (const char *) (CTString&)fnmDefault, strErrorDefault);
     }
   }
 }
@@ -2871,7 +2935,7 @@ CBrushSector *CEntity::GetSectorFromPoint(const FLOAT3D &vPointAbs)
   // for each sector around entity
   {FOREACHSRCOFDST(en_rdSectors, CBrushSector, bsc_rsEntities, pbsc)
     // if point is in this sector
-    if( pbsc->bsc_bspBSPTree.TestSphere(FLOATtoDOUBLE(vPointAbs), 0.01)>=0) {
+    if( pbsc->bsc_bspBSPTree.TestSphere(vPointAbs, 0.01)>=0) {
       // return that
       return pbsc;
     }
@@ -2958,7 +3022,7 @@ void CEntity::PlaySound(CSoundObject &so, const CTFileName &fnmSound, SLONG slPl
     // if failed
     } catch ( const char *strErrorDefault) {
       FatalError(TRANS("Cannot load default sound '%s':\n%s"),
-        (CTString&)fnmDefault, strErrorDefault);
+        (const char *) (CTString&)fnmDefault, strErrorDefault);
     }
   }
 }
@@ -3106,11 +3170,11 @@ void CEntity::InflictRangeDamage(CEntity *penInflictor, enum DamageType dmtType,
     FLOAT3D vHitPos;
     FLOAT fMinD;
     if (
-      (en.en_RenderType==RT_MODEL || en.en_RenderType==RT_EDITORMODEL || 
+      ((en.en_RenderType==RT_MODEL || en.en_RenderType==RT_EDITORMODEL ||
         en.en_RenderType==RT_SKAMODEL || en.en_RenderType==RT_SKAEDITORMODEL )&&
-       CheckModelRangeDamage(en, vCenter, fMinD, vHitPos) ||
-      (en.en_RenderType==RT_BRUSH)&&
-       CheckBrushRangeDamage(en, vCenter, fMinD, vHitPos)) {
+       CheckModelRangeDamage(en, vCenter, fMinD, vHitPos)) ||
+      ((en.en_RenderType==RT_BRUSH)&&
+        CheckBrushRangeDamage(en, vCenter, fMinD, vHitPos))) {
 
       // find damage ammount
       FLOAT fAmmount = IntensityAtDistance(fDamageAmmount, fHotSpotRange, fFallOffRange, fMinD);
@@ -3148,7 +3212,7 @@ void CEntity::InflictBoxDamage(CEntity *penInflictor, enum DamageType dmtType,
     if (en.en_pciCollisionInfo==NULL) {
       continue;
     }
-    CCollisionInfo *pci = en.en_pciCollisionInfo;
+    //CCollisionInfo *pci = en.en_pciCollisionInfo;
     // if entity is not allowed to execute now
     if (!en.IsAllowedForPrediction()) {
       // do nothing
@@ -3266,6 +3330,35 @@ BOOL CEntity::FillEntityStatistics(struct EntityStats *pes)
 }
 
 /////////////////////////////////////////////////////////////////////
+// [SSE] Interaction API
+
+BOOL CEntity::IsInteractionProvider(void)
+{
+  return FALSE;
+}
+
+BOOL CEntity::IsInteractionRelay(void)
+{
+  return FALSE;
+}
+
+CEntity* CEntity::GetInteractionProvider(void)
+{
+  return NULL;
+}
+
+const CTString &CEntity::GetInteractionHint() const
+{
+  static const CTString strDummyName("");
+  return strDummyName;
+}
+
+FLOAT CEntity::GetInteractionDistance(void) const
+{
+  return 0.0F;
+}
+
+/////////////////////////////////////////////////////////////////////
 // Overrides from CSerial
 
 /*
@@ -3286,7 +3379,7 @@ void CEntity::Read_t( CTStream *istr) // throw char *
            >>en_ulCollisionFlags
            >>en_ulSpawnFlags
            >>en_ulFlags;
-    (*istr).Read_t(&en_mRotation, sizeof(en_mRotation));
+    (*istr)>>en_mRotation;
   } else if (istr->PeekID_t()==CChunkID("ENT3")) { // entity v3
     istr->ExpectID_t("ENT3");
     (*istr)>>(ULONG &)en_RenderType
@@ -3294,7 +3387,7 @@ void CEntity::Read_t( CTStream *istr) // throw char *
            >>en_ulCollisionFlags
            >>en_ulSpawnFlags
            >>en_ulFlags;
-    (*istr).Read_t(&en_mRotation, sizeof(en_mRotation));
+    (*istr)>>en_mRotation;
   } else if (istr->PeekID_t()==CChunkID("ENT2")) { // entity v2
     istr->ExpectID_t("ENT2");
     (*istr)>>(ULONG &)en_RenderType
@@ -3303,6 +3396,10 @@ void CEntity::Read_t( CTStream *istr) // throw char *
            >>en_ulSpawnFlags
            >>en_ulFlags;
   } else {
+    #ifndef NDEBUG
+    CPrintF("[DBG] Entity #%d at %d without ENT2, ENT3, ENT4 or other header! It is potential reason of loading error!\n", en_ulID, istr->GetPos_t()); // [SSE]
+    #endif
+
     (*istr)>>(ULONG &)en_RenderType
            >>en_ulPhysicsFlags
            >>en_ulCollisionFlags
@@ -3497,7 +3594,7 @@ void CEntity::DumpSync_t(CTStream &strm, INDEX iExtensiveSyncCheck)  // throw ch
     strm.FPrintF_t("*** DELETED ***\n");
   }
   strm.FPrintF_t("class: '%s'\n", GetClass()->ec_pdecDLLClass->dec_strName);
-  strm.FPrintF_t("name: '%s'\n", GetName());
+  strm.FPrintF_t("name: '%s'\n", (const char *) GetName());
   if (iExtensiveSyncCheck>0) {
     strm.FPrintF_t("en_ulFlags:          0x%08X\n", en_ulFlags&~
       (ENF_SELECTED|ENF_INRENDERING|ENF_VALIDSHADINGINFO|ENF_FOUNDINGRIDSEARCH|ENF_WILLBEPREDICTED|ENF_PREDICTABLE));
@@ -3627,6 +3724,15 @@ class CEntityComponent *CEntity::ComponentForTypeAndID(ULONG ulType, ULONG ulID)
 class CEntityProperty *CEntity::PropertyForName(const CTString &strPropertyName)
 {
   return en_pecClass->PropertyForName(strPropertyName);
+}
+
+// --------------------------------------------------------------------------------------
+// [SSE]
+// Get pointer to entity property from its packed ID.
+// --------------------------------------------------------------------------------------
+class CEntityProperty *CEntity::PropertyForID(ULONG ulID)
+{
+  return en_pecClass->PropertyForID(ulID);
 }
  
 /* Create a new entity of given class in this world. */
@@ -3799,7 +3905,7 @@ void CRationalEntity::Write_t( CTStream *ostr) // throw char *
 void CRationalEntity::SetTimerAt(TIME timeAbsolute)
 {
   // must never set think back in time, except for special 'never' time
-  ASSERTMSG(timeAbsolute>_pTimer->CurrentTick() ||
+  ASSERTMSG(timeAbsolute>=_pTimer->CurrentTick() ||
     timeAbsolute==THINKTIME_NEVER, "Do not SetThink() back in time!");
   // set the timer
   en_timeTimer = timeAbsolute;
@@ -3896,7 +4002,7 @@ void CRationalEntity::Return(SLONG slThisState, const CEntityEvent &eeReturn)
 // print stack to debug output
 const char *CRationalEntity::PrintStackDebug(void)
 {
-  _RPT2(_CRT_WARN, "-- stack of '%s'@%gs\n", GetName(), _pTimer->CurrentTick());
+  _RPT2(_CRT_WARN, "-- stack of '%s'@%gs\n", (const char *) GetName(), _pTimer->CurrentTick());
 
   INDEX ctStates = en_stslStateStack.Count();
   for(INDEX iState=ctStates-1; iState>=0; iState--) {

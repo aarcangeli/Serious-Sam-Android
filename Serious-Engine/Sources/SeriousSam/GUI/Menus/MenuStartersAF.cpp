@@ -132,6 +132,9 @@ BOOL LSLoadAddon(const CTFileName &fnm)
   extern CTFileName _fnmAddonToExec;
   _iAddonExecState = 1;
   _fnmAddonToExec = fnm;
+  CTString strCmd;
+  strCmd.PrintF("include \"%s\"", (const char*)_fnmAddonToExec);
+  _pShell->Execute(strCmd);
   return TRUE;
 }
 
@@ -143,7 +146,7 @@ BOOL LSLoadMod(const CTFileName &fnm)
   return TRUE;
 }
 
-BOOL LSLoadCustom(const CTFileName &fnm)
+BOOL LSLoadAdvanced(const CTFileName &fnm)
 {
   _pGUIM->gmVarMenu.gm_mgTitle.mg_strText = TRANS("ADVANCED OPTIONS");
   //  LoadStringVar(fnm.NoExt()+".des", mgVarTitle.mg_strText);

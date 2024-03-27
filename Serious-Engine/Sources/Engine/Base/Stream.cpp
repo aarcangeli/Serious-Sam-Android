@@ -39,6 +39,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Templates/Stock_CTextureData.h>
 #include <Engine/Templates/Stock_CModelData.h>
 #include <dirent.h>
+#include <config.h>
 
 #include "iconvlite.h"
 
@@ -79,9 +80,7 @@ CDynamicStackArray <CTFileName> _afnmBaseWriteInc;
 CDynamicStackArray <CTFileName> _afnmBaseWriteExc;
 CDynamicStackArray <CTFileName> _afnmBaseBrowseInc;
 CDynamicStackArray <CTFileName> _afnmBaseBrowseExc;
-// list of paths or patterns that are not included when making CRCs for network connection
-// this is used to enable connection between different localized versions
-CDynamicStackArray <CTFileName> _afnmNoCRC;
+
 // used to convert filenames from ansi format (written inside text files) into utf-8 (
 CTFileName convertWindow1251ToUtf8(const CTFileName &from) {
   static char outBuffer[10000];
@@ -180,8 +179,18 @@ void InitStreams(void) {
     }
   }
   // find eventual extension for the mod's dlls
+  #ifdef FIRST_ENCOUNTER
+  _strModExt = ""; // default First Encounter
+  #else
   _strModExt = "MP"; // default Second Encounter
-  LoadStringVar(CTString("ModExt.txt"), _strModExt);
+  #endif
+  
+  CTFileName tmp;
+  if(ExpandFilePath(EFP_READ, CTString("ModEXT.txt"), tmp) != EFP_NONE) {
+    LoadStringVar(CTString("ModEXT.txt"), _strModExt);
+  } else {
+    LoadStringVar(CTString("ModExt.txt"), _strModExt);
+  }
 
   CPrintF(TRANS("Loading group files...\n"));
 
@@ -241,8 +250,6 @@ void InitStreams(void) {
     CPrintF(TRANS("There were group file errors:\n%s"), strError);
   }
   CPrintF("\n");
-
-  LoadFileList(_afnmNoCRC, CTFILENAME("Data\\NoCRC.lst"));
 
 //  _pShell->SetINDEX((CTString("sys")+"_iCPU"+"Misc").str_String, 1);
 }
@@ -1164,7 +1171,7 @@ CTMemoryStream::CTMemoryStream(void) {
   // add this newly created memory stream into opened stream list
   (*_plhOpenedStreams)->AddTail(strm_lnListNode);
   // allocate amount of memory needed to hold maximum allowed file length (when saving)
-  mstrm_pubBuffer = (UBYTE *) malloc(_ulMaxLenghtOfSavingFile);
+  mstrm_pubBuffer = new UBYTE[_ulMaxLenghtOfSavingFile];
   mstrm_pubBufferEnd = mstrm_pubBuffer + _ulMaxLenghtOfSavingFile;
   mstrm_pubBufferMax = mstrm_pubBuffer;
 }
@@ -1181,7 +1188,7 @@ CTMemoryStream::CTMemoryStream(void *pvBuffer, SLONG slSize,
   }
 
   // allocate amount of memory needed to hold maximum allowed file length (when saving)
-  mstrm_pubBuffer = (UBYTE *) malloc(_ulMaxLenghtOfSavingFile);
+  mstrm_pubBuffer = new UBYTE[_ulMaxLenghtOfSavingFile];
   mstrm_pubBufferEnd = mstrm_pubBuffer + _ulMaxLenghtOfSavingFile;
   mstrm_pubBufferMax = mstrm_pubBuffer + slSize;
   // copy given block of memory into memory file

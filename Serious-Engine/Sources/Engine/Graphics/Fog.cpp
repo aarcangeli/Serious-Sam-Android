@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 
 #include <Engine/Base/Memory.h>
 #include <Engine/Base/FileName.h>
@@ -68,13 +68,14 @@ ULONG PrepareTexture( UBYTE *pubTexture, PIX pixSizeI, PIX pixSizeJ)
 {
   // need to upload from RGBA format
   const PIX pixTextureSize = pixSizeI * pixSizeJ;
-  UBYTE *src = pubTexture;
-  uint32_t *dest = (uint32_t *) &pubTexture[pixTextureSize];
-  for (PIX i = 0; i < pixTextureSize; i++) {
-    *dest = (uint32_t) *src << 24 | 0x00FFFFFF;
+   const UBYTE* src = pubTexture;
+   DWORD* dst = (DWORD*)(pubTexture+pixTextureSize);
+   for (int i=0; i<pixTextureSize; i++) {
+    const DWORD tmp = ((DWORD)*src) | 0xFFFFFF00;
+    *dst = BYTESWAP32_unsigned((ULONG)tmp);
     src++;
-    dest++;
-  }
+    dst++;
+   }
 //  __asm {
 //    mov     esi,D [pubTexture]
 //    mov     edi,D [pubTexture]
@@ -123,9 +124,9 @@ void StartFog( CFogParameters &fp, const FLOAT3D &vViewPosAbs, const FLOATmatrix
 
   // calculate fog table size wanted
   extern INDEX tex_iFogSize;
-  tex_iFogSize = Clamp( tex_iFogSize, 4L, 8L); 
-  PIX pixSizeH = ClampUp( _fog_fp.fp_iSizeH, 1L<<tex_iFogSize);
-  PIX pixSizeL = ClampUp( _fog_fp.fp_iSizeL, 1L<<tex_iFogSize);
+  tex_iFogSize = Clamp( tex_iFogSize, 4, 8);
+  PIX pixSizeH = ClampUp( _fog_fp.fp_iSizeH, 1<<tex_iFogSize);
+  PIX pixSizeL = ClampUp( _fog_fp.fp_iSizeL, 1<<tex_iFogSize);
   BOOL bNoDiscard = TRUE;
 
   // if fog table is not allocated in right size
@@ -189,7 +190,7 @@ void StartFog( CFogParameters &fp, const FLOAT3D &vViewPosAbs, const FLOATmatrix
     fA1 = Clamp(fA1,0.0f,1.0f);
     FLOAT fA = fA2-fA1;
     fA = Clamp(fA,0.0f,1.0f);
-    
+
     // if not constant graduation
     if( fgt!=FGT_CONSTANT) {
       // calculate fog height for two points, limited to be inside fog
@@ -241,14 +242,14 @@ void StartFog( CFogParameters &fp, const FLOAT3D &vViewPosAbs, const FLOATmatrix
       FLOAT fTStep = 1.0f/pixSizeL *fFar*fDensity*fA *255;
       // fog is just clamped fog parameter in each pixel
       for( INDEX pixL=0; pixL<pixSizeL; pixL++) {
-        _fog_pubTable[pixH*pixSizeL+pixL] = Clamp( FloatToInt(fT), 0L, 255L);
+        _fog_pubTable[pixH*pixSizeL+pixL] = Clamp( FloatToInt(fT), 0, 255);
         fT += fTStep;
       } 
     } break;
     // exp fog
     case AT_EXP: {
       // calculate linear step for the fog parameter
-      FLOAT fT = 0.0f;
+      //FLOAT fT = 0.0f;
       FLOAT fTStep = 1.0f/pixSizeL*fFar*fDensity*fA;
       // fog is exp(-t) function of fog parameter, now calculate
       // step (actually multiplication) for the fog
@@ -261,7 +262,7 @@ void StartFog( CFogParameters &fp, const FLOAT3D &vViewPosAbs, const FLOATmatrix
     } break;
     case AT_EXP2: {
       // calculate linear step for the fog parameter
-      FLOAT fT = 0.0f;
+      //FLOAT fT = 0.0f;
       FLOAT fTStep = 1.0f/pixSizeL*fFar*fDensity*fA;
       // fog is exp(-t^2) function of fog parameter, now calculate
       // first and second order step (actually multiplication) for the fog
@@ -280,17 +281,17 @@ void StartFog( CFogParameters &fp, const FLOAT3D &vViewPosAbs, const FLOATmatrix
   // determine where fog starts and ends
   _fog_fStart = LowerLimit(0.0f);
   _fog_fEnd   = UpperLimit(0.0f);
+
+  INDEX pix;
   if( _fog_pubTable[pixSizeL-1]) {
     // going from bottom
-    INDEX pix=pixSizeH-1;
-    for( ; pix>0; pix--) {
+    for( pix=pixSizeH-1; pix>0; pix--) {
       if( (_fog_pubTable[(pix+1)*pixSizeL-1]*_fog_ulAlpha)>>8) break;
     }
     if( pix<(pixSizeH-1)) _fog_fEnd = (FLOAT)(pix+1) / (FLOAT)(pixSizeH-1);
   } else {
     // going from top
-    INDEX pix=0;
-    for( ; pix<pixSizeH; pix++) {
+    for( pix=0; pix<pixSizeH; pix++) {
       if( (_fog_pubTable[(pix+1)*pixSizeL-1]*_fog_ulAlpha)>>8) break;
     }
     if( pix>0) _fog_fStart = (FLOAT)(pix-1) / (FLOAT)(pixSizeH-1);

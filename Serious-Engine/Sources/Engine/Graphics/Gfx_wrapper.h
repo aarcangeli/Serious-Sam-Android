@@ -13,7 +13,11 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#pragma once
+#ifndef SE_INCL_GFX_WRAPPER_H
+#define SE_INCL_GFX_WRAPPER_H
+#ifdef PRAGMA_ONCE
+  #pragma once
+#endif
 
 
 enum GfxBlend
@@ -233,7 +237,7 @@ extern void (*gfxSetColorArray)( GFXColor *pcol);
 
 
 // draw prepared arrays
-extern void (*gfxDrawElements)( INDEX ctElem, INDEX *pidx);
+extern void (*gfxDrawElements)( INDEX ctElem, INDEX_T *pidx);
 
 // set constant color for subsequent rendering (until 1st gfxSetColorArray() call!)
 extern void (*gfxSetConstantColor)(COLOR col);
@@ -254,7 +258,7 @@ extern void gfxArrayBufferData(void *pvData, ULONG ulSize);
 
 // draw uploaded elements
 // NB: call gfxSetElementArrayBuffer(obj) before and gfxSetElementArrayBuffer(0) after
-extern void gfxDrawElementArrayBuffer(INDEX iCount, INDEX *pidx);
+extern void gfxDrawElementArrayBuffer(INDEX iCount, INDEX_T *pidx);
 
 // Shader
 typedef void *GfxProgram;
@@ -335,3 +339,7 @@ extern void d3dSetVertexShader(DWORD dwHandle);
   } while(ref>0);  \
   object = NONE; \
 }
+
+#endif /* include-once wrapper. */
+
+

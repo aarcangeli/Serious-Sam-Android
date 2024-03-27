@@ -15,6 +15,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <Engine/Entities/Entity.h>
 #include <Engine/Brushes/Brush.h>
+
 /*
  * Preferences for rendering world (another class is used for rendering models).
  */

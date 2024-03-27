@@ -155,7 +155,7 @@ void gfxUniform(const char *uniformName, float f0, float f1, float f2, float f3)
 }
 
 void gfxUniform(const char *uniformName, GFXColor &color) {
-  gfxUniform(uniformName, color.gfxcol.ub.r / 255.0f, color.gfxcol.ub.g / 255.0f, color.gfxcol.ub.b / 255.0f, color.gfxcol.ub.a / 255.0f);
+  gfxUniform(uniformName, color.ub.r / 255.0f, color.ub.g / 255.0f, color.ub.b / 255.0f, color.ub.a / 255.0f);
 }
 
 void gfxUniform(const char *uniformName, const FLOATmatrix3D &matrix) {
@@ -185,7 +185,7 @@ inline void gfxSetUniformValue(GLint uniformLocation, const FLOAT3D &value) {
 }
 
 inline void gfxSetUniformValue(GLint uniformLocation, GFXColor value) {
-  glUniform4f(uniformLocation, value.gfxcol.ub.r / 255.0f, value.gfxcol.ub.g / 255.0f, value.gfxcol.ub.b / 255.0f, value.gfxcol.ub.a / 255.0f);
+  glUniform4f(uniformLocation, value.ub.r / 255.0f, value.ub.g / 255.0f, value.ub.b / 255.0f, value.ub.a / 255.0f);
 }
 
 inline void gfxSetUniformValue(GLint uniformLocation, const FLOATmatrix3D &value) {
@@ -193,7 +193,7 @@ inline void gfxSetUniformValue(GLint uniformLocation, const FLOATmatrix3D &value
 }
 
 inline BOOL operator!=(const GFXColor &v1, const GFXColor &v2) {
-  return v1.gfxcol.ul.abgr != v2.gfxcol.ul.abgr;
+  return v1.ul.abgr != v2.ul.abgr;
 };
 
 void gfxSyncProgram(struct GfxShadersUniforms &params) {

@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 
 #include <Engine/Base/Memory.h>
 #include <Engine/Base/Translation.h>
@@ -42,8 +42,10 @@ _CRTIMP _PNH __cdecl _set_new_handler( _PNH );*/
 #pragma comment (lib, "msvcrtd.lib")
 #endif
 
+#ifdef _WIN32
 // include user32 library (because of message box)
 #pragma comment (lib, "user32.lib")
+#endif
 
 // if not enough memory
 int NewHandler(size_t size)

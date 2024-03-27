@@ -48,7 +48,7 @@ static INDEX cam_bZoomOut          = FALSE;
 static INDEX cam_bZoomDefault      = FALSE;
 static INDEX cam_bResetToPlayer    = FALSE;
 static INDEX cam_bSnapshot         = FALSE;
-static INDEX cam_fSpeed            = 1.0f;
+static INDEX cam_fSpeed            = 1;
 
 // camera functions
 void CAM_Init(void)
@@ -230,6 +230,5 @@ void CAM_Render(CEntity *pen, CDrawPort *pdp)
   // set up viewer position
   prProjection->ViewerPlacementL() = plCamera;
   // render the view
-  int* test = NULL;
-  RenderView(*pen->en_pwoWorld, *(CEntity*)test, prProjection, *pdp);
+  RenderView(*pen->en_pwoWorld, *(CEntity*)NULL, prProjection, *pdp);
 }

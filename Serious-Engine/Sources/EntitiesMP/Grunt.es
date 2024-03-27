@@ -88,8 +88,26 @@ functions:
   virtual CTString GetPlayerKillDescription(const CTString &strPlayerName, const EDeath &eDeath)
   {
     CTString str;
-    str.PrintF(TRANS("A Grunt sent %s into the halls of Valhalla"), strPlayerName);
+    str.PrintF(TRANSV("A Grunt sent %s into the halls of Valhalla"), (const char *) strPlayerName);
     return str;
+  }
+  
+  // --------------------------------------------------------------------------------------
+  // [SSE]
+  // Returns amount of damage which should be received for performing wound state.
+  // --------------------------------------------------------------------------------------
+  virtual FLOAT GetDamageWounded(void)
+  { 
+    return 5.0F;
+  }
+  
+  // --------------------------------------------------------------------------------------
+  // [SSE]
+  // Returns TRUE when enemy can be wound, otherwise returns FALSE.
+  // --------------------------------------------------------------------------------------
+  virtual BOOL CanBeWounded(void)
+  {
+    return GetHealth() < (m_fMaxHealth / 2);
   }
 
   /* Entity info */
@@ -99,7 +117,7 @@ functions:
     } else if (m_gtType==GT_COMMANDER) {
       return &eiGruntSoldier;
     } else {
-      ASSERT("Unknown grunt type!");
+      ASSERTALWAYS("Unknown grunt type!");
       return NULL;
     }
   };
@@ -244,14 +262,15 @@ procedures:
     autowait(0.2f + FRnd()*0.25f);
 
     StartModelAnim(GRUNT_ANIM_FIRE, 0);
-    ShootProjectile(PRT_GRUNT_PROJECTILE_SOL, FIREPOS_SOLDIER, ANGLE3D(0, 0, 0));
+    ShootProjectile(PRT_GRUNT_PROJECTILE_SOL, FIREPOS_SOLDIER * ClampDn(m_fStretchMultiplier, 0.2F), ANGLE3D(0, 0, 0)); // [SSE] Better Enemy Stretching
+    
     PlaySound(m_soFire1, SOUND_FIRE, SOF_3D);
 
     autowait(0.15f + FRnd()*0.1f);
     StartModelAnim(GRUNT_ANIM_FIRE, 0);
-    ShootProjectile(PRT_GRUNT_PROJECTILE_SOL, FIREPOS_SOLDIER, ANGLE3D(0, 0, 0));
-    PlaySound(m_soFire2, SOUND_FIRE, SOF_3D);
+    ShootProjectile(PRT_GRUNT_PROJECTILE_SOL, FIREPOS_SOLDIER * ClampDn(m_fStretchMultiplier, 0.2F), ANGLE3D(0, 0, 0)); // [SSE] Better Enemy Stretching
     
+     PlaySound(m_soFire2, SOUND_FIRE, SOF_3D);
 
     autowait(FRnd()*0.333f);
     return EEnd();
@@ -271,27 +290,33 @@ procedures:
     ShootPredictedProjectile(PRT_GRUNT_LASER, vPredictedEnemyPosition, FLOAT3D(0.0f, 1.0f, 0.0f), ANGLE3D(0, 0, 0));*/
 
     StartModelAnim(GRUNT_ANIM_FIRE, 0);
-    ShootProjectile(PRT_GRUNT_PROJECTILE_COM, FIREPOS_COMMANDER_DN, ANGLE3D(-20, 0, 0));
+    ShootProjectile(PRT_GRUNT_PROJECTILE_COM, FIREPOS_COMMANDER_DN * ClampDn(m_fStretchMultiplier, 0.2F), ANGLE3D(-20, 0, 0)); // [SSE] Better Enemy Stretching
+
     PlaySound(m_soFire1, SOUND_FIRE, SOF_3D);
 
     autowait(0.035f);
     StartModelAnim(GRUNT_ANIM_FIRE, 0);
-    ShootProjectile(PRT_GRUNT_PROJECTILE_COM, FIREPOS_COMMANDER_DN, ANGLE3D(-10, 0, 0));
+    ShootProjectile(PRT_GRUNT_PROJECTILE_COM, FIREPOS_COMMANDER_DN * ClampDn(m_fStretchMultiplier, 0.2F), ANGLE3D(-10, 0, 0)); // [SSE] Better Enemy Stretching
+    
     PlaySound(m_soFire2, SOUND_FIRE, SOF_3D);
 
     autowait(0.035f);
     StartModelAnim(GRUNT_ANIM_FIRE, 0);
-    ShootProjectile(PRT_GRUNT_PROJECTILE_COM, FIREPOS_COMMANDER_DN, ANGLE3D(0, 0, 0));
+    ShootProjectile(PRT_GRUNT_PROJECTILE_COM, FIREPOS_COMMANDER_DN * ClampDn(m_fStretchMultiplier, 0.2F), ANGLE3D(0, 0, 0)); // [SSE] Better Enemy Stretching
+
     PlaySound(m_soFire1, SOUND_FIRE, SOF_3D);
 
     autowait(0.035f);
     StartModelAnim(GRUNT_ANIM_FIRE, 0);
-    ShootProjectile(PRT_GRUNT_PROJECTILE_COM, FIREPOS_COMMANDER_DN, ANGLE3D(10, 0, 0));
+    ShootProjectile(PRT_GRUNT_PROJECTILE_COM, FIREPOS_COMMANDER_DN * ClampDn(m_fStretchMultiplier, 0.2F), ANGLE3D(10, 0, 0)); // [SSE] Better Enemy Stretching
+    
     PlaySound(m_soFire2, SOUND_FIRE, SOF_3D);
+    
 
     autowait(0.035f);
     StartModelAnim(GRUNT_ANIM_FIRE, 0);
-    ShootProjectile(PRT_GRUNT_PROJECTILE_COM, FIREPOS_COMMANDER_DN, ANGLE3D(20, 0, 0));
+    ShootProjectile(PRT_GRUNT_PROJECTILE_COM, FIREPOS_COMMANDER_DN * ClampDn(m_fStretchMultiplier, 0.2F), ANGLE3D(20, 0, 0)); // [SSE] Better Enemy Stretching
+    
     PlaySound(m_soFire2, SOUND_FIRE, SOF_3D);
 
     autowait(FRnd()*0.5f);
@@ -335,7 +360,7 @@ procedures:
         //m_fBlowUpAmount = 65.0f;
         m_fBlowUpAmount = 80.0f;
         m_fBodyParts = 4;
-        m_fDamageWounded = 0.0f;
+        m_fDamageWounded = 5.0f; // [SSE] Balance Change. Default=0.0F.
         m_iScore = 500;
         SetHealth(40.0f);
         m_fMaxHealth = 40.0f;
@@ -360,11 +385,12 @@ procedures:
         m_fStopDistance = 15.0f;
         m_fAttackFireTime = 4.0f;
         m_fCloseFireTime = 2.0f;
-        //m_fBlowUpAmount = 180.0f;
         m_fIgnoreRange = 200.0f;
+
         // damage/explode properties
+        //m_fBlowUpAmount = 180.0f;
         m_fBodyParts = 5;
-        m_fDamageWounded = 0.0f;
+        m_fDamageWounded = 5.0f; // [SSE] Balance Change. Default=0.0F.
         m_iScore = 800;
         SetHealth(60.0f);
         m_fMaxHealth = 60.0f;

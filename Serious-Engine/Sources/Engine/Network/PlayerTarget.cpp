@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 
 #include <Engine/Base/Console.h>
 #include <Engine/Network/Network.h>
@@ -21,7 +21,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/Stream.h>
 #include <Engine/Entities/InternalClasses.h>
 #include <Engine/Templates/StaticArray.cpp>
-#include <Engine/Templates/DynamicContainer.cpp>
 
 extern INDEX cli_bLerpActions;
 /*

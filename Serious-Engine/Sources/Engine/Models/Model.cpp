@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 
 #include <Engine/Models/ModelObject.h>
 #include <Engine/Models/ModelData.h>
@@ -407,7 +407,7 @@ void CModelData::GetAllFramesBBox( FLOATaabbox3D &MaxBB)
 FLOAT3D CModelData::GetCollisionBoxMin(INDEX iCollisionBox)
 {
   md_acbCollisionBox.Lock();
-  INDEX iCollisionBoxClamped = Clamp(iCollisionBox, 0L, md_acbCollisionBox.Count()-1L);
+  INDEX iCollisionBoxClamped = Clamp(iCollisionBox, 0, md_acbCollisionBox.Count()-1);
   FLOAT3D vMin = md_acbCollisionBox[ iCollisionBoxClamped].mcb_vCollisionBoxMin;
   md_acbCollisionBox.Unlock();
   return vMin;
@@ -416,17 +416,17 @@ FLOAT3D CModelData::GetCollisionBoxMin(INDEX iCollisionBox)
 FLOAT3D CModelData::GetCollisionBoxMax(INDEX iCollisionBox=0)
 {
   md_acbCollisionBox.Lock();
-  INDEX iCollisionBoxClamped = Clamp(iCollisionBox, 0L, md_acbCollisionBox.Count()-1L);
+  INDEX iCollisionBoxClamped = Clamp(iCollisionBox, 0, md_acbCollisionBox.Count()-1);
   FLOAT3D vMax = md_acbCollisionBox[ iCollisionBoxClamped].mcb_vCollisionBoxMax;
   md_acbCollisionBox.Unlock();
   return vMax;
 };
 
-// returns HEIGHT_EQ_WIDTH, LENGHT_EQ_WIDTH or LENGHT_EQ_HEIGHT
+// returns HEIGHT_EQ_WIDTH, LENGTH_EQ_WIDTH or LENGTH_EQ_HEIGHT
 INDEX CModelData::GetCollisionBoxDimensionEquality(INDEX iCollisionBox=0)
 {
   md_acbCollisionBox.Lock();
-  iCollisionBox = Clamp(iCollisionBox, 0L, md_acbCollisionBox.Count()-1L);
+  iCollisionBox = Clamp(iCollisionBox, 0, md_acbCollisionBox.Count()-1);
   INDEX iDimEq = md_acbCollisionBox[ iCollisionBox].mcb_iCollisionBoxDimensionEquality;
   md_acbCollisionBox.Unlock();
   return iDimEq;
@@ -481,18 +481,21 @@ ModelTextureVertex::ModelTextureVertex(void)
 //------------------------------------------ WRITE
 void ModelPolygonVertex::Write_t( CTStream *pFile)  // throw char *
 {
-  (*pFile) << (INDEX) mpv_ptvTransformedVertex;
-  (*pFile) << (INDEX) mpv_ptvTextureVertex;
+  // DG: this looks like a 64-bit issue, but most probably isn't as PtrToIndices() should have been called before this
+  (*pFile) << (INDEX) (size_t) mpv_ptvTransformedVertex;
+  (*pFile) << (INDEX) (size_t) mpv_ptvTextureVertex;
 }
 //------------------------------------------ READ
 void ModelPolygonVertex::Read_t( CTStream *pFile) // throw char *
 {
   INDEX itmp;
 
+  // DG: this looks like a 64-bit issue, but most probably isn't as IndicesToPtrs() should be
+  //     called afterwards to restore actually valid pointers.
   (*pFile) >> itmp;
-  mpv_ptvTransformedVertex = (struct TransformedVertexData *) itmp;
+  mpv_ptvTransformedVertex = (struct TransformedVertexData *) (size_t) itmp;
   (*pFile) >> itmp;
-  mpv_ptvTextureVertex = (ModelTextureVertex *) itmp;
+  mpv_ptvTextureVertex = (ModelTextureVertex *) (size_t) itmp;
 }
 //--------------------------------------------------------------------------------------------
 //------------------------------------------ WRITE
@@ -656,8 +659,8 @@ void MappingSurface::Write_t( CTStream *pFile)  // throw char *
 void MappingSurface::WriteSettings_t( CTStream *pFile)  // throw char *
 {
   (*pFile) << ms_Name;
-  pFile->Write_t( &ms_sstShadingType, sizeof(SurfaceShadingType));
-  pFile->Write_t( &ms_sttTranslucencyType, sizeof(SurfaceTranslucencyType));
+  (*pFile) << (INDEX &)ms_sstShadingType;
+  (*pFile) << (INDEX &)ms_sttTranslucencyType;
   (*pFile) << ms_ulRenderingFlags;
   (*pFile) << ms_colDiffuse;
   (*pFile) << ms_colReflections;
@@ -670,8 +673,8 @@ void MappingSurface::WriteSettings_t( CTStream *pFile)  // throw char *
 void MappingSurface::ReadSettings_t( CTStream *pFile)  // throw char *
 {
   (*pFile) >> ms_Name;
-  pFile->Read_t( &ms_sstShadingType, sizeof(SurfaceShadingType));
-  pFile->Read_t( &ms_sttTranslucencyType, sizeof(SurfaceTranslucencyType));
+  (*pFile) >> (INDEX&) ms_sstShadingType;
+  (*pFile) >> (INDEX&) ms_sttTranslucencyType;
   (*pFile) >> ms_ulRenderingFlags;
   (*pFile) >> ms_colDiffuse;
   (*pFile) >> ms_colReflections;
@@ -686,20 +689,20 @@ void MappingSurface::Read_t( CTStream *pFile, BOOL bReadPolygonsPerSurface,
                             BOOL bReadSurfaceColors) // throw char *
 {
   (*pFile) >> ms_Name;
-  pFile->Read_t( &ms_vSurface2DOffset, sizeof(FLOAT3D));
-  pFile->Read_t( &ms_HPB, sizeof(FLOAT3D));
-  pFile->Read_t( &ms_Zoom, sizeof(float));
+  (*pFile) >> ms_vSurface2DOffset;
+  (*pFile) >> ms_HPB;
+  (*pFile) >> ms_Zoom;
 
   if( bReadPolygonsPerSurface)
   {
-    pFile->Read_t( &ms_sstShadingType, sizeof(SurfaceShadingType));
+    (*pFile) >> (INDEX &) ms_sstShadingType;
     // WARNING !!! All shading types bigger than matte will be remaped into flat shading
     // this was done when SHINY and METAL were removed
     if( ms_sstShadingType > SST_MATTE)
     {
       ms_sstShadingType = SST_FLAT;
     }
-    pFile->Read_t( &ms_sttTranslucencyType, sizeof(SurfaceTranslucencyType));
+    (*pFile) >> (INDEX &) ms_sttTranslucencyType;
     (*pFile) >> ms_ulRenderingFlags;
     if( (ms_ulRenderingFlags&SRF_NEW_TEXTURE_FORMAT) == 0)
       ms_ulRenderingFlags |= SRF_DIFFUSE|SRF_NEW_TEXTURE_FORMAT;
@@ -712,19 +715,15 @@ void MappingSurface::Read_t( CTStream *pFile, BOOL bReadPolygonsPerSurface,
     INDEX ctPolygons;
     (*pFile) >> ctPolygons;
     ms_aiPolygons.New( ctPolygons);
-    if( ctPolygons != 0)
-    {
-      pFile->Read_t( &ms_aiPolygons[0], sizeof( INDEX)*ctPolygons);
-    }
+    for (INDEX i = 0; i < ctPolygons; i++)
+      (*pFile) >> ms_aiPolygons[i];
 
     ms_aiTextureVertices.Clear();
     INDEX ctTextureVertices;
     (*pFile) >> ctTextureVertices;
     ms_aiTextureVertices.New( ctTextureVertices);
-    if( ctTextureVertices != 0)
-    {
-      pFile->Read_t( &ms_aiTextureVertices[0], sizeof( INDEX)*ctTextureVertices);
-    }
+    for (INDEX i = 0; i < ctTextureVertices; i++)
+      (*pFile) >> ms_aiTextureVertices[i];
 
     (*pFile) >> ms_colColor;
   }
@@ -850,8 +849,6 @@ void CModelData::LinkDataForSurfaces(BOOL bFirstMip)
 ModelMipInfo::ModelMipInfo(void)
 {
   mmpi_ulFlags = MM_PATCHES_VISIBLE | MM_ATTACHED_MODELS_VISIBLE;
-  mmpi_bNeedUpdate = false;
-  mmpi_ulVertexBufferObject = NONE;
 }
 
 //--------------------------------------------------------------------------------------------
@@ -931,16 +928,16 @@ void ModelMipInfo::Read_t(CTStream *pFile,
     // if bump normals are saved (new format)
     if( idChunk == CChunkID("TXV2"))
     {
-      pFile->ReadRawChunk_t( &mmpi_TextureVertices[ 0], iMembersCt *
-                             sizeof(struct ModelTextureVertex));
+      for (SLONG i = 0; i < iMembersCt; i++)
+        (*pFile)>>mmpi_TextureVertices[i];
     } else {
       // bump normals are not saved
       for( INDEX iVertex = 0; iVertex<iMembersCt; iVertex++)
       {
-        pFile->Read_t( &mmpi_TextureVertices[ iVertex].mtv_UVW, sizeof( FLOAT3D));
-        pFile->Read_t( &mmpi_TextureVertices[ iVertex].mtv_UV, sizeof( MEX2D));
-        pFile->Read_t( &mmpi_TextureVertices[ iVertex].mtv_Done, sizeof( BOOL));
-        pFile->Read_t( &mmpi_TextureVertices[ iVertex].mtv_iTransformedVertex, sizeof( INDEX));
+        (*pFile)>>mmpi_TextureVertices[ iVertex].mtv_UVW;
+        (*pFile)>>mmpi_TextureVertices[ iVertex].mtv_UV;
+        (*pFile)>>mmpi_TextureVertices[ iVertex].mtv_Done;
+        (*pFile)>>mmpi_TextureVertices[ iVertex].mtv_iTransformedVertex;
         mmpi_TextureVertices[ iVertex].mtv_vU = FLOAT3D(0,0,0);
         mmpi_TextureVertices[ iVertex].mtv_vV = FLOAT3D(0,0,0);
       }
@@ -955,9 +952,9 @@ void ModelMipInfo::Read_t(CTStream *pFile,
     // read models in old format
     for( INDEX iVertex = 0; iVertex<iMembersCt; iVertex++)
     {
-      pFile->Read_t( &mmpi_TextureVertices[ iVertex].mtv_UVW, sizeof( FLOAT3D));
-      pFile->Read_t( &mmpi_TextureVertices[ iVertex].mtv_UV, sizeof( MEX2D));
-      pFile->Read_t( &mmpi_TextureVertices[ iVertex].mtv_Done, sizeof( BOOL));
+      (*pFile)>>mmpi_TextureVertices[ iVertex].mtv_UVW;
+      (*pFile)>>mmpi_TextureVertices[ iVertex].mtv_UV;
+      (*pFile)>>mmpi_TextureVertices[ iVertex].mtv_Done;
       mmpi_TextureVertices[ iVertex].mtv_iTransformedVertex = 0;
       mmpi_TextureVertices[ iVertex].mtv_vU = FLOAT3D(0,0,0);
       mmpi_TextureVertices[ iVertex].mtv_vV = FLOAT3D(0,0,0);
@@ -1035,14 +1032,14 @@ void CModelData::PtrsToIndices()
           if( it2.Current().mpv_ptvTransformedVertex == &md_TransformedVertices[ j])
             break;
         }
-        it2.Current().mpv_ptvTransformedVertex = (struct TransformedVertexData *) j;
+        it2.Current().mpv_ptvTransformedVertex = (struct TransformedVertexData *)(size_t)j;
 
         for( j=0; j<md_MipInfos[ i].mmpi_TextureVertices.Count(); j++)
         {
           if( it2.Current().mpv_ptvTextureVertex == &md_MipInfos[ i].mmpi_TextureVertices[ j])
             break;
         }
-        it2.Current().mpv_ptvTextureVertex = (ModelTextureVertex *) j;
+        it2.Current().mpv_ptvTextureVertex = (ModelTextureVertex *)(size_t)j;
       }
     }
   }
@@ -1062,10 +1059,13 @@ void CModelData::IndicesToPtrs()
     {
       FOREACHINSTATICARRAY(it1.Current().mp_PolygonVertices, ModelPolygonVertex, it2)
       {
-        struct ModelPolygonVertex * pMPV = &it2.Current();
-        j = (INDEX) it2.Current().mpv_ptvTransformedVertex;
+        //struct ModelPolygonVertex * pMPV = &it2.Current();
+        // DG: this looks like a 64-bit issue but is most probably ok, as the pointers
+        //     should contain indices from PtrToIndices()
+        j = (INDEX) (size_t) it2.Current().mpv_ptvTransformedVertex;
         it2.Current().mpv_ptvTransformedVertex = &md_TransformedVertices[ j];
-        j = (INDEX) it2.Current().mpv_ptvTextureVertex;
+        // DG: same here
+        j = (INDEX) (size_t) it2.Current().mpv_ptvTextureVertex;
         it2.Current().mpv_ptvTextureVertex = &md_MipInfos[ i].mmpi_TextureVertices[ j];
       }
     }
@@ -1083,9 +1083,9 @@ CModelCollisionBox::CModelCollisionBox(void)
 void CModelCollisionBox::Read_t(CTStream *istrFile)
 {
   // Read collision box min
-  istrFile->Read_t( &mcb_vCollisionBoxMin, sizeof(FLOAT3D));
+  (*istrFile) >> mcb_vCollisionBoxMin;
   // Read collision box size
-  istrFile->Read_t( &mcb_vCollisionBoxMax, sizeof(FLOAT3D));
+  (*istrFile) >> mcb_vCollisionBoxMax;
   // Get "colision box dimensions equality" value
   if( (mcb_vCollisionBoxMax(2)-mcb_vCollisionBoxMin(2)) ==
       (mcb_vCollisionBoxMax(1)-mcb_vCollisionBoxMin(1)) )
@@ -1105,7 +1105,7 @@ void CModelCollisionBox::Read_t(CTStream *istrFile)
   else
   {
     /*
-    // Force them to be legal (Lenght = Width)
+    // Force them to be legal (Length = Width)
     mcb_vCollisionBoxMax(3) = mcb_vCollisionBoxMin(3) +
                              (mcb_vCollisionBoxMax(1)-mcb_vCollisionBoxMin(1));
                              */
@@ -1122,11 +1122,11 @@ void CModelCollisionBox::ReadName_t(CTStream *istrFile)
 void CModelCollisionBox::Write_t(CTStream *ostrFile)
 {
   // Write collision box min
-  ostrFile->Write_t( &mcb_vCollisionBoxMin, sizeof(FLOAT3D));
+  (*ostrFile) << mcb_vCollisionBoxMin;
   // Write collision box size
-  ostrFile->Write_t( &mcb_vCollisionBoxMax, sizeof(FLOAT3D));
+  (*ostrFile) << mcb_vCollisionBoxMax;
   // write collision box name
-  (*ostrFile)<<mcb_strName;
+  (*ostrFile) << mcb_strName;
 }
 
 CAttachedModelPosition::CAttachedModelPosition( void)
@@ -1167,7 +1167,7 @@ void CModelData::Write_t( CTStream *pFile)  // throw char *
   pFile->WriteID_t( CChunkID( MODEL_VERSION));
 
   // Save flags
-  pFile->Write_t( &md_Flags, sizeof(ULONG));
+  (*pFile) << md_Flags;
 
   // Save vertices and frames ct
   pFile->WriteFullChunk_t( CChunkID("IVTX"), &md_VerticesCt, sizeof(INDEX));
@@ -1365,7 +1365,7 @@ void CModelData::Read_t( CTStream *pFile) // throw char *
 
   if( bHasSavedFlagsOnStart)
   {
-    pFile->Read_t( &md_Flags, sizeof(ULONG));
+    (*pFile)>>md_Flags;
   }
 
   // Read vertices and frames ct
@@ -1382,12 +1382,14 @@ void CModelData::Read_t( CTStream *pFile) // throw char *
     if( cidVerticesChunk == CChunkID("AV16"))
     {
       CChunkID cidDummy = pFile->GetID_t();
+      (void)cidDummy; // shut up about unused variable, compiler.
       ULONG ulDummy;
       // skip chunk size
       *pFile >> ulDummy;
+      (void)ulDummy; // shut up about unused variable, compiler.
       for( INDEX iVtx=0; iVtx<md_VerticesCt * md_FramesCt; iVtx++)
       {
-        pFile->ReadRawChunk_t( &md_FrameVertices16[iVtx], sizeof(struct ModelFrameVertex16_old));
+        (*pFile)>>md_FrameVertices16[iVtx];
         // convert 8-bit normal from index into normal defined using heading and pitch
         INDEX i8BitNormalIndex = md_FrameVertices16[iVtx].mfv_ubNormH;
         const FLOAT3D &vNormal = avGouraudNormals[i8BitNormalIndex];
@@ -1402,7 +1404,7 @@ void CModelData::Read_t( CTStream *pFile) // throw char *
     }
     else
     {
-      ThrowF_t( TRANS("Expecting chunk ID for model frame vertices but found %s"), cidVerticesChunk);
+      ThrowF_t( TRANS("Expecting chunk ID for model frame vertices but found %s"), (const char *) cidVerticesChunk);
     }
   }
   else
@@ -1514,18 +1516,18 @@ void CModelData::Read_t( CTStream *pFile) // throw char *
   if( !bHasSavedFlagsOnStart)
   {
     // Read flags
-    pFile->Read_t( &md_Flags, sizeof(ULONG));
+    (*pFile)>>md_Flags;
   }
 
   // Read value for shading type
-  pFile->Read_t( &md_ShadowQuality, sizeof(SLONG));
+  (*pFile)>>md_ShadowQuality;
 
   // Read static stretch value
-  pFile->Read_t( &md_Stretch, sizeof(FLOAT3D));
+  (*pFile)>>md_Stretch;
 
   // if this is model with saved center
   if( bHasSavedCenter) { // read it
-    pFile->Read_t( &md_vCenter, sizeof(FLOAT3D));
+    (*pFile)>>md_vCenter;
   }
   // this model has been saved without center point
   else { // so just reset it
@@ -1569,7 +1571,7 @@ void CModelData::Read_t( CTStream *pFile) // throw char *
   {
     INDEX ctCollisionBoxes;
     // get count of collision boxes
-    pFile->Read_t( &ctCollisionBoxes, sizeof(INDEX));
+    (*pFile)>>ctCollisionBoxes;
     // add needed ammount of members
     md_acbCollisionBox.New( ctCollisionBoxes);
     md_acbCollisionBox.Lock();
@@ -1891,9 +1893,9 @@ void CModelObject::Read_t( CTStream *pFile) // throw char *
     mo_colBlendColor = 0xFFFFFFFF;
   }
 
-  pFile->Read_t( &mo_PatchMask, sizeof(ULONG));
-  pFile->Read_t( &mo_Stretch, sizeof(FLOAT3D));
-  pFile->Read_t( &mo_ColorMask, sizeof(ULONG));
+  (*pFile)>>mo_PatchMask;
+  (*pFile)>>mo_Stretch;
+  (*pFile)>>mo_ColorMask;
   for( INDEX i=0; i<MAX_TEXTUREPATCHES; i++)
   {
     if( (mo_PatchMask & ((1UL) << i)) != 0)
@@ -1984,8 +1986,8 @@ INDEX CModelObject::GetMipModel( FLOAT fMipFactor)
   ASSERT( pMD != NULL);
   if( !mo_AutoMipModeling) return mo_iManualMipLevel;
   // calculate current mip model
-  INDEX i=0;
-  for( ; i<pMD->md_MipCt; i++) {
+  INDEX i;
+  for( i=0; i<pMD->md_MipCt; i++) {
     if( fMipFactor < pMD->md_MipSwitchFactors[i]) return i;
   }
   return i-1;
@@ -2129,7 +2131,7 @@ COLOR CModelObject::GetSurfaceColor( INDEX iCurrentMip, INDEX iCurrentSurface)
   if( (iCurrentMip>=pMD->md_MipCt) ||
       (iCurrentSurface>=pMD->md_MipInfos[ iCurrentMip].mmpi_MappingSurfaces.Count()) )
   {
-    return -1;
+    return (COLOR) -1;  // !!! FIXME COLOR is unsigned, right?
   }
   for( INDEX i=0; i<pMD->md_MipInfos[ iCurrentMip].mmpi_PolygonsCt; i++)
   {
@@ -2628,7 +2630,7 @@ INDEX CModelObject::PickVertexIndex( CDrawPort *pDP, CProjection3D *pProjection,
       }
     }
   }
-  return iClosest;
+  return ((INDEX) iClosest);
 }
 
 /*
@@ -2668,7 +2670,7 @@ FLOAT3D CModelObject::GetCollisionBoxMax(INDEX iCollisionBox)
   return GetData()->GetCollisionBoxMax(iCollisionBox);
 }
 
-// returns HEIGHT_EQ_WIDTH, LENGHT_EQ_WIDTH or LENGHT_EQ_HEIGHT
+// returns HEIGHT_EQ_WIDTH, LENGTH_EQ_WIDTH or LENGTH_EQ_HEIGHT
 INDEX CModelObject::GetCollisionBoxDimensionEquality(INDEX iCollisionBox)
 {
   return GetData()->GetCollisionBoxDimensionEquality(iCollisionBox);
@@ -2797,22 +2799,26 @@ void CModelObject::AutoSetTextures(void)
       if( id == CChunkID("WTEX"))
       {
         CChunkID idDummy = strmIni.GetID_t();
+        (void)idDummy; // shut up about unused variable, compiler.
         strmIni >> ctDiffuseTextures;
         strmIni >> fnDiffuse;
       }
       else if( id == CChunkID("FXTR"))
       {
         CChunkID idDummy = strmIni.GetID_t();
+        (void)idDummy; // shut up about unused variable, compiler.
         strmIni >> fnReflection;
       }
       else if( id == CChunkID("FXTS"))
       {
         CChunkID idDummy = strmIni.GetID_t();
+        (void)idDummy; // shut up about unused variable, compiler.
         strmIni >> fnSpecular;
       }
       else if( id == CChunkID("FXTB"))
       {
         CChunkID idDummy = strmIni.GetID_t();
+        (void)idDummy; // shut up about unused variable, compiler.
         strmIni >> fnBump;
       }
       else
@@ -2852,6 +2858,7 @@ void CModelObject::AutoSetAttachments(void)
       if( id == CChunkID("ATTM"))
       {
         CChunkID idDummy = strmIni.GetID_t();
+        (void)idDummy; // shut up about unused variable, compiler.
         // try to load attached models
         INDEX ctAttachedModels;
         strmIni >> ctAttachedModels;

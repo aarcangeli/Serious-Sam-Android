@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 
 #include <Engine/Base/Stream.h>
 #include <Engine/Network/Compression.h>
@@ -425,9 +425,11 @@ int ZEXPORT compress (dest, destLen, source, sourceLen)
     */
 
   CTSingleLock slZip(&zip_csLock, TRUE);
-  int iResult = compress(
-    (UBYTE *)pvDst, (ULONG *)&slDstSize,
-    (const UBYTE *)pvSrc, (ULONG)slSrcSize);
+  uLongf dstlen = (uLongf) slDstSize;
+  const int iResult = compress(
+    (Bytef *)pvDst, &dstlen,
+    (const Bytef *)pvSrc, (uLong)slSrcSize);
+  slDstSize = (SLONG) dstlen;
   if (iResult==Z_OK) {
     return TRUE;
   } else {
@@ -449,10 +451,11 @@ int ZEXPORT uncompress (dest, destLen, source, sourceLen)
     */
 
   CTSingleLock slZip(&zip_csLock, TRUE);
-  int iResult = uncompress(
-    (UBYTE *)pvDst, (ULONG *)&slDstSize,
-    (const UBYTE *)pvSrc, (ULONG)slSrcSize);
-
+  uLongf dstlen = (uLongf) slDstSize;
+  const int iResult = uncompress(
+    (Bytef *)pvDst, &dstlen,
+    (const Bytef *)pvSrc, (uLong)slSrcSize);
+  slDstSize = (SLONG) dstlen;
   if (iResult==Z_OK) {
     return TRUE;
   } else {

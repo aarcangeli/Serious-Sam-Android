@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 
 #include <Engine/Math/TextureMapping.h>
 
@@ -138,7 +138,7 @@ void CMappingDefinition::TransformMappingVectors( const CMappingVectors &mvSrc, 
     FLOAT vot2 = +sou2*ood2; FLOAT vos2 = -tou2*ood2;
 
     mvDst.mv_vO = mvSrc.mv_vO
-                + mvDst.mv_vU * (md_fUOffset*uos2 + md_fVOffset*vos2)
+                + mvDst.mv_vU * (md_fUOffset*uos2 + md_fVOffset*vos2) // FIXME: should vos2 have been uot2 here?
                 + mvDst.mv_vV * (md_fUOffset*vos2 + md_fVOffset*vot2);
   }
 }
@@ -199,7 +199,10 @@ void CMappingDefinition::ReadOld_t(CTStream &strm) // throw char *
     FLOAT tm_fOffsetU;      // texture offsets (in meters)
     FLOAT tm_fOffsetV;
   } tmo;
-  strm.Read_t(&tmo, sizeof(tmo));
+  strm>>tmo.tm_ulFlags;
+  strm>>tmo.tm_aRotation;
+  strm>>tmo.tm_fOffsetU;
+  strm>>tmo.tm_fOffsetV;
 
   FLOAT fSin = Sin(tmo.tm_aRotation);
   FLOAT fCos = Cos(tmo.tm_aRotation);
@@ -260,9 +263,9 @@ void CMappingDefinition::ProjectMapping(const FLOATplane3D &plOriginal, const CM
   mv.mv_vO = pl.DeprojectPoint    (plOriginal, mvOriginal.mv_vO);
   mv.mv_vU = pl.DeprojectDirection(plOriginal, mvOriginal.mv_vU);
   mv.mv_vV = pl.DeprojectDirection(plOriginal, mvOriginal.mv_vV);
-  FLOAT3D vOTest = plOriginal.ProjectPoint(mv.mv_vO);
-  FLOAT3D vUTest = plOriginal.ProjectDirection(mv.mv_vU);
-  FLOAT3D vVTest = plOriginal.ProjectDirection(mv.mv_vV);
+  //FLOAT3D vOTest = plOriginal.ProjectPoint(mv.mv_vO);
+  //FLOAT3D vUTest = plOriginal.ProjectDirection(mv.mv_vU);
+  //FLOAT3D vVTest = plOriginal.ProjectDirection(mv.mv_vV);
 
   // make mapping on this plane
   CMappingVectors mvDefault;
@@ -336,12 +339,22 @@ void CMappingDefinition::Transform(const FLOATplane3D &plSourcePlane,
 // stream operations
 CTStream &operator>>(CTStream &strm, CMappingDefinition &md)
 {
-  strm.Read_t(&md, sizeof(md));
+  strm>>md.md_fUoS;
+  strm>>md.md_fUoT;
+  strm>>md.md_fVoS;
+  strm>>md.md_fVoT;
+  strm>>md.md_fUOffset;
+  strm>>md.md_fVOffset;
   return strm;
 }
 CTStream &operator<<(CTStream &strm, const CMappingDefinition &md)
 {
-  strm.Write_t(&md, sizeof(md));
+  strm<<md.md_fUoS;
+  strm<<md.md_fUoT;
+  strm<<md.md_fVoS;
+  strm<<md.md_fVoT;
+  strm<<md.md_fUOffset;
+  strm<<md.md_fVOffset;
   return strm;
 }
 

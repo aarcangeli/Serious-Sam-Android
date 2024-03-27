@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include <Engine/StdH.h>
 
 #include <Engine/Build.h>
 #include <Engine/Network/Network.h>
@@ -35,7 +35,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Entities/InternalClasses.h>
 #include <Engine/Base/CRC.h>
 #include <Engine/Base/ErrorTable.h>
-#include <Engine/GameAgent/GameAgent.h>
+#include <Engine/Query/MasterServerMgr.h>
 
 #include <Engine/Templates/StaticArray.cpp>
 
@@ -49,6 +49,9 @@ extern INDEX ser_bInverseBanning;
 extern BOOL MatchesBanMask(const CTString &strString, const CTString &strMask);
 extern CClientInterface cm_aciClients[SERVER_CLIENTS];
 
+extern INDEX ser_iMaxAllowedChatPerSec;
+extern INDEX ser_bEnumeration;
+
 CSessionSocket::CSessionSocket(void)
 {
   sso_bActive = FALSE;
@@ -59,6 +62,8 @@ CSessionSocket::CSessionSocket(void)
   sso_ctBadSyncs = 0;
   sso_tvLastMessageSent.Clear();
   sso_tvLastPingSent.Clear();
+  
+  sso_ctLastSecChat = 0; // [SSE] Server Essentials - Chat Anti-DDOS
 }
 CSessionSocket::~CSessionSocket(void)
 {
@@ -69,6 +74,8 @@ CSessionSocket::~CSessionSocket(void)
   sso_ctBadSyncs = 0;
   sso_tvLastMessageSent.Clear();
   sso_tvLastPingSent.Clear();
+  
+  sso_ctLastSecChat = 0; // [SSE] Server Essentials - Chat Anti-DDOS
 }
 void CSessionSocket::Clear(void)
 {
@@ -84,6 +91,8 @@ void CSessionSocket::Clear(void)
   sso_iDisconnectedState = 0;
   sso_ctBadSyncs = 0;
   sso_sspParams.Clear();
+  
+  sso_ctLastSecChat = 0; // [SSE] Server Essentials - Chat Anti-DDOS
 }
 
 void CSessionSocket::Activate(void)
@@ -105,6 +114,8 @@ void CSessionSocket::Activate(void)
   sso_ctBadSyncs = 0;
   sso_sspParams.Clear();
 //  sso_nsBuffer.Clear();
+
+  sso_ctLastSecChat = 0; // [SSE] Server Essentials - Chat Anti-DDOS
 }
 
 void CSessionSocket::Deactivate(void)
@@ -117,6 +128,8 @@ void CSessionSocket::Deactivate(void)
   sso_bActive = FALSE;
   sso_nsBuffer.Clear();
   sso_sspParams.Clear();
+  
+  sso_ctLastSecChat = 0; // [SSE] Server Essentials - Chat Anti-DDOS
 }
 BOOL CSessionSocket::IsActive(void)
 {
@@ -208,8 +221,12 @@ CServer::~CServer()
 void CServer::Stop(void)
 {
   // stop gameagent
-  GameAgent_ServerEnd();
-
+ // GameAgent_ServerEnd();
+ 
+  if (ser_bEnumeration) {
+    MS_OnServerEnd();
+  }
+  
   // tell all clients to disconnect
   INDEX ctClients = srv_assoSessions.sa_Count;
   INDEX iClient;
@@ -280,14 +297,14 @@ void CServer::Start_t(void)
 
   // init gameagent
   if (_cmiComm.IsNetworkEnabled()) {
-    GameAgent_ServerInit();
+    MS_OnServerStart();
   }
 }
 
 /*
  * Send disconnect message to some node.
  */
-void CServer::SendDisconnectMessage(INDEX iClient, const char *strExplanation, BOOL bStream)
+void CServer::SendDisconnectMessage(INDEX iClient, const char *strExplanation, BOOL bStream, BOOL bReportDisconnect)
 {
   CSessionSocket &sso = srv_assoSessions[iClient];
 
@@ -305,9 +322,12 @@ void CServer::SendDisconnectMessage(INDEX iClient, const char *strExplanation, B
     // send the stream to the remote session state
     _pNetwork->SendToClientReliable(iClient, strmDisconnect);
   }
-  // report that it has gone away
-  CPrintF(TRANS("Client '%s' ordered to disconnect: %s\n"), 
-    _cmiComm.Server_GetClientName(iClient), strExplanation);
+
+  if (bReportDisconnect) {
+    CPrintF(TRANS("Client '%s' ordered to disconnect: %s\n"), 
+      _cmiComm.Server_GetClientName(iClient), strExplanation); // report that it has gone away
+  }
+    
   // if not disconnected before
   if (sso.sso_iDisconnectedState==0) {
     // mark the disconnection
@@ -316,7 +336,7 @@ void CServer::SendDisconnectMessage(INDEX iClient, const char *strExplanation, B
   } else {
     // force the disconnection
     CPrintF(TRANS("Forcing client '%s' to disconnect\n"), 
-      _cmiComm.Server_GetClientName(iClient));
+      (const char *) _cmiComm.Server_GetClientName(iClient));
     sso.sso_iDisconnectedState = 2;
   }
 }
@@ -381,8 +401,8 @@ void CServer::SendGameStreamBlocks(INDEX iClient)
   INDEX ctMinBytes = sso.sso_sspParams.ssp_iMinBPS/20;
   INDEX ctMaxBytes = sso.sso_sspParams.ssp_iMaxBPS/20;
   // make sure outgoing message doesn't overflow UDP size
-  ctMinBytes = Clamp(ctMinBytes, 0L, 1000L);
-  ctMaxBytes = Clamp(ctMaxBytes, 0L, 1000L);
+  ctMinBytes = Clamp(ctMinBytes, 0, 1000);
+  ctMaxBytes = Clamp(ctMaxBytes, 0, 1000);
   // limit the clients BPS by server's local settings
   extern INDEX ser_iMaxAllowedBPS;
   ctMinBytes = ClampUp(ctMinBytes, (INDEX) ( ser_iMaxAllowedBPS/20L - MAX_HEADER_SIZE));
@@ -392,7 +412,7 @@ void CServer::SendGameStreamBlocks(INDEX iClient)
   extern INDEX cli_bPredictIfServer;
   if (iClient==0 && !cli_bPredictIfServer) {
     ctMinBytes = 0;
-    ctMaxBytes = 1E6;
+    ctMaxBytes = (INDEX) 1E6;
   }
 
 //  CPrintF("Send%d(%d, %d, %d): ", iClient, iLastSent, ctMinBytes, ctMaxBytes);
@@ -459,8 +479,8 @@ void CServer::SendGameStreamBlocks(INDEX iClient)
     nmGameStreamBlocks.PackDefault(nmPackedBlocksNew);
     // if some blocks written already and the batch is too large
     if (iBlocksOk>0) {
-      if (iStep>0 && nmPackedBlocksNew.nm_slSize>=ctMaxBytes ||
-          iStep<0 && nmPackedBlocksNew.nm_slSize>=ctMinBytes ) {
+      if ((iStep>0 && nmPackedBlocksNew.nm_slSize>=ctMaxBytes) ||
+          (iStep<0 && nmPackedBlocksNew.nm_slSize>=ctMinBytes) ) {
         // stop
 //        CPrintF("toomuch ");
         break;
@@ -528,7 +548,7 @@ void CServer::ResendGameStreamBlocks(INDEX iClient, INDEX iSequence0, INDEX ctSe
   extern INDEX net_bReportMiscErrors;
   if (net_bReportMiscErrors) {
     CPrintF(TRANS("Server: Resending sequences %d-%d(%d) to '%s'..."), 
-      iSequence0, iSequence0+ctSequences-1, ctSequences, _cmiComm.Server_GetClientName(iClient));
+      iSequence0, iSequence0+ctSequences-1, ctSequences, (const char *) _cmiComm.Server_GetClientName(iClient));
   }
 
   // get corresponding session socket
@@ -539,8 +559,8 @@ void CServer::ResendGameStreamBlocks(INDEX iClient, INDEX iSequence0, INDEX ctSe
   CNetworkMessage nmPackedBlocks(MSG_GAMESTREAMBLOCKS);
 
   // for each sequence
-  INDEX iSequence = iSequence0;
-  for(; iSequence<iSequence0+ctSequences; iSequence++) {
+  INDEX iSequence;
+  for(iSequence = iSequence0; iSequence<iSequence0+ctSequences; iSequence++) {
     // get the stream block with that sequence
     CNetworkStreamBlock *pnsbBlock;
     CNetworkStream::Result res = sso.sso_nsBuffer.GetBlockBySequence(iSequence, pnsbBlock);
@@ -711,6 +731,28 @@ ULONG CServer::MaskOfPlayersOnClient(INDEX iClient)
  */
 void CServer::ServerLoop(void)
 {
+  // [SSE] Server Essentials - Chat Anti-DDOS BEGIN
+  static CTimerValue _tvLastSecCheck(-1.0F);
+  
+  CTimerValue tvNow = _pTimer->GetHighPrecisionTimer();
+  
+  if ((tvNow - _tvLastSecCheck).GetSeconds() >= 1.0F)
+  {
+    _tvLastSecCheck = tvNow;
+
+    for(INDEX iSession=0; iSession<srv_assoSessions.Count(); iSession++)
+    {
+      CSessionSocket &sso = srv_assoSessions[iSession];
+
+      if (!sso.IsActive()) {
+        continue;
+      }
+      
+      sso.sso_ctLastSecChat = 0;
+    }
+  }
+  // [SSE] Server Essentials - Chat Anti-DDOS END
+  
   // if not started
   if (!srv_bActive) {
     ASSERTALWAYS("Running server loop for before starting server!");
@@ -722,7 +764,7 @@ void CServer::ServerLoop(void)
 
 //  try {
 //    _cmiComm.Server_Accept_t();
-//  } catch ( const char *strError) {
+//  } catch (char *strError) {
 //    CPrintF(TRANS("Accepting failed, no more clients can connect: %s\n"), strError);
 //  }
   // handle all incoming messages
@@ -743,7 +785,7 @@ void CServer::ServerLoop(void)
     if (srv_fServerStep>=1.0f) {
     
       // find how many ticks were stepped
-      INDEX iSpeed = ClampDn(INDEX(srv_fServerStep), 1L);
+      INDEX iSpeed = ClampDn(INDEX(srv_fServerStep), 1);
       srv_fServerStep -= iSpeed;
 
       // for each tick
@@ -854,31 +896,44 @@ void CServer::ConnectRemoteSessionState(INDEX iClient, CNetworkMessage &nm)
   // find session of this client
   CSessionSocket &sso = srv_assoSessions[iClient];
   
-  // if the IP is banned
+  // if the IP is banned then disconnect the client.
   if (!MatchesBanMask(_cmiComm.Server_GetClientName(iClient), ser_strIPMask) != !ser_bInverseBanning) {
-    // disconnect the client
     SendDisconnectMessage(iClient, TRANS("You are banned from this server"), /*bStream=*/TRUE);
     return;
   }
 
+  
+  // [SSE] Netcode Update
+  extern INDEX ser_bReportJoinAttemptsNotSSE;
+  extern INDEX ser_bReportJoinAttemptsMod;
+  extern INDEX ser_bReportJoinAttemptsVersion;
+  //
+
   // read version info
   INDEX iTag, iMajor, iMinor;
-  nm>>iTag;
-  if (iTag=='VTAG') {
+  nm >> iTag;
+
+  extern ULONG _ulEngineRevision;
+  extern ULONG _ulEngineBuildYear;
+  extern ULONG _ulEngineBuildMonth;
+  extern ULONG _ulEngineBuildDay;
+
+  #define VTAG 0x56544147  // Looks like 'VTAG' in ASCII.
+  if (iTag==VTAG) {
     nm>>iMajor>>iMinor;
   } else {
     iMajor = 109;
     iMinor = 1;
   }
-  // if wrong
+
+  // if lesser version then disconnect the client
   if (iMajor!=_SE_BUILD_MAJOR || iMinor!=_SE_BUILD_MINOR) {
-    // disconnect the client
     CTString strExplanation;
     strExplanation.PrintF(TRANS(
       "This server runs version %d.%d, your version is %d.%d.\n"
       "Please visit http://www.croteam.com for information on version updating."),
       _SE_BUILD_MAJOR, _SE_BUILD_MINOR, iMajor, iMinor);
-    SendDisconnectMessage(iClient, strExplanation, /*bStream=*/TRUE);
+    SendDisconnectMessage(iClient, strExplanation, /*bStream=*/TRUE, ser_bReportJoinAttemptsVersion);
     return;
   }
   extern CTString net_strConnectPassword;
@@ -887,16 +942,19 @@ void CServer::ConnectRemoteSessionState(INDEX iClient, CNetworkMessage &nm)
   extern INDEX net_iVIPReserve;
   extern INDEX net_iMaxObservers;
   extern INDEX net_iMaxClients;
+  extern INDEX net_iMaxLocalPlayersPerClient;
+  
   CTString strGivenMod;
   CTString strGivenPassword;
   nm>>strGivenMod>>strGivenPassword;
   INDEX ctWantedLocalPlayers;
   nm>>ctWantedLocalPlayers;
-  // if wrong mod
+
+  // if wrong mod then disconnect the client
   if (_strModName!=strGivenMod) {
     // disconnect the client
     // NOTE: DO NOT TRANSLATE THIS STRING!
-    CTString strMod(0, "MOD:%s\\%s", _strModName.str_String, _strModURL.str_String);
+    CTString strMod(0, "MOD:%s\\%s", (const char *) _strModName, (const char *) _strModURL);
     SendDisconnectMessage(iClient, strMod, /*bStream=*/TRUE);
     return;
   }
@@ -910,8 +968,8 @@ void CServer::ConnectRemoteSessionState(INDEX iClient, CNetworkMessage &nm)
   INDEX ctMaxAllowedVIPPlayers = 0;
   INDEX ctMaxAllowedVIPClients = 0;
   if (net_iVIPReserve>0 && net_strVIPPassword!="") {
-    ctMaxAllowedVIPPlayers = ClampDn(net_iVIPReserve-GetVIPPlayersCount(), 0L);
-    ctMaxAllowedVIPClients = ClampDn(net_iVIPReserve-GetVIPClientsCount(), 0L);
+    ctMaxAllowedVIPPlayers = ClampDn(net_iVIPReserve-GetVIPPlayersCount(), 0);
+    ctMaxAllowedVIPClients = ClampDn(net_iVIPReserve-GetVIPClientsCount(), 0);
   }
   INDEX ctMaxAllowedObservers = net_iMaxObservers;
 
@@ -939,8 +997,8 @@ void CServer::ConnectRemoteSessionState(INDEX iClient, CNetworkMessage &nm)
   // if the user is not authorised as a VIP
   if (!bAutorizedAsVIP) {
     // artificially decrease allowed number of players and clients
-    ctMaxAllowedPlayers = ClampDn(ctMaxAllowedPlayers-ctMaxAllowedVIPPlayers, 0L);
-    ctMaxAllowedClients = ClampDn(ctMaxAllowedClients-ctMaxAllowedVIPClients, 0L);
+    ctMaxAllowedPlayers = ClampDn(ctMaxAllowedPlayers-ctMaxAllowedVIPPlayers, 0);
+    ctMaxAllowedClients = ClampDn(ctMaxAllowedClients-ctMaxAllowedVIPClients, 0);
   }
 
   // if too many clients or players
@@ -967,6 +1025,8 @@ void CServer::ConnectRemoteSessionState(INDEX iClient, CNetworkMessage &nm)
       } else {
         SendDisconnectMessage(iClient, TRANS("Wrong observer password!"), /*bStream=*/TRUE);
       }
+
+      return;
     }
   // if the user is trying to connect as player
   } else {
@@ -977,6 +1037,20 @@ void CServer::ConnectRemoteSessionState(INDEX iClient, CNetworkMessage &nm)
         SendDisconnectMessage(iClient, TRANS("This server requires password to connect!"), /*bStream=*/TRUE);
       } else {
         SendDisconnectMessage(iClient, TRANS("Wrong password!"), /*bStream=*/TRUE);
+      }
+
+      return;
+    }
+
+    // If client want to join with split-screen mode.
+    if (ctWantedLocalPlayers > 1) {
+      if (net_iMaxLocalPlayersPerClient <= 1) {
+        SendDisconnectMessage(iClient, TRANS("Split-screen are not allowed on this server!"), /*bStream=*/TRUE);
+        return;
+      } else if (ctWantedLocalPlayers > net_iMaxLocalPlayersPerClient) {
+        CTString strMod(0, "Too many split-screen players! Maximum = %d!", net_iMaxLocalPlayersPerClient);
+        SendDisconnectMessage(iClient, strMod, /*bStream=*/TRUE);
+        return;
       }
     }
     
@@ -1007,7 +1081,7 @@ void CServer::ConnectRemoteSessionState(INDEX iClient, CNetworkMessage &nm)
     CPrintF(TRANS("Server: Sent initialization info to '%s' (%dk)\n"),
       (const char*)_cmiComm.Server_GetClientName(iClient), slSize/1024);
   // if failed
-  } catch ( const char *strError) {
+  } catch (char *strError) {
     // deactivate it
     sso.Deactivate();
 
@@ -1072,7 +1146,8 @@ void CServer::SendSessionStateData(INDEX iClient)
     // send the stream to the remote session state
     _pNetwork->SendToClientReliable(iClient, strmInfo);
   
-    CPrintF(TRANS("Server: Sent connection data to '%s' (%dk->%dk->%dk)\n"),
+    CPrintF(TRANS("Server: Sent connection data to (%d) '%s' (%dk->%dk->%dk)\n"),
+      iClient,
       (const char*)_cmiComm.Server_GetClientName(iClient), 
       slFullSize/1024, slDeltaSize/1024, slSize/1024);
     if (net_bDumpConnectionInfo) {
@@ -1080,7 +1155,7 @@ void CServer::SendSessionStateData(INDEX iClient)
     }
 
   // if failed
-  } catch ( const char *strError) {
+  } catch (char *strError) {
     // deactivate it
     sso.Deactivate();
 
@@ -1102,8 +1177,10 @@ void CServer::HandleAll()
 
   // for each active client
   {for( INDEX iClient=0; iClient<NET_MAXGAMECOMPUTERS; iClient++) {
-    // handle all of its messages
-    HandleAllForAClient(iClient);
+    // if the client is  connected, handle all of its messages
+    if (_cmiComm.Server_IsClientUsed(iClient)) {
+      HandleAllForAClient(iClient);
+    }
   }}
 }
 
@@ -1112,11 +1189,7 @@ void CServer::HandleAll()
 
 void CServer::HandleAllForAClient(INDEX iClient)
 {
-  // if the client is not connected
-  if (!_cmiComm.Server_IsClientUsed(iClient)) {
-    // skip it
-    return;
-  }
+  ASSERT(_cmiComm.Server_IsClientUsed(iClient));
 
 	// update the client's max BPS limit from the session socket parameters
 	cm_aciClients[iClient].ci_pbOutputBuffer.pb_pbsLimits.pbs_fBandwidthLimit = srv_assoSessions[iClient].sso_sspParams.ssp_iMaxBPS*8;
@@ -1139,7 +1212,7 @@ void CServer::HandleAllForAClient(INDEX iClient)
 
   // if the client is disconnected
   if (!_cmiComm.Server_IsClientUsed(iClient) || sso.sso_iDisconnectedState>1) {
-    CPrintF(TRANS("Server: Client '%s' disconnected.\n"), _cmiComm.Server_GetClientName(iClient));
+    CPrintF(TRANS("Server: Client '%s' disconnected.\n"), (const char *) _cmiComm.Server_GetClientName(iClient));
     // clear it
     _cmiComm.Server_ClearClient(iClient);
     // free all that data that was allocated for the client
@@ -1163,7 +1236,7 @@ void CServer::HandleAllForAClient(INDEX iClient)
 
 	// if the client has confirmed disconnect in this loop
   if (!_cmiComm.Server_IsClientUsed(iClient) || sso.sso_iDisconnectedState>1) {
-    CPrintF(TRANS("Server: Client '%s' disconnected.\n"), _cmiComm.Server_GetClientName(iClient));
+    CPrintF(TRANS("Server: Client '%s' disconnected.\n"), (const char *) _cmiComm.Server_GetClientName(iClient));
     // clear it
     _cmiComm.Server_ClearClient(iClient);
     // free all that data that was allocated for the client
@@ -1172,11 +1245,11 @@ void CServer::HandleAllForAClient(INDEX iClient)
 
   // repeat
   FOREVER {
-    // if there is some unreliable message
+    // if there is some unreliable message then process it
     if (_pNetwork->ReceiveFromClient(iClient, nmReceived)) {
-      // process it
       Handle(iClient, nmReceived);
-    // if there are no more messages
+
+    // if there are no more messages then finish with this client
     } else {
       // finish with this client
       break;
@@ -1194,7 +1267,7 @@ void CServer::HandleClientDisconected(INDEX iClient)
   INDEX iPlayer = 0;
   FOREACHINSTATICARRAY(srv_aplbPlayers, CPlayerBuffer, itplb) {
     // if player is on that client
-    if (itplb->plb_iClient==iClient) {
+    if (itplb->plb_iClient == iClient /* [SSE] Netcode update */&& itplb->IsActive() /* END */) {
       // create message for removing player from all session
       CNetworkStreamBlock nsbRemPlayerData(MSG_SEQ_REMPLAYER, ++srv_iLastProcessedSequence);
       nsbRemPlayerData<<iPlayer;      // player index
@@ -1203,6 +1276,30 @@ void CServer::HandleClientDisconected(INDEX iClient)
       // deactivate it
       itplb->Deactivate();
     }
+
+    iPlayer++;
+  }
+}
+
+// [SSE] Network Update - Safe Rejoin
+void CServer::DetachAllPlayersOfClient(INDEX iClient)
+{
+  INDEX iPlayer = 0;
+
+  FOREACHINSTATICARRAY(srv_aplbPlayers, CPlayerBuffer, itplb)
+  {
+    // if player is on that client 
+    if (itplb->plb_iClient == iClient && itplb->IsActive()) {
+      // create message for removing player from all session
+      CNetworkStreamBlock nsbRemPlayerData(MSG_SEQ_DETACHPLAYER, ++srv_iLastProcessedSequence);
+      nsbRemPlayerData<<iPlayer;      // player index
+      
+      AddBlockToAllSessions(nsbRemPlayerData); // put the message in buffer to be sent to all sessions
+
+      // deactivate it
+      itplb->Deactivate(); // TODO: Here is issue when the server has local players. Fix it.
+    }
+
     iPlayer++;
   }
 }
@@ -1249,7 +1346,7 @@ void CServer::Handle(INDEX iClient, CNetworkMessage &nmMessage)
     } break;
   // if remote server asks for data
   case MSG_REQ_STATEDELTA: {
-    CPrintF(TRANS("Sending statedelta response\n"));
+    CPrintF(TRANS("Server: Sending statedelta response\n")); // [SSE] Better Log
     SendSessionStateData(iClient);
     } break;
   // if player asks for registration
@@ -1282,7 +1379,7 @@ void CServer::Handle(INDEX iClient, CNetworkMessage &nmMessage)
       // send refusal message
       CTString strMessage;
       strMessage.PrintF(TRANS("Player character '%s' already exists in this session."),
-        pcCharacter.GetName());
+        (const char *) pcCharacter.GetName());
       SendDisconnectMessage(iClient, strMessage);
 
     // if the max. number of clients is not reached
@@ -1309,8 +1406,11 @@ void CServer::Handle(INDEX iClient, CNetworkMessage &nmMessage)
       nmPlayerRegistered<<iNewPlayer;   // player index
       _pNetwork->SendToClientReliable(iClient, nmPlayerRegistered);
 
-      // notify gameagent
-      GameAgent_ServerStateChanged();
+      // notify masterserver
+      if (ser_bEnumeration) {
+        MS_OnServerStateChanged();
+      }
+
     // if refused
     } else {
       // send him refusal message
@@ -1360,9 +1460,14 @@ void CServer::Handle(INDEX iClient, CNetworkMessage &nmMessage)
         nmMessage.ReadBits(&iPlayer, 4);
         CPlayerBuffer &plb = srv_aplbPlayers[iPlayer];
         // if the player is not on that client
-        if (plb.plb_iClient!=iClient) {
-          // consider the entire message invalid
-          CPrintF("Wrong Client!\n");
+        if (plb.plb_iClient != iClient) {
+          extern INDEX ser_bReportMsgActionsWrongClient;
+
+          if (ser_bReportMsgActionsWrongClient) {
+            // consider the entire message invalid
+            CPrintF("MSG_ACTION: Received From Wrong Client!\n");
+          }
+		  
           break;
         }
         // read ping
@@ -1386,6 +1491,11 @@ void CServer::Handle(INDEX iClient, CNetworkMessage &nmMessage)
       extern INDEX ser_bReportSyncEarly;
       extern INDEX ser_bPauseOnSyncBad;
       extern INDEX ser_iKickOnSyncBad;
+      
+      // [SSE] Netcode Update - Safe Rejoin
+      //extern INDEX ser_iMaxDetachedPlayers; // TODO: Make in future.
+      extern INDEX ser_bDetachOnSyncBad;
+      //
 
       // read sync check from the packet
       CSyncCheck scRemote;
@@ -1410,10 +1520,13 @@ void CServer::Handle(INDEX iClient, CNetworkMessage &nmMessage)
           sso.sso_ctBadSyncs++;
           if( ser_bReportSyncBad) {
             CPrintF( TRANS("SYNCBAD: Client '%s', Sequence %d Tick %.2f - bad %d\n"), 
-              _cmiComm.Server_GetClientName(iClient), scRemote.sc_iSequence , scRemote.sc_tmTick, sso.sso_ctBadSyncs);
+              (const char *) _cmiComm.Server_GetClientName(iClient), scRemote.sc_iSequence , scRemote.sc_tmTick, sso.sso_ctBadSyncs);
           }
-          if (ser_iKickOnSyncBad>0) {
-            if (sso.sso_ctBadSyncs>=ser_iKickOnSyncBad) {
+          if (ser_iKickOnSyncBad > 0) {
+            if (sso.sso_ctBadSyncs >= ser_iKickOnSyncBad) {
+              if (ser_bDetachOnSyncBad) {
+                DetachAllPlayersOfClient(iClient);
+              }
               SendDisconnectMessage(iClient, TRANS("Too many bad syncs"));
             }
           } else if( ser_bPauseOnSyncBad) {
@@ -1423,7 +1536,7 @@ void CServer::Handle(INDEX iClient, CNetworkMessage &nmMessage)
           sso.sso_ctBadSyncs = 0;
           if (ser_bReportSyncOK) {
             CPrintF( TRANS("SYNCOK: Client '%s', Tick %.2f\n"), 
-              _cmiComm.Server_GetClientName(iClient), scRemote.sc_tmTick);
+              (const char *) _cmiComm.Server_GetClientName(iClient), scRemote.sc_tmTick);
           }
         }
         
@@ -1437,13 +1550,13 @@ void CServer::Handle(INDEX iClient, CNetworkMessage &nmMessage)
         // report only if syncs are ok now (so that we don't report a bunch of late syncs on level change
         if( ser_bReportSyncLate && srv_assoSessions[iClient].sso_tmLastSyncReceived>0) {
           CPrintF( TRANS("SYNCLATE: Client '%s', Tick %.2f\n"), 
-            _cmiComm.Server_GetClientName(iClient), scRemote.sc_tmTick);
+            (const char *) _cmiComm.Server_GetClientName(iClient), scRemote.sc_tmTick);
         }
       // if too new
       } else {
         if( ser_bReportSyncEarly) {
           CPrintF( TRANS("SYNCEARLY: Client '%s', Tick %.2f\n"), 
-            _cmiComm.Server_GetClientName(iClient), scRemote.sc_tmTick);
+            (const char *) _cmiComm.Server_GetClientName(iClient), scRemote.sc_tmTick);
         }
         // remember that this client has sent sync for that tick
         // (even though we cannot really check that it is valid)
@@ -1490,7 +1603,29 @@ void CServer::Handle(INDEX iClient, CNetworkMessage &nmMessage)
     nmMessage>>sso.sso_sspParams;
   } break;
   // if a chat message was sent
-  case MSG_CHAT_IN: {
+  case MSG_CHAT_IN:
+  {
+    // [SSE] Server Essentials - Chat Anti-DDOS BEGIN
+    CSessionSocket &sso = srv_assoSessions[iClient];
+    
+    if (!sso.IsActive()) {
+      break;
+    }
+
+    sso.sso_ctLastSecChat += 1;
+    
+    if (sso.sso_ctLastSecChat > ser_iMaxAllowedChatPerSec)
+    {
+      if (iClient > 0 && sso.sso_iDisconnectedState < 2) {
+        extern BOOL _bDedicatedServer;
+        CPrintF("%s[SrvE] : Client #%d has been kicked for chat DDOS attempt!\n", _bDedicatedServer ? "" : "^cFF0000", iClient);
+        sso.sso_iDisconnectedState = 2; // Force Disconnect
+      }
+
+      break;
+    }
+    // [SSE] Server Essentials - Chat Anti-DDOS END
+    
     // get it
     ULONG ulFrom, ulTo;
     CTString strMessage;
@@ -1502,6 +1637,19 @@ void CServer::Handle(INDEX iClient, CNetworkMessage &nmMessage)
     if (ulFrom==0) {
       // make it public message
       ulTo = -1;
+    }
+
+    // [SSE] Netcode Update - SayFromTo exploit fix.
+    if (ulFrom == 0) {
+      for(INDEX ipl = 0; ipl < srv_aplbPlayers.Count(); ipl++)
+      {
+        CPlayerBuffer &plb = srv_aplbPlayers[ipl];
+
+        if (plb.IsActive() && plb.plb_iClient == iClient) {
+          ulFrom |= 1UL << ipl;
+          break;
+        }
+      }
     }
 
     // make the outgoing message
@@ -1534,7 +1682,7 @@ void CServer::Handle(INDEX iClient, CNetworkMessage &nmMessage)
   } break;
   // if a crc response is received
     case MSG_REQ_CRCLIST: {
-      CPrintF(TRANS("Sending CRC response\n"));
+      CPrintF(TRANS("Server: Sending CRC response\n")); // [SSE] Better Log
     // create CRC challenge
     CTMemoryStream strmCRC;
     strmCRC<<INDEX(MSG_REQ_CRCCHECK);
@@ -1589,7 +1737,7 @@ void CServer::Handle(INDEX iClient, CNetworkMessage &nmMessage)
     } else {
 
       CPrintF(TRANS("Server: Client '%s', Admin cmd: %s\n"), 
-        (const char*)_cmiComm.Server_GetClientName(iClient), strCommand);
+        (const char*)_cmiComm.Server_GetClientName(iClient), (const char *) strCommand);
 
       con_bCapture = TRUE;
       con_strCapture = "";

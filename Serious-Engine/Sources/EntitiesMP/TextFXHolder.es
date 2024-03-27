@@ -52,7 +52,7 @@ components:
 
 functions:
   const CTString &GetDescription(void) const {
-    ((CTString&)m_strDescription).PrintF("%s", m_fnmMessage.FileName());
+    ((CTString&)m_strDescription).PrintF("%s", (const char *) m_fnmMessage.FileName());
     return m_strDescription;
   }
 
@@ -155,7 +155,7 @@ functions:
     pixH = pdpCurr->GetHeight();
     fResolutionScaling = (FLOAT)pixH / 360.0f;
     pdpCurr->SetFont( _pfdDisplayFont);
-    pixLineHeight = floor(20*fResolutionScaling);     
+    pixLineHeight = (PIX) floor(20*fResolutionScaling);
 
     INDEX ctMaxLinesOnScreen = pixH/pixLineHeight;
     INDEX ctLines=ClampUp(_astrLines.Count(), ctMaxLinesOnScreen);

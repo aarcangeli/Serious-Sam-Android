@@ -24,7 +24,7 @@ extern BOOL _bFileReplacingApplied;
 BOOL GetReplacingFile(CTFileName fnSourceTexture, CTFileName &fnReplacingTexture,
                       char *pFilter);
 void SetTextureWithPossibleReplacing_t(CTextureObject &to, CTFileName &fnmTexture);
-
+void GetReplacingClassFile_t(CTFileName &fnmClass);
 // read/write a texture object
 void ReadTextureObject_t(CTStream &strm, CTextureObject &to);
 void SkipTextureObject_t(CTStream &strm);

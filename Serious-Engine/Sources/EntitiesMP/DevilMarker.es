@@ -71,10 +71,10 @@ functions:
   const CTString &GetDescription(void) const {
     CTString strAction = DevilActionType_enum.NameForValue(INDEX(m_datType));
     if (m_penTarget==NULL) {
-      ((CTString&)m_strDescription).PrintF("%s (%s)-><none>", m_strName, strAction);
+      ((CTString&)m_strDescription).PrintF("%s (%s)-><none>", (const char *) m_strName, (const char *) strAction);
     } else {
-      ((CTString&)m_strDescription).PrintF("%s (%s)->%s", m_strName, strAction, 
-        m_penTarget->GetName());
+      ((CTString&)m_strDescription).PrintF("%s (%s)->%s", (const char *) m_strName, (const char *) strAction, 
+        (const char *) m_penTarget->GetName());
     }
     return m_strDescription;
   }

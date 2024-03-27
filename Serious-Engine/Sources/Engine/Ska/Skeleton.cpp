@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include <Engine/StdH.h>
 #include "Skeleton.h"
 
 #include <Engine/Graphics/DrawPort.h>
@@ -26,7 +26,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #define SKELETON_VERSION  6
 #define SKELETON_ID       "SKEL"
 
-CStaticArray<struct SkeletonBone> _aSortArray_SkeletonBone;
+static CStaticArray<struct SkeletonBone> _aSortArray;
 INDEX ctSortBones;
 
 CSkeleton::CSkeleton()
@@ -65,13 +65,13 @@ void CSkeleton::SortSkeleton()
   for(INDEX islod=0;islod<ctslods;islod++)
   {
     // create SkeletonBones array for sorting array
-    _aSortArray_SkeletonBone.New(skl_aSkeletonLODs[islod].slod_aBones.Count());
+    _aSortArray.New(skl_aSkeletonLODs[islod].slod_aBones.Count());
     // start sort for parent bone
     SortSkeletonRecursive(-1,islod);
     // just copy sorted array
-    skl_aSkeletonLODs[islod].slod_aBones.CopyArray(_aSortArray_SkeletonBone);
+    skl_aSkeletonLODs[islod].slod_aBones.CopyArray(_aSortArray);
     // clear array
-    _aSortArray_SkeletonBone.Clear();
+    _aSortArray.Clear();
     // calculate abs transforms for bones in this lod
     CalculateAbsoluteTransformations(islod);
   }
@@ -90,13 +90,13 @@ void CSkeleton::SortSkeletonRecursive(INDEX iParentID, INDEX iSkeletonLod)
     SkeletonBone &sb = slod.slod_aBones[isb];
     if(sb.sb_iParentID == iParentID)
     {
-      // just copy data to _aSortArray_SkeletonBone
-      _aSortArray_SkeletonBone[ctSortBones].sb_iID = sb.sb_iID;
-      _aSortArray_SkeletonBone[ctSortBones].sb_iParentID = sb.sb_iParentID;
-      _aSortArray_SkeletonBone[ctSortBones].sb_fBoneLength = sb.sb_fBoneLength;
-      memcpy(&_aSortArray_SkeletonBone[ctSortBones].sb_mAbsPlacement,&sb.sb_mAbsPlacement,sizeof(float)*12);
-      memcpy(&_aSortArray_SkeletonBone[ctSortBones].sb_qvRelPlacement,&sb.sb_qvRelPlacement,sizeof(QVect));
-      _aSortArray_SkeletonBone[ctSortBones].sb_fOffSetLen = sb.sb_fOffSetLen;
+      // just copy data to _aSortArray
+      _aSortArray[ctSortBones].sb_iID = sb.sb_iID;
+      _aSortArray[ctSortBones].sb_iParentID = sb.sb_iParentID;
+      _aSortArray[ctSortBones].sb_fBoneLength = sb.sb_fBoneLength;
+      memcpy(&_aSortArray[ctSortBones].sb_mAbsPlacement,&sb.sb_mAbsPlacement,sizeof(float)*12);
+      memcpy(&_aSortArray[ctSortBones].sb_qvRelPlacement,&sb.sb_qvRelPlacement,sizeof(QVect));
+      _aSortArray[ctSortBones].sb_fOffSetLen = sb.sb_fOffSetLen;
       // increase couter for sorted bones
       ctSortBones++;
     }
@@ -247,9 +247,10 @@ void CSkeleton::Read_t(CTStream *istrFile)
       sb.sb_iID = ska_GetIDFromStringTable(strNameID);
       sb.sb_iParentID = ska_GetIDFromStringTable(strParentID);
       // read AbsPlacement matrix
-      istrFile->Read_t(&sb.sb_mAbsPlacement,sizeof(FLOAT)*12);
+      for (int i = 0; i < 12; i++)
+        (*istrFile)>>sb.sb_mAbsPlacement[i];
       // read RelPlacement Qvect stuct
-      istrFile->Read_t(&sb.sb_qvRelPlacement,sizeof(QVect));
+      (*istrFile)>>sb.sb_qvRelPlacement;
       // read offset len
       (*istrFile)>>sb.sb_fOffSetLen;
       // read bone length

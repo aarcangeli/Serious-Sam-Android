@@ -67,4 +67,14 @@ endif ()
 target_compile_options(SeriousSam PRIVATE "-I${CMAKE_CURRENT_SOURCE_DIR}")
 target_compile_options(SeriousSam PRIVATE "-I${CMAKE_CURRENT_SOURCE_DIR}/GUI/Menus")
 target_link_libraries(SeriousSam Engine)
+
+
+if (FIRST_ENCOUNTER)
+add_dependencies(SeriousSam Entities)
+else()
 add_dependencies(SeriousSam EntitiesMP)
+endif()
+set_property(SOURCE SeriousSam.cpp PROPERTY COMPILE_DEFINITIONS SSA_VERSION="${SSA_VERSION}")
+
+
+

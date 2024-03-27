@@ -537,10 +537,10 @@ void CGfxLibrary::InitContext_D3D()
   hr = gl_pd3dDevice->SetRenderState( D3DRS_AMBIENT,     0xFFFFFFFF); D3D_CHECKERROR(hr); 
   D3DMATERIAL8 d3dMaterial;
   memset( &d3dMaterial, 0, sizeof(d3dMaterial));
-  d3dMaterial.Diffuse.gfxcol.ub.r = d3dMaterial.Ambient.gfxcol.ub.r = 1.0f;
-  d3dMaterial.Diffuse.gfxcol.ub.g = d3dMaterial.Ambient.gfxcol.ub.g = 1.0f;
-  d3dMaterial.Diffuse.gfxcol.ub.b = d3dMaterial.Ambient.gfxcol.ub.b = 1.0f;
-  d3dMaterial.Diffuse.gfxcol.ub.a = d3dMaterial.Ambient.gfxcol.ub.a = 1.0f;
+  d3dMaterial.Diffuse.ub.r = d3dMaterial.Ambient.ub.r = 1.0f;
+  d3dMaterial.Diffuse.ub.g = d3dMaterial.Ambient.ub.g = 1.0f;
+  d3dMaterial.Diffuse.ub.b = d3dMaterial.Ambient.ub.b = 1.0f;
+  d3dMaterial.Diffuse.ub.a = d3dMaterial.Ambient.ub.a = 1.0f;
   hr = gl_pd3dDevice->SetMaterial(&d3dMaterial);
   D3D_CHECKERROR(hr); 
   GFX_bColorArray = FALSE;

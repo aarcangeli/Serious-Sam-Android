@@ -10,7 +10,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
+		android:id="@+id/constraint_content"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -30,27 +31,30 @@
             android:layout_height="0dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toEndOf="@id/input_overlay"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.0" />
-
-        <com.github.aarcangeli.serioussamandroid.views.ButtonView
-            android:id="@+id/buttonPrev"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:layout_marginEnd="8dp"
-            app:btnBitmap="@drawable/baseline_keyboard_arrow_left_black_48"
-            app:layout_constraintBottom_toBottomOf="@+id/buttonNext"
-            app:layout_constraintEnd_toStartOf="@+id/buttonNext" />
+            app:layout_constraintVertical_bias="1.0" />
 
         <com.github.aarcangeli.serioussamandroid.views.ButtonView
             android:id="@+id/buttonNext"
             android:layout_width="60dp"
             android:layout_height="60dp"
-            android:layout_marginBottom="16dp"
+            android:layout_marginTop="60dp"
+            android:layout_marginEnd="16dp"
             app:btnBitmap="@drawable/baseline_keyboard_arrow_right_black_48"
-            app:layout_constraintBottom_toTopOf="@id/input_crunch"
-            app:layout_constraintEnd_toEndOf="@id/input_crunch" />
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <com.github.aarcangeli.serioussamandroid.views.ButtonView
+            android:id="@+id/buttonPrev"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_marginTop="60dp"
+            android:layout_marginEnd="7dp"
+            app:btnBitmap="@drawable/baseline_keyboard_arrow_left_black_48"
+            app:layout_constraintEnd_toStartOf="@+id/buttonNext"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <com.github.aarcangeli.serioussamandroid.views.JoystickView
             android:id="@+id/input_overlay"
@@ -63,40 +67,13 @@
             android:id="@+id/input_use"
             android:layout_width="70dp"
             android:layout_height="70dp"
-            android:layout_marginTop="24dp"
-            android:layout_marginEnd="8dp"
-            app:btnBitmap="@drawable/ic_use"
-            app:layout_constraintEnd_toStartOf="@id/input_crunch"
-            app:layout_constraintTop_toTopOf="@id/input_crunch" />
-
-        <com.github.aarcangeli.serioussamandroid.views.ButtonView
-            android:id="@+id/input_fire"
-            android:layout_width="70dp"
-            android:layout_height="70dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
-            app:btnBitmap="@drawable/ic_fire"
-            app:layout_constraintEnd_toStartOf="@id/input_jump"
-            app:layout_constraintTop_toBottomOf="@id/input_use" />
-
-        <com.github.aarcangeli.serioussamandroid.views.ButtonView
-            android:id="@+id/input_jump"
-            android:layout_width="70dp"
-            android:layout_height="70dp"
-            android:layout_marginTop="8dp"
-            app:btnBitmap="@drawable/ic_jump"
-            app:layout_constraintEnd_toEndOf="@id/input_crunch"
-            app:layout_constraintTop_toBottomOf="@id/input_crunch" />
-
-        <com.github.aarcangeli.serioussamandroid.views.ButtonView
-            android:id="@+id/input_crunch"
-            android:layout_width="70dp"
-            android:layout_height="70dp"
+            android:layout_marginTop="156dp"
             android:layout_marginEnd="12dp"
-            android:layout_marginBottom="180dp"
-            app:btnBitmap="@drawable/ic_crunch"
+            android:layout_marginBottom="185dp"
+            app:btnBitmap="@drawable/ic_use"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <Button
             android:id="@+id/buttonConsole"
@@ -142,6 +119,73 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-    </android.support.constraint.ConstraintLayout>
+        <Button
+            android:id="@+id/buttonApply"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="318dp"
+            android:layout_marginEnd="325dp"
+            android:layout_marginBottom="42dp"
+            android:onClick="btnApply"
+            android:text="Apply"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <Button
+            android:id="@+id/buttonPlus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="362dp"
+            android:layout_marginEnd="282dp"
+            android:onClick="btnPlus"
+            android:text="Size +"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <Button
+            android:id="@+id/buttonMinus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="273dp"
+            android:layout_marginEnd="370dp"
+            android:onClick="btnMinus"
+            android:text="Size -"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <com.github.aarcangeli.serioussamandroid.views.ButtonView
+            android:id="@+id/input_crouch"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_marginEnd="4dp"
+            app:btnBitmap="@drawable/ic_crouch"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <com.github.aarcangeli.serioussamandroid.views.ButtonView
+            android:id="@+id/input_jump"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            app:btnBitmap="@drawable/ic_jump"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/input_fire"
+            app:layout_constraintTop_toBottomOf="@+id/input_use" />
+
+        <com.github.aarcangeli.serioussamandroid.views.ButtonView
+            android:id="@+id/input_fire"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:layout_marginTop="211dp"
+            android:layout_marginEnd="143dp"
+            android:layout_marginBottom="130dp"
+            app:btnBitmap="@drawable/ic_fire"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </FrameLayout>

@@ -31,12 +31,32 @@ CEmittedParticle::CEmittedParticle(void)
 
 void CEmittedParticle::Write_t( CTStream &strm)
 {
-  strm.WriteRawChunk_t( this, sizeof(CEmittedParticle));
+  strm<<ep_vLastPos;
+  strm<<ep_vPos;
+  strm<<ep_fLastRot;
+  strm<<ep_fRot;
+  strm<<ep_fRotSpeed;
+  strm<<ep_vSpeed;
+  strm<<ep_colLastColor;
+  strm<<ep_colColor;
+  strm<<ep_tmEmitted;
+  strm<<ep_tmLife;
+  strm<<ep_fStretch;
 }
 
 void CEmittedParticle::Read_t( CTStream &strm)
 {
-  strm.ReadRawChunk_t( this, sizeof(CEmittedParticle));
+  strm>>ep_vLastPos;
+  strm>>ep_vPos;
+  strm>>ep_fLastRot;
+  strm>>ep_fRot;
+  strm>>ep_fRotSpeed;
+  strm>>ep_vSpeed;
+  strm>>ep_colLastColor;
+  strm>>ep_colColor;
+  strm>>ep_tmEmitted;
+  strm>>ep_tmLife;
+  strm>>ep_fStretch;
 }
 
 CEmiter::CEmiter(void)
@@ -117,7 +137,7 @@ void CEmiter::AnimateParticles(void)
       ep.ep_fLastRot=ep.ep_fRot;
       ep.ep_fRot+=ep.ep_fRotSpeed*_pTimer->TickQuantum;
       // animate color
-      FLOAT fRatio=CalculateRatio(tmNow, ep.ep_tmEmitted, ep.ep_tmEmitted+ep.ep_tmLife, 1, 0);
+      //FLOAT fRatio=CalculateRatio(tmNow, ep.ep_tmEmitted, ep.ep_tmEmitted+ep.ep_tmLife, 1, 0);
       ep.ep_colLastColor=ep.ep_colColor;
       iCurrent++;
     }

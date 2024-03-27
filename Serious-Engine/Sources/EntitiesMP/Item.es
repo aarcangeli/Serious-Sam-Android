@@ -73,7 +73,7 @@ functions:
       return;
     }
 
-    BOOL bFlare = TRUE;
+    //BOOL bFlare = TRUE;
     // if current player has already picked this item
     if (_ulPlayerRenderingMask&m_ulPickedMask) {
       // if picked items are not rendered
@@ -83,11 +83,11 @@ functions:
         fMipFactor = UpperLimit(0.0f);
       }
       // if picked item particles are not rendered
-      extern INDEX plr_bRenderPickedParticles;
+      /*extern INDEX plr_bRenderPickedParticles;
       if (!plr_bRenderPickedParticles) {
         // kill flare 
-        bFlare = FALSE;
-      }
+        bFlare = FALSE; // DG: bFlare is otherwise unused!
+      }*/
     }
 
     // implement flare on/off ?

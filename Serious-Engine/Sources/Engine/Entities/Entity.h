@@ -225,6 +225,11 @@ public:
   class CEntityComponent *ComponentForTypeAndID(ULONG ulType, ULONG ulID);
   /* Get pointer to entity property from its name. */
   class CEntityProperty *PropertyForName(const CTString &strPropertyName);
+
+  // [SSE]
+  // Get pointer to entity property from its packed ID.
+  class CEntityProperty *PropertyForID(ULONG ulID);
+  
   /* Copy one entity property from property of another entity. */
   void CopyOneProperty( CEntityProperty &epPropertySrc, CEntityProperty &epPropertyDest,
                         CEntity &enOther, ULONG ulFlags);
@@ -466,6 +471,11 @@ public:
   void SetPlacement(const CPlacement3D &plNew);     // use this only in WEd
   void FallDownToFloor( void);
   inline const CPlacement3D &GetPlacement(void) const { return en_plPlacement; };
+
+  // [SSE] Position/Orientation Fast Getters.
+  inline FLOAT3D GetPosition(void) const { return en_plPlacement.pl_PositionVector; }
+  inline ANGLE3D GetOrientation(void) const { return en_plPlacement.pl_OrientationAngle; }
+  
   inline const FLOATmatrix3D &GetRotationMatrix(void) const { return en_mRotation; };
   // this one is used in rendering - gets lerped placement between ticks
   virtual CPlacement3D GetLerpedPlacement(void) const;
@@ -510,6 +520,9 @@ public:
   inline CTerrain *GetTerrain(void) { return en_ptrTerrain; };
   inline CEntity *GetParent(void) { return en_penParent; };
   void SetParent(CEntity *penNewParent);
+  
+  // [SSE] Extended Engine API
+  INDEX GetChildCount(void);
 
   // find first child of given class
   CEntity *GetChildOfClass(const char *strClass);
@@ -657,6 +670,55 @@ public:
   /* Fill in entity statistics - for AI purposes only */
   virtual BOOL FillEntityStatistics(struct EntityStats *pes);
 
+  // [SSE] Interaction API
+  virtual BOOL IsInteractionProvider(void);
+  virtual BOOL IsInteractionRelay(void);
+  virtual CEntity* GetInteractionProvider(void);
+  virtual const CTString& GetInteractionHint(void) const;
+  virtual FLOAT GetInteractionDistance(void) const;
+  
+  // [SSE] Extended Engine API
+  inline BOOL IsAlive(void) const
+  {
+    return en_ulFlags&ENF_ALIVE;
+  }
+
+  // [SSE] Extended Engine API
+  inline BOOL IsDead(void) const
+  {
+    return !(en_ulFlags&ENF_ALIVE);
+  }
+  
+  // [SSE] Extended Engine API
+  virtual BOOL IsLiveEntity()
+  {
+    return FALSE;
+  }
+  
+  // [SSE] Extended Engine API
+  virtual BOOL IsRationalEntity()
+  {
+    return FALSE;
+  }
+  
+  // [SSE] Extended Engine API
+  virtual BOOL IsPlayerEntity()
+  {
+    return FALSE;
+  }
+  
+  // [SSE] Extended Engine API
+  virtual BOOL IsMovableEntity()
+  {
+    return FALSE;
+  }
+  
+  // [SSE] Network Update - Entity RPC
+  virtual void ReceiveRPC(CNetworkMessage &nmMessage) {};
+  
+  // [SSE] Extended Engine API
+  virtual BOOL IsActive(void) const { return TRUE; }
+
   /* Model change notify */
   void ModelChangeNotify(void);
   /* Terrain change notify */ 
@@ -665,13 +727,19 @@ public:
 
 // check if entity is of given class
 BOOL ENGINE_API IsOfClass(CEntity *pen, const char *pstrClassName);
+BOOL ENGINE_API IsOfClassID(CEntity *pen, ULONG ulID); // [SSE] Extended Class Check
+
 BOOL ENGINE_API IsOfSameClass(CEntity *pen1, CEntity *pen2);
+BOOL ENGINE_API IsOfSameClassID(CEntity *pen1, CEntity *pen2); // [SSE] Extended Class Check
+
 // check if entity is of given class or derived from
 BOOL ENGINE_API IsDerivedFromClass(CEntity *pen, const char *pstrClassName);
+BOOL ENGINE_API IsDerivedFromClassID(CEntity *pen, ULONG ulID); // [SSE] Extended Class Check
+
 
 // all standard smart pointer functions are here as inlines
 inline CEntityPointer::CEntityPointer(void) : ep_pen(NULL) {};
-inline CEntityPointer::~CEntityPointer(void) { if(ep_pen != NULL)  ep_pen->RemReference(); };
+inline CEntityPointer::~CEntityPointer(void) { if(ep_pen != NULL) ep_pen->RemReference(); };
 inline CEntityPointer::CEntityPointer(const CEntityPointer &penOther) : ep_pen(penOther.ep_pen) {
   if(ep_pen != NULL) ep_pen->AddReference(); };
 inline CEntityPointer::CEntityPointer(CEntity *pen) : ep_pen(pen) {
@@ -691,58 +759,106 @@ inline const CEntityPointer &CEntityPointer::operator=(const CEntityPointer &pen
 inline CEntity* CEntityPointer::operator->(void) const { return ep_pen; }
 inline CEntity* CEntityPointer::get(void) const { return ep_pen; }
 inline CEntityPointer::operator CEntity*(void) const { return ep_pen; }
-inline CEntity& CEntityPointer::operator*(void) const {
-  ASSERT(ep_pen);
-  return *ep_pen;
-}
+inline CEntity& CEntityPointer::operator*(void) const { return *ep_pen; }
 
 /////////////////////////////////////////////////////////////////////
 // Reference counting functions
 inline void CEntity::AddReference(void) { 
-    ASSERT(this!=NULL);
-    ASSERT(en_ctReferences>=0);
-    en_ctReferences++; 
+  ASSERT(this!=NULL);
+  ASSERT(en_ctReferences>=0);
+  en_ctReferences++; 
 };
 inline void CEntity::RemReference(void) { 
-    ASSERT(this!=NULL);
-    ASSERT(en_ctReferences>0);
-    en_ctReferences--;
-    if(en_ctReferences==0) {
-      delete this;
-    }
+  ASSERT(this!=NULL);
+  ASSERT(en_ctReferences>0);
+  en_ctReferences--;
+  if(en_ctReferences==0) {
+    delete this;
+  }
 };
 
 /*
  * Entity that is alive (has health).
  */
-class ENGINE_API CLiveEntity : public CEntity {
-public:
-  FLOAT en_fHealth;            // health of the entity
+class ENGINE_API CLiveEntity : public CEntity
+{
+  public:
 
-  /* Copy entity from another entity of same class. */
-  virtual void Copy(CEntity &enOther, ULONG ulFlags);
-  /* Read from stream. */
-  virtual void Read_t( CTStream *istr);  // throw char *
-  /* Write to stream. */
-  virtual void Write_t( CTStream *ostr); // throw char *
-public:
-  /* Set health of the entity. (Use only for initialization!) */
-  void SetHealth(FLOAT fHealth) { en_fHealth = fHealth; };
+    /*
+       [ZCaliptium]
 
-public:
-  /* Constructor. */
-  CLiveEntity(void);
+       For different purposes you may need to use different health system.
+       Floating point variable not always satisfies needs because of low
+       precision with high positive or negative values.
+       
+       Union is my workaround to not add new variables into CLiveEntity and save
+       compatability with all old levels.
+    */
 
-  /* Get health of the entity. */
-  FLOAT GetHealth(void) const { return en_fHealth; };
-  // apply some damage to the entity (see event EDamage for more info)
-  virtual void ReceiveDamage(CEntity *penInflictor, enum DamageType dmtType,
-    FLOAT fDamageAmmount, const FLOAT3D &vHitPoint, const FLOAT3D &vDirection);
+    // [SSE] Game Mechanics - Vitality System
+    union {
+      FLOAT en_fHealth; // health of the entity in a float-based system.
+      INDEX en_iHealth; // health of then entity in a integer-based system.
+    };
 
-  // returns bytes of memory used by this object
-  inline SLONG GetUsedMemory(void) {
-    return( sizeof(CLiveEntity) - sizeof(CEntity) + CEntity::GetUsedMemory());
-  };
+    /* Copy entity from another entity of same class. */
+    virtual void Copy(CEntity &enOther, ULONG ulFlags);
+    /* Read from stream. */
+    virtual void Read_t( CTStream *istr);  // throw char *
+    /* Write to stream. */
+    virtual void Write_t( CTStream *ostr); // throw char *
+
+  public:
+    /* Set health of the entity. (Use only for initialization!) */
+    void SetHealth(FLOAT fHealth) { en_fHealth = fHealth; };
+
+  public:
+    /* Constructor. */
+    CLiveEntity(void);
+
+    /* Get health of the entity. */
+    FLOAT GetHealth(void) const { return en_fHealth; };
+    
+    // [SSE] Extended Engine API
+    virtual FLOAT GetArmor(void) const { return 0.0F; };
+    virtual FLOAT GetShields(void) const { return 0.0F; };
+
+    // [SSE] Gameplay - Progression
+    virtual INDEX GetLevel(void) const { return 0; };
+    virtual INDEX GetExperience(void) const { return 0; };
+
+    // [SSE] Gameplay - Currencies
+    virtual INDEX GetBalance(INDEX iCurrencyID) const { return 0; } // Universal getter.
+    virtual INDEX GetMoney(void) const { return 0; };
+    virtual INDEX GetSupplies(void) const { return 0; };
+    
+    // [SSE] Extended Engine API
+    virtual void SetArmor(FLOAT fArmor) {};
+    virtual void SetShields(FLOAT fShields) {};
+    
+    // [SSE] Gameplay - Progression
+    virtual void SetLevel(INDEX iLevel) {};
+    virtual void SetExperience(INDEX iExperience) {};
+    
+    // [SSE] Gameplay - Currencies
+    virtual void SetBalance(INDEX iCurrencyID, INDEX iValue) {}; // Universal setter.
+    virtual void SetMoney(INDEX iMoney) {};
+    virtual void SetSupplies(INDEX iSupllies) {};
+    
+    // [SSE] Extended Engine API
+    virtual BOOL IsLiveEntity()
+    {
+      return TRUE;
+    }
+
+    // apply some damage to the entity (see event EDamage for more info)
+    virtual void ReceiveDamage(CEntity *penInflictor, enum DamageType dmtType,
+      FLOAT fDamageAmmount, const FLOAT3D &vHitPoint, const FLOAT3D &vDirection);
+
+    // returns bytes of memory used by this object
+    inline SLONG GetUsedMemory(void) {
+      return( sizeof(CLiveEntity) - sizeof(CEntity) + CEntity::GetUsedMemory());
+    };
 };
 
 // flag for entities that are not waiting for thinking
@@ -807,6 +923,12 @@ public:
 
   /* Handle an event - return false if event was not handled. */
   virtual BOOL HandleEvent(const CEntityEvent &ee);
+  
+  // [SSE] Extended Engine API
+  virtual BOOL IsRationalEntity()
+  {
+    return TRUE;
+  }
 
   // returns bytes of memory used by this object
   inline SLONG GetUsedMemory(void) {

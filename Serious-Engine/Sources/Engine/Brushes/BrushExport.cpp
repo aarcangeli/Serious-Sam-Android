@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 
 #include <Engine/Brushes/Brush.h>
 #include <Engine/World/WorldEditingProfile.h>
@@ -52,7 +52,7 @@ void CBrushMip::ToObject3D(
     CObject3D &ob,
     CBrushSectorSelectionForCSG &selbscToCopy)
 {
-  CSetFPUPrecision sfp(FPT_53BIT);
+  //CSetFPUPrecision sfp(FPT_53BIT);
   // get number of sectors in the selection
   INDEX ctSectors = selbscToCopy.Count();
   // create that much sectors in the object
@@ -166,19 +166,19 @@ void CBrushSector::ToObjectSector(CObjectSector &osc)
       opo.opo_ulFlags|=OPOF_IGNOREDBYCSG;
     }
     // copy polygon properties
-    const int sizeTextureProperties = sizeof(bpo.bpo_abptTextures[0].bpt.bpt_auProperties);
+    const int sizeTextureProperties = sizeof(bpo.bpo_abptTextures[0].bpt_auProperties);
     const int sizePolygonProperties = sizeof(CBrushPolygonProperties);
     ASSERT(sizeof(opo.opo_ubUserData)>=sizePolygonProperties+3*sizeTextureProperties);
     UBYTE *pubUserData = (UBYTE*)&opo.opo_ubUserData;
     memcpy(pubUserData, &bpo.bpo_bppProperties, sizePolygonProperties);
     memcpy(pubUserData+sizePolygonProperties+0*sizeTextureProperties,
-      &bpo.bpo_abptTextures[0].bpt.bpt_auProperties,
+      &bpo.bpo_abptTextures[0].bpt_auProperties,
       sizeTextureProperties);
     memcpy(pubUserData+sizePolygonProperties+1*sizeTextureProperties,
-      &bpo.bpo_abptTextures[1].bpt.bpt_auProperties,
+      &bpo.bpo_abptTextures[1].bpt_auProperties,
       sizeTextureProperties);
     memcpy(pubUserData+sizePolygonProperties+2*sizeTextureProperties,
-      &bpo.bpo_abptTextures[2].bpt.bpt_auProperties,
+      &bpo.bpo_abptTextures[2].bpt_auProperties,
       sizeTextureProperties);
     *(ULONG*)(pubUserData+sizePolygonProperties+3*sizeTextureProperties) = bpo.bpo_colShadow;
 

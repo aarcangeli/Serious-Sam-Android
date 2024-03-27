@@ -138,7 +138,7 @@ void CMGButton::Render(CDrawPort *pdp)
 		if (pdp->dp_FontData->fd_bFixedWidth) {
 			str = str.Undecorated();
 			INDEX iLen = str.Length();
-			INDEX iMaxLen = ClampDn(box.Size()(1) / (pdp->dp_pixTextCharSpacing + pdp->dp_FontData->fd_pixCharWidth), 1L);
+			INDEX iMaxLen = ClampDn(box.Size()(1) / (pdp->dp_pixTextCharSpacing + pdp->dp_FontData->fd_pixCharWidth), 1);
 			if (iCursor >= iMaxLen) {
 				str.TrimRight(iCursor);
 				str.TrimLeft(iMaxLen);

@@ -96,7 +96,7 @@ void CSinglePlayerMenu::Initialize_t(void)
   gm_mgPlayersAndControls.mg_strTip = TRANS("change currently active player or adjust controls");
   gm_lhGadgets.AddTail(gm_mgPlayersAndControls.mg_lnNode);
   gm_mgPlayersAndControls.mg_pActivatedFunction = NULL;
-  gm_mgPlayersAndControls.mg_bEnabled = false;
+  gm_mgPlayersAndControls.mg_bEnabled = true;
 
   gm_mgOptions.mg_strText = TRANS("GAME OPTIONS");
   gm_mgOptions.mg_bfsFontSize = BFS_LARGE;

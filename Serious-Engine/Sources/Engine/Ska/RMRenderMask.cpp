@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include <Engine/StdH.h>
 
 #include <Engine/Math/Projection.h>
 #include <Engine/Graphics/Shader.h>
@@ -40,7 +40,7 @@ extern void InternalShader_Mask(void)
   INDEX ctIdx = shaGetIndexCount();
   INDEX ctVtx = shaGetVertexCount();
   if( ctIdx==0 || ctVtx==0) return;
-  INDEX *pidx = shaGetIndexArray();
+  INDEX_T *pidx = shaGetIndexArray();
   GFXVertex4  *pvtx = shaGetVertexArray();
   GFXTexCoord *ptex = shaGetUVMap(0);
   CTextureObject *pto = shaGetTexture(0);
@@ -97,8 +97,8 @@ extern void InternalShader_Mask(void)
 
   // copy view space vertices, project 'em to screen space and mark clipping
   CStaticStackArray<TransformedVertexData> atvd;
-  INDEX iVtx=0;
-  for(; iVtx<ctVtx; iVtx++)
+  INDEX iVtx;
+  for( iVtx=0; iVtx<ctVtx; iVtx++)
   {
     // copy viewspace and texture coords
     TransformedVertexData &tvd = atvd.Push();
@@ -121,8 +121,8 @@ extern void InternalShader_Mask(void)
 
     // adjust texture coords (if any!)
     if( ptex!=NULL) {
-      tvd.tvd_fU = ptex[iVtx].gfxtc.st.s;
-      tvd.tvd_fV = ptex[iVtx].gfxtc.st.t;
+      tvd.tvd_fU = ptex[iVtx].st.s;
+      tvd.tvd_fV = ptex[iVtx].st.t;
       tvd.tvd_pv2.pv2_fUoK = tvd.tvd_fU * tvd.tvd_pv2.pv2_f1oK *pixMipWidth;
       tvd.tvd_pv2.pv2_fVoK = tvd.tvd_fV * tvd.tvd_pv2.pv2_f1oK *pixMipHeight;
     } else tvd.tvd_fU = tvd.tvd_fV = 0;

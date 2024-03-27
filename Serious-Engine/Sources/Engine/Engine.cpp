@@ -43,13 +43,22 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Templates/Stock_CShader.h>
 #include <Engine/Templates/StaticArray.cpp>
 #include <Engine/Base/IFeel.h>
+
+#include <Engine/revision.h>
 #include <sys/system_properties.h>
 #include <sys/sysinfo.h>
+#include <dirent.h>
+#include <sys/stat.h>
 
 // this version string can be referenced from outside the engine
 ENGINE_API CTString _strEngineBuild  = "";
 ENGINE_API ULONG _ulEngineBuildMajor = _SE_BUILD_MAJOR;
 ENGINE_API ULONG _ulEngineBuildMinor = _SE_BUILD_MINOR;
+
+ENGINE_API ULONG _ulEngineRevision = REVISION_ID;
+ENGINE_API ULONG _ulEngineBuildYear = REVISION_BUILD_YEAR;
+ENGINE_API ULONG _ulEngineBuildMonth = REVISION_BUILD_MONTH;
+ENGINE_API ULONG _ulEngineBuildDay = REVISION_BUILD_DAY;
 
 ENGINE_API BOOL _bDedicatedServer = FALSE;
 ENGINE_API BOOL _bWorldEditorApp  = FALSE;
@@ -99,22 +108,6 @@ static CTString sys_strModExt  = "";
 
 // enables paranoia checks for allocation array
 BOOL _bAllocationArrayParanoiaCheck = FALSE;
-
-BOOL APIENTRY DllMain( HANDLE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved)
-{
-  switch (ul_reason_for_call)
-	{
-		case DLL_PROCESS_ATTACH:
-      break;
-		case DLL_THREAD_ATTACH:
-		case DLL_THREAD_DETACH:
-		case DLL_PROCESS_DETACH:
-			break;
-    default:
-      ASSERT(FALSE);
-  }
-  return TRUE;
-}
 
 //static void DetectCPU(void)
 //{
@@ -253,7 +246,10 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
 //    _strLogFile = CTFileName(CTString(strExePath)).FileName();
     _strLogFile = CTFileName(_fnmApplicationExe).FileName();
   }
-  _pConsole->Initialize(_fnmApplicationPath+_strLogFile+".log", 90, 512);
+
+  CTFileName fnmLogsDir = _fnmApplicationPath + "Logs/";
+  mkdir(fnmLogsDir.str_String, ACCESSPERMS);
+  _pConsole->Initialize(fnmLogsDir + _strLogFile+".log", 90, 512);
 
   _pAnimStock        = new CStock_CAnimData;
   _pTextureStock     = new CStock_CTextureData;
@@ -268,7 +264,12 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
   _pTimer = new CTimer;
   _pGfx   = new CGfxLibrary;
   _pSound = new CSoundLibrary;
-  _pInput = new CInput;
+
+  // [SSE] Light Dedicated Server
+  if (!_bDedicatedServer) {
+    _pInput = new CInput;
+  }
+
   _pNetwork = new CNetworkLibrary;
 
   CRCT_Init();
@@ -276,9 +277,11 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
   _strEngineBuild.PrintF( TRANS("SeriousEngine Build: %d.%d"), _SE_BUILD_MAJOR, _SE_BUILD_MINOR);
 
   // print basic engine info
-  CPrintF(TRANS("--- Serious Engine Startup ---\n"));
-  CPrintF("  %s\n\n", _strEngineBuild);
-
+  CPrintF(TRANS("--- Serious Engine E Startup ---\n"));
+  CPrintF("  %s\n", _strEngineBuild);
+  CPrintF("  Revision:   %d\n", _ulEngineRevision);
+  CPrintF("  Build Date: %d/%d/%d\n\n", _ulEngineBuildYear, _ulEngineBuildMonth, _ulEngineBuildDay);
+  
   // print info on the started application
   CPrintF(TRANS("Executable: %s\n"), _fnmApplicationExe);
   CPrintF(TRANS("Assumed engine directory: %s\n"), _fnmApplicationPath);
@@ -377,16 +380,16 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
   extern INDEX wld_bFastObjectOptimization;
   extern INDEX fil_bPreferZips;
   extern FLOAT mth_fCSGEpsilon;
-  _pShell->DeclareSymbol("user INDEX con_bNoWarnings;", &con_bNoWarnings);
-  _pShell->DeclareSymbol("user INDEX wld_bFastObjectOptimization;", &wld_bFastObjectOptimization);
-  _pShell->DeclareSymbol("user FLOAT mth_fCSGEpsilon;", &mth_fCSGEpsilon);
-  _pShell->DeclareSymbol("persistent user INDEX fil_bPreferZips;", &fil_bPreferZips);
+  _pShell->DeclareSymbol("user INDEX con_bNoWarnings;",(void*) &con_bNoWarnings);
+  _pShell->DeclareSymbol("user INDEX wld_bFastObjectOptimization;",(void*) &wld_bFastObjectOptimization);
+  _pShell->DeclareSymbol("user FLOAT mth_fCSGEpsilon;",(void*) &mth_fCSGEpsilon);
+  _pShell->DeclareSymbol("persistent user INDEX fil_bPreferZips;",(void*) &fil_bPreferZips);
   // OS info
-  _pShell->DeclareSymbol("user const CTString sys_strOS    ;", &sys_strOS);
-  _pShell->DeclareSymbol("user const INDEX sys_iOSMajor    ;", &sys_iOSMajor);
-  _pShell->DeclareSymbol("user const INDEX sys_iOSMinor    ;", &sys_iOSMinor);
-  _pShell->DeclareSymbol("user const INDEX sys_iOSBuild    ;", &sys_iOSBuild);
-  _pShell->DeclareSymbol("user const CTString sys_strOSMisc;", &sys_strOSMisc);
+  _pShell->DeclareSymbol("user const CTString sys_strOS    ;",(void*) &sys_strOS);
+  _pShell->DeclareSymbol("user const INDEX sys_iOSMajor    ;",(void*) &sys_iOSMajor);
+  _pShell->DeclareSymbol("user const INDEX sys_iOSMinor    ;",(void*) &sys_iOSMinor);
+  _pShell->DeclareSymbol("user const INDEX sys_iOSBuild    ;",(void*) &sys_iOSBuild);
+  _pShell->DeclareSymbol("user const CTString sys_strOSMisc;",(void*) &sys_strOSMisc);
   // CPU info
 //  _pShell->DeclareSymbol("user const CTString sys_strCPUVendor;", &sys_strCPUVendor);
 //  _pShell->DeclareSymbol("user const INDEX sys_iCPUType       ;", &sys_iCPUType    );
@@ -398,14 +401,14 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
 //  _pShell->DeclareSymbol("user const INDEX sys_iCPUMHz        ;", &sys_iCPUMHz     );
 //  _pShell->DeclareSymbol("     const INDEX sys_iCPUMisc       ;", &sys_iCPUMisc    );
   // RAM info
-  _pShell->DeclareSymbol("user const INDEX sys_iRAMPhys;", &sys_iRAMPhys);
-  _pShell->DeclareSymbol("user const INDEX sys_iRAMSwap;", &sys_iRAMSwap);
+  _pShell->DeclareSymbol("user const INDEX sys_iRAMPhys;",(void*) &sys_iRAMPhys);
+  _pShell->DeclareSymbol("user const INDEX sys_iRAMSwap;",(void*)&sys_iRAMSwap);
 //  _pShell->DeclareSymbol("user const INDEX sys_iHDDSize;", &sys_iHDDSize);
 //  _pShell->DeclareSymbol("user const INDEX sys_iHDDFree;", &sys_iHDDFree);
 //  _pShell->DeclareSymbol("     const INDEX sys_iHDDMisc;", &sys_iHDDMisc);
   // MOD info
-  _pShell->DeclareSymbol("user const CTString sys_strModName;", &sys_strModName);
-  _pShell->DeclareSymbol("user const CTString sys_strModExt;",  &sys_strModExt);
+  _pShell->DeclareSymbol("user const CTString sys_strModName;", (void*)&sys_strModName);
+  _pShell->DeclareSymbol("user const CTString sys_strModExt;", (void*) &sys_strModExt);
 
   // Stock clearing
   extern void FreeUnusedStock(void);
@@ -448,7 +451,10 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
   }
 #endif
 
-  _pInput->Initialize();
+  // [SSE] Light Dedicated Server
+  if (!_bDedicatedServer) {
+    _pInput->Initialize();
+  }
 
   _pGfx->Init();
   _pSound->Init();
@@ -502,6 +508,7 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
     }
     CPrintF("\n");
   }
+  
 }
 
 
@@ -531,8 +538,10 @@ ENGINE_API void SE_EndEngine(void)
   CRCT_Clear();
 
   // shutdown
-  if( _pNetwork != NULL) { delete _pNetwork;  _pNetwork=NULL; }
-  delete _pInput;    _pInput   = NULL;  
+  if ( _pNetwork != NULL) { delete _pNetwork;  _pNetwork = NULL; }
+  
+  // _pInput can be NULL while running DedicatedServer.
+  if (   _pInput != NULL) { delete _pInput;    _pInput   = NULL; }
   delete _pSound;    _pSound   = NULL;  
   delete _pGfx;      _pGfx     = NULL;    
   delete _pTimer;    _pTimer   = NULL;  

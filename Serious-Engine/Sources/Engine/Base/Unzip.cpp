@@ -16,7 +16,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 // unzip.cpp : Defines the entry point for the console application.
 //
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 #include <Engine/Base/Stream.h>
 #include <Engine/Base/FileName.h>
 #include <Engine/Base/Translation.h>
@@ -96,7 +96,7 @@ struct EndOfDir {
   SWORD eod_swEntriesInDir;
   SLONG eod_slSizeOfDir;
   SLONG eod_slDirOffsetInFile;
-  SWORD eod_swCommentLenght;
+  SWORD eod_swCommentLength;
 // follows: 
 //  zipfile comment (variable size)
 };
@@ -193,9 +193,11 @@ void CZipHandle::Clear(void)
 void CZipHandle::ThrowZLIBError_t(int ierr, const CTString &strDescription)
 {
   ThrowF_t(TRANS("(%s/%s) %s - ZLIB error: %s - %s"), 
-    (const CTString&)*zh_zeEntry.ze_pfnmArchive, 
-    (const CTString&)zh_zeEntry.ze_fnm,
-    strDescription, GetZlibError(ierr), zh_zstream.msg);
+    (const char *) (const CTString&)*zh_zeEntry.ze_pfnmArchive,
+    (const char *) (const CTString&)zh_zeEntry.ze_fnm,
+    (const char *) strDescription,
+    (const char *) GetZlibError(ierr),
+    (const char *) zh_zstream.msg);
 }
 
 // all files in all active zip archives
@@ -226,7 +228,7 @@ void ReadZIPDirectory_t(CTFileName *pfnmZip)
 
   FILE *f = fopen(*pfnmZip, "rb");
   if (f==NULL) {
-    ThrowF_t(TRANS("%s: Cannot open file (%s)"), *pfnmZip->str_String, strerror(errno));
+    ThrowF_t(TRANS("%s: Cannot open file (%s)"), (const char *) (CTString&)*pfnmZip, strerror(errno));
   }
   // start at the end of file, minus expected minimum overhead
   fseek(f, 0, SEEK_END);
@@ -243,7 +245,7 @@ void ReadZIPDirectory_t(CTFileName *pfnmZip)
   for(; iPos>iMinPos; iPos--) {
     // read signature
     fseek(f, iPos, SEEK_SET);
-    int slSig;
+    SLONG slSig;
     fread(&slSig, sizeof(slSig), 1, f);
     // if this is the sig
     if (slSig==SIGNATURE_EOD) {
@@ -282,13 +284,13 @@ void ReadZIPDirectory_t(CTFileName *pfnmZip)
   // for each file
   for (INDEX iFile=0; iFile<eod.eod_swEntriesInDir; iFile++) {
     // read the sig
-    int slSig;
+    SLONG slSig;
     fread(&slSig, sizeof(slSig), 1, f);
     // if this is not the expected sig
     if (slSig!=SIGNATURE_FH) {
       // fail
       ThrowF_t(TRANS("%s: Wrong signature for 'file header' number %d'"), 
-        pfnmZip->str_String, iFile);
+        (const char *) (CTString&)*pfnmZip, iFile);
     }
     // read its header
     FileHeader fh;
@@ -298,10 +300,10 @@ void ReadZIPDirectory_t(CTFileName *pfnmZip)
     char strBuffer[slMaxFileName+1];
     memset(strBuffer, 0, sizeof(strBuffer));
     if (fh.fh_swFileNameLen>slMaxFileName) {
-      ThrowF_t(TRANS("%s: Too long filepath in zip"), pfnmZip->str_String);
+      ThrowF_t(TRANS("%s: Too long filepath in zip"), (const char *) (CTString&)*pfnmZip);
     }
     if (fh.fh_swFileNameLen<=0) {
-      ThrowF_t(TRANS("%s: Invalid filepath length in zip"), pfnmZip->str_String);
+      ThrowF_t(TRANS("%s: Invalid filepath length in zip"), (const char *) (CTString&)*pfnmZip);
     }
     fread(strBuffer, fh.fh_swFileNameLen, 1, f);
 
@@ -316,7 +318,7 @@ void ReadZIPDirectory_t(CTFileName *pfnmZip)
       if (fh.fh_slUncompressedSize!=0
         ||fh.fh_slCompressedSize!=0) {
         ThrowF_t(TRANS("%s/%s: Invalid directory"), 
-          pfnmZip->str_String, strBuffer);
+          (const char *) (CTString&)*pfnmZip, strBuffer);
       }
 
     // if the file is real file
@@ -341,7 +343,8 @@ void ReadZIPDirectory_t(CTFileName *pfnmZip)
         ze.ze_bStored = FALSE;
       } else {
         ThrowF_t(TRANS("%s/%s: Only 'deflate' compression is supported"),
-          (CTString&)*ze.ze_pfnmArchive, ze.ze_fnm);
+          (const char *) (CTString&)*ze.ze_pfnmArchive,
+          (const char *) ze.ze_fnm);
       }
     }
   }
@@ -349,7 +352,7 @@ void ReadZIPDirectory_t(CTFileName *pfnmZip)
   // if error reading
   if (ferror(f)) {
     // fail
-    ThrowF_t(TRANS("%s: Error reading central directory"), (CTString&)*pfnmZip);
+    ThrowF_t(TRANS("%s: Error reading central directory"), (const char *) (CTString&)*pfnmZip);
   }
 
   // report that file was read
@@ -466,7 +469,7 @@ void UNZIPReadDirectoriesReverse_t(void)
   // if there were errors
   if (strAllErrors!="") {
     // report them
-    ThrowF_t("%s", strAllErrors);
+    ThrowF_t("%s", (const char *) strAllErrors);
   }
 }
 
@@ -554,13 +557,13 @@ INDEX UNZIPOpen_t(const CTFileName &fnm)
   // if not found
   if (pze==NULL) {
     // fail
-    ThrowF_t(TRANS("File not found: %s"), (const CTString&)fnm);
+    ThrowF_t(TRANS("File not found: %s"), (const char *) (const CTString&)fnm);
   }
 
   // for each existing handle
   BOOL bHandleFound = FALSE;
-  INDEX iHandle=1;
-  for (; iHandle<_azhHandles.Count(); iHandle++) {
+  INDEX iHandle;
+  for (iHandle=1; iHandle<_azhHandles.Count(); iHandle++) {
     // if unused
     if (!_azhHandles[iHandle].zh_bOpen) {
       // use that one
@@ -587,19 +590,19 @@ INDEX UNZIPOpen_t(const CTFileName &fnm)
     // clear the handle
     zh.Clear();
     // fail
-    ThrowF_t(TRANS("Cannot open '%s': %s"), pze->ze_pfnmArchive->str_String,
+    ThrowF_t(TRANS("Cannot open '%s': %s"), (const char *) (const CTString&)*pze->ze_pfnmArchive,
       strerror(errno));
   }
   // seek to the local header of the entry
   fseek(zh.zh_fFile, zh.zh_zeEntry.ze_slDataOffset, SEEK_SET);
   // read the sig
-  int slSig;
+  SLONG slSig;
   fread(&slSig, sizeof(slSig), 1, zh.zh_fFile);
   // if this is not the expected sig
   if (slSig!=SIGNATURE_LFH) {
     // fail
     ThrowF_t(TRANS("%s/%s: Wrong signature for 'local file header'"), 
-      (CTString&)*zh.zh_zeEntry.ze_pfnmArchive, zh.zh_zeEntry.ze_fnm);
+      (const char *) (CTString&)*zh.zh_zeEntry.ze_pfnmArchive, (const char *) zh.zh_zeEntry.ze_fnm);
   }
   // read the header
   LocalFileHeader lfh;
@@ -797,4 +800,26 @@ void UNZIPClose(INDEX iHandle)
   }
   // clear it
   zh.Clear();
+}
+
+extern void DumpVFS()
+{
+  CPrintF("VFS Dump:\n");
+
+  INDEX iMem = 0;
+
+  //static CTFileName _ftest = CTFILENAME("test.gro");
+  //CZipEntry &ze = _azeFiles.Push();
+  //ze.ze_fnm = CTFILENAME("test.txt");
+  //ze.ze_pfnmArchive = &_ftest;
+
+  for (INDEX iFile=0; iFile<_azeFiles.Count(); iFile++) {
+    CPrintF("  %s\n", *_azeFiles[iFile].ze_pfnmArchive);
+    CPrintF("    %s\n", _azeFiles[iFile].ze_fnm);
+    iMem += _azeFiles[iFile].ze_fnm.Length() + 1;
+  }
+
+  CPrintF("----------------------------------------\n");
+  CPrintF("Files in packs: %d\n", _azeFiles.Count());
+  CPrintF("RAM used for filenames: %d bytes\n", iMem);
 }

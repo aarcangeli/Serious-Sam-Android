@@ -99,7 +99,7 @@ void CControls::SwitchAxesToDefaults(void)
   ctrl_aaAxisActions[ AXIS_TURN_UD].aa_iAxisAction = MOUSE_Y_AXIS;
   ctrl_aaAxisActions[ AXIS_TURN_UD].aa_fSensitivity = 45;
   ctrl_aaAxisActions[ AXIS_TURN_UD].aa_bInvert = TRUE;
-  ctrl_aaAxisActions[ AXIS_TURN_UD].aa_bRelativeControler = TRUE;
+  ctrl_aaAxisActions[ AXIS_TURN_UD].aa_bRelativeControler = FALSE;
 
   ctrl_fSensitivity = 50;
   ctrl_bInvertLook = FALSE;
@@ -222,13 +222,15 @@ void CControls::Load_t( CTFileName fnFile)
       achrIfInverted[ 0] = 0;
       char achrIfRelative[ 1025];
       achrIfRelative[ 0] = 0;
-      char achrIfSmooth[ 1025];
-      achrIfSmooth[ 0] = 0;
+      //char achrIfSmooth[ 1025];
+      //achrIfSmooth[ 0] = 0;
       achrActionName[ 0] = 0;
       FLOAT fSensitivity = 50;
       FLOAT fDeadZone = 0;
+      // FIXME DG: if achrIfSmooth should be read, add another %1024s - but it seems like achrIfSmooth
+      //           is unused - below achrIfRelative is compared to "Smooth"?!
       sscanf( achrLine, "%*[^\"]\"%1024[^\"]\"%*[^\"]\"%1024[^\"]\" %g %g %1024s %1024s",
-              achrActionName, achrAxis, &fSensitivity, &fDeadZone, achrIfInverted, achrIfRelative, achrIfSmooth);
+              achrActionName, achrAxis, &fSensitivity, &fDeadZone, achrIfInverted, achrIfRelative /*, achrIfSmooth*/);
       // find action axis
       INDEX iActionAxisNo = -1;
       {for( INDEX iAxis=0; iAxis<AXIS_ACTIONS_CT; iAxis++){
@@ -254,8 +256,8 @@ void CControls::Load_t( CTFileName fnFile)
         ctrl_aaAxisActions[ iActionAxisNo].aa_fSensitivity = fSensitivity;
         ctrl_aaAxisActions[ iActionAxisNo].aa_fDeadZone = fDeadZone;
         ctrl_aaAxisActions[ iActionAxisNo].aa_bInvert = ( CTString( "Inverted") == achrIfInverted);
-        ctrl_aaAxisActions[ iActionAxisNo].aa_bRelativeControler = ( CTString( "Relative") == achrIfRelative);
-        ctrl_aaAxisActions[ iActionAxisNo].aa_bSmooth = ( CTString( "Smooth") == achrIfRelative);
+        ctrl_aaAxisActions[ iActionAxisNo].aa_bRelativeControler = FALSE;
+        ctrl_aaAxisActions[ iActionAxisNo].aa_bSmooth = FALSE;
       }
     // read global parameters
     } else if( CTString( achrID) == "GlobalInvertLook") {
@@ -263,7 +265,7 @@ void CControls::Load_t( CTFileName fnFile)
     } else if( CTString( achrID) == "GlobalDontInvertLook") {
       ctrl_bInvertLook = FALSE;
     } else if( CTString( achrID) == "GlobalSmoothAxes") {
-      ctrl_bSmoothAxes = TRUE;
+      ctrl_bSmoothAxes = FALSE;
     } else if( CTString( achrID) == "GlobalDontSmoothAxes") {
       ctrl_bSmoothAxes = FALSE;
     } else if( CTString( achrID) == "GlobalSensitivity") {
@@ -324,13 +326,13 @@ void CControls::Save_t( CTFileName fnFile)
   FOREACHINLIST( CButtonAction, ba_lnNode, ctrl_lhButtonActions, itba)
   {
     strLine.PrintF("Button\n Name: TTRS %s\n Key1: %s\n Key2: %s",
-      itba->ba_strName,
-      _pInput->GetButtonName( itba->ba_iFirstKey),
-      _pInput->GetButtonName( itba->ba_iSecondKey) );
+      (const char *) itba->ba_strName,
+      (const char *) _pInput->GetButtonName( itba->ba_iFirstKey),
+      (const char *) _pInput->GetButtonName( itba->ba_iSecondKey) );
     strmFile.PutLine_t( strLine);
 
     // export pressed command
-    strLine.PrintF(" Pressed:  %s", itba->ba_strCommandLineWhenPressed);
+    strLine.PrintF(" Pressed:  %s", (const char *) itba->ba_strCommandLineWhenPressed);
     {for( INDEX iLetter = 0; strLine[ iLetter] != 0; iLetter++)
     {
       // delete EOL-s
@@ -342,7 +344,7 @@ void CControls::Save_t( CTFileName fnFile)
     strmFile.PutLine_t( strLine);
 
     // export released command
-    strLine.PrintF(" Released: %s", itba->ba_strCommandLineWhenReleased);
+    strLine.PrintF(" Released: %s", (const char *) itba->ba_strCommandLineWhenReleased);
     {for( INDEX iLetter = 0; strLine[ iLetter] != 0; iLetter++)
     {
       // delete EOL-s
@@ -378,13 +380,13 @@ void CControls::Save_t( CTFileName fnFile)
     
 
     strLine.PrintF("Axis \"%s\" \"%s\" %g %g %s %s %s",
-      _pGame->gm_astrAxisNames[iAxis], 
-      _pInput->GetAxisName(ctrl_aaAxisActions[iAxis].aa_iAxisAction),
+      (const char *) _pGame->gm_astrAxisNames[iAxis], 
+      (const char *) _pInput->GetAxisName(ctrl_aaAxisActions[iAxis].aa_iAxisAction),
       ctrl_aaAxisActions[ iAxis].aa_fSensitivity,
       ctrl_aaAxisActions[ iAxis].aa_fDeadZone,
-      strIfInverted,
-      strIfRelative,
-      strIfSmooth);
+      (const char *) strIfInverted,
+      (const char *) strIfRelative,
+      (const char *) strIfSmooth);
     strmFile.PutLine_t( strLine);
   }
 

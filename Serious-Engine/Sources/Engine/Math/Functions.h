@@ -54,7 +54,7 @@ inline Type Lerp( const Type x0, const Type x1, const FLOAT fRatio)
 {
        if( fRatio==0) return x0;
   else if( fRatio==1) return x1;
-  else return x0+(x1-x0)*fRatio;
+  else return ((Type) (x0+(x1-x0)*fRatio));
 }
 
 template<class Type>
@@ -287,7 +287,7 @@ inline FLOAT FastRcp( const FLOAT f)
 inline ULONG NormFloatToByte( const FLOAT f)
 {
     /* rcg10042001 !!! FIXME: Move this elsewhere. */
-#ifdef _MSC_VER
+#ifdef __MSVC_INLINE__
   const FLOAT f255 = 255.0f;
   ULONG ulRet;
   __asm {
@@ -297,8 +297,8 @@ inline ULONG NormFloatToByte( const FLOAT f)
   }
   return ulRet;
 #else
-  assert((f >= 0.0) && (f <= 1.0));
-  return( (ULONG) (f * 255.0) );
+  ASSERT((f >= 0.0f) && (f <= 1.0f));
+  return( (ULONG) (f * 255.0f) );
 #endif
 }
 
@@ -312,11 +312,7 @@ inline FLOAT NormByteToFloat( const ULONG ul)
 // fast float to int conversion
 inline SLONG FloatToInt( FLOAT f)
 {
-#if (defined USE_PORTABLE_C)
-  float addToRound = copysignf(0.5f, f); // copy f's signbit to 0.5 => if f<0 then addToRound = -0.5, else 0.5
-  return((SLONG) (f + addToRound));
-
-#elif (defined _MSC_VER)
+#if (defined __MSVC_INLINE__)
   SLONG slRet;
   __asm {
     fld    D [f]
@@ -324,10 +320,10 @@ inline SLONG FloatToInt( FLOAT f)
   }
   return slRet;
 
-#elif (defined __GNUC__)
+#elif (defined __GNU_INLINE_X86_32__)
   SLONG slRet;
   __asm__ __volatile__ (
-    "flds     (%%ebx)   \n\t"
+    "flds     (%%eax)   \n\t"
     "fistpl   (%%esi)   \n\t"
         :
         : "b" (&f), "S" (&slRet)
@@ -335,16 +331,16 @@ inline SLONG FloatToInt( FLOAT f)
   );
   return(slRet);
 #else
-  #error Fill this in for your platform.
+  // round to nearest by adding/subtracting 0.5 (depending on f pos/neg) before converting to SLONG
+  float addToRound = copysignf(0.5f, f); // copy f's signbit to 0.5 => if f<0 then addToRound = -0.5, else 0.5
+  return((SLONG) (f + addToRound));
+
 #endif
 }
 
 // log base 2 of any float numero
 inline FLOAT Log2( FLOAT f) {
-#if (defined USE_PORTABLE_C)
-  return log2f(f);
-
-#elif (defined _MSC_VER)
+#if (defined __MSVC_INLINE__)
   FLOAT fRet;
   _asm {
     fld1
@@ -354,20 +350,21 @@ inline FLOAT Log2( FLOAT f) {
   }
   return fRet;
 
-#elif (defined __GNUC__)
+#elif (defined __GNU_INLINE_X86_32__)
   FLOAT fRet;
   __asm__ __volatile__ (
     "fld1               \n\t"
-    "flds     (%%ebx)   \n\t"
+    "flds     (%%eax)   \n\t"
     "fyl2x              \n\t"
     "fstps    (%%esi)   \n\t"
         :
-        : "b" (&f), "S" (&fRet)
+        : "a" (&f), "S" (&fRet)
         : "memory"
   );
   return(fRet);
 #else
-  #error Fill this in for your platform.
+  return log2f(f);
+
 #endif
 }
 
@@ -410,16 +407,11 @@ inline SLONG FastLog2( SLONG x)
 #endif
 }
 
+/* DG: function is unused => doesn't matter that portable implementation is not optimal :)
 // returns log2 of first larger value that is a power of 2
 inline SLONG FastMaxLog2( SLONG x)
-{
-#if (defined USE_PORTABLE_C)
-  if (x == 1) return 1;
-  SLONG result = FastLog2(x);
-  if ((ULONG) 1 << result != (ULONG) x) result++;
-  return result;
-
-#elif (defined _MSC_VER)
+{ 
+#if (defined __MSVC_INLINE__)
   SLONG slRet;
   __asm {
     bsr   eax,D [x]
@@ -430,23 +422,25 @@ inline SLONG FastMaxLog2( SLONG x)
   }
   return slRet;
 
-#elif (defined __GNUC__)
+#elif (defined __GNU_INLINE_X86_32__)
   SLONG slRet;
   __asm__ __volatile__ (
-    "bsrl  (%%ebx), %%eax     \n\t"
-    "bsfl  (%%ebx), %%edx     \n\t"
+    "bsrl  %%ecx, %%eax     \n\t"
+    "bsfl  %%ecx, %%edx     \n\t"
     "cmpl  %%eax, %%edx       \n\t"
     "adcl  $0, %%eax          \n\t"
-    "movl  %%eax, (%%esi)     \n\t"
-        :
-        : "b" (&x), "S" (&slRet)
+        : "=a" (slRet)
+        : "c" (x)
         : "memory"
   );
   return(slRet);
 #else
-  #error Fill this in for your platform.
+printf("CHECK THIS: %s:%d\n", __FILE__, __LINE__);
+  return((SLONG) log2((double) x));
+
 #endif
 }
+*/
 
 
 
@@ -467,7 +461,7 @@ inline FLOAT Sqrt( FLOAT x) { return (FLOAT)sqrt( ClampDn( x, 0.0f)); }
 #define ANGLE_SNAP (0.25f)   //0x0010
 // Wrap angle to be between 0 and 360 degrees
 inline ANGLE WrapAngle(ANGLE a) {
-  return (ANGLE) fmod( fmod(a,360.0f) + 360.0f, 360.0f);  // 0..360
+  return (ANGLE) fmod( fmod(a,360.0) + 360.0, 360.0);  // 0..360
 }
 
 // Normalize angle to be between -180 and +180 degrees
@@ -616,6 +610,6 @@ inline FLOAT CalculateRatio(FLOAT fCurr, FLOAT fMin, FLOAT fMax, FLOAT fFadeInRa
 #undef W
 #undef B
 
-
 #endif  /* include-once check. */
+
 

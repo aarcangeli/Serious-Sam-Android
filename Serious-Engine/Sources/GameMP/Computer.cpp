@@ -127,7 +127,7 @@ static PIXaabbox2D GetSliderBox(INDEX iFirst, INDEX iVisible, INDEX iTotal,
   PIX pixFull = boxFull.Size()(2);
   PIX pixSize = PIX(pixFull*fSize);
   pixSize = ClampDn(pixSize, boxFull.Size()(1));
-  PIX pixTop = pixFull*(FLOAT(iFirst)/iTotal)+boxFull.Min()(2);
+  PIX pixTop = (PIX) (pixFull*(FLOAT(iFirst)/iTotal)+boxFull.Min()(2));
   PIX pixI0 = boxFull.Min()(1);
   PIX pixI1 = boxFull.Max()(1);
   return PIXaabbox2D(PIX2D(pixI0, pixTop), PIX2D(pixI1, pixTop+pixSize));
@@ -174,12 +174,12 @@ static PIXaabbox2D GetMsgSliderSpace(void)
 
 static PIXaabbox2D GetTextSliderBox(void)
 {
-  if (_iActiveMessage>=_acmMessages.Count()) {
+  if ((_iActiveMessage >= _acmMessages.Count()) || (_iActiveMessage < 0)) {
     return PIXaabbox2D();
   }
   INDEX ctTextLines = _acmMessages[_iActiveMessage].cm_ctFormattedLines;
-  PIX pixSizeI = _boxMsgText.Size()(1);
-  PIX pixSizeJ = _boxMsgText.Size()(2);
+  //PIX pixSizeI = _boxMsgText.Size()(1);
+  //PIX pixSizeJ = _boxMsgText.Size()(2);
   return GetSliderBox(
     _iTextLineOnScreen, _ctTextLinesOnScreen, ctTextLines, GetTextSliderSpace());
 }
@@ -187,8 +187,8 @@ static PIXaabbox2D GetTextSliderBox(void)
 static PIXaabbox2D GetMsgSliderBox(void)
 {
   INDEX ctLines = _acmMessages.Count();
-  PIX pixSizeI = _boxMsgList.Size()(1);
-  PIX pixSizeJ = _boxMsgList.Size()(2);
+  //PIX pixSizeI = _boxMsgList.Size()(1);
+  //PIX pixSizeJ = _boxMsgList.Size()(2);
   return GetSliderBox(
     _iFirstMessageOnScreen, _ctMessagesOnScreen, ctLines, GetMsgSliderSpace());
 }
@@ -235,7 +235,7 @@ void LastUnreadMessage(void)
     }
   }
   if (!bFound) {
-    _iActiveMessage = ClampDn<INDEX>(_acmMessages.Count()-1, 0);
+    _iActiveMessage = ClampDn((long) _acmMessages.Count()-1, (long) 0);
   }
   SyncScrollWithActive();
 }
@@ -243,7 +243,7 @@ void LastUnreadMessage(void)
 // go to next/previous message
 void PrevMessage(void)
 {
-  if (_iActiveMessage<_acmMessages.Count()==0) {
+  if ((_iActiveMessage >= _acmMessages.Count()) || (_iActiveMessage < 0)) {
     return;
   }
   _iActiveMessage--;
@@ -255,7 +255,7 @@ void PrevMessage(void)
 
 void NextMessage(void)
 {
-  if (_iActiveMessage<_acmMessages.Count()==0) {
+  if ((_iActiveMessage >= _acmMessages.Count()) || (_iActiveMessage < 0)) {
     return;
   }
   _iActiveMessage++;
@@ -269,11 +269,11 @@ void MessagesUpDn(INDEX ctLines)
 {
   INDEX ctMessages = _acmMessages.Count();
   _iWantedFirstMessageOnScreen += ctLines;
-  INDEX iMaxFirst = ClampDn(0L, ctMessages-_ctMessagesOnScreen);
-  _iWantedFirstMessageOnScreen = Clamp(_iWantedFirstMessageOnScreen, 0L, iMaxFirst);
+  INDEX iMaxFirst = ClampDn(0, ctMessages-_ctMessagesOnScreen);
+  _iWantedFirstMessageOnScreen = Clamp(_iWantedFirstMessageOnScreen, 0, iMaxFirst);
   _iActiveMessage = Clamp(_iActiveMessage, 
     _iWantedFirstMessageOnScreen,
-    _iWantedFirstMessageOnScreen+_ctMessagesOnScreen-1L);
+    _iWantedFirstMessageOnScreen+_ctMessagesOnScreen-1);
 }
 
 void SelectMessage(INDEX i)
@@ -302,7 +302,7 @@ void MessageTextUp(INDEX ctLines)
 void MessageTextDn(INDEX ctLines)
 {
   // if no message do nothing
-  if (_iActiveMessage<_acmMessages.Count()==0) {
+  if ((_iActiveMessage >= _acmMessages.Count()) || (_iActiveMessage < 0)) {
     return;
   }
   // find text lines count
@@ -333,7 +333,7 @@ void MessageTextUpDn(INDEX ctLines)
 // mark current message as read
 void MarkCurrentRead(void)
 {
-  if (_iActiveMessage>=_acmMessages.Count()) {
+  if ((_iActiveMessage >= _acmMessages.Count()) || (_iActiveMessage < 0)) {
     return;
   }
   // if running in background
@@ -453,33 +453,33 @@ static void UpdateSize(CDrawPort *pdp)
 
   // remember font size
   CFontData *pfd = _pfdConsoleFont;
-  _pixCharSizeI = pfd->fd_pixCharWidth  + pfd->fd_pixCharSpacing + 1;
-  _pixCharSizeJ = pfd->fd_pixCharHeight + pfd->fd_pixLineSpacing;
-  _pixCharSize2I = _pixCharSizeI*_fScaling2;
-  _pixCharSize2J = _pixCharSizeJ*_fScaling2;
-  _pixCharSizeI = _pixCharSizeI*_fScaling;
-  _pixCharSizeJ = _pixCharSizeJ*_fScaling;
+  _pixCharSizeI = (PIX) pfd->fd_pixCharWidth  + pfd->fd_pixCharSpacing + 1;
+  _pixCharSizeJ = (PIX) (pfd->fd_pixCharHeight + pfd->fd_pixLineSpacing);
+  _pixCharSize2I = (PIX) (_pixCharSizeI*_fScaling2);
+  _pixCharSize2J = (PIX) (_pixCharSizeJ*_fScaling2);
+  _pixCharSizeI = (PIX) (_pixCharSizeI*_fScaling);
+  _pixCharSizeJ = (PIX) (_pixCharSizeJ*_fScaling);
 
-  _pixMarginI = 5*_fScaling2;
-  _pixMarginJ = 5*_fScaling2;
-  PIX pixBoxMarginI = 10*_fScaling2;
-  PIX pixBoxMarginJ = 10*_fScaling2;
+  _pixMarginI = (PIX) (5*_fScaling2);
+  _pixMarginJ = (PIX) (5*_fScaling2);
+  PIX pixBoxMarginI = (PIX) (10*_fScaling2);
+  PIX pixBoxMarginJ = (PIX) (10*_fScaling2);
 
-  PIX pixJ0Dn = pixBoxMarginJ;
-  PIX pixJ1Up = pixJ0Dn+_pixCharSize2J+_pixMarginI*2;
-  PIX pixJ1Dn = pixJ1Up+pixBoxMarginJ;
-  PIX pixJ2Up = pixJ1Dn+_pixCharSize2J*6*2+pixBoxMarginJ;
-  PIX pixJ2Dn = pixJ2Up+pixBoxMarginJ;
-  PIX pixJ3Up = _pixSizeJ-pixBoxMarginJ;
+  PIX pixJ0Dn = (PIX) (pixBoxMarginJ);
+  PIX pixJ1Up = (PIX) (pixJ0Dn+_pixCharSize2J+_pixMarginI*2);
+  PIX pixJ1Dn = (PIX) (pixJ1Up+pixBoxMarginJ);
+  PIX pixJ2Up = (PIX) (pixJ1Dn+_pixCharSize2J*6*2+pixBoxMarginJ);
+  PIX pixJ2Dn = (PIX) (pixJ2Up+pixBoxMarginJ);
+  PIX pixJ3Up = (PIX) (_pixSizeJ-pixBoxMarginJ);
 
-  PIX pixI0Rt = pixBoxMarginI;
-  PIX pixI1Lt = pixI0Rt+_pixCharSize2I*20+pixBoxMarginI;
-  PIX pixI1Rt = pixI1Lt+pixBoxMarginI;
-  PIX pixI2Lt = _pixSizeI/2-pixBoxMarginI/2;
-  PIX pixI2Rt = _pixSizeI/2+pixBoxMarginI/2;
-  PIX pixI4Lt = _pixSizeI-pixBoxMarginI;
-  PIX pixI3Rt = pixI4Lt-pixBoxMarginI*2-_pixCharSize2I*10;
-  PIX pixI3Lt = pixI3Rt-pixBoxMarginI;
+  PIX pixI0Rt = (PIX) (pixBoxMarginI);
+  PIX pixI1Lt = (PIX) (pixI0Rt+_pixCharSize2I*20+pixBoxMarginI);
+  PIX pixI1Rt = (PIX) (pixI1Lt+pixBoxMarginI);
+  PIX pixI2Lt = (PIX) (_pixSizeI/2-pixBoxMarginI/2);
+  PIX pixI2Rt = (PIX) (_pixSizeI/2+pixBoxMarginI/2);
+  PIX pixI4Lt = (PIX) (_pixSizeI-pixBoxMarginI);
+  PIX pixI3Rt = (PIX) (pixI4Lt-pixBoxMarginI*2-_pixCharSize2I*10);
+  PIX pixI3Lt = (PIX) (pixI3Rt-pixBoxMarginI);
 
   // calculate box sizes
   _boxTitle = PIXaabbox2D( PIX2D(0, pixJ0Dn-1), PIX2D(pixI3Lt, pixJ1Up));
@@ -502,7 +502,7 @@ static void UpdateSize(CDrawPort *pdp)
     _boxMsgImage= PIXaabbox2D();
   }
 
-  FLOAT fSlideSpeed = Max(_pixSizeI, _pixSizeJ*2L);
+  FLOAT fSlideSpeed = Max(_pixSizeI, _pixSizeJ*2);
   FLOAT fGroup0 = ClampDn((1-fComputerFadeValue)*fSlideSpeed-_pixSizeJ, 0.0f);
   FLOAT fGroup1 = (1-fComputerFadeValue)*fSlideSpeed;
   // animate box positions
@@ -580,7 +580,7 @@ void PrintTitle(CDrawPort *pdp)
   SetFont2(pdp);
   CTString strTitle;
   strTitle.PrintF(TRANS("NETRICSA v2.01 - personal version for: %s"), 
-    _ppenPlayer->GetPlayerName());
+   (const char *) _ppenPlayer->GetPlayerName());
   pdp->PutText( strTitle, _pixMarginI*3, _pixMarginJ-2*_fScaling2+1, _colMedium);
 }
 
@@ -723,7 +723,7 @@ void RenderMessagePicture(CDrawPort *pdp)
   // if failed
   } catch ( const char *strError) {
     // report error
-    CPrintF("Cannot load '%s':\n%s\n", (CTString&)cm.cm_fnmPicture, strError);
+    CPrintF("Cannot load '%s':\n%s\n", (const char *) (CTString&)cm.cm_fnmPicture, strError);
     // do nothing
     return;
   }
@@ -751,7 +751,7 @@ void RenderMessageStats(CDrawPort *pdp)
 {
   CSessionProperties *psp = (CSessionProperties *)_pNetwork->GetSessionProperties();
   ULONG ulLevelMask = psp->sp_ulLevelsMask;
-  INDEX iLevel = -1;
+  //INDEX iLevel = -1;
   if (psp->sp_bCooperative) {
     extern void RenderMap( CDrawPort *pdp, ULONG ulLevelMask, CProgressHookInfo *pphi);
     if (pdp->Lock()) {
@@ -870,7 +870,7 @@ static void ComputerOff(void)
 static void ExitRequested(void)
 {
   // if end of game
-  if (_ppenPlayer!=NULL && _ppenPlayer->m_bEndOfGame || _pNetwork->IsGameFinished()) {
+  if ((_ppenPlayer!=NULL && _ppenPlayer->m_bEndOfGame) || _pNetwork->IsGameFinished()) {
     // if in single player
     if (GetSP()->sp_bSinglePlayer) {
       // request app to show high score
@@ -1185,8 +1185,8 @@ void CGame::ComputerRender(CDrawPort *pdp)
   _pGfx->GetCurrentDisplayMode(dmCurrent);
   if (dmCurrent.IsFullScreen() && dmCurrent.IsDualHead()) {
     // clamp mouse pointer
-    _vpixMouse(1) = Clamp(_vpixMouse(1), 0L, dpComp.GetWidth());
-    _vpixMouse(2) = Clamp(_vpixMouse(2), 0L, dpComp.GetHeight());
+    _vpixMouse(1) = Clamp(_vpixMouse(1), 0, dpComp.GetWidth());
+    _vpixMouse(2) = Clamp(_vpixMouse(2), 0, dpComp.GetHeight());
   // if in window
   } else {
     // use same mouse pointer as windows
@@ -1212,7 +1212,7 @@ void CGame::ComputerRender(CDrawPort *pdp)
   _pTimer->SetCurrentTick(tmTick);
   _pTimer->SetLerp(fLerp);
 
-  LCDPrepare(1.0f);//ClampUp(fComputerFadeValue*10,1.0f));
+  LCDPrepare(1.0f);//ClampUp(fComputerFadeValue*10,1.0f);
   LCDSetDrawport(&dpComp);
   // if initial start
   if (cmp_bInitialStart) {
@@ -1236,14 +1236,19 @@ void CGame::ComputerRender(CDrawPort *pdp)
   MarkCurrentRead();
 
   // get current time and alpha value
-  FLOAT tmNow = (FLOAT)tvNow.GetSeconds();
-  ULONG ulA   = NormFloatToByte(fComputerFadeValue);
-
+  //FLOAT tmNow = (FLOAT)tvNow.GetSeconds();
+  //ULONG ulA   = NormFloatToByte(fComputerFadeValue);
+if (g_cb.tfe) {
+  _colLight  = LCDFadedColor(C_WHITE|255);
+  _colMedium = LCDFadedColor(C_GREEN|255);
+  _colDark   = LCDFadedColor(LerpColor(C_dGREEN, C_GREEN, 0.5f)|255);
+  _colBoxes  = LCDFadedColor(LerpColor(C_dGREEN, C_GREEN, 0.5f)|255);
+} else {
   _colLight  = LCDFadedColor(C_WHITE|255);
   _colMedium = LCDFadedColor(SE_COL_BLUE_LIGHT|255);
   _colDark   = LCDFadedColor(LerpColor(SE_COL_BLUE_DARK, SE_COL_BLUE_LIGHT, 0.5f)|255);
   _colBoxes  = LCDFadedColor(LerpColor(SE_COL_BLUE_DARK, SE_COL_BLUE_LIGHT, 0.5f)|255);
-
+}
   // background
   LCDRenderCloudsForComp();
 //  dpComp.DrawLine( 0, pixSizeJ-1, pixSizeI, pixSizeJ-1, C_GREEN|ulA);

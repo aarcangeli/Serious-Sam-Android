@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 #include <Engine/Base/Stream.h>
 #include <Engine/Base/ErrorReporting.h>
 #include <Engine/Base/Translation.h>
@@ -63,10 +63,10 @@ CTextureData *CTerrainLayer::GetThumbnail(INDEX iWidth, INDEX iHeight)
 
   for(INDEX iy=0;iy<iHeight;iy++) {
     for(INDEX ix=0;ix<iWidth;ix++) {
-      pcolTexture->gfxcol.ub.r = *paubMask;
-      pcolTexture->gfxcol.ub.g = *paubMask;
-      pcolTexture->gfxcol.ub.b = *paubMask;
-      pcolTexture->gfxcol.ub.a = 0xFF;
+      pcolTexture->ub.r = *paubMask;
+      pcolTexture->ub.g = *paubMask;
+      pcolTexture->ub.b = *paubMask;
+      pcolTexture->ub.a = 0xFF;
       pcolTexture++;
       paubMask+=iStepX;
     }
@@ -185,8 +185,8 @@ void CTerrainLayer::ExportLayerMask_t(CTFileName fnLayerMask)
   GFXColor *pacolImage = (GFXColor*)&iiHeightMap.ii_Picture[0];
   UBYTE    *pubMask    = &tl_aubColors[0];
   for(INDEX ipix=0;ipix<iSize;ipix++) {
-    pacolImage->gfxcol.ul.abgr = 0x00000000;
-    pacolImage->gfxcol.ub.r = *pubMask;
+    pacolImage->ul.abgr = 0x00000000;
+    pacolImage->ub.r = *pubMask;
     pacolImage++;
     pubMask++;
   }

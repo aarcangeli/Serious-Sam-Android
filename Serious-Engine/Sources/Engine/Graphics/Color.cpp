@@ -205,9 +205,9 @@ COLOR AdjustGamma( COLOR const col, FLOAT const fGamma)
   const FLOAT f1o255   = 1.0f / 255.0f;
   UBYTE ubR,ubG,ubB,ubA;
   ColorToRGBA( col, ubR,ubG,ubB,ubA);
-  ubR = ClampUp( NormFloatToByte(pow(ubR*f1o255,f1oGamma)), 255UL);
-  ubG = ClampUp( NormFloatToByte(pow(ubG*f1o255,f1oGamma)), 255UL);
-  ubB = ClampUp( NormFloatToByte(pow(ubB*f1o255,f1oGamma)), 255UL);
+  ubR = ClampUp( NormFloatToByte(pow(ubR*f1o255,f1oGamma)), (ULONG) 255);
+  ubG = ClampUp( NormFloatToByte(pow(ubG*f1o255,f1oGamma)), (ULONG) 255);
+  ubB = ClampUp( NormFloatToByte(pow(ubB*f1o255,f1oGamma)), (ULONG) 255);
   return RGBAToColor( ubR,ubG,ubB,ubA);
 }
 
@@ -245,94 +245,31 @@ COLOR LerpColor( COLOR col0, COLOR col1, FLOAT fRatio)
 // fast color multiply function - RES = 1ST * 2ND /255
 COLOR MulColors( COLOR col1, COLOR col2) 
 {
-  if( col1==0xFFFFFFFF)   return col2;
-  if( col2==0xFFFFFFFF)   return col1;
-  if( col1==0 || col2==0) return 0;
-  COLOR colRet;
-#if PLATFORM_UNIX
-  uint8_t *c1 = (uint8_t *) &col1;
-  uint8_t *c2 = (uint8_t *) &col2;
-  uint8_t *cr = (uint8_t *) &colRet;
-  cr[0] = (uint32_t) c1[0] * (uint32_t) c2[0] >> 8;
-  cr[1] = (uint32_t) c1[1] * (uint32_t) c2[1] >> 8;
-  cr[2] = (uint32_t) c1[2] * (uint32_t) c2[2] >> 8;
-  cr[3] = (uint32_t) c1[3] * (uint32_t) c2[3] >> 8;
-#else
-  __asm {
-    xor     ebx,ebx
-    // red 
-    mov     eax,D [col1]
-    and     eax,CT_RMASK
-    shr     eax,CT_RSHIFT
-    mov     ecx,eax
-    shl     ecx,8
-    or      eax,ecx
-    mov     edx,D [col2]
-    and     edx,CT_RMASK
-    shr     edx,CT_RSHIFT
-    mov     ecx,edx
-    shl     ecx,8
-    or      edx,ecx
-    imul    eax,edx
-    shr     eax,16+8
-    shl     eax,CT_RSHIFT
-    or      ebx,eax
-    // green
-    mov     eax,D [col1]
-    and     eax,CT_GMASK
-    shr     eax,CT_GSHIFT
-    mov     ecx,eax
-    shl     ecx,8
-    or      eax,ecx
-    mov     edx,D [col2]
-    and     edx,CT_GMASK
-    shr     edx,CT_GSHIFT
-    mov     ecx,edx
-    shl     ecx,8
-    or      edx,ecx
-    imul    eax,edx
-    shr     eax,16+8
-    shl     eax,CT_GSHIFT
-    or      ebx,eax
-    // blue
-    mov     eax,D [col1]
-    and     eax,CT_BMASK
-    shr     eax,CT_BSHIFT
-    mov     ecx,eax
-    shl     ecx,8
-    or      eax,ecx
-    mov     edx,D [col2]
-    and     edx,CT_BMASK
-    shr     edx,CT_BSHIFT
-    mov     ecx,edx
-    shl     ecx,8
-    or      edx,ecx
-    imul    eax,edx
-    shr     eax,16+8
-    shl     eax,CT_BSHIFT
-    or      ebx,eax
-    // alpha
-    mov     eax,D [col1]
-    and     eax,CT_AMASK
-    shr     eax,CT_ASHIFT
-    mov     ecx,eax
-    shl     ecx,8
-    or      eax,ecx
-    mov     edx,D [col2]
-    and     edx,CT_AMASK
-    shr     edx,CT_ASHIFT
-    mov     ecx,edx
-    shl     ecx,8
-    or      edx,ecx
-    imul    eax,edx
-    shr     eax,16+8
-    shl     eax,CT_ASHIFT
-    or      ebx,eax
-    // done
-    mov     D [colRet],ebx
-  }
-#endif
-  return colRet;
+  if (col1 == 0xFFFFFFFF) return col2;
+  if (col2 == 0xFFFFFFFF) return col1;
+  if (col1 == 0 || col2 == 0) return 0;
+
+  union
+  {
+    COLOR col;
+    UBYTE bytes[4];
+  } conv1;
+
+  union
+  {
+    COLOR col;
+    UBYTE bytes[4];
+  } conv2;
+
+  conv1.col = col1;
+  conv2.col = col2;
+  conv1.bytes[0] = (UBYTE)((((DWORD) conv1.bytes[0]) * ((DWORD) conv2.bytes[0])) / 255);
+  conv1.bytes[1] = (UBYTE)((((DWORD) conv1.bytes[1]) * ((DWORD) conv2.bytes[1])) / 255);
+  conv1.bytes[2] = (UBYTE)((((DWORD) conv1.bytes[2]) * ((DWORD) conv2.bytes[2])) / 255);
+  conv1.bytes[3] = (UBYTE)((((DWORD) conv1.bytes[3]) * ((DWORD) conv2.bytes[3])) / 255);
+
+  return(conv1.col);
+
 }
 
 
@@ -343,142 +280,42 @@ uint32_t clampNumber(uint32_t num) {
 // fast color additon function - RES = clamp (1ST + 2ND)
 COLOR AddColors( COLOR col1, COLOR col2) 
 {
-  if( col1==0) return col2;
-  if( col2==0) return col1;
-  if( col1==0xFFFFFFFF || col2==0xFFFFFFFF) return 0xFFFFFFFF;
-  COLOR colRet;
-#if PLATFORM_UNIX
-  COLOR result = 0;
-  result |= clampNumber(((col1 & CT_RMASK) >> CT_RSHIFT) + ((col2 & CT_RMASK) >> CT_RSHIFT)) << CT_RSHIFT;
-  result |= clampNumber(((col1 & CT_GMASK) >> CT_GSHIFT) + ((col2 & CT_GMASK) >> CT_GSHIFT)) << CT_GSHIFT;
-  result |= clampNumber(((col1 & CT_BMASK) >> CT_BSHIFT) + ((col2 & CT_BMASK) >> CT_BSHIFT)) << CT_BSHIFT;
-  result |= clampNumber(((col1 & CT_AMASK) >> CT_ASHIFT) + ((col2 & CT_AMASK) >> CT_ASHIFT)) << CT_ASHIFT;
-  return result;
-#else
-  __asm {
-    xor     ebx,ebx
-    mov     esi,255
-    // red 
-    mov     eax,D [col1]
-    and     eax,CT_RMASK
-    shr     eax,CT_RSHIFT
-    mov     edx,D [col2]
-    and     edx,CT_RMASK
-    shr     edx,CT_RSHIFT
-    add     eax,edx
-    cmp     esi,eax  // clamp
-    sbb     ecx,ecx
-    or      eax,ecx
-    shl     eax,CT_RSHIFT
-    and     eax,CT_RMASK
-    or      ebx,eax
-    // green
-    mov     eax,D [col1]
-    and     eax,CT_GMASK
-    shr     eax,CT_GSHIFT
-    mov     edx,D [col2]
-    and     edx,CT_GMASK
-    shr     edx,CT_GSHIFT
-    add     eax,edx
-    cmp     esi,eax  // clamp
-    sbb     ecx,ecx
-    or      eax,ecx
-    shl     eax,CT_GSHIFT
-    and     eax,CT_GMASK
-    or      ebx,eax
-    // blue
-    mov     eax,D [col1]
-    and     eax,CT_BMASK
-    shr     eax,CT_BSHIFT
-    mov     edx,D [col2]
-    and     edx,CT_BMASK
-    shr     edx,CT_BSHIFT
-    add     eax,edx
-    cmp     esi,eax  // clamp
-    sbb     ecx,ecx
-    or      eax,ecx
-    shl     eax,CT_BSHIFT
-    and     eax,CT_BMASK
-    or      ebx,eax
-    // alpha
-    mov     eax,D [col1]
-    and     eax,CT_AMASK
-    shr     eax,CT_ASHIFT
-    mov     edx,D [col2]
-    and     edx,CT_AMASK
-    shr     edx,CT_ASHIFT
-    add     eax,edx
-    cmp     esi,eax  // clamp
-    sbb     ecx,ecx
-    or      eax,ecx
-    shl     eax,CT_ASHIFT
-    and     eax,CT_AMASK
-    or      ebx,eax
-    // done
-    mov     D [colRet],ebx
-  }
-#endif
-  return colRet;
+  if (col1 == 0) return col2;
+  if (col2 == 0) return col1;
+  if (col1 == 0xFFFFFFFF || col2 == 0xFFFFFFFF) return 0xFFFFFFFF;
+
+  union
+  {
+    COLOR col;
+    UBYTE bytes[4];
+  } conv1;
+
+  union
+  {
+    COLOR col;
+    UBYTE bytes[4];
+  } conv2;
+
+  conv1.col = col1;
+  conv2.col = col2;
+
+  conv1.bytes[0] = Min(((WORD)conv1.bytes[0]) + ((WORD)conv2.bytes[0]), 255);
+  conv1.bytes[1] = Min(((WORD)conv1.bytes[1]) + ((WORD)conv2.bytes[1]), 255);
+  conv1.bytes[2] = Min(((WORD)conv1.bytes[2]) + ((WORD)conv2.bytes[2]), 255);
+  conv1.bytes[3] = Min(((WORD)conv1.bytes[3]) + ((WORD)conv2.bytes[3]), 255);
+
+  return conv1.col;
+
 }
 
 
 
 // multiple conversion from OpenGL color to DirectX color
-extern void abgr2argb( ULONG *pulSrc, ULONG *pulDst, INDEX ct)
+void abgr2argb( ULONG *pulSrc, ULONG *pulDst, INDEX ct)
 {
-#if PLATFORM_UNIX
-    FatalError("Never called since we are using opengl");
-#else
-  __asm {
-    mov   esi,dword ptr [pulSrc]
-    mov   edi,dword ptr [pulDst]
-    mov   ecx,dword ptr [ct]
-    shr   ecx,2
-    jz    colSkip4
-colLoop4:
-    push  ecx
-    mov   eax,dword ptr [esi+ 0]
-    mov   ebx,dword ptr [esi+ 4]
-    mov   ecx,dword ptr [esi+ 8]
-    mov   edx,dword ptr [esi+12]
-    bswap eax
-    bswap ebx
-    bswap ecx
-    bswap edx
-    ror   eax,8
-    ror   ebx,8
-    ror   ecx,8
-    ror   edx,8
-    mov   dword ptr [edi+ 0],eax
-    mov   dword ptr [edi+ 4],ebx
-    mov   dword ptr [edi+ 8],ecx
-    mov   dword ptr [edi+12],edx
-    add   esi,4*4
-    add   edi,4*4
-    pop   ecx
-    dec   ecx
-    jnz   colLoop4
-colSkip4:
-    test  dword ptr [ct],2
-    jz    colSkip2
-    mov   eax,dword ptr [esi+0]
-    mov   ebx,dword ptr [esi+4]
-    bswap eax
-    bswap ebx
-    ror   eax,8
-    ror   ebx,8
-    mov   dword ptr [edi+0],eax
-    mov   dword ptr [edi+4],ebx
-    add   esi,4*2
-    add   edi,4*2
-colSkip2:
-    test  dword ptr [ct],1
-    jz    colSkip1
-    mov   eax,dword ptr [esi]
-    bswap eax
-    ror   eax,8
-    mov   dword ptr [edi],eax
-colSkip1:
+  for (int i = 0; i<ct; i++)
+  {
+    pulDst[i] = abgr2argb(pulSrc[i]);
   }
-#endif
+
 }

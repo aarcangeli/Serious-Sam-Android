@@ -96,6 +96,7 @@ public:
   CUniversalSessionProperties() { 
     ASSERT(sizeof(CSessionProperties)<=NET_MAXSESSIONPROPERTIES); 
     ASSERT(sizeof(CUniversalSessionProperties)==NET_MAXSESSIONPROPERTIES); 
+    memset(usp_aubDummy, '\0', sizeof (usp_aubDummy));
   }
   operator CSessionProperties&(void) { return usp_sp; }
 };

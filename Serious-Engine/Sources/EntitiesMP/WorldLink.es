@@ -72,7 +72,7 @@ procedures:
     SetModelMainTexture(TEXTURE_WORLDLINK);
 
     // set name
-    m_strName.PrintF("World link - %s", m_strGroup);
+    m_strName.PrintF("World link - %s", (const char *) m_strGroup);
 
     return;
   }

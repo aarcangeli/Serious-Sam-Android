@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include <Engine/StdH.h>
 
 #include <Engine/Brushes/Brush.h>
 #include <Engine/Brushes/BrushTransformed.h>
@@ -512,20 +512,20 @@ void CRenderer::RenderWireFrameTerrains(void)
   papr = &re_prProjection;
 
   BOOL bShowEdges = _wrpWorldRenderPrefs.wrp_ftEdges != CWorldRenderPrefs::FT_NONE;
-  BOOL bShowVertices = _wrpWorldRenderPrefs.wrp_ftVertices != CWorldRenderPrefs::FT_NONE;
+  //BOOL bShowVertices = _wrpWorldRenderPrefs.wrp_ftVertices != CWorldRenderPrefs::FT_NONE;
   // BOOL bForceRegenerate = _wrpWorldRenderPrefs.wrp_ftPolygons
 
   COLOR colEdges    = _wrpWorldRenderPrefs.wrp_colEdges;
-  COLOR colVertices = 0xFF0000FF;
+  //COLOR colVertices = 0xFF0000FF;
   // for all active terrains
   {FORDELETELIST(CTerrain, tr_lnInActiveTerrains, re_lhActiveTerrains, ittr) {
     // render terrain
     if(bShowEdges) {
       ittr->RenderWireFrame(*papr, re_pdpDrawPort,colEdges);
     }
-    if(bShowVertices) {
+    /*if(bShowVertices) {
       //ittr->RenderVertices(*papr, re_pdpDrawPort,colVertices);
-    }
+    }*/
   }}
 }
 // draw the prepared things to screen
@@ -564,7 +564,7 @@ void CRenderer::DrawToScreen(void)
     &&_wrpWorldRenderPrefs.wrp_ftPolygons != CWorldRenderPrefs::FT_NONE) {
     // render translucent portals
     _pfRenderProfile.StartTimer(CRenderProfile::PTI_RENDERSCENE);
-    CPerspectiveProjection3D *pprPerspective = (CPerspectiveProjection3D*)(CProjection3D*)(re_prBackgroundProjection);
+    //CPerspectiveProjection3D *pprPerspective = (CPerspectiveProjection3D*)(CProjection3D*)(re_prBackgroundProjection);
     RenderScene( re_pdpDrawPort, SortTranslucentPolygons(re_pspoFirstBackgroundTranslucent),
                  re_prBackgroundProjection, re_colSelection, TRUE);
     _pfRenderProfile.StopTimer(CRenderProfile::PTI_RENDERSCENE);
@@ -572,7 +572,7 @@ void CRenderer::DrawToScreen(void)
   
   if( re_bBackgroundEnabled) {
     ChangeStatsMode(CStatForm::STI_PARTICLERENDERING);
-    RenderParticles(TRUE); // render background particless
+    RenderParticles(TRUE); // render background particles
     ChangeStatsMode(CStatForm::STI_WORLDRENDERING);
   }
   
@@ -583,7 +583,7 @@ void CRenderer::DrawToScreen(void)
     // render the spans to screen
     re_prProjection->Prepare();
     _pfRenderProfile.StartTimer(CRenderProfile::PTI_RENDERSCENE);
-    CPerspectiveProjection3D *pprPerspective = (CPerspectiveProjection3D*)(CProjection3D*)re_prProjection;
+    //CPerspectiveProjection3D *pprPerspective = (CPerspectiveProjection3D*)(CProjection3D*)re_prProjection;
     RenderScene( re_pdpDrawPort, re_pspoFirst, re_prProjection, re_colSelection, FALSE);
     _pfRenderProfile.StopTimer(CRenderProfile::PTI_RENDERSCENE);
   }
@@ -659,7 +659,7 @@ void CRenderer::FillMirrorDepth(CMirror &mi)
   // for each polygon
   FOREACHINDYNAMICCONTAINER(mi.mi_cspoPolygons, CScreenPolygon, itspo) {
     CScreenPolygon &spo = *itspo;
-    CBrushPolygon &bpo = *spo.spo_pbpoBrushPolygon;
+    //CBrushPolygon &bpo = *spo.spo_pbpoBrushPolygon;
     // create a new screen polygon
     CScreenPolygon &spoNew = re_aspoScreenPolygons.Push();
     ScenePolygon &sppoNew = spoNew.spo_spoScenePolygon;
@@ -686,7 +686,7 @@ void CRenderer::Render(void)
   // if the world doesn't have all portal-sector links updated
   if( !re_pwoWorld->wo_bPortalLinksUpToDate) {
     // update the links
-    CSetFPUPrecision FPUPrecision(FPT_53BIT);
+    //CSetFPUPrecision FPUPrecision(FPT_53BIT);
     re_pwoWorld->wo_baBrushes.LinkPortalsAndSectors();
     re_pwoWorld->wo_bPortalLinksUpToDate = TRUE;
   }
@@ -696,7 +696,7 @@ void CRenderer::Render(void)
   _pfRenderProfile.StartTimer(CRenderProfile::PTI_RENDERING);
 
   // set FPU to single precision while rendering
-  CSetFPUPrecision FPUPrecision(FPT_24BIT);
+  //CSetFPUPrecision FPUPrecision(FPT_24BIT);
 
   // initialize all rendering structures
   Initialize();
@@ -710,8 +710,8 @@ void CRenderer::Render(void)
 
   // force finishing of all OpenGL pending operations, if required
   ChangeStatsMode(CStatForm::STI_SWAPBUFFERS);
-  extern INDEX ogl_iFinish;  ogl_iFinish = Clamp( ogl_iFinish, 0L, 3L);
-  extern INDEX d3d_iFinish;  d3d_iFinish = Clamp( d3d_iFinish, 0L, 3L);
+  extern INDEX ogl_iFinish;  ogl_iFinish = Clamp( ogl_iFinish, 0, 3);
+  extern INDEX d3d_iFinish;  d3d_iFinish = Clamp( d3d_iFinish, 0, 3);
   if( (ogl_iFinish==1 && _pGfx->gl_eCurrentAPI==GAT_OGL) 
 #ifdef SE1_D3D
    || (d3d_iFinish==1 && _pGfx->gl_eCurrentAPI==GAT_D3D)
@@ -870,9 +870,9 @@ void CRenderer::Render(void)
     // or not rendering second layer in world editor
     // and not in wireframe mode
     if(  re_iIndex>0 
-     || !re_bRenderingShadows
-     && !re_pdpDrawPort->IsOverlappedRendering()
-     && _wrpWorldRenderPrefs.wrp_ftPolygons != CWorldRenderPrefs::FT_NONE) {
+     || (!re_bRenderingShadows
+         && !re_pdpDrawPort->IsOverlappedRendering()
+         && _wrpWorldRenderPrefs.wrp_ftPolygons != CWorldRenderPrefs::FT_NONE)) {
       re_pdpDrawPort->FillZBuffer(ZBUF_BACK);
     }
     // draw the prepared things to screen and finish
@@ -898,8 +898,6 @@ void CRenderer::Render(void)
   // end select-on-render functionality
   extern void EndSelectOnRender(void);
   EndSelectOnRender();
-
-  _pfRenderProfile.StopTimer(CRenderProfile::PTI_RENDERING);
 
   // assure that FPU precision was low all the rendering time
   ASSERT( GetFPUPrecision()==FPT_24BIT);
@@ -1009,7 +1007,7 @@ ULONG RenderShadows(CWorld &woWorld, CEntity &enViewer,
   // initialize clipping rectangle around the drawport
   const FLOATaabbox2D &box = prProjection->ScreenBBoxR();
   //re.InitClippingRectangle(box.Min()(1), box.Min()(2), box.Size()(1), box.Size()(2));
-  re.InitClippingRectangle(0, 0, box.Size()(1), box.Size()(2));
+  re.InitClippingRectangle(0, 0, (PIX) box.Size()(1), (PIX) box.Size()(2));
 
   re.re_bRenderingShadows = TRUE;
   re.re_bDirectionalShadows = prProjection.IsParallel();

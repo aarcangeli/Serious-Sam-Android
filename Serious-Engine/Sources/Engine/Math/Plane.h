@@ -26,7 +26,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
  */
 template<class Type, int iDimensions>
 class Plane : public Vector<Type, iDimensions> { // normal vector
-  using Super = Vector<Type, iDimensions>;
 public:
   Type pl_distance;      // distance from point 0 along the normal vector
 public:
@@ -78,6 +77,17 @@ public:
   // multiplication by a square matrix (sides swapped -- see implementation for notes)
   inline Plane<Type, iDimensions> &operator*=(const Matrix<Type, iDimensions, iDimensions> &matrix2);
   Plane<Type, iDimensions> operator*(const Matrix<Type, iDimensions, iDimensions> &matrix2) const;
+
+  friend __forceinline CTStream &operator>>(CTStream &strm, Plane<Type, iDimensions> &p) {
+    strm>>(Vector<Type, iDimensions>&)p;
+    strm>>p.pl_distance;
+    return strm;
+  }
+  friend __forceinline CTStream &operator<<(CTStream &strm, const Plane<Type, iDimensions> &p) {
+    strm<<(const Vector<Type, iDimensions>&)p;
+    strm<<p.pl_distance;
+    return strm;
+  }
 };
 
 // inline functions implementation
@@ -107,7 +117,7 @@ inline Plane<Type, iDimensions>::Plane(const Vector<Type, iDimensions> &normal, 
   : Vector<Type, iDimensions>(normal)
 {
   // normalize normal vector
-  Super::Normalize();
+  this->Normalize();
   pl_distance = (*this)%point;   // distance = normalized_normal * point (dot product)
 }
 

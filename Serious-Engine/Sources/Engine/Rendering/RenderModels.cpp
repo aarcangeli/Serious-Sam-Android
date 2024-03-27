@@ -214,9 +214,9 @@ BOOL CRenderer::FindModelLights( CEntity &en, const CPlacement3D &plModel,
         }
         // special case for substract sector ambient light
         if (plsLight->ls_ulFlags&LSF_SUBSTRACTSECTORAMBIENT) {
-          ubR = (UBYTE)Clamp( (SLONG)ubR-slSAR, 0L, 255L);
-          ubG = (UBYTE)Clamp( (SLONG)ubG-slSAG, 0L, 255L);
-          ubB = (UBYTE)Clamp( (SLONG)ubB-slSAB, 0L, 255L);
+          ubR = (UBYTE)Clamp( (SLONG)ubR-slSAR, 0, 255);
+          ubG = (UBYTE)Clamp( (SLONG)ubG-slSAG, 0, 255);
+          ubB = (UBYTE)Clamp( (SLONG)ubB-slSAB, 0, 255);
         }
         // calculate light intensity
         FLOAT fShade = (ubR+ubG+ubB)*(2.0f/(3.0f*255.0f));
@@ -285,17 +285,17 @@ BOOL CRenderer::FindModelLights( CEntity &en, const CPlacement3D &plModel,
         }
       }
       // clamp ambient component
-      slSAR = Clamp( slSAR, 0L, 255L);
-      slSAG = Clamp( slSAG, 0L, 255L);
-      slSAB = Clamp( slSAB, 0L, 255L);
+      slSAR = Clamp( slSAR, 0, 255);
+      slSAG = Clamp( slSAG, 0, 255);
+      slSAB = Clamp( slSAB, 0, 255);
 
       // calculate average light properties
-      SLONG slAR = Clamp( (SLONG)FloatToInt(fTR-fDR) +slSAR, 0L, 255L);
-      SLONG slAG = Clamp( (SLONG)FloatToInt(fTG-fDG) +slSAG, 0L, 255L);
-      SLONG slAB = Clamp( (SLONG)FloatToInt(fTB-fDB) +slSAB, 0L, 255L);
-      SLONG slLR = Clamp( (SLONG)FloatToInt(fDR), 0L, 255L);
-      SLONG slLG = Clamp( (SLONG)FloatToInt(fDG), 0L, 255L);
-      SLONG slLB = Clamp( (SLONG)FloatToInt(fDB), 0L, 255L);
+      SLONG slAR = Clamp( (SLONG)FloatToInt(fTR-fDR) +slSAR, 0, 255);
+      SLONG slAG = Clamp( (SLONG)FloatToInt(fTG-fDG) +slSAG, 0, 255);
+      SLONG slAB = Clamp( (SLONG)FloatToInt(fTB-fDB) +slSAB, 0, 255);
+      SLONG slLR = Clamp( (SLONG)FloatToInt(fDR), 0, 255);
+      SLONG slLG = Clamp( (SLONG)FloatToInt(fDG), 0, 255);
+      SLONG slLB = Clamp( (SLONG)FloatToInt(fDB), 0, 255);
       colLight   = RGBToColor( slLR,slLG,slLB);
       colAmbient = RGBToColor( slAR,slAG,slAB);
 
@@ -352,7 +352,7 @@ void CRenderer::RenderOneModel( CEntity &en, CModelObject &moModel, const CPlace
   }
 
   // let the entity adjust shading parameters if it wants to
-  mdl_iShadowQuality = Clamp( mdl_iShadowQuality, 0L, 3L);
+  mdl_iShadowQuality = Clamp( mdl_iShadowQuality, 0, 3);
   const BOOL bAllowShadows = en.AdjustShadingParameters( vTotalLightDirection, colLight, colAmbient);
   bRenderModelShadow = (bRenderModelShadow && bAllowShadows && bRenderShadow && mdl_iShadowQuality>0);
   
@@ -378,7 +378,7 @@ void CRenderer::RenderOneModel( CEntity &en, CModelObject &moModel, const CPlace
   if( IsOfClass( &en, "Player Weapons")) rm.rm_ulFlags |= RMF_WEAPON; 
 
   // set tesselation level of models
-  rm.rm_iTesselationLevel = en.GetMaxTessellationLevel();
+  rm.rm_iTesselationLevel = (INDEX) (en.GetMaxTessellationLevel());
 
   // prepare CRenderModel structure for rendering of one model
   moModel.SetupModelRendering(rm);
@@ -479,7 +479,7 @@ void CRenderer::RenderOneSkaModel( CEntity &en, const CPlacement3D &plModel,
   }
 
   // let the entity adjust shading parameters if it wants to
-  mdl_iShadowQuality = Clamp( mdl_iShadowQuality, 0L, 3L);
+  mdl_iShadowQuality = Clamp( mdl_iShadowQuality, 0, 3);
   const BOOL bAllowShadows = en.AdjustShadingParameters( vTotalLightDirection, colLight, colAmbient);
   bRenderModelShadow = (bRenderModelShadow && bAllowShadows && bRenderShadow && mdl_iShadowQuality>0);
 
@@ -763,31 +763,34 @@ void DeleteLensFlare(CLightSource *pls)
 /* Render lens flares. */
 void CRenderer::RenderLensFlares(void)
 {
-  // make sure we're have orthographic projection 
+  //CPrintF( "[LENS FLARES] RenderLensFlares started!\n");
+  // make sure we have orthographic projection
   re_pdpDrawPort->SetOrtho(); 
-
-  // if there are no flares of flares are off, do nothing
-  gfx_iLensFlareQuality = Clamp( gfx_iLensFlareQuality, 0L, 3L);
-  if( gfx_iLensFlareQuality==0 || re_alfiLensFlares.Count()==0) return;
+  // get count of currently existing flares and time
+  INDEX ctFlares   = re_alfiLensFlares.Count();
+  // if there are no flares or flares are off, do nothing
+  gfx_iLensFlareQuality = Clamp( gfx_iLensFlareQuality, 0, 3);
+  
+  if( gfx_iLensFlareQuality==0 || ctFlares == 0) return;
+  //CPrintF( "[LENS FLARES] gfx_iLensFlareQuality = %d \n", gfx_iLensFlareQuality);
+  //CPrintF( "[LENS FLARES] ctFlares count = %d \n", ctFlares);
 
   // get drawport ID
   ASSERT( re_pdpDrawPort!=NULL);
   const ULONG ulDrawPortID = re_pdpDrawPort->GetID();
   
   // for each lens flare of this drawport
-  {for(INDEX iFlare=0; iFlare<re_alfiLensFlares.Count(); iFlare++) {
+  {for(INDEX iFlare=0; iFlare<ctFlares; iFlare++) {
     CLensFlareInfo &lfi = re_alfiLensFlares[iFlare];
     // skip if not in this drawport
     if( lfi.lfi_ulDrawPortID!=ulDrawPortID && lfi.lfi_iMirrorLevel==0) continue;
     // test if it is still visible
     lfi.lfi_ulFlags &= ~LFF_VISIBLE;
-    if( re_pdpDrawPort->IsPointVisible( lfi.lfi_fI, lfi.lfi_fJ, lfi.lfi_fOoK, lfi.lfi_iID, lfi.lfi_iMirrorLevel)) {
+    if( re_pdpDrawPort->IsPointVisible( (PIX) lfi.lfi_fI, (PIX) lfi.lfi_fJ, lfi.lfi_fOoK, lfi.lfi_iID, lfi.lfi_iMirrorLevel)) {
       lfi.lfi_ulFlags |= LFF_VISIBLE;
     }
   }}
 
-  // get count of currently existing flares and time
-  INDEX ctFlares   = re_alfiLensFlares.Count();
   const TIME tmNow = _pTimer->GetRealTimeTick();
 
   // for each lens flare
@@ -803,6 +806,7 @@ void CRenderer::RenderLensFlares(void)
       lfi = re_alfiLensFlares[ctFlares-1];
       re_alfiLensFlares[ctFlares-1].Clear();
       ctFlares--;
+	  //CPrintF( "[LENS FLARES] Flare deleted!\n");
     // if the flare is still active
     } else {
       // go to next flare
@@ -815,14 +819,16 @@ void CRenderer::RenderLensFlares(void)
   else re_alfiLensFlares.PopUntil(ctFlares-1);
 
   // for each lens flare of this drawport
-  {for(INDEX iFlare=0; iFlare<re_alfiLensFlares.Count(); iFlare++) {
+  {for(INDEX iFlare=0; iFlare<ctFlares; iFlare++) {
     CLensFlareInfo &lfi = re_alfiLensFlares[iFlare];
+
     if (lfi.lfi_ulDrawPortID!=ulDrawPortID || lfi.lfi_plsLightSource->ls_plftLensFlare==NULL) {
       continue;
     }
     // clear active flag for next frame
     lfi.lfi_ulFlags &= ~LFF_ACTIVE;
-
+    // CPrintF( "[LENS FLARES] lfi.lfi_ulDrawPortID = %d \n", lfi.lfi_ulDrawPortID);
+	//CPrintF( "[LENS FLARES] ulDrawPortID = %d \n", ulDrawPortID);
     // fade the flare in/out
     #define FLAREINSPEED  (0.2f)
     #define FLAREOUTSPEED (0.1f)
@@ -837,7 +843,7 @@ void CRenderer::RenderLensFlares(void)
     lfi.lfi_tmLastFrame = tmNow;
     // skip if the flare is invisible
     if( lfi.lfi_fFadeFactor<0.01f) continue;
-
+    //CPrintF( "[LENS FLARES] lfi.lfi_fFadeFactor = %f \n", lfi.lfi_fFadeFactor);
     // calculate general flare factors
     FLOAT fScreenSizeI   = re_pdpDrawPort->GetWidth();
     FLOAT fScreenSizeJ   = re_pdpDrawPort->GetHeight();
@@ -854,7 +860,10 @@ void CRenderer::RenderLensFlares(void)
     FLOAT fReflectionDistance = sqrt(fReflectionDirI*fReflectionDirI+fReflectionDirJ*fReflectionDirJ);
     FLOAT fOfCenterFadeFactor = 1.0f-2.0f*fReflectionDistance/fScreenSizeI;
     fOfCenterFadeFactor = Max(fOfCenterFadeFactor, 0.0f);
-
+	
+	//CPrintF( "[LENS FLARES] fScreenSizeI = %d \n", fScreenSizeI);
+	//CPrintF( "[LENS FLARES] fScreenSizeJ = %d \n", fScreenSizeJ);
+	
     FLOAT fFogHazeFade = 1.0f;
     // if in haze
     if( lfi.lfi_ulFlags&LFF_HAZE) {
@@ -868,8 +877,8 @@ void CRenderer::RenderLensFlares(void)
     if( lfi.lfi_ulFlags&LFF_FOG) {
       // get fog strength at light position
       GFXTexCoord tex;
-      tex.gfxtc.st.s = -lfi.lfi_vProjected(3)*_fog_fMulZ;
-      tex.gfxtc.st.t = (lfi.lfi_vProjected%_fog_vHDirView+_fog_fAddH)*_fog_fMulH;
+      tex.st.s= -lfi.lfi_vProjected(3)*_fog_fMulZ;
+      tex.st.t = (lfi.lfi_vProjected%_fog_vHDirView+_fog_fAddH)*_fog_fMulH;
       FLOAT fFogStrength = NormByteToFloat(GetFogAlpha(tex));
       // fade flare with fog
       fFogHazeFade *= 1-fFogStrength;
@@ -916,9 +925,9 @@ void CRenderer::RenderLensFlares(void)
       FLOAT fThisR  = (ubR + (FLOAT(ubI)-ubR)*olf.olf_fLightDesaturation)*fIntensityFactor;
       FLOAT fThisG  = (ubG + (FLOAT(ubI)-ubG)*olf.olf_fLightDesaturation)*fIntensityFactor;
       FLOAT fThisB  = (ubB + (FLOAT(ubI)-ubB)*olf.olf_fLightDesaturation)*fIntensityFactor;
-      UBYTE ubThisR = Min( fThisR, 255.0f);
-      UBYTE ubThisG = Min( fThisG, 255.0f);
-      UBYTE ubThisB = Min( fThisB, 255.0f);
+      UBYTE ubThisR = (UBYTE) (Min( fThisR, 255.0f));
+      UBYTE ubThisG = (UBYTE) (Min( fThisG, 255.0f));
+      UBYTE ubThisB = (UBYTE) (Min( fThisB, 255.0f));
       COLOR colBlending = RGBToColor( ubThisR,ubThisG,ubThisB);
 
       // render the flare
@@ -932,19 +941,19 @@ void CRenderer::RenderLensFlares(void)
     }} // for each flare in the lens flare effect
 
     // if screen glare is on
-    CLensFlareType &lft = *lfi.lfi_plsLightSource->ls_plftLensFlare;
-    FLOAT fGlearCompression = lft.lft_fGlareCompression;
+    const CLensFlareType &lft = *lfi.lfi_plsLightSource->ls_plftLensFlare;
+    const FLOAT fGlearCompression = lft.lft_fGlareCompression;
     if( gfx_iLensFlareQuality>2
      && _wrpWorldRenderPrefs.wrp_lftLensFlares >= CWorldRenderPrefs::LFT_REFLECTIONS_AND_GLARE
      && lft.lft_fGlareIntensity>0.01f) {
       // calculate glare factor for current position
-      FLOAT fIntensity = IntensityAtDistance( lfi.lfi_plsLightSource->ls_rFallOff*lft.lft_fGlareFallOffFactor,
+      const FLOAT fIntensity = IntensityAtDistance( lfi.lfi_plsLightSource->ls_rFallOff*lft.lft_fGlareFallOffFactor,
                                               lfi.lfi_plsLightSource->ls_rHotSpot*lft.lft_fGlareFallOffFactor,
                                               lfi.lfi_fDistance);
-      FLOAT fCenterFactor = (1-fOfCenterFadeFactor);
-      FLOAT fGlare = lft.lft_fGlareIntensity*fIntensity
-                   * (exp(1.0f/(1.0f+fGlearCompression*fCenterFactor*fCenterFactor)) -1.0f) / (exp(1.0f)-1.0f);
-      ULONG ulGlareA = ClampUp( NormFloatToByte(fGlare), 255UL);
+      const FLOAT fCenterFactor = (1-fOfCenterFadeFactor);
+      const FLOAT fGlare = lft.lft_fGlareIntensity*fIntensity
+                   * (exp(1/(1+fGlearCompression*fCenterFactor*fCenterFactor)) -1) / (exp(1)-1);
+      const ULONG ulGlareA = ClampUp( (ULONG) NormFloatToByte(fGlare), (ULONG) 255);
       // if there is any relevant glare
       if( ulGlareA>1) {
         // calculate glare color
@@ -956,9 +965,9 @@ void CRenderer::RenderLensFlares(void)
         fGlareR *= fBrightFactor;
         fGlareG *= fBrightFactor;
         fGlareB *= fBrightFactor;
-        ULONG ulGlareR = ClampUp( FloatToInt(fGlareR), 255L);
-        ULONG ulGlareG = ClampUp( FloatToInt(fGlareG), 255L);
-        ULONG ulGlareB = ClampUp( FloatToInt(fGlareB), 255L);
+        ULONG ulGlareR = ClampUp( FloatToInt(fGlareR), 255);
+        ULONG ulGlareG = ClampUp( FloatToInt(fGlareG), 255);
+        ULONG ulGlareB = ClampUp( FloatToInt(fGlareB), 255);
         // add the glare to screen blending
         re_pdpDrawPort->dp_ulBlendingRA += ulGlareR*ulGlareA;
         re_pdpDrawPort->dp_ulBlendingGA += ulGlareG*ulGlareA;

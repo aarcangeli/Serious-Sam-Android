@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 
 #include <Engine/Brushes/Brush.h>
 #include <Engine/World/World.h>
@@ -228,7 +228,7 @@ void CBrush3D::CalculateBoundingBoxes(void)
 void CBrush3D::CalculateBoundingBoxesForOneMip(CBrushMip *pbmOnly)  // for only one mip
 {
   // set FPU to double precision
-  CSetFPUPrecision FPUPrecision(FPT_53BIT);
+  //CSetFPUPrecision FPUPrecision(FPT_53BIT);
 
   // prepare a projection from brush space to absolute space
   CSimpleProjection3D_DOUBLE prBrushToAbsolute;

@@ -1,13 +1,32 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
+def getDate() {
+    def date = new Date()
+    def formattedDate = date.format('dd_MM_yyyy_HH_mm')
+    return formattedDate
+}
+
+def createLogsFolder() {
+    def logsDir = file('logs')
+    if (!logsDir.exists()) {
+        logsDir.mkdir()
+        println "Logs folder created successfully."
+    } else {
+        println "Logs folder already exists."
+    }
+}
+
+def curDate = getDate()
+createLogsFolder()
+
 buildscript {
     
     repositories {
         google()
-        jcenter()
+        mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.2.1'
+        classpath 'com.android.tools.build:gradle:7.0.2'
         
 
         // NOTE: Do not place your application dependencies here; they belong
@@ -18,9 +37,9 @@ buildscript {
 allprojects {
     repositories {
         google()
-        jcenter()
+        mavenCentral()
         maven {
-            url "https://dl.bintray.com/crysis21/Android"
+            url 'https://jitpack.io'
         }
     }
 }

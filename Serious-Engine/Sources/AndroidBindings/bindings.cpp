@@ -2,6 +2,7 @@
 #include <AndroidBindings/bindings.h>
 #include <Engine/Graphics/ViewPort.h>
 #include <GLES2/gl2.h>
+#include <GLES3/gl3.h>
 #include <Engine/Base/CTString.h>
 #include "key_codes.h"
 
@@ -17,7 +18,6 @@ pthread_t g_mySeriousThreadId;
 bool g_gameRunning = false;
 ANativeWindow *g_currentWindow;
 bool g_somethingChanged = false;
-PlayerControls g_IncomingControls {};
 JavaVM *g_javaWM;
 jclass g_NativeEvents;
 jmethodID g_reportFatalError;
@@ -60,6 +60,7 @@ JNIEXPORT void JNICALL Java_com_github_aarcangeli_serioussamandroid_SeriousSamSu
   _fnmApplicationExe = CTFILENAME("Bin/SeriousSam.exe");
   env->ReleaseStringUTFChars(homeDir_, homeDir);
   env->ReleaseStringUTFChars(libDir_, libDir);
+  InfoMessage("[libSeriousSamNative] Creating SeriousSamMain thread");
 
   // start main thread
   pthread_create(&g_mySeriousThreadId, 0, &seriousMain, nullptr);
@@ -89,7 +90,7 @@ JNIEXPORT void JNICALL
 Java_com_github_aarcangeli_serioussamandroid_MainActivity_setAxisValue(JNIEnv *env, jobject obj, jint key, jfloat value) {
   ASSERT(key >= 0 && key < 10);
   pthread_mutex_lock(&g_mySeriousMutex);
-  g_IncomingControls.axisValue[key] = value;
+  g_cb.g_IncomingControls.axisValue[key] = value;
   pthread_mutex_unlock(&g_mySeriousMutex);
 }
 
@@ -98,8 +99,39 @@ JNIEXPORT void JNICALL
 Java_com_github_aarcangeli_serioussamandroid_MainActivity_shiftAxisValue(JNIEnv *env, jobject obj, jint key, jfloat value) {
   ASSERT(key >= 0 && key < 10);
   pthread_mutex_lock(&g_mySeriousMutex);
-  g_IncomingControls.shiftAxisValue[key] += value;
+  g_cb.g_IncomingControls.shiftAxisValue[key] += value;
   pthread_mutex_unlock(&g_mySeriousMutex);
+}
+
+constexpr unsigned int hash(const char *s, int off = 0) {                        
+    return !s[off] ? 5381 : (hash(s, off+1)*33) ^ s[off];                           
+} 
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_github_aarcangeli_serioussamandroid_MainActivity_nTouchKeyEvent(JNIEnv *env, jobject obj, jstring key_, jint isPressed) {
+#define BTN_CASE(cod, name) case cod: name = isPressed != 0; break;
+  pthread_mutex_lock(&g_mySeriousMutex);
+  const char *key = env->GetStringUTFChars(key_, 0);
+  switch(hash(key)) {
+	// additional keys
+	BTN_CASE(hash("Tab"), g_cb.g_IncomingControls.bShowTabInfo)
+	BTN_CASE(hash("DropMoney"), g_cb.g_IncomingControls.bDropMoney)
+	// end
+    BTN_CASE(hash("Fire"), g_cb.g_IncomingControls.bFire)
+    BTN_CASE(hash("Use"), g_cb.g_IncomingControls.bUse)
+    BTN_CASE(hash("Flip"), g_cb.g_IncomingControls.bWeaponFlip)
+    BTN_CASE(hash("SeriousBomb"), g_cb.g_IncomingControls.bFireBomb)
+    BTN_CASE(hash("Reload"), g_cb.g_IncomingControls.bReload)
+    BTN_CASE(hash("Jump"), g_cb.g_IncomingControls.bMoveUp)
+    BTN_CASE(hash("Crouch"), g_cb.g_IncomingControls.bMoveDown)
+    BTN_CASE(hash("PrevWeapon"), g_cb.g_IncomingControls.bWeaponPrev)
+    BTN_CASE(hash("NextWeapon"), g_cb.g_IncomingControls.bWeaponNext)
+    BTN_CASE(hash("Computer"), g_cb.g_IncomingControls.bComputer)
+    BTN_CASE(hash("Start"), g_cb.g_IncomingControls.bStart)
+  }
+  pthread_mutex_unlock(&g_mySeriousMutex);
+#undef BTN_CASE
 }
 
 extern "C"
@@ -109,17 +141,17 @@ Java_com_github_aarcangeli_serioussamandroid_MainActivity_nDispatchKeyEvent(JNIE
   pthread_mutex_lock(&g_mySeriousMutex);
   switch(key) {
     // Xbox 360
-    BTN_CASE(KEYCODE_BUTTON_R1, g_IncomingControls.bFire)
-    BTN_CASE(KEYCODE_BUTTON_R2, g_IncomingControls.bUse)
-    BTN_CASE(KEYCODE_BUTTON_L1, g_IncomingControls.bWeaponFlip)
-    BTN_CASE(KEYCODE_BUTTON_Y, g_IncomingControls.bFireBomb)
-    BTN_CASE(KEYCODE_BUTTON_X, g_IncomingControls.bReload)
-    BTN_CASE(KEYCODE_BUTTON_A, g_IncomingControls.bMoveUp)
-    BTN_CASE(KEYCODE_BUTTON_B, g_IncomingControls.bMoveDown)
-    BTN_CASE(KEYCODE_DPAD_LEFT, g_IncomingControls.bWeaponPrev)
-    BTN_CASE(KEYCODE_DPAD_RIGHT, g_IncomingControls.bWeaponNext)
-    BTN_CASE(KEYCODE_BACK, g_IncomingControls.bComputer)
-    BTN_CASE(KEYCODE_BUTTON_START, g_IncomingControls.bStart)
+    BTN_CASE(KEYCODE_BUTTON_R1, g_cb.g_IncomingControls.bFire)
+    BTN_CASE(KEYCODE_BUTTON_R2, g_cb.g_IncomingControls.bUse)
+    BTN_CASE(KEYCODE_BUTTON_L1, g_cb.g_IncomingControls.bWeaponFlip)
+    BTN_CASE(KEYCODE_BUTTON_Y, g_cb.g_IncomingControls.bFireBomb)
+    BTN_CASE(KEYCODE_BUTTON_X, g_cb.g_IncomingControls.bReload)
+    BTN_CASE(KEYCODE_BUTTON_A, g_cb.g_IncomingControls.bMoveUp)
+    BTN_CASE(KEYCODE_BUTTON_B, g_cb.g_IncomingControls.bMoveDown)
+    BTN_CASE(KEYCODE_DPAD_LEFT, g_cb.g_IncomingControls.bWeaponPrev)
+    BTN_CASE(KEYCODE_DPAD_RIGHT, g_cb.g_IncomingControls.bWeaponNext)
+    BTN_CASE(KEYCODE_BACK, g_cb.g_IncomingControls.bComputer)
+    BTN_CASE(KEYCODE_BUTTON_START, g_cb.g_IncomingControls.bStart)
   }
   pthread_mutex_unlock(&g_mySeriousMutex);
 #undef BTN_CASE
@@ -140,7 +172,14 @@ void refreshJavaState() {
   JNIEnv* env = getEnv();
   jmethodID method = env->GetStaticMethodID(g_NativeEvents, "reportStateChange", "(II)V");
   ASSERT(method);
-  env->CallStaticVoidMethod(g_NativeEvents, method, (int) g_cb.gameState, g_cb.seriousBombCount);
+  env->CallStaticVoidMethod(g_NativeEvents, method, (int) g_cb.gameState, (int) g_cb.seriousBombCount);
+}
+
+void updateUI() {
+  JNIEnv* env = getEnv();
+  jmethodID method = env->GetStaticMethodID(g_NativeEvents, "updateUI", "()V");
+  ASSERT(method);
+  env->CallStaticVoidMethod(g_NativeEvents, method);
 }
 
 void setSeriousState(GameState state) {
@@ -148,6 +187,7 @@ void setSeriousState(GameState state) {
     g_cb.gameState = state;
     refreshJavaState();
   }
+  	updateUI();
 }
 
 void setSeriousBombCount(int bombs) {
@@ -161,7 +201,6 @@ void syncSeriousThreads() {
   while (true) {
     // get parameters with mutex
     pthread_mutex_lock(&g_mySeriousMutex);
-
     bool running = g_gameRunning;
     ANativeWindow *window = g_currentWindow;
     bool somethingChanged = false;
@@ -169,10 +208,7 @@ void syncSeriousThreads() {
       somethingChanged = g_somethingChanged;
       g_somethingChanged = false;
     }
-
-    // resolve input
-    setControls(g_IncomingControls);
-
+	
     CTString cmdToExecute = g_command;
     g_command = "";
 
@@ -250,6 +286,7 @@ void *seriousMain(void *unused) {
   g_cb.editText = &editText;
   g_cb.restart = &requestRestard;
   g_cb.setSeriousBombCount = &setSeriousBombCount;
+  InfoMessage("[libSeriousSamNative] Starting game");
 
   // run all
   try {

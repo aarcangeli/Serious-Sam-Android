@@ -136,7 +136,7 @@ procedures:
       if (penCaused!=NULL) {
         // send the score
         EReceiveScore eScore;
-        eScore.iPoints = m_fScore;
+        eScore.iPoints = (INDEX) m_fScore;
         penCaused->SendEvent(eScore);
         penCaused->SendEvent(ESecretFound());
       }
@@ -203,7 +203,7 @@ procedures:
               call SendEventToTargets();
             } else if (m_bTellCount) {
               CTString strRemaining;
-              strRemaining.PrintF(TRANS("%d more to go..."), m_iCountTmp);
+              strRemaining.PrintF(TRANSV("%d more to go..."), m_iCountTmp);
               PrintCenterMessage(this, m_penCaused, strRemaining, 3.0f, MSS_INFO);
             }
           }

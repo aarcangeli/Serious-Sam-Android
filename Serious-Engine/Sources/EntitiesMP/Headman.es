@@ -101,14 +101,14 @@ functions:
     CTString str;
     if (eDeath.eLastDamage.dmtType==DMT_EXPLOSION) {
       if (m_hdtType==HDT_BOMBERMAN) {
-        str.PrintF(TRANS("%s was bombed by a Bomberman"), strPlayerName);
+        str.PrintF(TRANSV("%s was bombed by a Bomberman"), (const char *) strPlayerName);
       } else {
-        str.PrintF(TRANS("%s fell victim of a Kamikaze"), strPlayerName);
+        str.PrintF(TRANSV("%s fell victim of a Kamikaze"), (const char *) strPlayerName);
       }
     } else if (m_hdtType==HDT_ROCKETMAN) {
-      str.PrintF(TRANS("A Rocketeer tickled %s to death"), strPlayerName);
+      str.PrintF(TRANSV("A Rocketeer tickled %s to death"), (const char *) strPlayerName);
     } else if (m_hdtType==HDT_FIRECRACKER) {
-      str.PrintF(TRANS("A Firecracker tickled %s to death"), strPlayerName);
+      str.PrintF(TRANSV("A Firecracker tickled %s to death"), (const char *) strPlayerName);
     }
     return str;
   }
@@ -565,19 +565,19 @@ procedures:
     autowait(0.15f);
     PlaySound(m_soSound, SOUND_FIREFIRECRACKER, SOF_3D);
     autowait(0.52f);
-    ShootProjectile(PRT_HEADMAN_FIRECRACKER, FLOAT3D(0.0f, 0.5f, 0.0f), ANGLE3D(-16.0f, 0, 0));
+    ShootProjectile(PRT_HEADMAN_FIRECRACKER, FLOAT3D(0.0f, 0.5f, 0.0f)*m_fStretchMultiplier, ANGLE3D(-16.0f, 0, 0));
 
     autowait(0.05f);
-    ShootProjectile(PRT_HEADMAN_FIRECRACKER, FLOAT3D(0.0f, 0.5f, 0.0f), ANGLE3D(-8, 0, 0));
+    ShootProjectile(PRT_HEADMAN_FIRECRACKER, FLOAT3D(0.0f, 0.5f, 0.0f)*m_fStretchMultiplier, ANGLE3D(-8, 0, 0));
 
     autowait(0.05f);
-    ShootProjectile(PRT_HEADMAN_FIRECRACKER, FLOAT3D(0.0f, 0.5f, 0.0f), ANGLE3D(0.0f, 0, 0));
+    ShootProjectile(PRT_HEADMAN_FIRECRACKER, FLOAT3D(0.0f, 0.5f, 0.0f)*m_fStretchMultiplier, ANGLE3D(0.0f, 0, 0));
 
     autowait(0.05f);
-    ShootProjectile(PRT_HEADMAN_FIRECRACKER, FLOAT3D(0.0f, 0.5f, 0.0f), ANGLE3D(8.0f, 0, 0));
+    ShootProjectile(PRT_HEADMAN_FIRECRACKER, FLOAT3D(0.0f, 0.5f, 0.0f)*m_fStretchMultiplier, ANGLE3D(8.0f, 0, 0));
 
     autowait(0.05f);
-    ShootProjectile(PRT_HEADMAN_FIRECRACKER, FLOAT3D(0.0f, 0.5f, 0.0f), ANGLE3D(16.0f, 0, 0));
+    ShootProjectile(PRT_HEADMAN_FIRECRACKER, FLOAT3D(0.0f, 0.5f, 0.0f)*m_fStretchMultiplier, ANGLE3D(16.0f, 0, 0));
 
     autowait(0.5f + FRnd()/3);
     return EEnd();
@@ -589,7 +589,7 @@ procedures:
     autowait(0.2f + FRnd()/4);
 
     StartModelAnim(HEADMAN_ANIM_ROCKETMAN_ATTACK, 0);
-    ShootProjectile(PRT_HEADMAN_ROCKETMAN, FLOAT3D(0.0f, 1.0f, 0.0f), ANGLE3D(0, 0, 0));
+    ShootProjectile(PRT_HEADMAN_ROCKETMAN, FLOAT3D(0.0f, 1.0f, 0.0f)*m_fStretchMultiplier, ANGLE3D(0, 0, 0));
     PlaySound(m_soSound, SOUND_FIREROCKETMAN, SOF_3D);
 
     autowait(1.0f + FRnd()/3);

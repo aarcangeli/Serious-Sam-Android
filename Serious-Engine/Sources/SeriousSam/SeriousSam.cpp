@@ -20,21 +20,33 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <dlfcn.h>
 #include <Engine/CurrentVersion.h>
 #include <GameMP/Game.h>
+#include <config.h>
 #define DECL_DLL
+#ifdef FIRST_ENCOUNTER
+#include <Entities/Global.h>
+#else
 #include <EntitiesMP/Global.h>
+#endif
 #include <SeriousSam/GUI/Menus/MenuManager.h>
 #include "resource.h"
 #include "SplashScreen.h"
 #include "MainWindow.h"
 #include "GLSettings.h"
-#include "LevelInfo.h"
+#include "SeriousSam/LevelInfo.h"
 #include "LCDDrawing.h"
 #include "CmdLine.h"
 #include "Credits.h"
-#include "config.h"
+
+
+#ifndef SSA_VERSION
+#define SSA_VERSION ""
+#endif
+
+
+
 
 typedef CGame *(*GAME_Create_t)(void);
-void drawBannerFpsVersion(CDrawPort *pdp, int64_t deltaFrame, float fps);
+void drawBannerFpsVersion(CDrawPort *pdp, int64_t deltaFrame, float fps, int ping);
 
 // _pGame reused from GameMP module
 #ifndef STATIC_LINKING
@@ -119,9 +131,21 @@ CTextureObject *_ptoLogoCT  = NULL;
 CTextureObject *_ptoLogoODI = NULL;
 CTextureObject *_ptoLogoEAX = NULL;
 
+#ifdef FIRST_ENCOUNTER
 CTString sam_strVersion = SSA_VERSION;
-CTString sam_strModName = TRANS("-   A N D R O I D   P O R T   ( U N O F F I C I A L )   -");
-CTString sam_strBackLink = TRANS("https://github.com/aarcangeli/Serious-Sam-Android");
+CTString sam_strModName = TRANS("-   T H E  F I R S T  E N C O U N T E R   -");
+CTString sam_strBackLink = TRANS("https://github.com/Skyrimus/Serious-Sam-Android");
+
+CTString sam_strFirstLevel = "Levels\\01_Hatshepsut.wld";
+CTString sam_strIntroLevel = "Levels\\Intro.wld";
+CTString sam_strGameName = "serioussamfe";
+
+CTString sam_strTechTestLevel = "Levels\\TechTest.wld";
+CTString sam_strTrainingLevel = "Levels\\KarnakDemo.wld";
+#else
+CTString sam_strVersion = SSA_VERSION;
+CTString sam_strModName = TRANS("-   T H E  S E C O N D  E N C O U N T E R   -");
+CTString sam_strBackLink = TRANS("https://github.com/Skyrimus/Serious-Sam-Android");
 
 CTFileName sam_strFirstLevel = CTString("Levels\\LevelsMP\\1_0_InTheLastEpisode.wld");
 CTFileName sam_strIntroLevel = CTString("Levels\\LevelsMP\\Intro.wld");
@@ -129,6 +153,7 @@ CTString sam_strGameName = "serioussamse";
 
 CTString sam_strTechTestLevel = "Levels\\LevelsMP\\Technology\\TechTest.wld";
 CTString sam_strTrainingLevel = "Levels\\KarnakDemo.wld";
+#endif
 
 ENGINE_API extern INDEX snd_iFormat;
 
@@ -242,7 +267,7 @@ void TouchUp(void* pArgs) {
 }
 
 void SaveOptions(void* pArgs) {
-  CTFileName fnmPersistentSymbols = CTString("Scripts\\PersistentSymbols.ini");
+  CTFileName fnmPersistentSymbols = CTString("Scripts\\PersistentSymbolsAndroid.ini");
   _pShell->StorePersistentSymbols(fnmPersistentSymbols);
 }
 
@@ -276,7 +301,12 @@ void HideConsole() {
 
 void HideComputer() {
   if (_pGame->gm_csComputerState == CS_ON || _pGame->gm_csComputerState == CS_TURNINGON) {
-    _pGame->gm_csComputerState = CS_TURNINGOFF;
+    //_pGame->gm_csComputerState = CS_TURNINGOFF;
+	_pInput->ClearInput();
+	MSG msg;
+	msg.message = WM_KEYDOWN;
+	msg.wParam = VK_ESCAPE;
+	_pGame->ComputerKeyDown(msg);
   }
 }
 
@@ -314,7 +344,7 @@ static void PlayDemo(void* pArgs)
 {
   CTString strDemoFilename = *NEXTARGUMENT(CTString*);
   _gmMenuGameMode = GM_DEMO;
-  CTFileName fnDemo = "demos\\" + strDemoFilename + ".dem";
+  CTFileName fnDemo = "Demos\\" + strDemoFilename + ".dem";
   extern BOOL LSLoadDemo(const CTFileName &fnm);
   LSLoadDemo(fnDemo);
 }
@@ -388,11 +418,11 @@ void LimitFrameRate(void)
   TIME tmCurrentDelta = (tvNow-tvLast).GetSeconds();
 
   // limit maximum frame rate
-  sam_iMaxFPSActive   = ClampDn( (INDEX)sam_iMaxFPSActive,   1L);
-  sam_iMaxFPSInactive = ClampDn( (INDEX)sam_iMaxFPSInactive, 1L);
+  sam_iMaxFPSActive   = ClampDn( (INDEX)sam_iMaxFPSActive,   1);
+  sam_iMaxFPSInactive = ClampDn( (INDEX)sam_iMaxFPSInactive, 1);
   INDEX iMaxFPS = sam_iMaxFPSActive;
   if(_pGame->gm_CurrentSplitScreenCfg==CGame::SSC_DEDICATED) {
-    iMaxFPS = ClampDn(iMaxFPS, 60L); // never go very slow if dedicated server
+    iMaxFPS = ClampDn(iMaxFPS, 60); // never go very slow if dedicated server
   }
   TIME tmWantedDelta = 1.0f / iMaxFPS;
   if( tmCurrentDelta<tmWantedDelta) Sleep( (tmWantedDelta-tmCurrentDelta)*1000.0f);
@@ -421,8 +451,9 @@ void StartNextDemo(void)
   _lhAutoDemos.AddTail(pli->li_lnNode);
 
   // if intro
-  if (pli->li_fnLevel==sam_strIntroLevel) {
+  if (pli->li_fnLevel==CTFileName(sam_strIntroLevel)) {
     // start intro
+	InfoMessage("[libSeriousSam] Start intro");
     _gmRunningGameMode = GM_NONE;
     _pGame->gm_aiStartLocalPlayers[0] = 0;
     _pGame->gm_aiStartLocalPlayers[1] = -1;
@@ -510,7 +541,11 @@ void InitializeGame(void)
   try {
 
 #ifndef STATIC_LINKING
-    void *libGameMP = dlopen("libGameMP.so", RTLD_NOW);
+#ifdef FIRST_ENCOUNTER
+	void *libGameMP = dlopen("libGameMP.so", RTLD_NOW);
+#else
+	void *libGameMP = dlopen("libGame" + _strModExt + ".so", RTLD_NOW);
+#endif
     if (!libGameMP) {
       FatalError("  Cannot load GameMP");
     }
@@ -538,7 +573,7 @@ BOOL Init()
 
   // this is not used in android
   _pixDesktopWidth = 0;
-
+  InfoMessage("[libSeriousSam] Initialize engine");
   // initialize engine
   SE_InitEngine(sam_strGameName);
 
@@ -613,6 +648,8 @@ BOOL Init()
   _pShell->DeclareSymbol("user void ViewportResized();", (void *) &ViewportResized);
   _pShell->DeclareSymbol("INDEX input_iIsShiftPressed;", (void *) &g_cb.isShiftPressed);
   _pShell->DeclareSymbol("FLOAT input_uiScale;", (void *) &g_cb.globalScale);
+  _pShell->DeclareSymbol("CTString net_WifiIP;", (void *) &g_cb.WifiIP);
+  _pShell->DeclareSymbol("INDEX ui_drawBanner;", (void *) &g_cb.drawBanner);
 
   InitializeGame();
   _pNetwork->md_strGameID = sam_strGameName;
@@ -630,12 +667,12 @@ BOOL Init()
 #if 0
   snd_iFormat = Clamp( snd_iFormat, (INDEX)CSoundLibrary::SF_NONE, (INDEX)CSoundLibrary::SF_44100_16);
   _pSound->SetFormat( (enum CSoundLibrary::SoundFormat)snd_iFormat);
-#endif
+
 
   if (sam_bAutoAdjustAudio) {
     _pShell->Execute("include \"Scripts\\Addons\\SFX-AutoAdjust.ini\"");
   }
-
+#endif
   // execute script given on command line
 #if 0
   if (cmd_strScript!="") {
@@ -654,28 +691,31 @@ BOOL Init()
   // !! NOTE !! Re-enable these to allow mod support.
   LoadStringVar(CTString("Data\\Var\\Sam_Version.var"), sam_strVersion);
   LoadStringVar(CTString("Data\\Var\\ModName.var"), sam_strModName);
-  CPrintF(TRANS("Serious Sam version: %s\n"), sam_strVersion);
-  CPrintF(TRANS("Active mod: %s\n"), sam_strModName);
-  InitializeMenus();      
+  CPrintF(TRANS("Serious Sam version: %s\n"), (const char *) sam_strVersion);
+  CPrintF(TRANS("Active mod: %s\n"), (const char *) sam_strModName);
+  InitializeMenus();
   
   // if there is a mod
   if (_fnmMod!="") {
     // execute the mod startup script
     _pShell->Execute(CTString("include \"Scripts\\Mod_startup.ini\";"));
   }
-
+  
+  if (!_bDedicatedServer) {
   // init gl settings module
   InitGLSettings();
-
+  }
   // init level-info subsystem
   LoadLevelsList();
   LoadDemosList();
-
+  
+  if (!_bDedicatedServer) {
   // apply application mode
   StartNewMode( (GfxAPIType)sam_iGfxAPI, sam_iDisplayAdapter, sam_iScreenSizeI, sam_iScreenSizeJ,
                 (enum DisplayDepth)sam_iDisplayDepth, sam_bFullScreenActive);
 
   gles_adapter::gles_adp_init();
+  }
 
   // set default mode reporting
   if( sam_bFirstStarted) {
@@ -780,7 +820,7 @@ void PrintDisplayModeInfo(void)
   // get resolution
   CTString strRes;
   extern CTString _strPreferencesDescription;
-  strRes.PrintF( "%dx%dx%s", slDPWidth, slDPHeight, _pGfx->gl_dmCurrentDisplayMode.DepthString());
+  strRes.PrintF( "%dx%d", slDPWidth, slDPHeight);
   if( dm.IsDualHead())   strRes += TRANS(" DualMonitor");
   if( dm.IsWideScreen()) strRes += TRANS(" WideScreen");
        if( _pGfx->gl_eCurrentAPI==GAT_OGL) strRes += " (OpenGL)";
@@ -789,7 +829,7 @@ void PrintDisplayModeInfo(void)
 #endif // SE1_D3D
 
   CTString strDescr;
-  strDescr.PrintF("\n%s (%s)\n", _strPreferencesDescription, RenderingPreferencesDescription(sam_iVideoSetup));
+  strDescr.PrintF("\n%s (%s)\n", (const char *) _strPreferencesDescription, (const char *) RenderingPreferencesDescription(sam_iVideoSetup));
   strRes+=strDescr;
   // tell if application is started for the first time, or failed to set mode
   if( _iDisplayModeChangeFlag==0) {
@@ -811,8 +851,8 @@ void DoGame(void)
   // set flag if not in game
   if( !_pGame->gm_bGameOn) _gmRunningGameMode = GM_NONE;
 
-  if( _gmRunningGameMode==GM_DEMO  && _pNetwork->IsDemoPlayFinished()
-      ||_gmRunningGameMode==GM_INTRO && _pNetwork->IsGameFinished()) {
+  if( (_gmRunningGameMode==GM_DEMO  && _pNetwork->IsDemoPlayFinished())
+    ||(_gmRunningGameMode==GM_INTRO && _pNetwork->IsGameFinished())) {
     _pGame->StopGame();
     _gmRunningGameMode = GM_NONE;
 
@@ -905,7 +945,9 @@ void DoGame(void)
 
     // draw fps and frame time
     if (!bMenuActive && _pGame->gm_csConsoleState == CS_OFF && _pGame->gm_csComputerState == CS_OFF) {
-      drawBannerFpsVersion(pdp, deltaFrame, fps);
+    if (g_cb.drawBanner) {
+      drawBannerFpsVersion(pdp, deltaFrame, fps, g_cb.ping);
+     }
     }
 
     if (_gmRunningGameMode == GM_INTRO) {
@@ -1015,8 +1057,9 @@ BOOL TryToSetDisplayMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI,
 {
   CDisplayMode dmTmp;
   dmTmp.dm_ddDepth = eColorDepth;
+  
   CPrintF( TRANS("  Starting display mode: %dx%dx%s (%s)\n"),
-           pixSizeI, pixSizeJ, dmTmp.DepthString(),
+           pixSizeI, pixSizeJ, (const char *) dmTmp.DepthString(),
            bFullScreenMode ? TRANS("fullscreen") : TRANS("window"));
 
   // mark to start ignoring window size/position messages until settled down
@@ -1057,6 +1100,7 @@ BOOL TryToSetDisplayMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI,
   // if new mode was set
   if( bSuccess) {
     // create canvas
+	InfoMessage("[libSeriousSam] Display mode was set, creating canvas");
 #if 0
     ASSERT( pvpViewPort==NULL);
     ASSERT( pdpNormal==NULL);
@@ -1244,7 +1288,7 @@ void setControls(PlayerControls &ctrls) {
 }
 
 void seriousSamInitialize() {
-
+  InfoMessage("[libSeriousSam] Game initializing now");
   CTStream::EnableStreamHandling();
 
   if (FileExists(_modToLoadTxt)) {
@@ -1283,12 +1327,13 @@ void seriousSamInitialize() {
 void seriousSubMain() {
 
   seriousSamInitialize();
+  InfoMessage("[libSeriousSam] Game initialized");
 
   StartNextDemo();
 
   while(_bRunning && !_fnmModToLoad.Length()) {
     g_cb.syncSeriousThreads();
-
+	setControls(g_cb.g_IncomingControls);
     // when all messages are removed, window has surely changed
     _bWindowChanging = FALSE;
 
@@ -1310,6 +1355,8 @@ void seriousSubMain() {
           _pGame->gm_csConsoleState = CS_TURNINGOFF;
           _iAddonExecState = 0;
         }
+		
+		InfoMessage("[libSeriousSam] Starting menu");
         // start menu
         StartMenus();
       }
@@ -1339,6 +1386,7 @@ void seriousSubMain() {
 
     // do the main game loop and render screen
     DoGame();
+    LimitFrameRate();
   }
   _bRunning = false;
 
@@ -1359,8 +1407,9 @@ void seriousSubMain() {
 
 }
 
-void drawBannerFpsVersion(CDrawPort *pdp, int64_t deltaFrame, float fps) {
+void drawBannerFpsVersion(CDrawPort *pdp, int64_t deltaFrame, float fps, int ping) {
   static int textWidthMax = 0;
+  CTString str;
   static float lastGlobalScale = g_cb.globalScale;
   if (lastGlobalScale != g_cb.globalScale) {
     lastGlobalScale = g_cb.globalScale;
@@ -1371,7 +1420,11 @@ void drawBannerFpsVersion(CDrawPort *pdp, int64_t deltaFrame, float fps) {
   pdp->SetFont(_pfdDisplayFont);
   pdp->SetTextScaling(g_cb.globalScale);
   pdp->SetTextAspect(1.0f);
-  CTString str = CTString(0, SSA_VERSION " fps: %.2f; frame: %.2f ms", fps, deltaFrame / 1000000.f);
+  if( _gmRunningGameMode == GM_NETWORK) {
+  str = CTString(0, SSA_VERSION " fps: %.2f; frame: %.2f ms; \nPing: %d ms", fps, deltaFrame / 1000000.f, ping);
+  } else {
+  str = CTString(0, SSA_VERSION " fps: %.2f; frame: %.2f ms;", fps, deltaFrame / 1000000.f);
+  }
   ULONG textWidth = pdp->GetTextWidth(str);
   if (textWidth > textWidthMax) {
     textWidthMax = textWidth;

@@ -35,7 +35,7 @@ public:
   ~CStock_TYPE(void);
 
   /* Obtain an object from stock - loads if not loaded. */
-  ENGINE_API TYPE *Obtain_t(const CTFileName &fnmFileName); // throw char *
+  ENGINE_API TYPE *Obtain_t(const CTFileName &fnmFileName, CSerial::TCustomStream optCustomStream = nullptr); // throw char *
   /* Release an object when not needed any more. */
   ENGINE_API void Release(TYPE *ptObject);
   // free all unused elements of the stock

@@ -46,4 +46,4 @@ server.on('listening', () => {
     console.log(`server listening ${address.address}:${address.port}`);
 });
 
-server.bind(25601);
+server.bind(25600);

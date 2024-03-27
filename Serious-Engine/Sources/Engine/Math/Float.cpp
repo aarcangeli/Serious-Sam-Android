@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 #include <cmath>
 
 #include <Engine/Math/Float.h>
@@ -115,7 +115,7 @@ BOOL IsValidFloat(float f)
 
 BOOL IsValidDouble(double f)
 {
-  return std::isfinite(f);
+  return std::isfinite(f) && (*(unsigned long long*)&f)!=0xcdcdcdcdcdcdcdcdll;;
 //  return _finite(f) && (*(unsigned __int64*)&f)!=0xcdcdcdcdcdcdcdcdI64;
 /*  int iClass = _fpclass(f);
   return

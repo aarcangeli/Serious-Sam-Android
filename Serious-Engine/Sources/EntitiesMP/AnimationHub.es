@@ -72,7 +72,7 @@ functions:
   const CTString &GetDescription(void) const {
     ((CTString&)m_strDescription).PrintF("-><none>");
     if (m_penTarget0!=NULL) {
-      ((CTString&)m_strDescription).PrintF("->%s...", m_penTarget0->GetName());
+      ((CTString&)m_strDescription).PrintF("->%s...", (const char *) m_penTarget0->GetName());
     }
     return m_strDescription;
   }

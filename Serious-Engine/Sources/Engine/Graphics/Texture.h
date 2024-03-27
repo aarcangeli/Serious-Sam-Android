@@ -97,7 +97,7 @@ public:
   inline ULONG GetNoOfFineMips(void) const { return td_ctFineMipLevels; };
 
   // mark that texture has been used
-  inline void MarkDrawn(void) { td_tvLastDrawn = _pTimer->GetHighPrecisionTimer(); };
+  inline void MarkDrawn(void) { td_tvLastDrawn = _pTimer->GetLowPrecisionTimer(); };
 
   // get string description of texture size, mips and parameters
   CTString GetDescription(void);
@@ -173,7 +173,7 @@ public:
 	void Write_t( CTStream *ostrFile); // throw char * //	write functions
 
   // obtain texture and set it for this object
-  void SetData_t(const CTFileName &fnmTexture); // throw char *
+  void SetData_t(const CTFileName &fnmTexture, CSerial::TCustomStream optCustomStream = nullptr); // throw char *
   // get filename of texture or empty string if no texture
   const CTFileName &GetName(void);
 };

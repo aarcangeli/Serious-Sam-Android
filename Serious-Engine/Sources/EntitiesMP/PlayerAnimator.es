@@ -1054,7 +1054,7 @@ functions:
     FLOAT3D vDesiredTranslation = pl.en_vDesiredTranslationRelative;
     FLOAT3D vCurrentTranslation = pl.en_vCurrentTranslationAbsolute * !pl.en_mRotation;
     ANGLE3D aDesiredRotation = pl.en_aDesiredRotationRelative;
-    ANGLE3D aCurrentRotation = pl.en_aCurrentRotationAbsolute;
+    //ANGLE3D aCurrentRotation = pl.en_aCurrentRotationAbsolute;
 
     // if player is moving
     if (vDesiredTranslation.ManhattanNorm()>0.01f
@@ -1172,7 +1172,7 @@ functions:
 
     // moving view change
     // translating -> change banking
-    if (m_bReference != FALSE && vDesiredTranslation.Length()>1.0f && vCurrentTranslation.Length()>1.0f) {
+    if (m_bReference && vDesiredTranslation.Length()>1.0f && vCurrentTranslation.Length()>1.0f) {
       m_bMoving = TRUE;
       // sidestep banking
       FLOAT vSidestepSpeedDesired = vDesiredTranslation(1);
@@ -1208,6 +1208,7 @@ functions:
     SpawnReminder(this, pl.GetModelObject()->GetAnimLength(PLAYER_ANIM_CROUCH), (INDEX) AA_CROUCH);
     m_iCrouchDownWait++;
     m_bCrouch = TRUE;
+	m_bSwim = FALSE;
   };
 
   // rise
@@ -1220,6 +1221,7 @@ functions:
     SpawnReminder(this, pl.GetModelObject()->GetAnimLength(PLAYER_ANIM_RISE), (INDEX) AA_RISE);
     m_iRiseUpWait++;
     m_bCrouch = FALSE;
+	m_bSwim = FALSE;
   };
 
   // fall
@@ -1298,8 +1300,6 @@ functions:
     INDEX iWeapon = ((CPlayerWeapons&)*(((CPlayer&)*m_penPlayer).m_penWeapons)).m_iCurrentWeapon;
     switch (iWeapon) {
       case WEAPON_NONE:
-        SetBodyAnimation(iNone, ulFlags);
-        break;
       case WEAPON_KNIFE: case WEAPON_COLT: case WEAPON_DOUBLECOLT: // case WEAPON_PIPEBOMB:
         if (m_bSwim) { iColt += BODY_ANIM_COLT_SWIM_STAND-BODY_ANIM_COLT_STAND; }
         SetBodyAnimation(iColt, ulFlags);

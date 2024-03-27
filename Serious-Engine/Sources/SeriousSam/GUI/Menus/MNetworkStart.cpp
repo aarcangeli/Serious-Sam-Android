@@ -108,7 +108,7 @@ void CNetworkStartMenu::StartMenu(void)
   extern INDEX sam_bMentalActivated;
   gm_mgDifficulty.mg_ctTexts = sam_bMentalActivated ? 6 : 5;
 
-  gm_mgGameType.mg_iSelected = Clamp(_pShell->GetINDEX("gam_iStartMode"), 0L, ctGameTypeRadioTexts - 1L);
+  gm_mgGameType.mg_iSelected = Clamp(_pShell->GetINDEX("gam_iStartMode"), 0, ctGameTypeRadioTexts - 1);
   gm_mgGameType.ApplyCurrentSelection();
   gm_mgDifficulty.mg_iSelected = _pShell->GetINDEX("gam_iStartDifficulty") + 1;
   gm_mgDifficulty.ApplyCurrentSelection();
@@ -124,7 +124,7 @@ void CNetworkStartMenu::StartMenu(void)
   gm_mgMaxPlayers.mg_iSelected = ctMaxPlayers - 2;
   gm_mgMaxPlayers.ApplyCurrentSelection();
 
-  gm_mgWaitAllPlayers.mg_iSelected = Clamp(_pShell->GetINDEX("gam_bWaitAllPlayers"), 0L, 1L);
+  gm_mgWaitAllPlayers.mg_iSelected = Clamp(_pShell->GetINDEX("gam_bWaitAllPlayers"), 0, 1);
   gm_mgWaitAllPlayers.ApplyCurrentSelection();
 
   gm_mgVisible.mg_iSelected = _pShell->GetINDEX("ser_bEnumeration");

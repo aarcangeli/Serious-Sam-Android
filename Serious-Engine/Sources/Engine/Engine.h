@@ -178,6 +178,10 @@ ENGINE_API void SE_PretouchIfNeeded(void);
 extern ENGINE_API CTString _strEngineBuild;  // not valid before InitEngine()!
 extern ENGINE_API ULONG _ulEngineBuildMajor;
 extern ENGINE_API ULONG _ulEngineBuildMinor;
+extern ENGINE_API ULONG _ulEngineRevision;
+extern ENGINE_API ULONG _ulEngineBuildYear;
+extern ENGINE_API ULONG _ulEngineBuildMonth;
+extern ENGINE_API ULONG _ulEngineBuildDay;
 
 extern ENGINE_API BOOL _bDedicatedServer;
 extern ENGINE_API BOOL _bWorldEditorApp; // is this world edtior app

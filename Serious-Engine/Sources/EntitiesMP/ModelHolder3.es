@@ -529,7 +529,7 @@ functions:
       SetSkaModel_t(m_fnModel);
       // if failed
     } catch ( const char *strError) {
-      WarningMessage(TRANS("Cannot load ska model '%s':\n%s"), (CTString&)m_fnModel, strError);
+      WarningMessage(TRANS("Cannot load ska model '%s':\n%s"), (const char *) m_fnModel, strError);
       bLoadOK = FALSE;
       // set colision info for default model
       //SetSkaColisionInfo();
@@ -609,7 +609,7 @@ functions:
     m_fFadeEndWait = ClampDn(m_fFadeEndWait, 0.05f);
     m_fFadeSpeed = ClampDn(m_fFadeSpeed, 0.05f);*/
 
-    m_strDescription.PrintF("%s", m_fnModel.FileName());
+    m_strDescription.PrintF("%s", (const char *) m_fnModel.FileName());
 
     return;
   };
