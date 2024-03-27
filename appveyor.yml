@@ -8,6 +8,7 @@ environment:
   ANDROID_NDK_HOME: C:\android-ndk-windows\android-ndk-r19c
   ANDROID_TOOLS_URL: https://dl.google.com/android/repository/sdk-tools-windows-3859397.zip
   ANDROID_NDK_URL: https://dl.google.com/android/repository/android-ndk-r19c-windows-x86_64.zip
+  JAVA_URL: https://download.oracle.com/java/17/archive/jdk-17.0.10_windows-x64_bin.exe
   # signing infos
   STORE_FILE: ..\\serious-sam.jks
   STORE_PASSWORD:
@@ -26,8 +27,10 @@ install:
       rem Download SDK and NDK
       appveyor DownloadFile %ANDROID_TOOLS_URL% -FileName android-tools.zip
       appveyor DownloadFile %ANDROID_NDK_URL% -FileName android-ndk-tools.zip
+      appveyor DownloadFile %JAVA_URL% -FileName java.exe
 
       rem Extract SDK and NDK
+      C:\java.exe
       7z x android-tools.zip -oC:\android-sdk-windows > nul
       7z x android-ndk-tools.zip -oC:\android-ndk-windows > nul
 
