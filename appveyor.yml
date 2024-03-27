@@ -31,7 +31,7 @@ install:
       appveyor DownloadFile %JAVA_URL% -FileName java.zip
 
       rem Extract SDK and NDK
-      7z x java-tools.zip -oC:\java > nul
+      7z x java.zip -oC:\java > nul
       7z x android-tools.zip -oC:\android-sdk-windows > nul
       7z x android-ndk-tools.zip -oC:\android-ndk-windows > nul
 
