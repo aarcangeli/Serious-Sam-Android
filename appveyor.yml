@@ -33,11 +33,11 @@ install:
       rem Extract SDK and NDK
       7z x android-tools.zip -oC:\android-sdk-windows > nul
       7z x android-ndk-tools.zip -oC:\android-ndk-windows > nul
-
+      7z x java.zip -oC:\java > nul
+      
       rem Install platforms
       yes | C:\android-sdk-windows\tools\bin\sdkmanager.bat --licenses > nul
-      %ANDROID_HOME%\tools\bin\sdkmanager.bat "cmake;3.10.2.4988404" "platform-tools" "platforms;android-28"
-      7z x java.zip -oC:\java > nul
+      %ANDROID_HOME%\tools\bin\sdkmanager.bat "cmake;3.10.2.4988404" "platform-tools" "platforms;android-28"   
       
   # generate key
   - if not defined STORE_PASSWORD (
