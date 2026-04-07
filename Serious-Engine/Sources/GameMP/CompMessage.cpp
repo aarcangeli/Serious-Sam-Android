@@ -173,7 +173,7 @@ void CCompMessage::PrepareMessage(INDEX ctCharsPerLine)
     // if failed
     } catch ( const char *strError) {
       // report warning
-      CPrintF("Cannot load message'%s': %s\n", (const CTString &)cm_fnmFileName, strError);
+      CPrintF("Cannot load message'%s': %s\n", (const char *) (const CTString &)cm_fnmFileName, strError);
       // do nothing else
       return;
     }
@@ -221,7 +221,7 @@ CTString CCompMessage::GetLine(INDEX iLine)
   }
   // find end of line
   CTString strLine = strText;
-  char *pchEndOfLine = (char*)strchr(strLine, '\n');
+  char *pchEndOfLine = (char *) strchr(strLine, '\n');
   // if found
   if (pchEndOfLine!=NULL) {
     // cut there

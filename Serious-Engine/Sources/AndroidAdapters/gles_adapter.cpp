@@ -1,7 +1,23 @@
 typedef double GLdouble;
 typedef double GLclampd;
+#if defined(ANDROID)
+  #include <android/log.h>
+  #ifndef LOGI
+    #define LOGI(...) __android_log_print(ANDROID_LOG_INFO,  "SeriousGLESAdapter", __VA_ARGS__)
+    #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, "SeriousGLESAdapter", __VA_ARGS__)
+  #endif
+#else
+  #include <stdio.h>
+  #ifndef LOGI
+    #define LOGI(...) do { fprintf(stdout, __VA_ARGS__); fprintf(stdout, "\n"); } while (0)
+    #define LOGE(...) do { fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n"); } while (0)
+  #endif
+#endif
 
 #include <GLES2/gl2.h>
+#if __has_include(<GLES3/gl3.h>)
+  #include <GLES3/gl3.h>
+#endif
 #include <AndroidAdapters/gles_adapter.h>
 #include <stdlib.h>
 #include <glm/glm.hpp>
@@ -9,6 +25,11 @@ typedef double GLclampd;
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/ext.hpp>
 #include <vector>
+#include <unordered_map>
+#include <string>
+#include <limits>
+#include <climits>
+#include <algorithm>
 
 #define GLM_ENABLE_EXPERIMENTAL
 
@@ -91,6 +112,13 @@ namespace gles_adapter {
 
   GenericBuffer vp, tp, cp;
 
+    struct StateCache {
+        struct { GLint x=INT_MIN, y=INT_MIN; GLsizei w=0,h=0; } viewport, scissor;
+        struct {
+            bool proj3D=true, proj2D=true, modelView=true, tex=true, flags=true;
+        } dirty;
+    } sState;
+
   const char *VERTEX_SHADER = R"***(
     precision highp float;
 
@@ -99,22 +127,26 @@ namespace gles_adapter {
     attribute vec4 color;
     attribute vec4 textureCoord;
 
-    uniform mat4 projMat;
+    uniform mat4 projMat3D;
+    uniform mat4 projMat2D;
     uniform mat4 modelViewMat;
-
+    uniform mat4 texMat;
+    uniform float uUseOrtho;
     varying vec4 vColor;
     varying vec2 vTexCoord;
 
     void main() {
-      gl_Position = projMat * modelViewMat * vec4(position.xyz, 1.0);
+      mat4 P = (uUseOrtho > 0.5) ? projMat2D : projMat3D;
+      gl_Position = P * modelViewMat * vec4(position.xyz, 1.0);
       vColor = color;
-      vTexCoord = textureCoord.xy;
+      vec4 tc = texMat * textureCoord;
+      vTexCoord = tc.xy;
     }
 
   )***";
 
   const char *FRAGMENT_SHADER = R"***(
-    precision highp float;
+	precision highp float;
 
     uniform sampler2D mainTexture;
     uniform float enableTexture;
@@ -142,23 +174,68 @@ namespace gles_adapter {
   bool isGL_TEXTURE_COORD_ARRAY = false;
   bool isGL_NORMAL_ARRAY = false;
   bool isGL_COLOR_ARRAY = false;
+  static GLenum sLastMode = GL_MODELVIEW;
+  static int sProjWritesThisFrame = 0, sMVWritesThisFrame = 0;
+  static int sFrameId = 0;
 
   // glGetTexEnv
   int val_GL_TEXTURE_ENV_MODE = GL_MODULATE;
 
-  void installGlLogger();
+    static GLint GetUniformLocCached(GLuint prog, const char* name){
+        static std::unordered_map<GLuint, std::unordered_map<std::string, GLint>> cache;
+        auto &m = cache[prog];
+        auto it = m.find(name);
+        if (it!=m.end()) return it->second;
+        GLint loc = glGetUniformLocation(prog, name);
+        m.emplace(name, loc);
+        return loc;
+    }
 
-  glm::mat4 modelViewMat = glm::mat4(1);
-  glm::mat4 projMat = glm::mat4(1);
-  glm::mat4 *currentMatrix = &modelViewMat;
+    static inline void InvalidateStateCache(){
+        sState.viewport = {}; sState.scissor = {};
+        sState.dirty = {true,true,true,true,true};
+    }
 
-  float *getProjMat() {
-    return glm::value_ptr(gles_adapter::projMat);
-  }
+    static inline uint32_t nextPow2_u32(uint32_t v) {
+        if (v <= 1u) return 1u;
+        v--;
+        v |= v >> 1u;
+        v |= v >> 2u;
+        v |= v >> 4u;
+        v |= v >> 8u;
+        v |= v >> 16u;
+        return v + 1u;
+    }
+
+    static inline void ensureScratchCapacityPow2(std::vector<uint16_t>& buf, uint32_t needed) {
+        if (buf.capacity() < needed) {
+            buf.reserve(nextPow2_u32(needed));
+        }
+        if (buf.size() < needed) {
+            buf.resize(needed);
+        }
+    }
+
+
+    void installGlLogger();
+
+    glm::mat4 modelViewMat      = glm::mat4(1.0f);
+    glm::mat4 projMat3D         = glm::mat4(1.0f);
+    glm::mat4 projMat2D         = glm::mat4(1.0f);
+    glm::mat4 texMat            = glm::mat4(1.0f);
+
+    glm::mat4 *currentMatrix    = &modelViewMat;
+    glm::mat4 *currentProjTarget= &projMat3D;
+    bool useOrtho    = false;
+
+    float *getProjMat()  { return glm::value_ptr(gles_adapter::projMat3D); }
+    float *getTexMat()   { return glm::value_ptr(gles_adapter::texMat); }
 
   float *getModelViewMat() {
     return glm::value_ptr(gles_adapter::modelViewMat);
   }
+    float *getProjMat2D() { return glm::value_ptr(gles_adapter::projMat2D); }
+    bool   isOrthoActive(){ return useOrtho; }
 
   bool isTexture2d() {
     return isGL_TEXTURE_2D;
@@ -168,7 +245,7 @@ namespace gles_adapter {
     return isGL_ALPHA_TEST;
   }
 
-  GLint projMatIdx, modelViewMatIdx, mainTextureLoc, enableTextureLoc, enableAlphaTestLoc;
+  GLint proj3DIdx, proj2DIdx, modelViewMatIdx, texMatIdx, mainTextureLoc, enableTextureLoc, enableAlphaTestLoc, uUseOrthoLoc;
   GLenum alphaTestFunc;
   GLclampf alphaTestRef;
 
@@ -178,7 +255,7 @@ namespace gles_adapter {
     return result;
   };
 
-  void setError(GLenum error) {
+    void setError(GLenum error) {
     if (error) {
       int t = 0; // put debugger here
     }
@@ -186,7 +263,6 @@ namespace gles_adapter {
   };
 
   void syncError() {
-    setError(glGetError());
   }
 
   GLuint compileShader(GLenum type, const char *name, const char *source) {
@@ -210,14 +286,16 @@ namespace gles_adapter {
 
   void gles_adp_glFinish(void) {
     glFinish();
-    setError(glGetError());
   };
 
   void gles_adp_init() {
-
+	reportError("[gles_adapter] Initializing");
     // create program
     program = glCreateProgram();
+	reportError("[gles_adapter] Start glCreateProgram");
+	reportError("[gles_adapter] Compile vertex shader");
     glAttachShader(program, compileShader(GL_VERTEX_SHADER, "vertex shader", VERTEX_SHADER));
+	reportError("[gles_adapter] Compile fragment shader");
     glAttachShader(program, compileShader(GL_FRAGMENT_SHADER, "fragment shader", FRAGMENT_SHADER));
     glBindAttribLocation(program, INDEX_POSITION, "position");
     glBindAttribLocation(program, INDEX_NORMAL, "normal");
@@ -230,16 +308,22 @@ namespace gles_adapter {
     if (!success || glGetError()) {
       blockingError("Cannot create main program");
     }
-    setError(glGetError());
     glUseProgram(program);
-
+	if (success) {
+	reportError("[gles_adapter] Initialized successful!");
+	}
     // get uniforms
-    projMatIdx = glGetUniformLocation(program, "projMat");
-    modelViewMatIdx = glGetUniformLocation(program, "modelViewMat");
-    mainTextureLoc = glGetUniformLocation(program, "mainTexture");
+    proj3DIdx        = GetUniformLocCached(program, "projMat3D");
+    proj2DIdx        = GetUniformLocCached(program, "projMat2D");
+    modelViewMatIdx = GetUniformLocCached(program, "modelViewMat");
+    texMatIdx = GetUniformLocCached(program, "texMat");
+    uUseOrthoLoc     = GetUniformLocCached(program, "uUseOrtho");
+    mainTextureLoc = GetUniformLocCached(program, "mainTexture");
     if (mainTextureLoc >= 0) glUniform1i(mainTextureLoc, 0);
-    enableTextureLoc = glGetUniformLocation(program, "enableTexture");
-    enableAlphaTestLoc = glGetUniformLocation(program, "enableAlphaTest");
+    enableTextureLoc = GetUniformLocCached(program, "enableTexture");
+    enableAlphaTestLoc = GetUniformLocCached(program, "enableAlphaTest");
+
+    InvalidateStateCache();
 
     GLenum error = glGetError();
     if (error) {
@@ -261,6 +345,20 @@ namespace gles_adapter {
         return 0;
       }
   }
+
+    void _DBG_AboutToWriteMat(const char* what) {
+        if (sLastMode==GL_PROJECTION) sProjWritesThisFrame++;
+        if (sLastMode==GL_MODELVIEW) sMVWritesThisFrame++;
+        auto &M = *currentMatrix;
+        bool shear = (fabs(M[0][1])>1e-5f) || (fabs(M[1][0])>1e-5f);
+        if ((sLastMode==GL_PROJECTION) && (sProjWritesThisFrame>1 || shear)) {
+            LOGE("F%04d: %s to PROJECTION (writes=%d, shear=%d)",
+                                sFrameId, what, sProjWritesThisFrame, (int)shear);
+        }
+        if ((sLastMode==GL_MODELVIEW) && (sMVWritesThisFrame>100)) {
+            LOGI("F%04d: %s to MODELVIEW (writes=%d)", sFrameId, what, sMVWritesThisFrame);
+        }
+    }
 
   void syncBuffers(GLsizei vertices) {
     uint32_t totalSize;
@@ -310,8 +408,24 @@ namespace gles_adapter {
     glUseProgram(program);
 
     // uniforms
-    glUniformMatrix4fv(projMatIdx, 1, GL_FALSE, glm::value_ptr(projMat));
-    glUniformMatrix4fv(modelViewMatIdx, 1, GL_FALSE, glm::value_ptr(modelViewMat));
+      if (sState.dirty.proj3D) {
+          glUniformMatrix4fv(proj3DIdx, 1, GL_FALSE, glm::value_ptr(projMat3D));
+          sState.dirty.proj3D = false;
+      }
+      if (sState.dirty.proj2D) {
+          glUniformMatrix4fv(proj2DIdx, 1, GL_FALSE, glm::value_ptr(projMat2D));
+          sState.dirty.proj2D = false;
+      }
+      if (sState.dirty.modelView) {
+          glUniformMatrix4fv(modelViewMatIdx, 1, GL_FALSE, glm::value_ptr(modelViewMat));
+          sState.dirty.modelView = false;
+      }
+      if (sState.dirty.tex) {
+          glUniformMatrix4fv(texMatIdx, 1, GL_FALSE, glm::value_ptr(texMat));
+          sState.dirty.tex = false;
+      }
+
+    glUniform1f(uUseOrthoLoc, useOrtho ? 1.0f : 0.0f);
     glUniform1f(enableTextureLoc, isGL_TEXTURE_2D ? 1 : 0);
 
     if (alphaTestFunc != GL_GEQUAL || alphaTestRef != 0.5f) {
@@ -353,7 +467,6 @@ namespace gles_adapter {
       case GL_SCISSOR_TEST:
       case GL_STENCIL_TEST:
         glEnable(cap);
-        setError(glGetError());
         break;
       default:
         reportError("glEnable");
@@ -381,7 +494,6 @@ namespace gles_adapter {
       case GL_SCISSOR_TEST:
       case GL_STENCIL_TEST:
         glDisable(cap);
-        setError(glGetError());
         break;
       default:
         reportError("glDisable");
@@ -406,7 +518,6 @@ namespace gles_adapter {
       case GL_SCISSOR_TEST:
       case GL_STENCIL_TEST: {
         const GLboolean &enabled = glIsEnabled(cap);
-        setError(glGetError());
         return enabled;
       }
       case GL_VERTEX_ARRAY:
@@ -425,13 +536,16 @@ namespace gles_adapter {
 
   void gles_adp_glClearColor(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha) {
     glClearColor(red, green, blue, alpha);
-    setError(glGetError());
   }
 
-  void gles_adp_glClear(GLbitfield mask) {
-    glClear(mask);
-    setError(glGetError());
-  };
+    void gles_adp_glClear(GLbitfield mask) {
+        if (mask & GL_COLOR_BUFFER_BIT) {
+            sFrameId++;
+            sProjWritesThisFrame = 0;
+            sMVWritesThisFrame = 0;
+        }
+        glClear(mask);
+    }
 
   void gles_adp_glColorMask(GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha) {
     glColorMask(red, green, blue, alpha);
@@ -444,22 +558,18 @@ namespace gles_adapter {
 
   void gles_adp_glBlendFunc(GLenum sfactor, GLenum dfactor) {
     glBlendFunc(sfactor, dfactor);
-    setError(glGetError());
   };
 
   void gles_adp_glCullFace(GLenum mode) {
     glCullFace(mode);
-    setError(glGetError());
   };
 
   void gles_adp_glFrontFace(GLenum mode) {
     glFrontFace(mode);
-    setError(glGetError());
   };
 
   void gles_adp_glScissor(GLint x, GLint y, GLsizei width, GLsizei height) {
     glScissor(x, y, width, height);
-    setError(glGetError());
   }
 
   void gles_adp_glEnableClientState(GLenum cap) {
@@ -492,112 +602,101 @@ namespace gles_adapter {
 
   void gles_adp_glGetBooleanv(GLenum pname, GLboolean *params) {
     glGetBooleanv(pname, params);
-    setError(glGetError());
   };
 
   void gles_adp_glGetFloatv(GLenum pname, GLfloat *params) {
     if (!params) return;
     glGetFloatv(pname, params);
-    setError(glGetError());
   };
 
   void gles_adp_glGetIntegerv(GLenum pname, GLint *params) {
     glGetIntegerv(pname, params);
-    setError(glGetError());
   };
 
   const GLubyte *gles_adp_glGetString(GLenum name) {
     const GLubyte *string = glGetString(name);
-    setError(glGetError());
     return string;
   };
 
   void gles_adp_glHint(GLenum target, GLenum mode) {
     glHint(target, mode);
-    setError(glGetError());
   };
 
 
   void gles_adp_glClearDepth(GLclampd depth) {
     glClearDepthf(depth);
-    setError(glGetError());
   };
 
   void gles_adp_glDepthFunc(GLenum func) {
     glDepthFunc(func);
-    setError(glGetError());
   };
 
   void gles_adp_glDepthMask(GLboolean flag) {
     glDepthMask(flag);
-    setError(glGetError());
   };
 
   void gles_adp_glDepthRange(GLclampd near_val, GLclampd far_val) {
     glDepthRangef(near_val, far_val);
-    setError(glGetError());
   };
 
-  void gles_adp_glMatrixMode(GLenum mode) {
-    switch (mode) {
-      case GL_MODELVIEW:
-        currentMatrix = &modelViewMat;
-        break;
-      case GL_PROJECTION:
-        currentMatrix = &projMat;
-        break;
-      case GL_TEXTURE:
-        reportError("glMatrixMode(GL_TEXTURE)");
-        break;
-      case GL_COLOR:
-        reportError("glMatrixMode(GL_COLOR)");
-        break;
-      default:
-        setError(GL_INVALID_ENUM);
-        break;
+    void gles_adp_glMatrixMode(GLenum mode) {
+        sLastMode = mode;
+        switch (mode) {
+            case GL_MODELVIEW:  currentMatrix = &modelViewMat;   break;
+            case GL_PROJECTION: currentMatrix = currentProjTarget; break;
+            case GL_TEXTURE:    currentMatrix = &texMat;         break;
+            default: setError(GL_INVALID_ENUM); break;
+        }
     }
-  };
 
-  void
-  gles_adp_glOrtho(GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble near_val,
-                   GLdouble far_val) {
-    glm::mat4 toMult = glm::ortho(left, right, bottom, top, near_val, far_val);
-    (*currentMatrix) *= toMult;
-  }
 
-  void
-  gles_adp_glFrustum(GLdouble left, GLdouble right, GLdouble bottom, GLdouble top,
-                     GLdouble near_val,
-                     GLdouble far_val) {
-    glm::mat4 toMult = glm::frustum(left, right, bottom, top, near_val, far_val);
-    (*currentMatrix) *= toMult;
-  }
+    void gles_adp_glFrustum(GLdouble l,GLdouble r,GLdouble b,GLdouble t,GLdouble n,GLdouble f){
+        currentProjTarget = &projMat3D;
+        if (sLastMode == GL_PROJECTION) currentMatrix = currentProjTarget;
+        *currentProjTarget *= glm::frustum((float)l,(float)r,(float)b,(float)t,(float)n,(float)f);
+        useOrtho = false;
+        sState.dirty.proj3D = true;
+    }
+    void gles_adp_glOrtho(GLdouble l,GLdouble r,GLdouble b,GLdouble t,GLdouble n,GLdouble f){
+        currentProjTarget = &projMat2D;
+        if (sLastMode == GL_PROJECTION) currentMatrix = currentProjTarget;
+        *currentProjTarget *= glm::ortho((float)l,(float)r,(float)b,(float)t,(float)n,(float)f);
+        useOrtho = true;
+        sState.dirty.proj2D = true;
+    }
 
-  void gles_adp_glViewport(GLint x, GLint y, GLsizei width, GLsizei height) {
-    glViewport(x, y, width, height);
-  }
 
-  void gles_adp_glLoadIdentity(void) {
-    *currentMatrix = glm::mat4(1);
-  };
+    void gles_adp_glViewport(GLint x, GLint y, GLsizei w, GLsizei h) {
+        if (sState.viewport.x!=x || sState.viewport.y!=y || sState.viewport.w!=w || sState.viewport.h!=h){
+            glViewport(x,y,w,h); sState.viewport={x,y,w,h};
+        }
+    }
+
+    void gles_adp_glLoadIdentity(void){
+        *currentMatrix = glm::mat4(1.0f);
+        sState.dirty = {true,true,true,true,true};
+    }
 
   void gles_adp_glLoadMatrixd(const GLdouble *m) {
     (*currentMatrix) = glm::make_mat4(m);
   };
 
-  void gles_adp_glLoadMatrixf(const GLfloat *m) {
-    (*currentMatrix) = glm::make_mat4(m);
-  };
+
+    void gles_adp_glLoadMatrixf(const GLfloat *m) {
+        const glm::mat4 M = glm::make_mat4(m);
+        *currentMatrix = M;
+        sState.dirty = {true,true,true,true,true};
+    }
 
   void gles_adp_glMultMatrixd(const GLdouble *m) {
     glm::mat4 toMult = glm::make_mat4(m);
     (*currentMatrix) *= toMult;
   };
 
-  void gles_adp_glMultMatrixf(const GLfloat *m) {
-    glm::mat4 toMult = glm::make_mat4(m);
-    (*currentMatrix) *= toMult;
-  };
+    void gles_adp_glMultMatrixf(const GLfloat *m) {
+        *currentMatrix *= glm::make_mat4(m);
+        sState.dirty = {true,true,true,true,true};
+    }
 
   void gles_adp_glVertexPointer(GLint size, GLenum type, GLsizei stride, const GLvoid *ptr) {
 //    glVertexAttribPointer(INDEX_POSITION, size, type, GL_FALSE, stride, ptr);
@@ -657,80 +756,77 @@ namespace gles_adapter {
     glDrawElements(GL_TRIANGLES, vertices, GL_UNSIGNED_SHORT, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     syncBuffersPost();
-    setError(glGetError());
   }
 
-  void gles_adp_glDrawElements(GLenum mode, GLsizei count, GLenum type, const GLvoid *indices) {
-    if (!enableDraws) return;
-    if (!isGL_VERTEX_ARRAY) return;
+    void gles_adp_glDrawElements(GLenum mode, GLsizei count, GLenum type, const GLvoid *indices) {
+        if (!enableDraws) return;
+        if (!isGL_VERTEX_ARRAY) return;
 
-    if (mode != GL_TRIANGLES) {
-      blockingError("unimplemented mode");
+        if (mode != GL_TRIANGLES) {
+            blockingError("unimplemented mode");
+            return;
+        }
+        if (count <= 0 || !indices) {
+            return;
+        }
+
+        // По умолчанию — прямой путь без копий.
+        const void* uploadPtr = indices;
+        GLenum      uploadType = type;
+
+        switch (type) {
+            case GL_UNSIGNED_INT: {
+                const uint32_t* src = reinterpret_cast<const uint32_t*>(indices);
+                const uint32_t  n   = static_cast<uint32_t>(count);
+
+                ensureScratchCapacityPow2(dummyIndexBuffer, n);
+
+                for (uint32_t i = 0; i < n; ++i) {
+                    const uint32_t v = src[i];
+                    if (v > 0xFFFFu) {
+                        blockingError("Panic!: uint16_t overflow");
+                        return;
+                    }
+                    dummyIndexBuffer[i] = static_cast<uint16_t>(v);
+                }
+
+                uploadPtr  = static_cast<const void*>(dummyIndexBuffer.data());
+                uploadType = GL_UNSIGNED_SHORT;
+            } break;
+
+            case GL_UNSIGNED_SHORT:
+                break;
+
+            case GL_UNSIGNED_BYTE:
+                break;
+
+            default:
+                blockingError("Invalid type in glDrawElements");
+                return;
+        }
+
+        syncBuffers(0);
+
+#if USE_BUFFER_DATA
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers[BUFFER_ELEMENTS]);
+    const GLsizeiptr byteSize =
+        (uploadType == GL_UNSIGNED_SHORT ? sizeof(uint16_t) :
+         uploadType == GL_UNSIGNED_BYTE  ? sizeof(uint8_t)  :
+                                           0) * static_cast<GLsizeiptr>(count);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, byteSize, nullptr, GL_STREAM_DRAW); // orphan
+    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, byteSize, uploadPtr);
+    glDrawElements(mode, count, uploadType, reinterpret_cast<const GLvoid*>(0));
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+#else
+        glDrawElements(mode, count, uploadType, uploadPtr);
+#endif
+
+        syncBuffersPost();
     }
 
-    uint32_t totalVertices = 0;
-    uint32_t bytePerElement = 0;
-    if (type == GL_UNSIGNED_INT) {
-      if (count > dummyIndexBuffer.size()) {
-        dummyIndexBuffer.resize(count);
-      }
-      uint32_t *bf = (uint32_t *) indices;
-      for (uint32_t i = 0; i < count; i++) {
-        dummyIndexBuffer[i] = (uint16_t) bf[i];
-        if (dummyIndexBuffer[i] != bf[i]) {
-          blockingError("Panic!: uint16_t overflow");
-        }
-      }
-      if (USE_BUFFER_DATA) {
-        for (uint32_t i = 0; i < count; i++) {
-          if (dummyIndexBuffer[i] >= totalVertices) {
-            totalVertices = bf[i] + 1;
-          }
-        }
-      }
-      indices = (void*) dummyIndexBuffer.data();
-      type = GL_UNSIGNED_SHORT;
-      bytePerElement = 2;
-    } else if (type == GL_UNSIGNED_SHORT) {
-      uint16_t *bf = (uint16_t *) indices;
-      if (USE_BUFFER_DATA) {
-        for (uint32_t i = 0; i < count; i++) {
-          if (bf[i] >= totalVertices) {
-            totalVertices = bf[i] + 1;
-          }
-        }
-      }
-      bytePerElement = 2;
-    } else if (type == GL_UNSIGNED_BYTE) {
-      uint8_t *bf = (uint8_t *) indices;
-      if (USE_BUFFER_DATA) {
-        for (uint32_t i = 0; i < count; i++) {
-          if (bf[i] >= totalVertices) {
-            totalVertices = bf[i] + 1;
-          }
-        }
-      }
-      bytePerElement = 1;
-    } else {
-      blockingError("Invalid type in glDrawElements");
-    }
-
-    syncBuffers(totalVertices);
-    if (USE_BUFFER_DATA) {
-      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers[BUFFER_ELEMENTS]);
-      glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * bytePerElement, indices, GL_STREAM_DRAW);
-      glDrawElements(mode, count, type, 0);
-      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    } else {
-      glDrawElements(mode, count, type, indices);
-    }
-    syncBuffersPost();
-    setError(glGetError());
-  }
 
   void gles_adp_glPixelStorei(GLenum pname, GLint param) {
     glPixelStorei(pname, param);
-    setError(glGetError());
   };
 
   void
@@ -778,12 +874,10 @@ namespace gles_adapter {
 
     // should never happen
     glReadPixels(x, y, width, height, format, type, pixels);
-    setError(glGetError());
   }
 
   void gles_adp_glClearStencil(GLint s) {
     glClearStencil(s);
-    setError(glGetError());
   };
 
   void gles_adp_glGetTexEnviv(GLenum target, GLenum pname, GLint *params) {
@@ -809,27 +903,22 @@ namespace gles_adapter {
       }
     }
     glTexParameteri(target, pname, param);
-    setError(glGetError());
   };
 
   void gles_adp_glTexParameterfv(GLenum target, GLenum pname, const GLfloat *params) {
     glTexParameterfv(target, pname, params);
-    setError(glGetError());
   }
 
   void gles_adp_glTexParameteriv(GLenum target, GLenum pname, const GLint *params) {
     glTexParameteriv(target, pname, params);
-    setError(glGetError());
   }
 
   void gles_adp_glGetTexParameterfv(GLenum target, GLenum pname, GLfloat *params) {
     glGetTexParameterfv(target, pname, params);
-    setError(glGetError());
   }
 
   void gles_adp_glGetTexParameteriv(GLenum target, GLenum pname, GLint *params) {
     glGetTexParameteriv(target, pname, params);
-    setError(glGetError());
   }
 
   void gles_adp_glTexImage2D(GLenum target, GLint level, GLint internalFormat, GLsizei width,
@@ -838,29 +927,24 @@ namespace gles_adapter {
     // NB: internalFormat is ignored, the type should be managed by shader
     (void) internalFormat;
     glTexImage2D(target, level, format, width, height, border, format, type, pixels);
-    setError(glGetError());
   }
 
   void gles_adp_glGenTextures(GLsizei n, GLuint *textures) {
     glGenTextures(n, textures);
-    setError(glGetError());
   };
 
   void gles_adp_glDeleteTextures(GLsizei n, const GLuint *textures) {
     glDeleteTextures(n, textures);
-    setError(glGetError());
   };
 
   void gles_adp_glBindTexture(GLenum target, GLuint texture) {
     glBindTexture(target, texture);
-    setError(glGetError());
   };
 
   void
   gles_adp_glTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
                            GLsizei height, GLenum format, GLenum type, const GLvoid *pixels) {
     glTexSubImage2D(target, level, xoffset, yoffset, width, height, format, type, pixels);
-    setError(glGetError());
   }
 
   // mocks
@@ -943,7 +1027,6 @@ namespace gles_adapter {
     syncBuffers(offset);
     glDrawArrays(mode, 0, offset);
     syncBuffersPost();
-    setError(glGetError());
 
     isGL_VERTEX_ARRAY = oldGL_VERTEX_ARRAY;
     isGL_TEXTURE_COORD_ARRAY = oldGL_TEXTURE_COORD_ARRAY;

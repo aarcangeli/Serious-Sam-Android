@@ -47,9 +47,17 @@ void CMainMenu::Initialize_t(void)
   gm_mgModLabel.mg_bLabel = TRUE;
   gm_lhGadgets.AddTail(gm_mgModLabel.mg_lnNode);
 
+  gm_mgEdition.mg_strText = "A N D R O I D  E D I T I O N";
+  gm_mgEdition.mg_boxOnScreen = BoxMediumRow(-0.5f);
+  gm_mgEdition.mg_bfsFontSize = BFS_SMALL;
+  gm_mgEdition.mg_iCenterI = 0;
+  gm_mgEdition.mg_bEnabled = FALSE;
+  gm_mgEdition.mg_bLabel = TRUE;
+  gm_lhGadgets.AddTail(gm_mgEdition.mg_lnNode);
+
   gm_mgSingle.mg_strText = TRANS("SINGLE PLAYER");
   gm_mgSingle.mg_bfsFontSize = BFS_LARGE;
-  gm_mgSingle.mg_boxOnScreen = BoxBigRow(0.0f);
+  gm_mgSingle.mg_boxOnScreen = BoxBigRow(0.5f);
   gm_mgSingle.mg_strTip = TRANS("single player game menus");
   gm_lhGadgets.AddTail(gm_mgSingle.mg_lnNode);
   gm_mgSingle.mg_pmgUp = &gm_mgQuit;
@@ -58,7 +66,7 @@ void CMainMenu::Initialize_t(void)
 
   gm_mgNetwork.mg_strText = TRANS("NETWORK");
   gm_mgNetwork.mg_bfsFontSize = BFS_LARGE;
-  gm_mgNetwork.mg_boxOnScreen = BoxBigRow(1.0f);
+  gm_mgNetwork.mg_boxOnScreen = BoxBigRow(1.5f);
   gm_mgNetwork.mg_strTip = TRANS("LAN/iNet multiplayer menus");
   gm_lhGadgets.AddTail(gm_mgNetwork.mg_lnNode);
   gm_mgNetwork.mg_pmgUp = &gm_mgSingle;
@@ -67,7 +75,7 @@ void CMainMenu::Initialize_t(void)
 
   gm_mgSplitScreen.mg_strText = TRANS("SPLIT SCREEN");
   gm_mgSplitScreen.mg_bfsFontSize = BFS_LARGE;
-  gm_mgSplitScreen.mg_boxOnScreen = BoxBigRow(2.0f);
+  gm_mgSplitScreen.mg_boxOnScreen = BoxBigRow(2.5f);
   gm_mgSplitScreen.mg_strTip = TRANS("play with multiple players on one computer");
   gm_lhGadgets.AddTail(gm_mgSplitScreen.mg_lnNode);
   gm_mgSplitScreen.mg_pmgUp = &gm_mgNetwork;
@@ -76,7 +84,7 @@ void CMainMenu::Initialize_t(void)
 
   gm_mgDemo.mg_strText = TRANS("DEMO");
   gm_mgDemo.mg_bfsFontSize = BFS_LARGE;
-  gm_mgDemo.mg_boxOnScreen = BoxBigRow(3.0f);
+  gm_mgDemo.mg_boxOnScreen = BoxBigRow(3.5f);
   gm_mgDemo.mg_strTip = TRANS("play a game demo");
   gm_lhGadgets.AddTail(gm_mgDemo.mg_lnNode);
   gm_mgDemo.mg_pmgUp = &gm_mgSplitScreen;
@@ -85,7 +93,7 @@ void CMainMenu::Initialize_t(void)
 
   gm_mgMods.mg_strText = TRANS("MODS");
   gm_mgMods.mg_bfsFontSize = BFS_LARGE;
-  gm_mgMods.mg_boxOnScreen = BoxBigRow(4.0f);
+  gm_mgMods.mg_boxOnScreen = BoxBigRow(4.5f);
   gm_mgMods.mg_strTip = TRANS("run one of installed game modifications");
   gm_lhGadgets.AddTail(gm_mgMods.mg_lnNode);
   gm_mgMods.mg_pmgUp = &gm_mgDemo;
@@ -94,7 +102,7 @@ void CMainMenu::Initialize_t(void)
 
   gm_mgHighScore.mg_strText = TRANS("HIGH SCORES");
   gm_mgHighScore.mg_bfsFontSize = BFS_LARGE;
-  gm_mgHighScore.mg_boxOnScreen = BoxBigRow(5.0f);
+  gm_mgHighScore.mg_boxOnScreen = BoxBigRow(5.5f);
   gm_mgHighScore.mg_strTip = TRANS("view list of top ten best scores");
   gm_lhGadgets.AddTail(gm_mgHighScore.mg_lnNode);
   gm_mgHighScore.mg_pmgUp = &gm_mgMods;
@@ -103,7 +111,7 @@ void CMainMenu::Initialize_t(void)
 
   gm_mgOptions.mg_strText = TRANS("OPTIONS");
   gm_mgOptions.mg_bfsFontSize = BFS_LARGE;
-  gm_mgOptions.mg_boxOnScreen = BoxBigRow(6.0f);
+  gm_mgOptions.mg_boxOnScreen = BoxBigRow(6.5f);
   gm_mgOptions.mg_strTip = TRANS("adjust video, audio and input options");
   gm_lhGadgets.AddTail(gm_mgOptions.mg_lnNode);
   gm_mgOptions.mg_pmgUp = &gm_mgHighScore;
@@ -112,7 +120,7 @@ void CMainMenu::Initialize_t(void)
 
   gm_mgQuit.mg_strText = TRANS("QUIT");
   gm_mgQuit.mg_bfsFontSize = BFS_LARGE;
-  gm_mgQuit.mg_boxOnScreen = BoxBigRow(7.0f);
+  gm_mgQuit.mg_boxOnScreen = BoxBigRow(7.5f);
   gm_mgQuit.mg_strTip = TRANS("exit game immediately");
   gm_lhGadgets.AddTail(gm_mgQuit.mg_lnNode);
   gm_mgQuit.mg_pmgUp = &gm_mgOptions;

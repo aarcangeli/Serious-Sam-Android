@@ -27,6 +27,7 @@ class CMainMenu : public CGameMenu {
 public:
   CMGButton gm_mgVersionLabel;
   CMGButton gm_mgModLabel;
+  CMGButton gm_mgEdition;
   CMGButton gm_mgSingle;
   CMGButton gm_mgNetwork;
   CMGButton gm_mgSplitScreen;

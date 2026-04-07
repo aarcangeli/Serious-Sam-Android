@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include <Engine/StdH.h>
 
 #include <Engine/Graphics/ShadowMap.h>
 
@@ -152,7 +152,7 @@ void CShadowMap::Cache( INDEX iWantedMipLevel)
   }
 
   // let the higher level driver mix its layers
-  INDEX iLastMipLevelToCache = Min( sm_iLastMipLevel, sm_iFirstCachedMipLevel-1L);
+  INDEX iLastMipLevelToCache = Min( sm_iLastMipLevel, sm_iFirstCachedMipLevel-1);
   sm_iFirstCachedMipLevel = iWantedMipLevel;
   ASSERT( iWantedMipLevel <= iLastMipLevelToCache); 
 
@@ -169,7 +169,6 @@ void CShadowMap::Cache( INDEX iWantedMipLevel)
     if( fR>0.5f) colSize = LerpColor( C_dYELLOW, C_dRED,  (fR-0.5f)*2);
     else         colSize = LerpColor( C_dGREEN, C_dYELLOW, fR*2);
     // fill!
-//    colSize = 0xff0000ff;
     for( INDEX iPix=0; iPix<sm_slMemoryUsed/4; iPix++) sm_pulCachedShadowMap[iPix] = ByteSwap(colSize);
   }
   // no colorization - just mix the layers in
@@ -210,7 +209,7 @@ ULONG CShadowMap::UpdateDynamicLayers(void)
   }
 
   // determine and clamp to max allowed dynamic shadow dimension
-  const INDEX iMinSize  = Max( shd_iStaticSize-2L, 5L);
+  const INDEX iMinSize  = Max( shd_iStaticSize-2, 5);
   shd_iDynamicSize      = Clamp( shd_iDynamicSize, iMinSize, shd_iStaticSize);
   PIX pixClampAreaSize  = 1L<<(shd_iDynamicSize*2);
   INDEX iFinestMipLevel = sm_iFirstCachedMipLevel + 
@@ -252,7 +251,7 @@ void CShadowMap::MarkDrawn(void)
   ASSERT( sm_lnInGfx.IsLinked());
   sm_lnInGfx.Remove();
   // set time stamp
-  sm_tvLastDrawn = _pTimer->GetHighPrecisionTimer();
+  sm_tvLastDrawn = _pTimer->GetLowPrecisionTimer();
   // put at the end of the list
   _pGfx->gl_lhCachedShadows.AddTail(sm_lnInGfx);
 }
@@ -343,13 +342,21 @@ void CShadowMap::Read_old_t(CTStream *pstrm) // throw char *
   //  pstrm->ExpectID_t( CChunkID("CTSM")); // read in Read_t()
   if( pstrm->GetSize_t() != 5*4) throw( TRANS("Invalid shadow cluster map file."));
 
-  *pstrm >> (INDEX&)sm_iFirstMipLevel;
+  INDEX idx; // this was the only way I could coerce GCC into playing. --ryan.
+
+  *pstrm >> idx;
+  sm_iFirstMipLevel = idx;
   INDEX iNoOfMipmaps;
-  *pstrm >> (INDEX&)iNoOfMipmaps;
-  *pstrm >> (MEX&)sm_mexOffsetX;
-  *pstrm >> (MEX&)sm_mexOffsetY;
-  *pstrm >> (MEX&)sm_mexWidth;
-  *pstrm >> (MEX&)sm_mexHeight;
+  *pstrm >> iNoOfMipmaps;
+  *pstrm >> idx;
+  sm_mexOffsetX = idx;
+  *pstrm >> idx;
+  sm_mexOffsetY = idx;
+  *pstrm >> idx;
+  sm_mexWidth = idx;
+  *pstrm >> idx;
+  sm_mexHeight = idx;
+
   BOOL bStaticImagePresent, bAnimatingImagePresent;
   *pstrm >> (INDEX&)bStaticImagePresent;
   *pstrm >> (INDEX&)bAnimatingImagePresent;
@@ -474,7 +481,7 @@ void CShadowMap::Prepare(void)
   BOOL bUseProbe = ProbeMode(sm_tvLastDrawn);
 
   // determine and clamp to max allowed shadow dimension
-  shd_iStaticSize = Clamp( shd_iStaticSize, 5L, 8L);
+  shd_iStaticSize = Clamp( shd_iStaticSize, 5, 8);
   PIX pixClampAreaSize = 1L<<(shd_iStaticSize*2);
   // determine largest allowed mip level
   INDEX iFinestMipLevel = sm_iFirstMipLevel + 

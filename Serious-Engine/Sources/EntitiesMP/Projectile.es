@@ -641,7 +641,7 @@ functions:
     if (m_penLauncher!=NULL) {
       strm.FPrintF_t("id:%05d '%s'(%s) (%g, %g, %g)\n", 
         m_penLauncher->en_ulID,
-        m_penLauncher->GetName(), m_penLauncher->GetClass()->ec_pdecDLLClass->dec_strName,
+        (const char *) m_penLauncher->GetName(), (const char *) m_penLauncher->GetClass()->ec_pdecDLLClass->dec_strName,
         m_penLauncher->GetPlacement().pl_PositionVector(1),
         m_penLauncher->GetPlacement().pl_PositionVector(2),
         m_penLauncher->GetPlacement().pl_PositionVector(3));
@@ -3531,7 +3531,7 @@ procedures:
         // ignore twister
         bHit &= !IsOfClass(epass.penOther, "Twister");
         if (epass.penOther!=m_penLauncher) {
-   bHit = bHit ;
+          // bHit = bHit ; // FIXME: DG: what was this supposed to achieve?
         }
         if (bHit) {
           ProjectileTouch(epass.penOther);

@@ -53,7 +53,7 @@ void COptionsMenu::Initialize_t(void)
   gm_mgAudioOptions.mg_strTip = TRANS("set audio quality and volume");
   gm_lhGadgets.AddTail(gm_mgAudioOptions.mg_lnNode);
   gm_mgAudioOptions.mg_pActivatedFunction = NULL;
-  gm_mgAudioOptions.mg_bEnabled = FALSE;
+  gm_mgAudioOptions.mg_bEnabled = true;
 
   gm_mgPlayerProfileOptions.mg_bfsFontSize = BFS_LARGE;
   gm_mgPlayerProfileOptions.mg_boxOnScreen = BoxBigRow(3.1f);
@@ -68,7 +68,7 @@ void COptionsMenu::Initialize_t(void)
   gm_mgNetworkOptions.mg_bfsFontSize = BFS_LARGE;
   gm_mgNetworkOptions.mg_boxOnScreen = BoxBigRow(4.1f);
   gm_mgNetworkOptions.mg_pmgUp = &gm_mgPlayerProfileOptions;
-  gm_mgNetworkOptions.mg_pmgDown = &gm_mgCustomOptions;
+  gm_mgNetworkOptions.mg_pmgDown = &gm_mgAdvancedOptions;
   gm_mgNetworkOptions.mg_strText = TRANS("NETWORK CONNECTION");
   gm_mgNetworkOptions.mg_strTip = TRANS("choose your connection parameters");
   gm_lhGadgets.AddTail(gm_mgNetworkOptions.mg_lnNode);
@@ -76,13 +76,22 @@ void COptionsMenu::Initialize_t(void)
 #ifdef DISABLE_NETSETTINGS
   gm_mgNetworkOptions.mg_bEnabled = false;
 #endif
-  
+
+  gm_mgAdvancedOptions.mg_bfsFontSize = BFS_LARGE;
+  gm_mgAdvancedOptions.mg_boxOnScreen = BoxBigRow(5.1f);
+  gm_mgAdvancedOptions.mg_pmgUp = &gm_mgNetworkOptions;
+  gm_mgAdvancedOptions.mg_pmgDown = &gm_mgCustomOptions;
+  gm_mgAdvancedOptions.mg_strText = TRANS("ADVANCED OPTIONS");
+  gm_mgAdvancedOptions.mg_strTip = TRANS("for advanced users only");
+  gm_lhGadgets.AddTail(gm_mgAdvancedOptions.mg_lnNode);
+  gm_mgAdvancedOptions.mg_pActivatedFunction = NULL;
+
   gm_mgCustomOptions.mg_bfsFontSize = BFS_LARGE;
-  gm_mgCustomOptions.mg_boxOnScreen = BoxBigRow(5.1f);
+  gm_mgCustomOptions.mg_boxOnScreen = BoxBigRow(6.1f);
   gm_mgCustomOptions.mg_pmgUp = &gm_mgNetworkOptions;
   gm_mgCustomOptions.mg_pmgDown = &gm_mgVideoOptions;
-  gm_mgCustomOptions.mg_strText = TRANS("ADVANCED OPTIONS");
-  gm_mgCustomOptions.mg_strTip = TRANS("for advanced users only");
+  gm_mgCustomOptions.mg_strText = TRANS("EXECUTE ADDON");
+  gm_mgCustomOptions.mg_strTip = TRANS("choose from list of addons to execute");
   gm_lhGadgets.AddTail(gm_mgCustomOptions.mg_lnNode);
   gm_mgCustomOptions.mg_pActivatedFunction = NULL;
 }

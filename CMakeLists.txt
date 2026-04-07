@@ -8,20 +8,24 @@ set(SE_SOURCES "${PROJECT_ROOT}/Serious-Engine/Sources")
 set(LIBS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/libs)
 include(compilerFlags)
 
+option(FIRST_ENCOUNTER "Compile a The First Encounter version" OFF)
+
 # build options
-option(STATIC_LINKING "Buils a single .so file" OFF)
+option(STATIC_LINKING "Buils a single .so file" ON)
 option(ENABLE_NETWORK "Enable network multiplayer mode (beta)" ON)
 option(ENABLE_SPLITSCREEN "Enable splitscreen mode (not working)" OFF)
 option(DISABLE_NETSETTINGS "Will skip network settings option" OFF)
 
-if (NOT ANDROID)
+if (NOT ANDROID AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/local.properties")
     file(READ "local.properties" local)
     string(REGEX MATCH "ndk.dir=([^\r\n]*)" _ ${local})
     set(ndk ${CMAKE_MATCH_1})
     string(REPLACE "\\\\" "/" ndk ${ndk})
     string(REPLACE "\\:" ":" ndk ${ndk})
-    message("ndk: ${ndk}")
-    include_directories("${ndk}/sysroot/usr/include")
+    if (EXISTS "${ndk}/sysroot/usr/include")
+        message("ndk: ${ndk}")
+        include_directories("${ndk}/sysroot/usr/include")
+    endif ()
 endif ()
 
 set(SE_GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/Serious-Engine/Gen")

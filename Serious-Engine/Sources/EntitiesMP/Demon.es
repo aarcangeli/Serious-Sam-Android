@@ -29,7 +29,7 @@ uses "EntitiesMP/BasicEffects";
 #define CLOSE_ATTACK_RANGE 10.0f
 #define DEMON_STRETCH 2.5f
 FLOAT3D vFireballLaunchPos = (FLOAT3D(0.06f, 2.6f, 0.15f)*DEMON_STRETCH);
-static FLOAT _tmLastStandingAnim =0.0f;  
+static int _tmLastStandingAnim = 0;
 
 // info structure
 static EntityInfo eiDemon = {
@@ -87,7 +87,7 @@ functions:
   virtual CTString GetPlayerKillDescription(const CTString &strPlayerName, const EDeath &eDeath)
   {
     CTString str;
-    str.PrintF(TRANS("A Demon executed %s"), strPlayerName);
+    str.PrintF(TRANSV("A Demon executed %s"), (const char *) strPlayerName);
     return str;
   }
   

@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "SeriousSam/StdH.h"
 
 // list of settings data
 static CListHead _lhSettings;
@@ -61,7 +61,7 @@ const char *RenderingPreferencesDescription(int iMode)
 
 void InitGLSettings(void)
 {
-  ASSERT(_lhSettings.IsEmpty());
+/*  ASSERT(_lhSettings.IsEmpty());
 
   char achrLine    [1024];
   char achrRenderer[1024];
@@ -72,7 +72,7 @@ void InitGLSettings(void)
   try
   {
     strmFile.Open_t( CTString("Scripts\\GLSettings\\GLSettings.lst"), CTStream::OM_READ);
-    INDEX iIndex = 0;
+    //INDEX iIndex = 0;
 	  do
     {
       achrLine    [0] = 0;
@@ -97,11 +97,11 @@ void InitGLSettings(void)
   catch ( const char *strError) {
     WarningMessage(TRANS("unable to setup OpenGL settings list: %s"), strError);
   }
-
+*/
   _strLastRenderer= "none";
   _iLastPreferences = 1;
-  _pShell->DeclareSymbol("persistent CTString sam_strLastRenderer;", &_strLastRenderer);
-  _pShell->DeclareSymbol("persistent INDEX    sam_iLastSetup;",      &_iLastPreferences);
+  _pShell->DeclareSymbol("persistent CTString sam_strLastRenderer;", (void *) &_strLastRenderer);
+  _pShell->DeclareSymbol("persistent INDEX    sam_iLastSetup;",      (void *) &_iLastPreferences);
 }
 
 
@@ -122,7 +122,7 @@ extern void ApplyGLSettings(BOOL bForce)
 {
   CPrintF( TRANS("\nAutomatic 3D-board preferences adjustment...\n"));
   CDisplayAdapter &da = _pGfx->gl_gaAPI[_pGfx->gl_eCurrentAPI].ga_adaAdapter[_pGfx->gl_iCurrentAdapter];
-  CPrintF( TRANS("Detected: %s - %s - %s\n"), da.da_strVendor, da.da_strRenderer, da.da_strVersion);
+  CPrintF( TRANS("Detected: %s - %s - %s\n"), (const char *) da.da_strVendor, (const char *) da.da_strRenderer, (const char *) da.da_strVersion);
 
   // get new settings
   CSettingsEntry *pse = GetGLSettings( da.da_strRenderer);
@@ -151,13 +151,13 @@ extern void ApplyGLSettings(BOOL bForce)
   } 
 
   // clamp rendering preferences (just to be on the safe side)
-  sam_iVideoSetup = Clamp( sam_iVideoSetup, 0L, 3L);
+  sam_iVideoSetup = Clamp( sam_iVideoSetup, 0, 3);
   CPrintF(TRANS("Mode: %s\n"), RenderingPreferencesDescription(sam_iVideoSetup));
   // if not in custom mode
   if (sam_iVideoSetup<3) {
     // execute the script
     CTString strCmd;
-    strCmd.PrintF("include \"Scripts\\GLSettings\\%s\"", CTString(pse->se_fnmScript));
+    strCmd.PrintF("include \"Scripts\\GLSettings\\%s\"", (const char *) (CTString(pse->se_fnmScript)));
     _pShell->Execute(strCmd);
     // refresh textures
     _pShell->Execute("RefreshTextures();");

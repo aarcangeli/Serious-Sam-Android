@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 
 #include <Engine/Entities/Entity.h>
 #include <Engine/Entities/EntityCollision.h>
@@ -26,7 +26,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Templates/BSP.h>
 #include <Engine/Templates/DynamicArray.cpp>
 #include <Engine/Templates/StaticArray.cpp>
-#include <Engine/Templates/BSP.cpp>
 
 static CEntity *penField;
 static CBrushSector *_pbsc;
@@ -44,11 +43,10 @@ static BOOL EntityIsInside(CEntity *pen)
     const FLOAT3D &v = pen->en_plPlacement.pl_PositionVector;
     const FLOATmatrix3D &m = pen->en_mRotation;
     FLOATobbox3D boxEntity = FLOATobbox3D(pen->en_boxSpatialClassification, v, m);
-    DOUBLEobbox3D boxdEntity = FLOATtoDOUBLE(boxEntity);
 
     // if the box touches the sector's BSP
     if (boxEntity.HasContactWith(FLOATobbox3D(_pbsc->bsc_boxBoundingBox)) &&
-      _pbsc->bsc_bspBSPTree.TestBox(boxdEntity)<=0) {
+      _pbsc->bsc_bspBSPTree.TestBox(boxEntity)<=0) {
 
       // for each collision sphere
       CStaticArray<CMovingSphere> &absSpheres = pen->en_pciCollisionInfo->ci_absSpheres;
@@ -57,7 +55,7 @@ static BOOL EntityIsInside(CEntity *pen)
         ms.ms_vRelativeCenter0 = ms.ms_vCenter*m+v;
         // if the sphere is in the sector
         if (_pbsc->bsc_bspBSPTree.TestSphere(
-          FLOATtoDOUBLE(ms.ms_vRelativeCenter0), ms.ms_fR)<=0) {
+          ms.ms_vRelativeCenter0, ms.ms_fR)<=0) {
           return TRUE;
         }
       }

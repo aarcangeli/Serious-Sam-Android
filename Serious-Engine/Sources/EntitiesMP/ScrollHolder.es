@@ -53,7 +53,7 @@ components:
 
 functions:
   const CTString &GetDescription(void) const {
-    ((CTString&)m_strDescription).PrintF("%s", m_fnmMessage.FileName());
+    ((CTString&)m_strDescription).PrintF("%s", (const char *) m_fnmMessage.FileName());
     return m_strDescription;
   }
 
@@ -155,14 +155,14 @@ functions:
     pixH = pdpCurr->GetHeight();
     fResolutionScaling = (FLOAT)pixH / 360.0f;
     pdpCurr->SetFont( _pfdDisplayFont);
-    pixLineHeight = floor(20*fResolutionScaling);     
+    pixLineHeight = (PIX) floor(20*fResolutionScaling);
 
     const FLOAT fLinesPerSecond = penThis->m_fSpeed;
     FLOAT fOffset = fTime*fLinesPerSecond;
     INDEX ctLinesOnScreen = pixH/pixLineHeight;
-    INDEX iLine1 = fOffset;
+    INDEX iLine1 = (INDEX) fOffset;
 
-    pixJ = iLine1*pixLineHeight-fOffset*pixLineHeight;
+    pixJ = (PIX) (iLine1*pixLineHeight-fOffset*pixLineHeight);
     iLine1-=ctLinesOnScreen;
 
     INDEX ctLines = _astrCredits.Count();

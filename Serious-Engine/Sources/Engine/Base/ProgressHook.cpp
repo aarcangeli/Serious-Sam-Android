@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include <Engine/StdH.h>
 #include <Engine/Base/CTString.h>
 #include <Engine/Base/ProgressHook.h>
 #include <Engine/Network/Network.h>
@@ -40,8 +40,13 @@ void SetProgressDescription(const CTString &strDescription)
 
 void CallProgressHook_t(FLOAT fCompleted)
 {
-  g_cb.setSeriousState(GS_LOADING);
-  g_cb.syncSeriousThreads();
+    if (g_cb.setSeriousState != NULL) {
+        g_cb.setSeriousState(GS_LOADING);
+    }
+
+    if (g_cb.syncSeriousThreads != NULL) {
+        g_cb.syncSeriousThreads();
+    }
 
   if (_pLoadingHook_t!=NULL) {
     _phiLoadingInfo.phi_fCompleted = fCompleted;
@@ -53,7 +58,7 @@ void CallProgressHook_t(FLOAT fCompleted)
       bTimeInitialized = TRUE;
     }
     CTimerValue tvNow = _pTimer->GetHighPrecisionTimer();
-    if ((tvNow-tvLastUpdate) > CTimerValue(net_fSendRetryWait*1.1)) {
+    if ((tvNow-tvLastUpdate) > CTimerValue(net_fSendRetryWait*1.1f)) {
 		  if (_pNetwork->ga_IsServer) {
         // handle server messages
         _cmiComm.Server_Update();

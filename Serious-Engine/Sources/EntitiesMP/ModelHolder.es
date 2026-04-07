@@ -91,8 +91,8 @@ functions:
         UBYTE ubAmbientR, ubAmbientG, ubAmbientB;
         ColorToRGB( m_colLight,   ubLightR,   ubLightG,   ubLightB);
         ColorToRGB( m_colAmbient, ubAmbientR, ubAmbientG, ubAmbientB);
-        colLight   = RGBToColor( ubLightR  *fAnimR, ubLightG  *fAnimG, ubLightB  *fAnimB);
-        colAmbient = RGBToColor( ubAmbientR*fAnimR, ubAmbientG*fAnimG, ubAmbientB*fAnimB);
+        colLight   = RGBToColor( (UBYTE) (ubLightR  *fAnimR), (UBYTE) (ubLightG  *fAnimG), (UBYTE) (ubLightB  *fAnimB));
+        colAmbient = RGBToColor( (UBYTE) (ubAmbientR*fAnimR), (UBYTE) (ubAmbientG*fAnimG), (UBYTE) (ubAmbientB*fAnimB));
 
       // if there is no color animation
       } else {
@@ -170,14 +170,14 @@ functions:
     try {
       m_aoLightAnimation.SetData_t(m_fnmLightAnimation);
     } catch ( const char *strError) {
-      WarningMessage(TRANS("Cannot load '%s': %s"), (CTString&)m_fnmLightAnimation, strError);
+      WarningMessage(TRANS("Cannot load '%s': %s"), (const char *) (CTString&)m_fnmLightAnimation, strError);
       m_fnmLightAnimation = "";
     }
     if (m_aoLightAnimation.GetData()!=NULL) {
       m_aoLightAnimation.PlayAnim(m_iLightAnimation, AOF_LOOPING);
     }
 
-    m_strDescription.PrintF("%s,%s", m_fnModel.FileName(), m_fnTexture.FileName());
+    m_strDescription.PrintF("%s,%s", (const char *) m_fnModel.FileName(), (const char *) m_fnTexture.FileName());
 
     return;
   };

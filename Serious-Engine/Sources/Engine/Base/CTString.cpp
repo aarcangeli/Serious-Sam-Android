@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 
 #include <Engine/Base/CTString.h>
 #include <Engine/Base/Memory.h>
@@ -469,6 +469,7 @@ INDEX CTString::PrintF(const char *strFormat, ...)
   va_list arg;
   va_start(arg, strFormat);
   return VPrintF(strFormat, arg);
+  va_end(arg);
 }
 
 

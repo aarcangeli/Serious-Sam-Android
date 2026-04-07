@@ -90,7 +90,7 @@ inline INDEX CAllocationArray<Type>::Allocate(void)
     // remember old size
     INDEX ctOldSize = CStaticArray<Type>::Count();
     // expand the array by the allocation step
-    Super::Expand(ctOldSize+aa_ctAllocationStep);
+    this->Expand(ctOldSize+aa_ctAllocationStep);
     // create new free indices
     INDEX *piNewFree = aa_aiFreeElements.Push(aa_ctAllocationStep);
     // fill them up
@@ -152,6 +152,10 @@ inline BOOL CAllocationArray<Type>::IsAllocated(INDEX i)
 }
 
 /* Random access operator. */
+// rcg10162001 wtf...I had to move this into the class definition itself.
+//  I think it's an optimization bug; I didn't have this problem when I
+//  didn't give GCC the "-O2" option.
+#if 0
 template<class Type>
 inline Type &CAllocationArray<Type>::operator[](INDEX iObject)
 {
@@ -180,6 +184,8 @@ inline const Type &CAllocationArray<Type>::operator[](INDEX iObject) const
 #endif
   return CStaticArray<Type>::operator[](iObject);
 }
+#endif  // 0
+
 /* Get number of allocated objects in array. */
 template<class Type>
 INDEX CAllocationArray<Type>::Count(void) const
@@ -194,7 +200,7 @@ template<class Type>
 INDEX CAllocationArray<Type>::Index(Type *ptObject)
 {
   ASSERT(this!=NULL);
-  INDEX i = CStaticArray<Type>::Index(ptObject);
+  INDEX i = CStaticArray<Type>::Index(this->ptMember);
   ASSERT(IsAllocated(i));
   return i;
 }

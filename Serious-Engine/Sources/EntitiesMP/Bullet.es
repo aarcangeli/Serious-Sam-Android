@@ -255,6 +255,12 @@ functions:
       }
     }
 
+    // [SSE] Bullet trail fix.
+    // If we hit nothing then we don't need trail effect which goes to center of map!
+    if (crRay.cr_penHit == NULL && m_vHitPoint == FLOAT3D(0.0F, 0.0F, 0.0F)) {
+      bTrail = FALSE; 
+    }
+
     if( bTrail)
     {
       SpawnTrail();

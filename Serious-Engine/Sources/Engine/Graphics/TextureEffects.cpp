@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 
 #include <Engine/Graphics/Texture.h>
 #include <Engine/Graphics/TextureEffects.h>
@@ -138,7 +138,7 @@ inline void PutPixel9SLONG_WATER( PIX pixU, PIX pixV, INDEX iHeightMid)
 inline void PutPixelUBYTE_FIRE( PIX pixU, PIX pixV, INDEX iHeight)
 {
   PIX pixLoc = (pixV*_pixBufferWidth+pixU) & _ulBufferMask;
-  _pubDrawBuffer[pixLoc] = Clamp( _pubDrawBuffer[pixLoc] +iHeight, 0L, 255L);
+  _pubDrawBuffer[pixLoc] = Clamp( _pubDrawBuffer[pixLoc] +iHeight, 0, 255);
 }
 
 inline void PutPixel9UBYTE_FIRE( PIX pixU, PIX pixV, INDEX iHeightMid)

@@ -13,7 +13,6 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
- 
 #include "EntitiesMP/StdH/StdH.h"
 #include "GameMP/SEColors.h"
 
@@ -54,6 +53,7 @@ extern FLOAT hud_fScaling;
 extern FLOAT hud_tmWeaponsOnScreen;
 extern INDEX hud_bShowMatchInfo;
 
+COLOR colMax, colTop, colMid, colDefault;
 // player statistics sorting keys
 enum SortKeys {
   PSK_NAME    = 1,
@@ -274,6 +274,7 @@ static int qsort_CompareFrags( const void *ppPEN0, const void *ppPEN1) {
   else              return -qsort_CompareDeaths(ppPEN0, ppPEN1);
 }
 
+#if 0 // DG: unused.
 static int qsort_CompareLatencies( const void *ppPEN0, const void *ppPEN1) {
   CPlayer &en0 = **(CPlayer**)ppPEN0;
   CPlayer &en1 = **(CPlayer**)ppPEN1;
@@ -283,6 +284,7 @@ static int qsort_CompareLatencies( const void *ppPEN0, const void *ppPEN1) {
   else if( sl0>sl1) return -1;
   else              return  0;
 }
+#endif // 0 (unused)
 
 // prepare color transitions
 static void PrepareColorTransitions( COLOR colFine, COLOR colHigh, COLOR colMedium, COLOR colLow,
@@ -322,7 +324,7 @@ static COLOR AddShaker( PIX const pixAmmount, INDEX const iCurrentValue, INDEX &
   // shake, baby shake!
   const FLOAT fAmmount    = _fResolutionScaling * _fCustomScaling * pixAmmount;
   const FLOAT fMultiplier = (SHAKE_TIME-tmDelta)/SHAKE_TIME *fAmmount;
-  const INDEX iRandomizer = (INDEX)(tmNow*511.0f)*fAmmount*iCurrentValue;
+  const INDEX iRandomizer = (INDEX)((tmNow*511.0f)*fAmmount*iCurrentValue);
   const FLOAT fNormRnd1   = (FLOAT)((iRandomizer ^ (iRandomizer>>9)) & 1023) * 0.0009775f;  // 1/1023 - normalized
   const FLOAT fNormRnd2   = (FLOAT)((iRandomizer ^ (iRandomizer>>7)) & 1023) * 0.0009775f;  // 1/1023 - normalized
   fMoverX = (fNormRnd1 -0.5f) * fMultiplier;
@@ -520,18 +522,18 @@ static void HUD_DrawBar( FLOAT fCenterX, FLOAT fCenterY, PIX pixSizeX, PIX pixSi
   // determine bar position and inner size
   switch( eBarOrientation) {
   case BO_UP:
-    pixSizeJ = (pixSizeJ*fNormValue);
+    pixSizeJ = (PIX) (pixSizeJ*fNormValue);
     break;
   case BO_DOWN:
     pixUpper  = pixUpper + (PIX)ceil(pixSizeJ * (1.0f-fNormValue));
-    pixSizeJ = (pixSizeJ*fNormValue);
+    pixSizeJ = (PIX) (pixSizeJ*fNormValue);
     break;
   case BO_LEFT:
-    pixSizeI = (pixSizeI*fNormValue);
+    pixSizeI = (PIX) (pixSizeI*fNormValue);
     break;
   case BO_RIGHT:
     pixLeft   = pixLeft + (PIX)ceil(pixSizeI * (1.0f-fNormValue));
-    pixSizeI = (pixSizeI*fNormValue);
+    pixSizeI = (PIX) (pixSizeI*fNormValue);
     break;
   }
   // done
@@ -583,8 +585,8 @@ static void HUD_DrawSniperMask( void )
   COLOR colMask = C_WHITE|CT_OPAQUE;
   
   CTextureData *ptd = (CTextureData*)_toSniperMask.GetData();
-  const FLOAT fTexSizeI = ptd->GetPixWidth();
-  const FLOAT fTexSizeJ = ptd->GetPixHeight();
+  //const FLOAT fTexSizeI = ptd->GetPixWidth();
+  //const FLOAT fTexSizeJ = ptd->GetPixHeight();
 
   // main sniper mask
   _pDP->InitTexture( &_toSniperMask);
@@ -704,11 +706,15 @@ static void FillWeaponAmmoTables(void)
   // weapon possesion
   for( i=WEAPON_NONE+1; i<WEAPON_LAST; i++)
   {
-    if( _awiWeapons[i].wi_wtWeapon!=WEAPON_NONE)
-    {
-      // regular weapons
-      _awiWeapons[i].wi_bHasWeapon = (iAvailableWeapons&(1<<(_awiWeapons[i].wi_wtWeapon-1)));
-      if( _awiWeapons[i].wi_paiAmmo!=NULL) _awiWeapons[i].wi_paiAmmo->ai_bHasWeapon |= _awiWeapons[i].wi_bHasWeapon;
+    if ( _awiWeapons[i].wi_wtWeapon == WEAPON_NONE) {
+      continue;
+    }
+
+    // regular weapons
+    _awiWeapons[i].wi_bHasWeapon = (iAvailableWeapons&(1<<(_awiWeapons[i].wi_wtWeapon-1)));
+
+    if (_awiWeapons[i].wi_paiAmmo != NULL) {
+      _awiWeapons[i].wi_paiAmmo->ai_bHasWeapon |= _awiWeapons[i].wi_bHasWeapon;
     }
   }
 }
@@ -739,13 +745,13 @@ static void HUD_DrawEntityStack()
     if (DBG_prenStackOutputEntity!=NULL)
     {
       pixFontHeight = _pfdConsoleFont->fd_pixCharHeight;
-      pixTextBottom = _pixDPHeight*0.83;
+      pixTextBottom = (ULONG) (_pixDPHeight*0.83);
       _pDP->SetFont( _pfdConsoleFont);
       _pDP->SetTextScaling(g_cb.globalScale);
     
       INDEX ctStates = DBG_prenStackOutputEntity->en_stslStateStack.Count();
-      strTemp.PrintF("-- stack of '%s'(%s)@%gs\n", DBG_prenStackOutputEntity->GetName(),
-        DBG_prenStackOutputEntity->en_pecClass->ec_pdecDLLClass->dec_strName,
+      strTemp.PrintF("-- stack of '%s'(%s)@%gs\n", (const char *) DBG_prenStackOutputEntity->GetName(),
+        (const char *) DBG_prenStackOutputEntity->en_pecClass->ec_pdecDLLClass->dec_strName,
         _pTimer->CurrentTick());
       _pDP->PutText( strTemp, 1, pixTextBottom-pixFontHeight*(ctStates+1), _colHUD|_ulAlphaHUD);
       
@@ -789,16 +795,29 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
   _pixDPHeight  = _pDP->GetHeight();
   _fCustomScaling     = hud_fScaling;
   _fResolutionScaling = (FLOAT)_pixDPWidth /640.0f;
+ if (g_cb.tfe) {
+  _colHUD     = C_GREEN;
+  _colHUDText = _colHUD;
+ } else {
   _colHUD     = 0x4C80BB00;
   _colHUDText = SE_COL_ORANGE_LIGHT;
+ }
   _ulAlphaHUD = NormFloatToByte(hud_fOpacity);
   _tmNow = _pTimer->CurrentTick();
 
   // determine hud colorization;
-  COLOR colMax = SE_COL_BLUEGREEN_LT;
-  COLOR colTop = SE_COL_ORANGE_LIGHT;
-  COLOR colMid = LerpColor(colTop, C_RED, 0.5f);
+if (g_cb.tfe) {
+  colMax = _colHUD;
+  colTop = _colHUD;
+  colMid = _colHUD;
+} else {
+  colMax = SE_COL_BLUEGREEN_LT;
+  colTop = SE_COL_ORANGE_LIGHT;
+  colMid = LerpColor(colTop, C_RED, 0.5f);  
+}
 
+
+ // 
   // adjust borders color in case of spying mode
   COLOR colBorder = _colHUD; 
   
@@ -827,15 +846,18 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
 
   const PIX pixTopBound    = 6;
   const PIX pixLeftBound   = 6;
-  const PIX pixBottomBound = (480 * _pDP->dp_fWideAdjustment) -pixTopBound;
+  const PIX pixBottomBound = (PIX) ((480 * _pDP->dp_fWideAdjustment) -pixTopBound);
   const PIX pixRightBound  = 640-pixLeftBound;
   FLOAT fOneUnit  = (32+0) * _fCustomScaling;  // unit size
   FLOAT fAdvUnit  = (32+4) * _fCustomScaling;  // unit advancer
   FLOAT fNextUnit = (32+8) * _fCustomScaling;  // unit advancer
   FLOAT fHalfUnit = fOneUnit * 0.5f;
   FLOAT fMoverX, fMoverY;
-  COLOR colDefault;
-  
+  if (g_cb.tfe) {
+  colDefault = _colHUD;
+  } else {
+  colDefault;
+  }
   // prepare and draw health info
   fValue = ClampDn( _penPlayer->GetHealth(), 0.0f);  // never show negative health
   fNormValue = fValue/TOP_HEALTH;
@@ -843,14 +865,17 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
   PrepareColorTransitions( colMax, colTop, colMid, C_RED, 0.5f, 0.25f, FALSE);
   fRow = pixBottomBound-fHalfUnit;
   fCol = pixLeftBound+fHalfUnit;
-  colDefault = AddShaker( 5, fValue, penLast->m_iLastHealth, penLast->m_tmHealthChanged, fMoverX, fMoverY);
+  colDefault = AddShaker( 5, (INDEX) fValue, penLast->m_iLastHealth, penLast->m_tmHealthChanged, fMoverX, fMoverY);
   HUD_DrawBorder( fCol+fMoverX, fRow+fMoverY, fOneUnit, fOneUnit, colBorder);
   fCol += fAdvUnit+fChrUnit*3/2 -fHalfUnit;
   HUD_DrawBorder( fCol, fRow, fChrUnit*3, fOneUnit, colBorder);
   HUD_DrawText( fCol, fRow, strValue, colDefault, fNormValue);
   fCol -= fAdvUnit+fChrUnit*3/2 -fHalfUnit;
-  HUD_DrawIcon( fCol+fMoverX, fRow+fMoverY, _toHealth, C_WHITE /*_colHUD*/, fNormValue, TRUE);
-
+  if (g_cb.tfe) {
+  HUD_DrawIcon( fCol+fMoverX, fRow+fMoverY, _toHealth, _colHUD, fNormValue, TRUE);
+  } else {
+  HUD_DrawIcon( fCol+fMoverX, fRow+fMoverY, _toHealth, C_WHITE /*_colHUD*/, fNormValue, TRUE);  
+  }
   // prepare and draw armor info (eventually)
   fValue = _penPlayer->m_fArmor;
   if( fValue > 0.0f) {
@@ -859,19 +884,29 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
     PrepareColorTransitions( colMax, colTop, colMid, C_lGRAY, 0.5f, 0.25f, FALSE);
     fRow = pixBottomBound- (fNextUnit+fHalfUnit);//*_pDP->dp_fWideAdjustment;
     fCol = pixLeftBound+    fHalfUnit;
-    colDefault = AddShaker( 3, fValue, penLast->m_iLastArmor, penLast->m_tmArmorChanged, fMoverX, fMoverY);
-    HUD_DrawBorder( fCol+fMoverX, fRow+fMoverY, fOneUnit, fOneUnit, colBorder);
+    colDefault = AddShaker( 3, (INDEX) fValue, penLast->m_iLastArmor, penLast->m_tmArmorChanged, fMoverX, fMoverY);
+    HUD_DrawBorder( fCol+fMoverX, fRow+fMoverY-12, fOneUnit, fOneUnit, colBorder);
     fCol += fAdvUnit+fChrUnit*3/2 -fHalfUnit;
-    HUD_DrawBorder( fCol, fRow, fChrUnit*3, fOneUnit, colBorder);
-    HUD_DrawText( fCol, fRow, strValue, NONE, fNormValue);
+    HUD_DrawBorder( fCol, fRow-12, fChrUnit*3, fOneUnit, colBorder);
+    HUD_DrawText( fCol, fRow-12, strValue, NONE, fNormValue);
     fCol -= fAdvUnit+fChrUnit*3/2 -fHalfUnit;
+	if (g_cb.tfe) {
     if (fValue<=50.5f) {
-      HUD_DrawIcon( fCol+fMoverX, fRow+fMoverY, _toArmorSmall, C_WHITE /*_colHUD*/, fNormValue, FALSE);
+      HUD_DrawIcon( fCol+fMoverX, fRow+fMoverY-12, _toArmorSmall, _colHUD, fNormValue, FALSE);
     } else if (fValue<=100.5f) {
-      HUD_DrawIcon( fCol+fMoverX, fRow+fMoverY, _toArmorMedium, C_WHITE /*_colHUD*/, fNormValue, FALSE);
+      HUD_DrawIcon( fCol+fMoverX, fRow+fMoverY-12, _toArmorMedium, _colHUD, fNormValue, FALSE);
     } else {
-      HUD_DrawIcon( fCol+fMoverX, fRow+fMoverY, _toArmorLarge, C_WHITE /*_colHUD*/, fNormValue, FALSE);
+      HUD_DrawIcon( fCol+fMoverX, fRow+fMoverY-12, _toArmorLarge, _colHUD, fNormValue, FALSE);
     }
+	} else {
+    if (fValue<=50.5f) {
+      HUD_DrawIcon( fCol+fMoverX, fRow+fMoverY-12, _toArmorSmall, C_WHITE /*_colHUD*/, fNormValue, FALSE);
+    } else if (fValue<=100.5f) {
+      HUD_DrawIcon( fCol+fMoverX, fRow+fMoverY-12, _toArmorMedium, C_WHITE /*_colHUD*/, fNormValue, FALSE);
+    } else {
+      HUD_DrawIcon( fCol+fMoverX, fRow+fMoverY-12, _toArmorLarge, C_WHITE /*_colHUD*/, fNormValue, FALSE);
+    }
+	}
   }
 
   // prepare and draw ammo and weapon info
@@ -897,25 +932,37 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
     // draw ammo, value and weapon
     fRow = pixBottomBound-fHalfUnit;
     fCol = 175 + fHalfUnit;
-    colDefault = AddShaker( 4, fValue, penLast->m_iLastAmmo, penLast->m_tmAmmoChanged, fMoverX, fMoverY);
+    colDefault = AddShaker( 4, (INDEX) fValue, penLast->m_iLastAmmo, penLast->m_tmAmmoChanged, fMoverX, fMoverY);
     HUD_DrawBorder( fCol+fMoverX, fRow+fMoverY, fOneUnit, fOneUnit, colBorder);
     fCol += fAdvUnit+fChrUnit*3/2 -fHalfUnit;
     HUD_DrawBorder( fCol, fRow, fChrUnit*3, fOneUnit, colBorder);
     if( bDrawAmmoIcon) {
       fCol += fAdvUnit+fChrUnit*3/2 -fHalfUnit;
       HUD_DrawBorder( fCol, fRow, fOneUnit, fOneUnit, colBorder);
+	if (g_cb.tfe) {
+      HUD_DrawIcon( fCol, fRow, *ptoCurrentAmmo, _colHUD, fNormValue, TRUE);
+	} else {
       HUD_DrawIcon( fCol, fRow, *ptoCurrentAmmo, C_WHITE /*_colHUD*/, fNormValue, TRUE);
+	}
       fCol -= fAdvUnit+fChrUnit*3/2 -fHalfUnit;
     }
     HUD_DrawText( fCol, fRow, strValue, NONE, fNormValue);
     fCol -= fAdvUnit+fChrUnit*3/2 -fHalfUnit;
+	if (g_cb.tfe) {
+    HUD_DrawIcon( fCol+fMoverX, fRow+fMoverY, *ptoCurrentWeapon, _colHUD, fNormValue, !bDrawAmmoIcon);
+	} else {
     HUD_DrawIcon( fCol+fMoverX, fRow+fMoverY, *ptoCurrentWeapon, C_WHITE /*_colHUD*/, fNormValue, !bDrawAmmoIcon);
+	}
   } else if( ptoCurrentWeapon!=NULL) {
     // draw only knife or colt icons (ammo is irrelevant)
     fRow = pixBottomBound-fHalfUnit;
     fCol = 205 + fHalfUnit;
     HUD_DrawBorder( fCol, fRow, fOneUnit, fOneUnit, colBorder);
+	if (g_cb.tfe) {
+    HUD_DrawIcon(   fCol, fRow, *ptoCurrentWeapon, _colHUD, fNormValue, FALSE);
+	} else {
     HUD_DrawIcon(   fCol, fRow, *ptoCurrentWeapon, C_WHITE /*_colHUD*/, fNormValue, FALSE);
+	}
   }
 
 
@@ -928,7 +975,7 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
   _fCustomScaling = ClampDn( _fCustomScaling*0.8f, 0.5f);
   const FLOAT fOneUnitS  = fOneUnit  *0.8f;
   const FLOAT fAdvUnitS  = fAdvUnit  *0.8f;
-  const FLOAT fNextUnitS = fNextUnit *0.8f;
+  //const FLOAT fNextUnitS = fNextUnit *0.8f;
   const FLOAT fHalfUnitS = fHalfUnit *0.8f;
 
   // prepare postition and ammo quantities
@@ -959,7 +1006,7 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
     }
     HUD_DrawBorder( fCol,         fRow, fOneUnitS, fOneUnitS, colBombBorder);
     HUD_DrawIcon(   fCol,         fRow, _toASeriousBomb, colBombIcon, fNormValue, FALSE);
-    HUD_DrawBar(    fCol+fBarPos, fRow, fOneUnitS/5, fOneUnitS-2, BO_DOWN, colBombBar, fNormValue);
+    HUD_DrawBar(    fCol+fBarPos, fRow, (INDEX) (fOneUnitS/5), (INDEX) (fOneUnitS-2), BO_DOWN, colBombBar, fNormValue);
     // make space for serious bomb
     fCol -= fAdvUnitS;
   }
@@ -973,14 +1020,18 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
       ASSERT( ai.ai_iAmmoAmmount>=0);
       if( ai.ai_iAmmoAmmount==0 && !ai.ai_bHasWeapon) continue;
       // display ammo info
+	  if (g_cb.tfe) {
+      colIcon = _colHUD;
+	  } else {
       colIcon = C_WHITE /*_colHUD*/;
-      if( ai.ai_iAmmoAmmount==0) colIcon = C_mdGRAY;
+	  }
+      if( ai.ai_iAmmoAmmount <= 0) colIcon = C_mdGRAY;
       if( ptoCurrentAmmo == ai.ai_ptoAmmo) colIcon = C_WHITE; 
       fNormValue = (FLOAT)ai.ai_iAmmoAmmount / ai.ai_iMaxAmmoAmmount;
       colBar = AddShaker( 4, ai.ai_iAmmoAmmount, ai.ai_iLastAmmoAmmount, ai.ai_tmAmmoChanged, fMoverX, fMoverY);
       HUD_DrawBorder( fCol,         fRow+fMoverY, fOneUnitS, fOneUnitS, colBorder);
       HUD_DrawIcon(   fCol,         fRow+fMoverY, *_aaiAmmo[i].ai_ptoAmmo, colIcon, fNormValue, FALSE);
-      HUD_DrawBar(    fCol+fBarPos, fRow+fMoverY, fOneUnitS/5, fOneUnitS-2, BO_DOWN, colBar, fNormValue);
+      HUD_DrawBar(    fCol+fBarPos, fRow+fMoverY, (INDEX) (fOneUnitS/5), (INDEX) (fOneUnitS-2), BO_DOWN, colBar, fNormValue);
       // advance to next position
       fCol -= fAdvUnitS;  
     }
@@ -1000,7 +1051,11 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
     fNormValue = tmDelta / ptmPowerupsMax[i];
     // draw icon and a little bar
     HUD_DrawBorder( fCol,         fRow, fOneUnitS, fOneUnitS, colBorder);
+	if (g_cb.tfe) {
+    HUD_DrawIcon(   fCol,         fRow, _atoPowerups[i], _colHUD, fNormValue, TRUE);
+	} else {
     HUD_DrawIcon(   fCol,         fRow, _atoPowerups[i], C_WHITE /*_colHUD*/, fNormValue, TRUE);
+	}
     HUD_DrawBar(    fCol+fBarPos, fRow, fOneUnitS/5, fOneUnitS-2, BO_DOWN, NONE, fNormValue);
     // play sound if icon is flashing
     if(fNormValue<=(_cttHUD.ctt_fLowMedium/2)) {
@@ -1037,11 +1092,20 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
          || !_awiWeapons[i].wi_bHasWeapon) continue;
       // display weapon icon
       COLOR colBorder = _colHUD;
+	  if (g_cb.tfe) {
+      colIcon = _colHUD;
+	  } else {
       colIcon = 0xccddff00;
+	  }
       // weapon that is currently selected has different colors
       if( ptoWantedWeapon == _awiWeapons[i].wi_ptoWeapon) {
+		  if (g_cb.tfe) {
+        colIcon = _colHUD;
+        colBorder = _colHUD;
+		  } else {
         colIcon = 0xffcc0000;
         colBorder = 0xffcc0000;
+		  }
       }
       // no ammo
       if( _awiWeapons[i].wi_paiAmmo!=NULL && _awiWeapons[i].wi_paiAmmo->ai_iAmmoAmmount==0) {
@@ -1082,7 +1146,11 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
     HUD_DrawBorder( fCol,      fRow, fOneUnit,         fOneUnit, colBorder);
     HUD_DrawBorder( fCol+fAdv, fRow, fOneUnit*4,       fOneUnit, colBorder);
     HUD_DrawBar(    fCol+fAdv, fRow, fOneUnit*4*0.975, fOneUnit*0.9375, BO_LEFT, NONE, fNormValue);
+	if (g_cb.tfe) {
+    HUD_DrawIcon(   fCol,      fRow, _toOxygen, _colHUD, fNormValue, TRUE);
+	} else {
     HUD_DrawIcon(   fCol,      fRow, _toOxygen, C_WHITE /*_colHUD*/, fNormValue, TRUE);
+	}
     bOxygenOnScreen = TRUE;
   }
 
@@ -1116,7 +1184,11 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
       HUD_DrawBorder( fCol,      fRow, fOneUnit,          fOneUnit, colBorder);
       HUD_DrawBorder( fCol+fAdv, fRow, fOneUnit*16,       fOneUnit, colBorder);
       HUD_DrawBar(    fCol+fAdv, fRow, fOneUnit*16*0.995, fOneUnit*0.9375, BO_LEFT, NONE, fNormValue);
+	  if (g_cb.tfe) {
+      HUD_DrawIcon(   fCol,      fRow, _toHealth, _colHUD, fNormValue, FALSE);
+	  } else {
       HUD_DrawIcon(   fCol,      fRow, _toHealth, C_WHITE /*_colHUD*/, fNormValue, FALSE);
+	  }
     }
   }
 
@@ -1141,7 +1213,7 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
     FLOAT fCharHeight = (_pfdDisplayFont->GetHeight()-2)*fTextScale;
     // generate and sort by mana list of active players
     BOOL bMaxScore=TRUE, bMaxMana=TRUE, bMaxFrags=TRUE, bMaxDeaths=TRUE;
-    hud_iSortPlayers = Clamp( hud_iSortPlayers, -1L, 6L);
+    hud_iSortPlayers = Clamp( hud_iSortPlayers, -1, 6);
     SortKeys eKey = (SortKeys)hud_iSortPlayers;
     if (hud_iSortPlayers==-1) {
            if (bCooperative) eKey = PSK_HEALTH;
@@ -1149,7 +1221,7 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
       else if (bFragMatch)   eKey = PSK_FRAGS;
       else { ASSERT(FALSE);  eKey = PSK_NAME; }
     }
-    if( bCooperative) eKey = (SortKeys)Clamp( (INDEX)eKey, 0L, 3L);
+    if( bCooperative) eKey = (SortKeys)Clamp( (INDEX)eKey, 0, 3);
     if( eKey==PSK_HEALTH && (bScoreMatch || bFragMatch)) { eKey = PSK_NAME; }; // prevent health snooping in deathmatch
     INDEX iPlayers = SetAllPlayersStats(eKey);
     // loop thru players 
@@ -1161,8 +1233,8 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
       const INDEX iMana   = penPlayer->m_iMana;
       const INDEX iFrags  = penPlayer->m_psGameStats.ps_iKills;
       const INDEX iDeaths = penPlayer->m_psGameStats.ps_iDeaths;
-      const INDEX iHealth = ClampDn( (INDEX)ceil( penPlayer->GetHealth()), 0L);
-      const INDEX iArmor  = ClampDn( (INDEX)ceil( penPlayer->m_fArmor),    0L);
+      const INDEX iHealth = ClampDn( (INDEX)ceil( penPlayer->GetHealth()), 0);
+      const INDEX iArmor  = ClampDn( (INDEX)ceil( penPlayer->m_fArmor),    0);
       CTString strScore, strMana, strFrags, strDeaths, strHealth, strArmor;
       strScore.PrintF(  "%d", iScore);
       strMana.PrintF(   "%d", iMana);
@@ -1181,7 +1253,7 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
       if( iHealth>25) colHealth = _colHUD;
       if( iArmor >25) colArmor  = _colHUD;
       // eventually print it out
-      if( hud_iShowPlayers==1 || hud_iShowPlayers==-1 && !bSinglePlay) {
+      if( hud_iShowPlayers==1 || (hud_iShowPlayers==-1 && !bSinglePlay)) {
         // printout location and info aren't the same for deathmatch and coop play
         const FLOAT fCharWidth = (PIX)((_pfdDisplayFont->GetWidth()-2) *fTextScale);
         if( bCooperative) { 
@@ -1209,7 +1281,7 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
       CTString strLimitsInfo="";  
       if (GetSP()->sp_iTimeLimit>0) {
         FLOAT fTimeLeft = ClampDn(GetSP()->sp_iTimeLimit*60.0f - _pNetwork->GetGameTime(), 0.0f);
-        strLimitsInfo.PrintF("%s^cFFFFFF%s: %s\n", strLimitsInfo, TRANS("TIME LEFT"), TimeToString(fTimeLeft));
+        strLimitsInfo.PrintF("%s^cFFFFFF%s: %s\n", (const char *) strLimitsInfo, TRANS("TIME LEFT"), (const char *) TimeToString(fTimeLeft));
       }
       extern INDEX SetAllPlayersStats( INDEX iSortKey);
       // fill players table
@@ -1224,11 +1296,11 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
       }}
       if (GetSP()->sp_iFragLimit>0) {
         INDEX iFragsLeft = ClampDn(GetSP()->sp_iFragLimit-iMaxFrags, INDEX(0));
-        strLimitsInfo.PrintF("%s^cFFFFFF%s: %d\n", strLimitsInfo, TRANS("FRAGS LEFT"), iFragsLeft);
+        strLimitsInfo.PrintF("%s^cFFFFFF%s: %d\n", (const char *) strLimitsInfo, TRANS("FRAGS LEFT"), iFragsLeft);
       }
       if (GetSP()->sp_iScoreLimit>0) {
         INDEX iScoreLeft = ClampDn(GetSP()->sp_iScoreLimit-iMaxScore, INDEX(0));
-        strLimitsInfo.PrintF("%s^cFFFFFF%s: %d\n", strLimitsInfo, TRANS("SCORE LEFT"), iScoreLeft);
+        strLimitsInfo.PrintF("%s^cFFFFFF%s: %d\n", (const char *) strLimitsInfo, TRANS("SCORE LEFT"), iScoreLeft);
       }
       _pfdDisplayFont->SetFixedWidth();
       _pDP->SetFont( _pfdDisplayFont);
@@ -1308,7 +1380,11 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
     HUD_DrawBorder( fCol,      fRow, fOneUnit,   fOneUnit, colBorder);
     HUD_DrawBorder( fCol+fAdv, fRow, fChrUnit*8, fOneUnit, colBorder);
     HUD_DrawText(   fCol+fAdv, fRow, strValue, NONE, bBeating ? 0.0f : 1.0f);
+	if (g_cb.tfe) {
+    HUD_DrawIcon(   fCol,      fRow, _toHiScore, _colHUD, 1.0f, FALSE);
+	} else {
     HUD_DrawIcon(   fCol,      fRow, _toHiScore, C_WHITE /*_colHUD*/, 1.0f, FALSE);
+	}
 
     // prepare and draw unread messages
     if( hud_bShowMessages && _penPlayer->m_ctUnreadMessages>0) {
@@ -1337,7 +1413,11 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
       HUD_DrawBorder( fCol,      fRow, fOneUnit,   fOneUnit, col);
       HUD_DrawBorder( fCol+fAdv, fRow, fChrUnit*4, fOneUnit, col);
       HUD_DrawText(   fCol+fAdv, fRow, strValue,   col, 1.0f);
+	  if (g_cb.tfe) {
+      HUD_DrawIcon(   fCol,      fRow, _toMessage, col, 0.0f, TRUE);
+	  } else {
       HUD_DrawIcon(   fCol,      fRow, _toMessage, C_WHITE /*col*/, 0.0f, TRUE);
+	  }
     }
   }
 
@@ -1349,7 +1429,7 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
   // draw cheat modes
   if( GetSP()->sp_ctMaxPlayers==1) {
     INDEX iLine=1;
-    ULONG ulAlpha = sin(_tmNow*16)*96 +128;
+    ULONG ulAlpha = (ULONG) (sin(_tmNow*16)*96 +128);
     PIX pixFontHeight = _pfdConsoleFont->fd_pixCharHeight;
     const COLOR colCheat = _colHUDText;
     _pDP->SetFont( _pfdConsoleFont);
@@ -1379,7 +1459,17 @@ extern void InitHUD(void)
     DECLARE_CTFILENAME( fnFont, "Fonts\\Numbers3.fnt");
     _fdNumbersFont.Load_t( fnFont);
     //_fdNumbersFont.SetCharSpacing(0);
-
+	if (g_cb.tfe) {
+    _toHealth.SetData_t(  CTFILENAME("Textures\\Interface\\HSuper.tex"));
+    _toArmorLarge.SetData_t(   CTFILENAME("Textures\\Interface\\ArStrong.tex"));
+    _toOxygen.SetData_t(  CTFILENAME("Textures\\Interface\\Oxygen-2.tex"));
+    _toFrags.SetData_t(   CTFILENAME("Textures\\Interface\\IBead.tex"));
+    _toDeaths.SetData_t(  CTFILENAME("Textures\\Interface\\ISkull.tex"));
+    _toScore.SetData_t(   CTFILENAME("Textures\\Interface\\IScore.tex"));
+    _toHiScore.SetData_t( CTFILENAME("Textures\\Interface\\IHiScore.tex"));
+    _toMessage.SetData_t( CTFILENAME("Textures\\Interface\\IMessage.tex"));
+    _toMana.SetData_t(    CTFILENAME("Textures\\Interface\\IValue.tex"));
+	} else {
     // initialize status bar textures
     _toHealth.SetData_t(  CTFILENAME("TexturesMP\\Interface\\HSuper.tex"));
     _toOxygen.SetData_t(  CTFILENAME("TexturesMP\\Interface\\Oxygen-2.tex"));
@@ -1389,10 +1479,20 @@ extern void InitHUD(void)
     _toHiScore.SetData_t( CTFILENAME("TexturesMP\\Interface\\IHiScore.tex"));
     _toMessage.SetData_t( CTFILENAME("TexturesMP\\Interface\\IMessage.tex"));
     _toMana.SetData_t(    CTFILENAME("TexturesMP\\Interface\\IValue.tex"));
+    _toArmorLarge.SetData_t(   CTFILENAME("TexturesMP\\Interface\\ArStrong.tex"));
+	}
     _toArmorSmall.SetData_t(  CTFILENAME("TexturesMP\\Interface\\ArSmall.tex"));
     _toArmorMedium.SetData_t(   CTFILENAME("TexturesMP\\Interface\\ArMedium.tex"));
-    _toArmorLarge.SetData_t(   CTFILENAME("TexturesMP\\Interface\\ArStrong.tex"));
 
+	if (g_cb.tfe) {
+    _toAShells.SetData_t(      CTFILENAME("Textures\\Interface\\AmShells.tex"));
+    _toABullets.SetData_t(     CTFILENAME("Textures\\Interface\\AmBullets.tex"));
+    _toARockets.SetData_t(     CTFILENAME("Textures\\Interface\\AmRockets.tex"));
+    _toAGrenades.SetData_t(    CTFILENAME("Textures\\Interface\\AmGrenades.tex"));
+    _toANapalm.SetData_t(      CTFILENAME("Textures\\Interface\\AmFuelReservoir.tex"));
+    _toAElectricity.SetData_t( CTFILENAME("Textures\\Interface\\AmElectricity.tex"));
+    _toAIronBall.SetData_t(    CTFILENAME("Textures\\Interface\\AmCannon.tex"));
+	} else {
     // initialize ammo textures                    
     _toAShells.SetData_t(        CTFILENAME("TexturesMP\\Interface\\AmShells.tex"));
     _toABullets.SetData_t(       CTFILENAME("TexturesMP\\Interface\\AmBullets.tex"));
@@ -1401,8 +1501,23 @@ extern void InitHUD(void)
     _toANapalm.SetData_t(        CTFILENAME("TexturesMP\\Interface\\AmFuelReservoir.tex"));
     _toAElectricity.SetData_t(   CTFILENAME("TexturesMP\\Interface\\AmElectricity.tex"));
     _toAIronBall.SetData_t(      CTFILENAME("TexturesMP\\Interface\\AmCannonBall.tex"));
+	}
     _toASniperBullets.SetData_t( CTFILENAME("TexturesMP\\Interface\\AmSniperBullets.tex"));
     _toASeriousBomb.SetData_t(   CTFILENAME("TexturesMP\\Interface\\AmSeriousBomb.tex"));
+	
+	if (g_cb.tfe) {
+    _toWKnife.SetData_t(           CTFILENAME("Textures\\Interface\\WKnife.tex"));
+    _toWColt.SetData_t(            CTFILENAME("Textures\\Interface\\WColt.tex"));
+    _toWSingleShotgun.SetData_t(   CTFILENAME("Textures\\Interface\\WSingleShotgun.tex"));
+    _toWDoubleShotgun.SetData_t(   CTFILENAME("Textures\\Interface\\WDoubleShotgun.tex"));
+    _toWTommygun.SetData_t(        CTFILENAME("Textures\\Interface\\WTommygun.tex"));
+    _toWMinigun.SetData_t(         CTFILENAME("Textures\\Interface\\WMinigun.tex"));
+    _toWRocketLauncher.SetData_t(  CTFILENAME("Textures\\Interface\\WRocketLauncher.tex"));
+    _toWGrenadeLauncher.SetData_t( CTFILENAME("Textures\\Interface\\WGrenadeLauncher.tex"));
+    _toWLaser.SetData_t(           CTFILENAME("Textures\\Interface\\WLaser.tex"));
+    _toWFlamer.SetData_t(          CTFILENAME("Textures\\Interface\\WFlamer.tex"));
+    _toWIronCannon.SetData_t(      CTFILENAME("Textures\\Interface\\WCannon.tex"));
+	} else {
     // initialize weapon textures
     _toWKnife.SetData_t(           CTFILENAME("TexturesMP\\Interface\\WKnife.tex"));
     _toWColt.SetData_t(            CTFILENAME("TexturesMP\\Interface\\WColt.tex"));
@@ -1413,10 +1528,11 @@ extern void InitHUD(void)
     _toWRocketLauncher.SetData_t(  CTFILENAME("TexturesMP\\Interface\\WRocketLauncher.tex"));
     _toWGrenadeLauncher.SetData_t( CTFILENAME("TexturesMP\\Interface\\WGrenadeLauncher.tex"));
     _toWLaser.SetData_t(           CTFILENAME("TexturesMP\\Interface\\WLaser.tex"));
+    _toWFlamer.SetData_t(          CTFILENAME("TexturesMP\\Interface\\WFlamer.tex"));
     _toWIronCannon.SetData_t(      CTFILENAME("TexturesMP\\Interface\\WCannon.tex"));
+	}
     _toWChainsaw.SetData_t(        CTFILENAME("TexturesMP\\Interface\\WChainsaw.tex"));
     _toWSniper.SetData_t(          CTFILENAME("TexturesMP\\Interface\\WSniper.tex"));
-    _toWFlamer.SetData_t(          CTFILENAME("TexturesMP\\Interface\\WFlamer.tex"));
         
     // initialize powerup textures (DO NOT CHANGE ORDER!)
     _atoPowerups[0].SetData_t( CTFILENAME("TexturesMP\\Interface\\PInvisibility.tex"));

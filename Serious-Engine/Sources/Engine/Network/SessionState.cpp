@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include <Engine/StdH.h>
 
 #include <Engine/Build.h>
 #include <Engine/Network/Network.h>
@@ -54,6 +54,24 @@ extern INDEX net_bLerping;
 extern FLOAT net_tmConnectionTimeout;
 extern FLOAT net_tmProblemsTimeOut;
 extern FLOAT net_tmDisconnectTimeout;
+extern INDEX net_bSyncDiag;
+extern CTString net_strSyncDiagTag;
+
+static void AppendSyncDiagLine(const CTString &fnm, const CTString &line)
+{
+  try {
+    CTFileStream strm;
+    try {
+      strm.Open_t(fnm, CTStream::OM_WRITE);
+    } catch (const char *) {
+      strm.Create_t(fnm, CTStream::CM_TEXT);
+    }
+    strm.SetPos_t(strm.GetStreamSize());
+    strm.FPrintF_t("%s\n", (const char *)line);
+    strm.Close();
+  } catch (const char *) {
+  }
+}
 
 // this is from ProgresHook.cpp - so we tell the progresshook to run client/srever updates
 extern BOOL _bRunNetUpdates;
@@ -84,7 +102,7 @@ void CSessionState::ResetRND(void)
   // random must start at a number different than zero!
   ses_ulRandomSeed = 0x87654321;
   // run rnd a few times to make it go random
-  for(INDEX i=0; i<32; i++) {
+  for(INDEX i=0; i < 32; i++) {
     Rnd();
   }
   ses_bAllowRandom = bOldAllow;
@@ -108,6 +126,7 @@ CSessionState::CSessionState(void)
   ses_bGameFinished = FALSE;
   ses_bWaitingForServer = FALSE;
   ses_strDisconnected = "";
+  ses_ctMinPlayers = 1; // [SSE] Minimum Players
   ses_ctMaxPlayers = 1;
   ses_bWaitAllPlayers = FALSE;
   ses_iLevel = 0;
@@ -149,6 +168,7 @@ void CSessionState::Stop(void)
   ses_bGameFinished = FALSE;
   ses_bWaitingForServer = FALSE;
   ses_strDisconnected = "";
+  ses_ctMinPlayers = 1; // [SSE] Minimum Players
   ses_ctMaxPlayers = 1;
   ses_fRealTimeFactor = 1.0f;
   ses_bWaitAllPlayers = FALSE;
@@ -205,6 +225,7 @@ void CSessionState::Start_t(INDEX ctLocalPlayers)
   ses_bWaitingForServer = FALSE;
   ses_bGameFinished = FALSE;
   ses_strDisconnected = "";
+  ses_ctMinPlayers = 1; // [SSE] Minimum Players
   ses_ctMaxPlayers = 1;
   ses_fRealTimeFactor = 1.0f;
   ses_bWaitAllPlayers = FALSE;
@@ -231,7 +252,7 @@ void CSessionState::Start_t(INDEX ctLocalPlayers)
   // if this computer is server
   if (_pNetwork->IsServer()) {
     // initialize local client
-    _cmiComm.Client_Init_t(0UL);
+    _cmiComm.Client_Init_t((ULONG) 0);
     // connect as main session state
     try {
       Start_AtServer_t();
@@ -312,11 +333,14 @@ void CSessionState::Start_AtClient_t(INDEX ctLocalPlayers)     // throw char *
   // send one unreliable packet to server to make the connection up and running
   CNetworkMessage nmKeepAlive(MSG_KEEPALIVE);
   _pNetwork->SendToServer(nmKeepAlive);
+  
+  #define VTAG 0x56544147  // Looks like 'VTAG' in ASCII.
 
   // send registration request
   CNetworkMessage nmRegisterSessionState(MSG_REQ_CONNECTREMOTESESSIONSTATE);
-  nmRegisterSessionState<<INDEX('VTAG')<<INDEX(_SE_BUILD_MAJOR)<<INDEX(_SE_BUILD_MINOR);
-  nmRegisterSessionState<<_strModName;
+  nmRegisterSessionState << INDEX(VTAG) << INDEX(_SE_BUILD_MAJOR) << INDEX(_SE_BUILD_MINOR);
+  nmRegisterSessionState << _strModName;
+
   extern CTString net_strConnectPassword;
   extern CTString net_strVIPPassword;
   CTString strPasw = net_strConnectPassword;
@@ -353,8 +377,40 @@ void CSessionState::Start_AtClient_t(INDEX ctLocalPlayers)     // throw char *
     strmMessage>>ulSpawnFlags;
     UBYTE aubProperties[NET_MAXSESSIONPROPERTIES];
     strmMessage.Read_t(aubProperties, NET_MAXSESSIONPROPERTIES);
-    // create default state
-    NET_MakeDefaultState_t(fnmWorld, ulSpawnFlags, aubProperties, *pstrmState);
+    INDEX iServerDefaultPackedSize = 0;
+    INDEX iServerDefaultRawSize = 0;
+    if (strmMessage.GetPos_t() < strmMessage.GetStreamSize()) {
+      strmMessage>>iServerDefaultPackedSize>>iServerDefaultRawSize;
+    }
+
+    if (iServerDefaultPackedSize>0 && iServerDefaultRawSize>0
+      && iServerDefaultPackedSize <= (strmMessage.GetStreamSize()-strmMessage.GetPos_t())) {
+      UBYTE *pubPacked = (UBYTE*)AllocMemory(iServerDefaultPackedSize);
+      strmMessage.Read_t(pubPacked, iServerDefaultPackedSize);
+
+      CTMemoryStream strmPacked;
+      strmPacked.Write_t(pubPacked, iServerDefaultPackedSize);
+      strmPacked.SetPos_t(0);
+      FreeMemory(pubPacked);
+
+      CTMemoryStream strmRaw;
+      CzlibCompressor comp;
+      comp.UnpackStream_t(strmPacked, strmRaw);
+      strmRaw.SetPos_t(0);
+
+      INDEX iUnpackedSize = strmRaw.GetStreamSize();
+      if (iUnpackedSize==iServerDefaultRawSize) {
+        UBYTE *pubDefault = (UBYTE*)AllocMemory(iUnpackedSize);
+        strmRaw.Read_t(pubDefault, iUnpackedSize);
+        pstrmState->Write_t(pubDefault, iUnpackedSize);
+        FreeMemory(pubDefault);
+      } else {
+        NET_MakeDefaultState_t(fnmWorld, ulSpawnFlags, aubProperties, *pstrmState);
+      }
+    } else {
+      // fallback for old servers that do not send the state blob
+      NET_MakeDefaultState_t(fnmWorld, ulSpawnFlags, aubProperties, *pstrmState);
+    }
     pstrmState->SetPos_t(0);
   }
 
@@ -370,9 +426,11 @@ void CSessionState::Start_AtClient_t(INDEX ctLocalPlayers)     // throw char *
     // wait for server's response
     CTMemoryStream strmMessage;
     WaitStream_t(strmMessage, "data", MSG_REP_STATEDELTA);
+    CPrintF(TRANS("Received DIFF stream\n"));
     // decompress saved session state
     CTMemoryStream strmDelta;
     CzlibCompressor comp;
+    CPrintF(TRANS("Unpacking DIFF stream\n"));
     comp.UnpackStream_t(strmMessage, strmDelta);
     CTMemoryStream strmNew;
     DIFF_Undiff_t(pstrmState, &strmDelta, &strmNew);
@@ -491,13 +549,13 @@ void CSessionState::WaitStream_t(CTMemoryStream &strmMessage, const CTString &st
       ses_strDisconnected = strReason;
       // no more client/server updates in the progres hook
       _bRunNetUpdates = FALSE;
-      ThrowF_t(TRANS("Disconnected: %s\n"), strReason);
+      ThrowF_t(TRANS("Disconnected: %s\n"), (const char *) strReason);
 	  // otherwise
     } else {
       // no more client/server updates in the progres hook
       _bRunNetUpdates = FALSE;
       // it is invalid message
-      ThrowF_t(TRANS("Invalid stream while waiting for %s"), strName);
+      ThrowF_t(TRANS("Invalid stream while waiting for %s"), (const char *) strName);
     }
 
     // if client is disconnected
@@ -516,7 +574,7 @@ void CSessionState::WaitStream_t(CTMemoryStream &strmMessage, const CTString &st
 //	_pNetwork->SendToServerReliable(nmConfirmDisconnect);
 
   
-  ThrowF_t(TRANS("Timeout while waiting for %s"), strName);
+  ThrowF_t(TRANS("Timeout while waiting for %s"), (const char *) strName);
 }
 
 // check if disconnected
@@ -583,7 +641,6 @@ void CSessionState::HandleMovers(void)
 //  CPrintF("---- tick %g\n", _pTimer->CurrentTick());
 
   // put all movers in active list, pushing ones first
-  _pfPhysicsProfile.StartTimer(CPhysicsProfile::PTI_MOV_PREPARE);
   CListHead lhActiveMovers, lhDoneMovers, lhDummyMovers;
   {FORDELETELIST(CMovableEntity, en_lnInMovers, _pNetwork->ga_World.wo_lhMovers, itenMover) {
     CMovableEntity *pen = itenMover;
@@ -602,26 +659,20 @@ void CSessionState::HandleMovers(void)
       }
     }
   }}
-  _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_MOV_PREPARE);
 
   // for each active mover
-  _pfPhysicsProfile.StartTimer(CPhysicsProfile::PTI_MOV_CLEARMOVINGTEMP);
   {FORDELETELIST(CMovableEntity, en_lnInMovers, lhActiveMovers, itenMover) {
     // let it clear its temporary variables to prevent bad syncs
     itenMover->ClearMovingTemp();
   }}
-  _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_MOV_CLEARMOVINGTEMP);
 
   // for each active mover
-  _pfPhysicsProfile.StartTimer(CPhysicsProfile::PTI_MOV_PREMOVING);
   {FORDELETELIST(CMovableEntity, en_lnInMovers, lhActiveMovers, itenMover) {
     // let it calculate its wanted parameters for this tick
     itenMover->PreMoving();
   }}
-  _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_MOV_PREMOVING);
 
   // while there are some active movers
-  _pfPhysicsProfile.StartTimer(CPhysicsProfile::PTI_MOV_DOMOVING);
   while(!lhActiveMovers.IsEmpty()) {
     // get first one
     CMovableEntity *penMoving = LIST_HEAD(lhActiveMovers, CMovableEntity, en_lnInMovers);
@@ -656,10 +707,8 @@ void CSessionState::HandleMovers(void)
     // if any mover is re-added, put it to the end of active list
     lhActiveMovers.MoveList(_pNetwork->ga_World.wo_lhMovers);
   }
-  _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_MOV_DOMOVING);
 
   // for each done mover
-  _pfPhysicsProfile.StartTimer(CPhysicsProfile::PTI_MOV_POSTMOVING);
   {FORDELETELIST(CMovableEntity, en_lnInMovers, lhDoneMovers, itenMover) {
     // if predicting, and it is not a predictor
     if (ses_bPredicting && !itenMover->IsPredictor()) {
@@ -667,14 +716,11 @@ void CSessionState::HandleMovers(void)
       continue;
     }
     // let it calculate its parameters after all movement has been resolved
-    _pfPhysicsProfile.IncrementTimerAveragingCounter(CPhysicsProfile::PTI_MOV_POSTMOVING);
     itenMover->PostMoving();
   }}
-  _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_MOV_POSTMOVING);
 
   // for each done mover
 
-  _pfPhysicsProfile.StartTimer(CPhysicsProfile::PTI_MOV_CLEARMOVINGTEMP);
   {FORDELETELIST(CMovableEntity, en_lnInMovers, lhDoneMovers, itenMover) {
     CMovableEntity *pen = itenMover;
     // if predicting, and it is not a predictor
@@ -691,9 +737,6 @@ void CSessionState::HandleMovers(void)
     // let it clear its temporary variables to prevent bad syncs
     pen->ClearMovingTemp();
   }}
-  _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_MOV_CLEARMOVINGTEMP);
-
-  _pfPhysicsProfile.StartTimer(CPhysicsProfile::PTI_MOV_FINISH);
 
   // return all done movers to the world's list
   _pNetwork->ga_World.wo_lhMovers.MoveList(lhDummyMovers);
@@ -702,8 +745,6 @@ void CSessionState::HandleMovers(void)
   // handle all the sent events
   CEntity::HandleSentEvents();
 
-  _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_MOV_FINISH);
-
   _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_HANDLEMOVERS);
 }
 
@@ -711,7 +752,7 @@ void CSessionState::HandleMovers(void)
 void CSessionState::HandleTimers(TIME tmCurrentTick)
 {
 #define TIME_EPSILON 0.0001f
-  IFDEBUG(TIME tmLast = 0.0f);
+  //IFDEBUG(TIME tmLast = 0.0f);
 
   _pfPhysicsProfile.StartTimer(CPhysicsProfile::PTI_HANDLETIMERS);
   // repeat
@@ -745,7 +786,7 @@ void CSessionState::HandleTimers(TIME tmCurrentTick)
     // check that timers are propertly handled
     ASSERT(penTimer->en_timeTimer>tmCurrentTick-_pTimer->TickQuantum-TIME_EPSILON);
     //ASSERT(penTimer->en_timeTimer>=tmLast);
-    IFDEBUG(tmLast=penTimer->en_timeTimer);
+    //IFDEBUG(tmLast=penTimer->en_timeTimer);
 
     // remove the timer from the list
     penTimer->en_timeTimer = THINKTIME_NEVER;
@@ -821,8 +862,9 @@ void CSessionState::ChecksumForSync(ULONG &ulCRC, INDEX iExtensiveSyncCheck)
   {FOREACHINSTATICARRAY(ses_apltPlayers, CPlayerTarget, itclt) {
     CPlayerTarget &clt = *itclt;
     if (clt.IsActive()) {
-      clt.plt_paPreLastAction.ChecksumForSync(ulCRC);
-      clt.plt_paLastAction.ChecksumForSync(ulCRC);
+      // Action buffers are transport-latency dependent and can legitimately
+      // differ between client and server while gameplay state is still valid.
+      // Keep sync-check based on deterministic world/player state only.
       clt.plt_penPlayerEntity->ChecksumForSync(ulCRC, iExtensiveSyncCheck);
     }
   }}
@@ -939,7 +981,7 @@ void CSessionState::ProcessGameTick(CNetworkMessage &nmMessage, TIME tmCurrentTi
   //CPrintF("normal: %.2f\n", tmCurrentTick);
 
   // FPU must be in 24-bit mode
-  CSetFPUPrecision FPUPrecision(FPT_24BIT);
+  //CSetFPUPrecision FPUPrecision(FPT_24BIT);
 
   // copy the tick to process into tick used for all tasks
   _pTimer->SetCurrentTick(tmCurrentTick);
@@ -1049,7 +1091,7 @@ void CSessionState::ProcessPredictedGameTick(INDEX iPredictionStep, FLOAT fFacto
   //CPrintF("predicted: %.2f\n", tmCurrentTick);
 
   // FPU must be in 24-bit mode
-  CSetFPUPrecision FPUPrecision(FPT_24BIT);
+  //CSetFPUPrecision FPUPrecision(FPT_24BIT);
 
   // now predicting
   ses_bPredicting = TRUE;
@@ -1108,7 +1150,7 @@ void CSessionState::ProcessGameStream(void)
   _pfNetworkProfile.StartTimer(CNetworkProfile::PTI_SESSIONSTATE_PROCESSGAMESTREAM);
 
   // must be in 24bit mode when managing entities
-  CSetFPUPrecision FPUPrecision(FPT_24BIT);
+  //CSetFPUPrecision FPUPrecision(FPT_24BIT);
 
   TIME tmDemoNow = _pNetwork->ga_fDemoTimer;
   // if playing a demo
@@ -1166,7 +1208,7 @@ void CSessionState::ProcessGameStream(void)
     CNetworkStreamBlock *pnsbBlock;
     CNetworkStream::Result res = ses_nsGameStream.GetBlockBySequence(iSequence, pnsbBlock);
     // if it is found
-    if (res==CNetworkStream::R_OK) {
+    if (res==CNetworkStream::NSR_OK) {
       // if recording a demo
       if (_pNetwork->ga_bDemoRec) {
         // try to
@@ -1205,12 +1247,12 @@ void CSessionState::ProcessGameStream(void)
       }
 
     // if it is not avaliable yet
-    } else if (res==CNetworkStream::R_BLOCKNOTRECEIVEDYET) {
+    } else if (res==CNetworkStream::NSR_BLOCKNOTRECEIVEDYET) {
       // finish
       _pfNetworkProfile.StopTimer(CNetworkProfile::PTI_SESSIONSTATE_PROCESSGAMESTREAM);
       return;
     // if it is missing
-    } else if (res==CNetworkStream::R_BLOCKMISSING) {
+    } else if (res==CNetworkStream::NSR_BLOCKMISSING) {
       
       // if it is a new sequence
       if (iSequence>ses_iMissingSequence) {
@@ -1282,7 +1324,7 @@ INDEX CSessionState::GetPredictionStepsCount(void)
 void CSessionState::ProcessPrediction(void)
 {
   // FPU must be in 24-bit mode
-  CSetFPUPrecision FPUPrecision(FPT_24BIT);
+  //CSetFPUPrecision FPUPrecision(FPT_24BIT);
 
   // get number of steps that could be predicted
   INDEX ctSteps = GetPredictionStepsCount();
@@ -1394,11 +1436,18 @@ void CSessionState::ProcessGameStreamBlock(CNetworkMessage &nmMessage)
       // delete all predictors
       _pNetwork->ga_World.DeletePredictors();
 
-      // inform entity of disconnnection
-      CPrintF(TRANS("%s left\n"), ses_apltPlayers[iPlayer].plt_penPlayerEntity->GetPlayerName());
-      ses_apltPlayers[iPlayer].plt_penPlayerEntity->Disconnect();
+      // receive a pointer to player entity
+      CPlayerEntity *penPlayerEntity = ses_apltPlayers[iPlayer].plt_penPlayerEntity;
+
+      // NOTE: [SSE] Netcode Update - Just a check for safety!
+      if (penPlayerEntity != NULL) {
+        CPrintF(TRANS("%s left\n"), penPlayerEntity->GetPlayerName());
+        penPlayerEntity->Disconnect();
+      }
+
       // deactivate the player
       ses_apltPlayers[iPlayer].Deactivate();
+
       // handle all the sent events
       ses_bAllowRandom = TRUE;
       CEntity::HandleSentEvents();
@@ -1406,27 +1455,195 @@ void CSessionState::ProcessGameStreamBlock(CNetworkMessage &nmMessage)
 
     } break;
 
+  // [SSE] Netcode Update - Attaching player to client
+  case MSG_SEQ_ATTACHPLAYER:
+  {
+    _pNetwork->AddNetGraphValue(NGET_NONACTION, 1.0f); // non-action sequence
+
+    INDEX iNewPlayerIndex, iEntity;
+    
+    nmMessage>>iNewPlayerIndex;
+    nmMessage>>iEntity;      // entity id
+    
+    // delete all predictors
+    _pNetwork->ga_World.DeletePredictors();
+    
+    CEntity *pen = _pNetwork->ga_World.EntityFromID(iEntity);
+
+    // Ignore if target entity is NULL!
+    if (pen == NULL) {
+      break;
+    }
+
+    // Ignore if target entity isn't player entity!
+    if (!IsDerivedFromClass(pen, "PlayerEntity")) {
+      break;
+    }
+    
+    // activate the player
+    ses_apltPlayers[iNewPlayerIndex].Activate();
+    
+    CPlayerEntity *penNewPlayer = (CPlayerEntity*)pen;
+    
+    // Atach entity to client data.
+    ses_apltPlayers[iNewPlayerIndex].AttachEntity(penNewPlayer);
+
+    //if (!_pNetwork->IsPlayerLocal(penNewPlayer)) {
+    CPrintF(TRANS("%s attached\n"), penNewPlayer->GetPlayerName());
+    //}
+    
+  } break;
+    
+  // [SSE] Netcode Update - Detaching player from client
+  case MSG_SEQ_DETACHPLAYER:
+  {
+    _pNetwork->AddNetGraphValue(NGET_NONACTION, 1.0f); // non-action sequence
+    INDEX iPlayer;
+    nmMessage >> iPlayer;      // player index
+    
+    // delete all predictors
+    _pNetwork->ga_World.DeletePredictors();
+    
+    // receive a pointer to player entity
+    CPlayerEntity *penPlayerEntity = ses_apltPlayers[iPlayer].plt_penPlayerEntity;
+    
+    // Just a check for safety!
+    if (penPlayerEntity != NULL) {
+      CPrintF(TRANS("%s detached\n"), penPlayerEntity->GetPlayerName());
+      //penPlayerEntity->Disconnect();
+    }
+    
+    FOREACHINSTATICARRAY(_pNetwork->ga_aplsPlayers, CPlayerSource, itcls)
+    {
+      if (itcls->IsActive()) {
+        if (itcls->pls_Index == iPlayer) {
+          itcls->Stop();
+        }
+      }
+    }
+    
+    // deactivate the player
+    ses_apltPlayers[iPlayer].Deactivate();
+    
+    // handle all the sent events
+    //ses_bAllowRandom = TRUE;
+    //CEntity::HandleSentEvents();
+    //ses_bAllowRandom = FALSE;
+  } break;
+  
+  // [SSE] Netcode Update - Swap two active players between.
+  case MSG_SEQ_SWAPPLAYERENTITIES:
+  {
+    _pNetwork->AddNetGraphValue(NGET_NONACTION, 1.0f); // non-action sequence
+
+    INDEX iFirstPlayer, iSecondPlayer;
+    nmMessage >> iFirstPlayer >> iSecondPlayer; // player indexes
+
+    // If same player indexes then skip this block!
+    if (iFirstPlayer == iSecondPlayer) {
+      break;
+    }
+
+    // If less than zero then skip this stream block!
+    if (iFirstPlayer < 0 || iSecondPlayer < 0) {
+      break;
+    }
+
+    INDEX ctMax = CEntity::GetMaxPlayers();
+
+    // If more than limit then skip this stream block!
+    if (iFirstPlayer >= ctMax || iSecondPlayer >= ctMax) {
+      break;
+    }
+
+    CPlayerTarget &pltFirst = _pNetwork->ga_sesSessionState.ses_apltPlayers[iFirstPlayer];
+    CPlayerTarget &pltSecond = _pNetwork->ga_sesSessionState.ses_apltPlayers[iSecondPlayer];
+
+    // If one of player inactive then skip this stream block!
+    if (!pltFirst.plt_bActive || !pltSecond.plt_bActive) {
+      break;
+    }
+
+    CPlayerEntity *penFirst = pltFirst.plt_penPlayerEntity;
+    pltFirst.AttachEntity(pltSecond.plt_penPlayerEntity);
+    pltSecond.AttachEntity(penFirst);
+
+    // handle all the sent events
+    ses_bAllowRandom = TRUE;
+    CEntity::HandleSentEvents();
+    ses_bAllowRandom = FALSE;
+  } break;
+  
+  // [SSE] Netcode Update - Destroy entity.
+  case MSG_SEQ_DESTROYENTITY:
+  {
+    _pNetwork->AddNetGraphValue(NGET_NONACTION, 1.0f); // non-action sequence
+
+    INDEX iEntity;
+    nmMessage >> iEntity;
+
+    CEntity *penEntity = _pNetwork->ga_World.EntityFromID(iEntity);
+
+    if (penEntity == NULL) {
+      break;
+    }
+    
+    penEntity->Destroy();
+
+    // handle all the sent events
+    ses_bAllowRandom = TRUE;
+    CEntity::HandleSentEvents();
+    ses_bAllowRandom = FALSE;
+  } break;
+  
+  // [SSE] Netcode Update - Entity RPC.
+  case MSG_SEQ_ENTITYRPC:
+  {
+    _pNetwork->AddNetGraphValue(NGET_NONACTION, 1.0f); // non-action sequence
+
+    INDEX iEntity;
+    nmMessage >> iEntity;
+
+    CEntity *penEntity = _pNetwork->ga_World.EntityFromID(iEntity);
+
+    if (penEntity == NULL) {
+      break;
+    }
+    
+    // delete all predictors
+    _pNetwork->ga_World.DeletePredictors();
+    
+    penEntity->ReceiveRPC(nmMessage);
+
+    // handle all the sent events
+    ses_bAllowRandom = TRUE;
+    CEntity::HandleSentEvents();
+    ses_bAllowRandom = FALSE;
+  } break;
+
   // if changing character
-  case MSG_SEQ_CHARACTERCHANGE: {
-      _pNetwork->AddNetGraphValue(NGET_NONACTION, 1.0f); // non-action sequence
-      INDEX iPlayer;
-      CPlayerCharacter pcCharacter;
-      nmMessage>>iPlayer>>pcCharacter;
+  case MSG_SEQ_CHARACTERCHANGE:
+  {
+    _pNetwork->AddNetGraphValue(NGET_NONACTION, 1.0f); // non-action sequence
+    INDEX iPlayer;
+    CPlayerCharacter pcCharacter;
+    nmMessage>>iPlayer>>pcCharacter;
 
-      // delete all predictors
-      _pNetwork->ga_World.DeletePredictors();
+    // delete all predictors
+    _pNetwork->ga_World.DeletePredictors();
 
-      // change the character
-      ses_apltPlayers[iPlayer].plt_penPlayerEntity->CharacterChanged(pcCharacter);
+    // change the character
+    ses_apltPlayers[iPlayer].plt_penPlayerEntity->CharacterChanged(pcCharacter);
 
-      // handle all the sent events
-      ses_bAllowRandom = TRUE;
-      CEntity::HandleSentEvents();
-      ses_bAllowRandom = FALSE;
+    // handle all the sent events
+    ses_bAllowRandom = TRUE;
+    CEntity::HandleSentEvents();
+    ses_bAllowRandom = FALSE;
+  } break;
 
-                                } break;
   // if receiving client actions
-  case MSG_SEQ_ALLACTIONS: {
+  case MSG_SEQ_ALLACTIONS:
+  {
       // read time from packet
       TIME tmPacket;
       nmMessage>>tmPacket;    // packet time
@@ -1607,21 +1824,23 @@ void CSessionState::Read_t(CTStream *pstr)  // throw char *
     pstr->ExpectID_t("SESV");
     (*pstr)>>iVersion;
   }
-  (*pstr)>>ses_tmLastProcessedTick;
-  (*pstr)>>ses_iLastProcessedSequence;
-  (*pstr)>>ses_iLevel;
-  (*pstr)>>ses_ulRandomSeed;
-  (*pstr)>>ses_ulSpawnFlags;
-  (*pstr)>>ses_tmSyncCheckFrequency;
-  (*pstr)>>ses_iExtensiveSyncCheck;
-  (*pstr)>>ses_tmLastSyncCheck;
-  (*pstr)>>ses_ctMaxPlayers;
-  (*pstr)>>ses_bWaitAllPlayers;
-  (*pstr)>>ses_bPause;
-  (*pstr)>>ses_bGameFinished;
-  if (iVersion>=SESSIONSTATEVERSION_WITHBULLETTIME) {
-    (*pstr)>>ses_fRealTimeFactor;
+  (*pstr) >> ses_tmLastProcessedTick;
+  (*pstr) >> ses_iLastProcessedSequence;
+  (*pstr) >> ses_iLevel;
+  (*pstr) >> ses_ulRandomSeed;
+  (*pstr) >> ses_ulSpawnFlags;
+  (*pstr) >> ses_tmSyncCheckFrequency;
+  (*pstr) >> ses_iExtensiveSyncCheck;
+  (*pstr) >> ses_tmLastSyncCheck;
+  (*pstr) >> ses_ctMaxPlayers;
+  (*pstr) >> ses_ctMinPlayers; // [SSE] Minimum Players Option
+  (*pstr) >> ses_bPause;
+  (*pstr) >> ses_bGameFinished;
+
+  if (iVersion >= SESSIONSTATEVERSION_WITHBULLETTIME) {
+    (*pstr) >> ses_fRealTimeFactor;
   }
+
   ses_bWaitingForServer = FALSE;
   ses_bWantPause = ses_bPause;
   ses_strDisconnected = "";
@@ -1661,8 +1880,8 @@ void CSessionState::ReadWorldAndState_t(CTStream *pstr)   // throw char *
     ThrowF_t(
       TRANS("Cannot play demo because file '%s'\n"
       "is older than file '%s'!\n"),
-      CTString(pstr->GetDescription()),
-      CTString(_pNetwork->ga_fnmWorld));
+      (const char *) CTString(pstr->GetDescription()),
+      (const char *) CTString(_pNetwork->ga_fnmWorld));
   }
 
   // prepare the world for loading
@@ -1765,19 +1984,19 @@ void CSessionState::Write_t(CTStream *pstr)  // throw char *
   pstr->WriteID_t("SESV");
   (*pstr)<<INDEX(SESSIONSTATEVERSION_WITHBULLETTIME);
   // write time information and random seed
-  (*pstr)<<ses_tmLastProcessedTick;
-  (*pstr)<<ses_iLastProcessedSequence;
-  (*pstr)<<ses_iLevel;
-  (*pstr)<<ses_ulRandomSeed;
-  (*pstr)<<ses_ulSpawnFlags;
-  (*pstr)<<ses_tmSyncCheckFrequency;
-  (*pstr)<<ses_iExtensiveSyncCheck;
-  (*pstr)<<ses_tmLastSyncCheck;
-  (*pstr)<<ses_ctMaxPlayers;
-  (*pstr)<<ses_bWaitAllPlayers;
-  (*pstr)<<ses_bPause;
-  (*pstr)<<ses_bGameFinished;
-  (*pstr)<<ses_fRealTimeFactor;
+  (*pstr) << ses_tmLastProcessedTick;
+  (*pstr) << ses_iLastProcessedSequence;
+  (*pstr) << ses_iLevel;
+  (*pstr) << ses_ulRandomSeed;
+  (*pstr) << ses_ulSpawnFlags;
+  (*pstr) << ses_tmSyncCheckFrequency;
+  (*pstr) << ses_iExtensiveSyncCheck;
+  (*pstr) << ses_tmLastSyncCheck;
+  (*pstr) << ses_ctMaxPlayers;
+  (*pstr) << ses_ctMinPlayers; // [SSE] Minimum Players Option
+  (*pstr) << ses_bPause;
+  (*pstr) << ses_bGameFinished;
+  (*pstr) << ses_fRealTimeFactor;
   // write session properties to stream
   (*pstr)<<_pNetwork->ga_strSessionName;
   pstr->Write_t(_pNetwork->ga_aubProperties, NET_MAXSESSIONPROPERTIES);
@@ -1916,6 +2135,15 @@ void CSessionState::MakeSynchronisationCheck(void)
   sc.sc_iSequence = ses_iLastProcessedSequence; 
   sc.sc_ulCRC = ulLocalCRC;
   sc.sc_iLevel = ses_iLevel;
+
+  if (net_bSyncDiag) {
+    CTString strRole = _pNetwork->IsServer() ? "LOCAL" : "CLIENT";
+    CTString strLine;
+    strLine.PrintF("SND role=%s tick=%.2f seq=%d level=%d crc=0x%08X",
+      (const char *)strRole, sc.sc_tmTick, sc.sc_iSequence, sc.sc_iLevel, sc.sc_ulCRC);
+    CTString fnm = CTString("Temp\\syncdiag_client_") + net_strSyncDiagTag + ".log";
+    AppendSyncDiagLine(fnm, strLine);
+  }
 
   // NOTE: If local client, here we buffer the sync and send it to ourselves.
   // It's because synccheck is piggybacking session message buffer, so we acknowledge
@@ -2063,12 +2291,51 @@ void CSessionState::SessionStateLoop(void)
         CPrintF(TRANS("Disconnected: %s\n"), strReason);
         // disconnect
         _cmiComm.Client_Close();
+
+      // [SSE] Netcode Update - Attaching player to client (phase 2)
+      } else if (nmReliable.GetType() == MSG_S2C_ATTACHPLAYER) {
+        INDEX iNewPlayer;
+        nmReliable>>iNewPlayer;
+        
+        BOOL bAlreadyInList = FALSE;
+        CPlayerSource *ppls = NULL;
+        
+        FOREACHINSTATICARRAY(_pNetwork->ga_aplsPlayers, CPlayerSource, itcls)
+        {
+          if (itcls->IsActive()) {
+            if (itcls->pls_Index == iNewPlayer) {
+              bAlreadyInList = TRUE;
+            }
+          } else {
+            if (ppls == NULL) {
+              ppls = itcls;
+            }
+          }
+        }
+        
+        if (!bAlreadyInList && ppls != NULL)
+        {
+          ppls->pls_Index = iNewPlayer;
+          ppls->pls_paAction.Clear();
+          for(INDEX ipa = 0; ipa< PLS_MAXLASTACTIONS; ipa++) {
+            ppls->pls_apaLastActions[ipa].Clear();
+          }
+          ppls->pls_Active = TRUE;
+        }
+        
+      // [SSE] Netcode Update - instructions for certain client to change server to another.
+      } else if (nmReliable.GetType() == MSG_S2C_CHANGESERVER) {
+        CTString strAddress;
+        nmReliable >> strAddress;
+        
+        _pShell->Execute("JoinGame(\"" + strAddress + "\");");
+        
       // if this is recon response
       } else if (nmReliable.GetType() == MSG_ADMIN_RESPONSE) {
         // just print it
         CTString strResponse;
         nmReliable>>strResponse;
-        CPrintF("%s", "|"+strResponse+"\n");
+        CPrintF("%s", (const char *) ("|"+strResponse+"\n"));
       // otherwise
       } else {
         CPrintF(TRANS("Session state: Unexpected reliable message during game: %s(%d)\n"),
@@ -2103,8 +2370,8 @@ void CSessionState::SessionStateLoop(void)
     try
     {
       CTFileStream strmFile;
-      CTString strFileName = CTString("temp\\syncdump.txt");
-      strmFile.Create_t(CTString("temp\\syncdump.txt"), CTStream::CM_TEXT);
+      CTString strFileName = CTString("Temp\\syncdump.txt");
+      strmFile.Create_t(CTString("Temp\\syncdump.txt"), CTStream::CM_TEXT);
       
 #if DEBUG_SYNCSTREAMDUMPING
       if( cli_bDumpSyncEachTick)
@@ -2122,11 +2389,11 @@ void CSessionState::SessionStateLoop(void)
         DumpSyncToFile_t(strmFile, ses_iExtensiveSyncCheck);
       }
       // inform user
-      CPrintF("Sync data dumped to '%s'\n", strFileName);
+      CPrintF("Sync data dumped to '%s'\n", (const char *) strFileName);
     }
     catch ( const char *strError)
     {
-      CPrintF("Cannot dump sync data: %s\n", strError);
+      CPrintF("Cannot dump sync data: %s\n", (const char *) strError);
     }
   }
 

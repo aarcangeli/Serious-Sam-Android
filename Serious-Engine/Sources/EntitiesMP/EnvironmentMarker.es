@@ -82,7 +82,7 @@ functions:
       // if failed
       } catch ( const char *strErrorDefault) {
         FatalError(TRANS("Cannot load default model '%s':\n%s"),
-          (CTString&)fnmDefault, strErrorDefault);
+          (const char *) (CTString&)fnmDefault, (const char *) strErrorDefault);
       }
     }
   };

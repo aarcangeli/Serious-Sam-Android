@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 
 #include <Engine/Math/Functions.h>
 #include <Engine/Base/Memory.h>
@@ -98,6 +98,11 @@ void CBuffer::SetAllocationStep(SLONG slStep)
   ASSERT(slStep>0);
   bu_slAllocationStep = slStep;
 }
+
+
+#ifndef __min
+#define __min(x, y) ((x) < (y) ? (x) : (y))
+#endif
 
 // read bytes from buffer
 SLONG CBuffer::ReadBytes(void *pv, SLONG slSize)
@@ -340,11 +345,23 @@ void CBlockBuffer::Clear(void)
   CBuffer::Clear();
 }
 
+#ifdef NETSTRUCTS_PACKED
+  #pragma pack(1)
+#endif
 
 struct BlockHeader {
   SLONG bh_slSize;              // block size
+
+  #ifdef NETSTRUCTS_PACKED
+    UBYTE packing[4];
+  #endif
+
   CTimerValue bh_tvFinalTime;   // block may be read only after this moment in time
 };
+
+#ifdef NETSTRUCTS_PACKED
+  #pragma pack()
+#endif
 
 // read one block if possible
 BOOL CBlockBuffer::ReadBlock(void *pv, SLONG &slSize)
@@ -353,6 +370,14 @@ BOOL CBlockBuffer::ReadBlock(void *pv, SLONG &slSize)
   ASSERT(bb_slBlockSizeRead==0);
 
   // read header of next block in incoming buffer
+
+// rcg10272001 !!! FIXME: Taking sizeof (bh), with the intention of
+// rcg10272001 !!! FIXME:  sending that many bytes over the network,
+// rcg10272001 !!! FIXME:  is really, really risky. DON'T DO IT.
+// rcg10272001 !!! FIXME:  Instead, send pertinent information field by
+// rcg10272001 !!! FIXME:  field, and rebuild the structure on the other
+// rcg10272001 !!! FIXME:  side, swapping byte order as necessary.
+
   struct BlockHeader bh;
   SLONG slbhSize;
   slbhSize = ReadBytes(&bh, sizeof(bh));
@@ -445,9 +470,9 @@ BOOL CBlockBuffer::ReadBlockToStream(CTStream &strm)
   try {
     SLONG slSize = ReadBytesToStream(strm, bh.bh_slSize);
     ASSERT(slSize == bh.bh_slSize);
-  } catch ( const char *strError) {
+  } catch (char *strError) {
     ASSERT(FALSE);
-    CPrintF(TRANS("Buffer error reading to stream: %s\n"), strError);
+    CPrintF(TRANSV("Buffer error reading to stream: %s\n"), strError);
     return FALSE;
   }
 

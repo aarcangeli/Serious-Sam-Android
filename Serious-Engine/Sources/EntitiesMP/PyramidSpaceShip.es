@@ -189,7 +189,7 @@ functions:
   const CTString &GetDescription(void) const
   {
     if (m_penTarget!=NULL) {
-      ((CTString&)m_strDescription).PrintF("->%s", m_penTarget->GetName());
+      ((CTString&)m_strDescription).PrintF("->%s", (const char *) m_penTarget->GetName());
     } else {
       ((CTString&)m_strDescription).PrintF("-><none>");
     }
@@ -486,7 +486,7 @@ functions:
   void SpawnBeamMachineMainFlare(void)
   {
     // spawn main flare
-    CPlacement3D plSpaceShip = GetPlacement();
+    //CPlacement3D plSpaceShip = GetPlacement();
     CPlacement3D plFlare = CPlacement3D( FLOAT3D(0, BM_MASTER_Y+BM_FLARE_DY, 0), ANGLE3D(0,0,0));
     plFlare.RelativeToAbsolute(GetPlacement());
     CEntity *penFlare = CreateEntity( plFlare, CLASS_EFFECTOR);

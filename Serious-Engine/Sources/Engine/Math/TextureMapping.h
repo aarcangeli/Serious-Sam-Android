@@ -105,6 +105,11 @@ public:
   void ToPlane(FLOATplane3D &plPlane) const;
 };
 
+
+#ifdef NETSTRUCTS_PACKED
+#pragma pack(1)
+#endif
+
 /*
  * Description of texture mapping on a polygon relative to default mapping for its plane.
  */
@@ -160,6 +165,10 @@ public:
   void GetSpaceCoordinates(
     const CMappingVectors &mvDefault, const MEX2D &vTexture, FLOAT3D &vSpace) const;
 };
+
+#ifdef NETSTRUCTS_PACKED
+#pragma pack()
+#endif
 
 // stream operations
 ENGINE_API CTStream &operator>>(CTStream &strm, CMappingDefinition &md);  // throw char *

@@ -72,6 +72,7 @@ void StartSelectPlayersMenuFromSplitScreenLoad(void);
 void StartPlayerModelLoadMenu(void);
 void StartControlsLoadMenu(void);
 void StartCustomLoadMenu(void);
+void StartAdvancedLoadMenu(void);
 void StartAddonsLoadMenu(void);
 void StartModsLoadMenu(void);
 void StartNetworkSettingsMenu(void);

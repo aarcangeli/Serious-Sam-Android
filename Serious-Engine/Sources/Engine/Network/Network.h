@@ -107,6 +107,7 @@ public:
   CTFileName ga_fnmWorld;       // filename of current world
   UBYTE *ga_pubDefaultState;    // default state for connecting (server only)
   SLONG ga_slDefaultStateSize;
+  ULONG ga_ulDefaultSpawnFlags;
   UBYTE ga_aubDefaultProperties[NET_MAXSESSIONPROPERTIES];
   UBYTE *ga_pubCRCList;         // list of files for CRC checking (server only)
   SLONG ga_slCRCList;

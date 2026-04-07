@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include <Engine/StdH.h>
 
 #include <Engine/Base/Console.h>
 #include <Engine/Network/Network.h>
@@ -23,6 +23,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Network/SessionState.h>
 #include <Engine/Templates/StaticArray.cpp>
 #include <Engine/Entities/InternalClasses.h>
+#include "AndroidAdapters/binding-callbacks.h"
 
 extern FLOAT net_tmConnectionTimeout;
 extern FLOAT net_tmProblemsTimeOut;
@@ -99,7 +100,7 @@ void CPlayerSource::Start_t(CPlayerCharacter &pcCharacter) // throw char *
       CTString strReason;
       nmReceived>>strReason;
       _pNetwork->ga_sesSessionState.ses_strDisconnected = strReason;
-      ThrowF_t(TRANS("Cannot add player because: %s\n"), strReason);
+      ThrowF_t(TRANS("Cannot add player because: %s\n"), (const char *) strReason);
 
     // otherwise
     } else {
@@ -159,7 +160,8 @@ void CPlayerSource::SetAction(const CPlayerAction &paAction)
   // set action
   pls_paAction = paAction;
   pls_paAction.pa_llCreated = _pTimer->GetHighPrecisionTimer().GetMilliseconds();
-  //CPrintF("%.2f - created: %d\n", _pTimer->GetRealTimeTick(), SLONG(pls_paAction.pa_llCreated));
+  //CPrintF("%lu\n", pls_paAction.pa_ulButtons);
+  //CPrintF("%-2d  %s  %.2f - created: %d\n", pls_Index, pls_Active ? "  ACTIVE" : "INACTIVE", _pTimer->GetRealTimeTick(), SLONG(pls_paAction.pa_llCreated));
 }
 
 // get mask of this player for chat messages
@@ -205,10 +207,12 @@ void CPlayerSource::WriteActionPacket(CNetworkMessage &nm)
   nm<<pls_paAction;             // action
   //CPrintF("%.2f - written: %d\n", _pTimer->GetRealTimeTick(), SLONG(pls_paAction.pa_llCreated));
 
+  g_cb.ping = iPing;
+
   // get sendbehind parameters
   extern INDEX cli_iSendBehind;
   extern INDEX cli_bPredictIfServer;
-  cli_iSendBehind = Clamp(cli_iSendBehind, 0L, 3L);
+  cli_iSendBehind = Clamp(cli_iSendBehind, 0, 3);
   INDEX iSendBehind = cli_iSendBehind;
 
   // disable if server

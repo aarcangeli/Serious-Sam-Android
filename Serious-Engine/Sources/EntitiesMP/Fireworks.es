@@ -112,7 +112,7 @@ procedures:
     FLOAT3D vPos=GetPlacement().pl_PositionVector+vRndPos;
     
     m_emEmiter.em_vG=FLOAT3D(0,0,0);
-    m_emEmiter.em_iGlobal=FRnd()*16;
+    m_emEmiter.em_iGlobal=(INDEX) (FRnd()*16);
     
     UBYTE ubRndH = UBYTE( FRnd()*255);
     UBYTE ubRndS = UBYTE( 255);

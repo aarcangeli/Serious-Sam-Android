@@ -3,6 +3,9 @@
 
 #include <AndroidAdapters/android-adapters.h>
 #include <Engine/Base/CTString.h>
+#include <config.h>
+
+#include <AndroidAdapters/playerCommons.h>
 
 enum GameState {
     GS_LOADING,
@@ -23,11 +26,19 @@ struct BindingCallbacks {
     void (*editText)(const CTString &string, void (*onOk)(CTString str), void (*onCancel)());
     void (*restart)();
     void (*setSeriousBombCount)(int bombs);
-
+	PlayerControls g_IncomingControls {};
     GameState gameState;
     int seriousBombCount = 0;
     int isShiftPressed = false;
     float globalScale = 1;
+    CTString WifiIP = "";
+    bool drawBanner = true;
+    int ping = 0;
+#ifdef FIRST_ENCOUNTER
+    bool tfe = true;
+#else
+    bool tfe ;
+#endif
 };
 
 extern BindingCallbacks g_cb;

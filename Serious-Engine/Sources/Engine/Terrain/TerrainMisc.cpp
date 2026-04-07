@@ -36,7 +36,7 @@ extern CTerrain *_ptrTerrain; // Current terrain
 static FLOAT3D _vHitLocation = FLOAT3D(-100,-100,-100);
 
 CStaticStackArray<GFXVertex4> _avExtVertices;
-CStaticStackArray<INDEX>      _aiExtIndices;
+CStaticStackArray<INDEX_T>    _aiExtIndices;
 CStaticStackArray<GFXColor>   _aiExtColors;
 CStaticStackArray<INDEX>      _aiHitTiles;
 
@@ -210,7 +210,7 @@ FLOAT GetExactHitLocation(INDEX iTileIndex, FLOAT3D &vOrigin, FLOAT3D &vTarget, 
   QuadTreeNode &qtn = _ptrTerrain->tr_aqtnQuadTreeNodes[iTileIndex];
 
   GFXVertex *pavVertices;
-  INDEX     *paiIndices;
+  INDEX_T    *paiIndices;
   INDEX      ctVertices;
   INDEX      ctIndices;
 
@@ -222,7 +222,7 @@ FLOAT GetExactHitLocation(INDEX iTileIndex, FLOAT3D &vOrigin, FLOAT3D &vTarget, 
 
   // for each triangle
   for(INDEX iTri=0;iTri<ctIndices;iTri+=3) {
-    INDEX *pind = &paiIndices[iTri];
+    INDEX_T *pind = &paiIndices[iTri];
     GFXVertex &v0 = pavVertices[pind[0]];
     GFXVertex &v1 = pavVertices[pind[1]];
     GFXVertex &v2 = pavVertices[pind[2]];
@@ -291,7 +291,7 @@ FLOAT3D _vHitExact; // TEMP
 #pragma message(">> Remove Rect from ExtractPolygonsInBox")
 // Extract polygons in given box and returns clipped rectangle
 Rect ExtractPolygonsInBox(CTerrain *ptrTerrain, const FLOATaabbox3D &bboxExtract, GFXVertex4 **pavVtx, 
-                          INDEX **paiInd, INDEX &ctVtx,INDEX &ctInd,BOOL bFixSize/*=FALSE*/)
+                          INDEX_T **paiInd, INDEX &ctVtx,INDEX &ctInd,BOOL bFixSize/*=FALSE*/)
 {
   ASSERT(ptrTerrain!=NULL);
 
@@ -364,7 +364,7 @@ Rect ExtractPolygonsInBox(CTerrain *ptrTerrain, const FLOATaabbox3D &bboxExtract
   _aiExtIndices.Push(ctIndices);
 
   GFXVertex4 *pavVertices = &_avExtVertices[0];
-  INDEX *pauiIndices = &_aiExtIndices[0];
+  INDEX_T *pauiIndices = &_aiExtIndices[0];
 
   // for each row
   INDEX iy, ix;
@@ -452,7 +452,7 @@ Rect ExtractPolygonsInBox(CTerrain *ptrTerrain, const FLOATaabbox3D &bboxExtract
 }
 
 void ExtractVerticesInRect(CTerrain *ptrTerrain, Rect &rc, GFXVertex4 **pavVtx, 
-                          INDEX **paiInd, INDEX &ctVtx,INDEX &ctInd)
+                          INDEX_T **paiInd, INDEX &ctVtx,INDEX &ctInd)
 {
   _avExtVertices.PopAll();
   _aiExtIndices.PopAll();
@@ -493,7 +493,7 @@ void ExtractVerticesInRect(CTerrain *ptrTerrain, Rect &rc, GFXVertex4 **pavVtx,
     puwHeight+=iStepY;
   }
 
-  INDEX *pauiIndices = &_aiExtIndices[0];
+  INDEX_T *pauiIndices = &_aiExtIndices[0];
   INDEX ivx=0;
   //INDEX ind=0;
   INDEX iFacing=iFirstHeight;
@@ -765,17 +765,17 @@ static void CalcPointLight(CPlacement3D &plLight, CLightSource *plsLight, Rect &
       }
       ULONG ulIntensity = NormFloatToByte(fIntensity);
       ulIntensity = (ulIntensity<<CT_RSHIFT)|(ulIntensity<<CT_GSHIFT)|(ulIntensity<<CT_BSHIFT);
-      colLight = MulColors(ByteSwap(colLight.gfxcol.ul.abgr), ulIntensity);
+      colLight = MulColors(ByteSwap(colLight.ul.abgr), ulIntensity);
 
 
       FLOAT fDot = vNormal%vLightNormal;
       fDot = Clamp(fDot,0.0f,1.0f);
       SLONG slDot = NormFloatToByte(fDot);
 
-      pacolData->gfxcol.ub.r = ClampUp(pacolData->gfxcol.ub.r + ((colLight.gfxcol.ub.r*slDot)>>8),255L);
-      pacolData->gfxcol.ub.g = ClampUp(pacolData->gfxcol.ub.g + ((colLight.gfxcol.ub.g*slDot)>>8),255L);
-      pacolData->gfxcol.ub.b = ClampUp(pacolData->gfxcol.ub.b + ((colLight.gfxcol.ub.b*slDot)>>8),255L);
-      pacolData->gfxcol.ub.a = 255;
+      pacolData->ub.r = ClampUp(pacolData->ub.r + ((colLight.ub.r*slDot)>>8),255);
+      pacolData->ub.g = ClampUp(pacolData->ub.g + ((colLight.ub.g*slDot)>>8),255);
+      pacolData->ub.b = ClampUp(pacolData->ub.b + ((colLight.ub.b*slDot)>>8),255);
+      pacolData->ub.a = 255;
       pacolData++;
     }
     pacolData+=pixStepX;
@@ -803,18 +803,18 @@ static void CalcDirectionalLight(CPlacement3D &plLight, CLightSource *plsLight, 
   GFXColor colAmbient = plsLight->GetLightAmbient();
 
   UBYTE ubColShift = 8;
-  SLONG slar = colAmbient.gfxcol.ub.r;
-  SLONG slag = colAmbient.gfxcol.ub.g;
-  SLONG slab = colAmbient.gfxcol.ub.b;
+  SLONG slar = colAmbient.ub.r;
+  SLONG slag = colAmbient.ub.g;
+  SLONG slab = colAmbient.ub.b;
 
   extern INDEX mdl_bAllowOverbright;
   BOOL bOverBrightning = mdl_bAllowOverbright && _pGfx->gl_ctTextureUnits>1;
 
   // is overbrightning enabled
   if(bOverBrightning) {
-    slar = ClampUp(slar,127L);
-    slag = ClampUp(slag,127L);
-    slab = ClampUp(slab,127L);
+    slar = ClampUp(slar,127);
+    slag = ClampUp(slag,127);
+    slab = ClampUp(slab,127);
     ubColShift = 8;
   } else {
     slar*=2;
@@ -840,10 +840,10 @@ static void CalcDirectionalLight(CPlacement3D &plLight, CLightSource *plsLight, 
       fDot = Clamp(fDot,0.0f,1.0f);
       SLONG slDot = NormFloatToByte(fDot);
 
-      pacolData->gfxcol.ub.r = ClampUp(pacolData->gfxcol.ub.r + slar + ((colLight.gfxcol.ub.r*slDot)>>ubColShift),255L);
-      pacolData->gfxcol.ub.g = ClampUp(pacolData->gfxcol.ub.g + slag + ((colLight.gfxcol.ub.g*slDot)>>ubColShift),255L);
-      pacolData->gfxcol.ub.b = ClampUp(pacolData->gfxcol.ub.b + slab + ((colLight.gfxcol.ub.b*slDot)>>ubColShift),255L);
-      pacolData->gfxcol.ub.a = 255;
+      pacolData->ub.r = ClampUp(pacolData->ub.r + slar + ((colLight.ub.r*slDot)>>ubColShift),255);
+      pacolData->ub.g = ClampUp(pacolData->ub.g + slag + ((colLight.ub.g*slDot)>>ubColShift),255);
+      pacolData->ub.b = ClampUp(pacolData->ub.b + slab + ((colLight.ub.b*slDot)>>ubColShift),255);
+      pacolData->ub.a = 255;
       pacolData++;
     }
     pacolData+=pixStepX;

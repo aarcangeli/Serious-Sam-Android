@@ -41,7 +41,7 @@ private:
 
 public:
   // Check wave format
-  static void CheckWaveFormat_t( WAVEFORMATEX SwfeCheck, char *pcErrorString);
+  static void CheckWaveFormat_t( WAVEFORMATEX SwfeCheck, const char *pcErrorString);
 
   /* Constructor */
   inline PCMWaveInput(void) { pwi_bInfoLoaded = FALSE; pwi_bDataLoaded = FALSE; };

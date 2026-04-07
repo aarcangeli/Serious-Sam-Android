@@ -1,4 +1,5 @@
 %{
+#define register
 #include <Engine/Base/ParsingSymbols.h>
 #include <Engine/Base/Parser.h>
 

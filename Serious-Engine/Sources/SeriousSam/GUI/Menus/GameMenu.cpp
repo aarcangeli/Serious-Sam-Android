@@ -314,7 +314,7 @@ void CGameMenu::StartMenu(void)
     // scroll it so that the wanted tem is centered
     gm_iListOffset = gm_iListWantedItem - gm_ctListVisible / 2;
     // clamp the scrolling
-    gm_iListOffset = Clamp(gm_iListOffset, 0L, Max(0L, gm_ctListTotal - gm_ctListVisible));
+    gm_iListOffset = Clamp(gm_iListOffset, 0, Max(0, gm_ctListTotal - gm_ctListVisible));
 
     // fill the list
     FillListItems();

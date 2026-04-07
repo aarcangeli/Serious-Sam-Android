@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 
 #include <Engine/Network/NetworkMessage.h>
 #include <Engine/Network/Compression.h>
@@ -732,7 +732,7 @@ CNetworkStream::Result CNetworkStream::GetBlockBySequence(
     if (nsbInList.nsb_iSequenceNumber == iSequenceNumber) {
       // return it
       pnsbBlock = itnsbInList;
-      return R_OK;
+      return NSR_OK;
     }
     // if the block in list has older sequence
     if (nsbInList.nsb_iSequenceNumber < iSequenceNumber) {
@@ -747,12 +747,12 @@ CNetworkStream::Result CNetworkStream::GetBlockBySequence(
   if (bNewerFound) {
     // return that the block is missing (probably should be resent)
     pnsbBlock = NULL;
-    return R_BLOCKMISSING;
+    return NSR_BLOCKMISSING;
   // if no newer blocks were found
   } else {
     // we assume that the wanted block is not yet received
     pnsbBlock = NULL;
-    return R_BLOCKNOTRECEIVEDYET;
+    return NSR_BLOCKNOTRECEIVEDYET;
   }
 }
 
@@ -860,7 +860,20 @@ void CPlayerAction::Normalize(void)
 // create a checksum value for sync-check
 void CPlayerAction::ChecksumForSync(ULONG &ulCRC)
 {
-  CRC_AddBlock(ulCRC, (UBYTE*)this, sizeof(this));
+  // Keep sync-check deterministic across platforms:
+  // - don't hash padding bytes inside CPlayerAction
+  // - don't hash pa_llCreated (transport/ping timestamp, not gameplay state)
+  FLOAT f;
+  f = pa_vTranslation(1); if (f==0) f = 0; CRC_AddFLOAT(ulCRC, f);
+  f = pa_vTranslation(2); if (f==0) f = 0; CRC_AddFLOAT(ulCRC, f);
+  f = pa_vTranslation(3); if (f==0) f = 0; CRC_AddFLOAT(ulCRC, f);
+  f = pa_aRotation(1); if (f==0) f = 0; CRC_AddFLOAT(ulCRC, f);
+  f = pa_aRotation(2); if (f==0) f = 0; CRC_AddFLOAT(ulCRC, f);
+  f = pa_aRotation(3); if (f==0) f = 0; CRC_AddFLOAT(ulCRC, f);
+  f = pa_aViewRotation(1); if (f==0) f = 0; CRC_AddFLOAT(ulCRC, f);
+  f = pa_aViewRotation(2); if (f==0) f = 0; CRC_AddFLOAT(ulCRC, f);
+  f = pa_aViewRotation(3); if (f==0) f = 0; CRC_AddFLOAT(ulCRC, f);
+  CRC_AddLONG(ulCRC, pa_ulButtons);
 }
 
 #define DUMPVECTOR(v) \
@@ -974,8 +987,8 @@ CNetworkMessage &operator>>(CNetworkMessage &nm, CPlayerAction &pa)
   }
 
   // find number of zero bits for flags
-  INDEX iZeros=0;
-  for(; iZeros<6; iZeros++) {
+  INDEX iZeros;
+  for(iZeros=0; iZeros<6; iZeros++) {
     UBYTE ub=0;
     nm.ReadBits(&ub, 1);
     if (ub!=0) {

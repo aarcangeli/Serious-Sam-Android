@@ -2,6 +2,7 @@
 #include <Engine/Base/ErrorReporting.h>
 
 #include <GLES2/gl2.h>
+#include <GLES3/gl3.h>
 #include <AndroidAdapters/gles_adapter.h>
 #include <EGL/egl.h>
 

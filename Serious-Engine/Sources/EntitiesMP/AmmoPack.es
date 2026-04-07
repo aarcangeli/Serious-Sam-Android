@@ -146,15 +146,15 @@ functions:
 
     m_fValue = 1.0f;
     m_fRespawnTime = (m_fCustomRespawnTime>0) ? m_fCustomRespawnTime : 30.0f; 
-    if( m_iShells != 0) {m_strDescription.PrintF("%s: Shells (%d)", m_strDescription, m_iShells);}
-    if( m_iBullets != 0) {m_strDescription.PrintF("%s: Bullets (%d)", m_strDescription, m_iBullets);}
-    if( m_iRockets != 0) {m_strDescription.PrintF("%s: Rockets (%d)", m_strDescription, m_iRockets);}
-    if( m_iGrenades != 0) {m_strDescription.PrintF("%s: Grenades (%d)", m_strDescription, m_iGrenades);}
-    if( m_iNapalm != 0) {m_strDescription.PrintF("%s: Napalm (%d)", m_strDescription, m_iNapalm);}
-    if( m_iElectricity != 0) {m_strDescription.PrintF("%s: Electricity (%d)", m_strDescription, m_iElectricity);}
-    if( m_iIronBalls != 0) {m_strDescription.PrintF("%s: Iron balls (%d)", m_strDescription, m_iIronBalls);}
-//    if( m_iNukeBalls != 0) {m_strDescription.PrintF("%s: Nuke balls (%d)", m_strDescription, m_iNukeBalls);}
-    if( m_iSniperBullets != 0) {m_strDescription.PrintF("%s: Sniper bullets (%d)", m_strDescription, m_iSniperBullets);}
+    if( m_iShells != 0) {m_strDescription.PrintF("%s: Shells (%d)", (const char *) m_strDescription, m_iShells);}
+    if( m_iBullets != 0) {m_strDescription.PrintF("%s: Bullets (%d)", (const char *) m_strDescription, m_iBullets);}
+    if( m_iRockets != 0) {m_strDescription.PrintF("%s: Rockets (%d)", (const char *) m_strDescription, m_iRockets);}
+    if( m_iGrenades != 0) {m_strDescription.PrintF("%s: Grenades (%d)", (const char *) m_strDescription, m_iGrenades);}
+    if( m_iNapalm != 0) {m_strDescription.PrintF("%s: Napalm (%d)", (const char *) m_strDescription, m_iNapalm);}
+    if( m_iElectricity != 0) {m_strDescription.PrintF("%s: Electricity (%d)", (const char *) m_strDescription, m_iElectricity);}
+    if( m_iIronBalls != 0) {m_strDescription.PrintF("%s: Iron balls (%d)", (const char *) m_strDescription, m_iIronBalls);}
+//    if( m_iNukeBalls != 0) {m_strDescription.PrintF("%s: Nuke balls (%d)", (const char *) m_strDescription, m_iNukeBalls);}
+    if( m_iSniperBullets != 0) {m_strDescription.PrintF("%s: Sniper bullets (%d)", (const char *) m_strDescription, m_iSniperBullets);}
   }
 
   void AdjustDifficulty(void)

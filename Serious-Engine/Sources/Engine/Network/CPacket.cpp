@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 
 #include <Engine/Base/Console.h>
 #include <Engine/Base/ErrorReporting.h>
@@ -36,7 +36,7 @@ extern FLOAT net_fSendRetryWait;
 // make the address broadcast
 void CAddress::MakeBroadcast(void)
 {
-  adr_ulAddress = INADDR_BROADCAST;
+  //adr_ulAddress = INADDR_BROADCAST;
   extern INDEX net_iPort;
   adr_uwPort = net_iPort;
   adr_uwID = 0;
@@ -620,7 +620,7 @@ BOOL CPacketBuffer::RemoveConnectResponsePackets() {
 			delete litPacketIter;
 		}
 	}
-	return NULL;
+	return FALSE;
 };
 
 

@@ -16,6 +16,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 S-Cape3D 3D game engine library
 Copyright (c) 1997-1998, CroTeam. */
 
+#ifndef SE_INCL_PHYSICSPROFILE_H
+#define SE_INCL_PHYSICSPROFILE_H
+#ifdef PRAGMA_ONCE
+  #pragma once
+#endif
+
 #ifndef __ENGINE_BASE_PROFILING_H__
 #include <Engine/Base/Profiling.h>
 #endif
@@ -131,3 +137,7 @@ public:
   // constructor
   CPhysicsProfile(void);
 };
+
+#endif /* include-once wrapper. */
+
+

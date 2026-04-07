@@ -20,6 +20,22 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "EntitiesMP/WorldSettingsController.h"
 // for error checking:
 #include "EntitiesMP/SoundHolder.h"
+
+#ifdef PLATFORM_UNIX
+#define EAX_ENVIRONMENT_LIVINGROOM     0
+#define EAX_ENVIRONMENT_STONEROOM      0
+#define EAX_ENVIRONMENT_AUDITORIUM     0
+#define EAX_ENVIRONMENT_HALLWAY        0
+#define EAX_ENVIRONMENT_ARENA          0
+#define EAX_ENVIRONMENT_STONECORRIDOR  0
+#define EAX_ENVIRONMENT_QUARRY         0
+#define EAX_ENVIRONMENT_MOUNTAINS      0
+#define EAX_ENVIRONMENT_PLAIN          0
+#define EAX_ENVIRONMENT_CAVE           0
+#define EAX_ENVIRONMENT_SEWERPIPE      0
+#define EAX_ENVIRONMENT_UNDERWATER     0
+#endif
+
 %}
 
 uses "EntitiesMP/FogMarker";
@@ -29,7 +45,7 @@ uses "EntitiesMP/GradientMarker";
 
 %{
 
-//inline void Clear(EntityStats &es) {es.es_strName.Clear();};
+inline void Clear(EntityStats &es) {es.es_strName.Clear();};
 static CDynamicArray<EntityStats> _aes;
 static CAnimObject _aoLightningColor;
 
@@ -99,11 +115,11 @@ static void MakeWorldStatistics(void)
       EntityStats &es = *ites;
       CTString strLine;
       strLine.PrintF("%-40s: %8d %8d %10g %10d", 
-        es.es_strName, es.es_ctCount, es.es_ctAmmount, es.es_fValue, es.es_iScore);
+        (const char *) es.es_strName, es.es_ctCount, es.es_ctAmmount, es.es_fValue, es.es_iScore);
       strm.PutLine_t(strLine);
     }}
-    CPrintF("Dumped to '%s'\n", CTString(fnm));
-  } catch ( const char *strError) {
+    CPrintF("Dumped to '%s'\n", (const char *) fnm);
+  } catch (const char *strError) {
     CPrintF("Error: %s\n", strError);
   }
 
@@ -154,7 +170,7 @@ static void DoLevelSafetyChecks()
       CModelHolder2 *mh = (CModelHolder2*)&*iten;
       FLOAT3D vPos = mh->GetPlacement().pl_PositionVector;
       if (mh->m_penDestruction == NULL) {
-        CPrintF("  model holder '%s' at (%2.2f, %2.2f, %2.2f) has no destruction\n", mh->m_strName, vPos(1), vPos(2), vPos(3));
+        CPrintF("  model holder '%s' at (%2.2f, %2.2f, %2.2f) has no destruction\n", (const char *) mh->m_strName, vPos(1), vPos(2), vPos(3));
       }
     }
   }}
@@ -166,7 +182,7 @@ static void DoLevelSafetyChecks()
       CSoundHolder *sh = (CSoundHolder *)&*iten;
       FLOAT3D vPos = sh->GetPlacement().pl_PositionVector;
       if (sh->m_fnSound == CTFILENAME("Sounds\\Default.wav")) {
-        CPrintF("  sound holder '%s' at (%2.2f, %2.2f, %2.2f) has default sound!\n", sh->m_strName, vPos(1), vPos(2), vPos(3));
+        CPrintF("  sound holder '%s' at (%2.2f, %2.2f, %2.2f) has default sound!\n", (const char *) sh->m_strName, vPos(1), vPos(2), vPos(3));
       }
     }
   }}
@@ -791,9 +807,9 @@ void CWorldBase_OnWorldRender(CWorld *pwo)
   pwo->wo_attTextureTransformations[35].tt_mdTransformation.FromUI(mdui);
 // blendings
   FLOAT f = Abs(Sin(tmNow*AngleDeg(180.0f)));
-  pwo->wo_atbTextureBlendings[4].tb_colMultiply = RGBAToColor(f*255, f*255, f*255, 255);
+  pwo->wo_atbTextureBlendings[4].tb_colMultiply = RGBAToColor((UBYTE) (f*255), (UBYTE) (f*255), (UBYTE) (f*255), (UBYTE) (255));
   pwo->wo_atbTextureBlendings[5].tb_colMultiply = C_WHITE|UBYTE(255*f);
-  pwo->wo_atbTextureBlendings[6].tb_colMultiply = RGBAToColor(f*255, f*255, f*255, 255);
+  pwo->wo_atbTextureBlendings[6].tb_colMultiply = RGBAToColor((UBYTE) (f*255), (UBYTE) (f*255), (UBYTE) (f*255), (UBYTE) (255));
   pwo->wo_atbTextureBlendings[7].tb_colMultiply = C_WHITE|UBYTE(255*Lerp(0.5f, 1.0f, f));
 
   pwo->wo_attTextureTransformations[11].tt_mdTransformation.md_fUOffset=Sin( tmNow*22)/30;
@@ -1254,10 +1270,12 @@ functions:
   /* Get gradient type name, return empty string if not used. */
   const CTString &GetGradientName(INDEX iGradient)
   {
-    INDEX ctGradientMarkers = &m_penGradient19-&m_penGradient0+1;
+    INDEX ctGradientMarkers = &m_penGradient19 - &m_penGradient0 + 1;
     static const CTString strDummyName("");
     static const CTString strMarkerUnused("Marker not set");
-    if (iGradient<ctGradientMarkers){
+	
+    if (iGradient < ctGradientMarkers)
+	{
       CGradientMarker *pgm = (CGradientMarker *)(&m_penGradient0)[iGradient].ep_pen;
       if (pgm != NULL) {
         return pgm->GetGradientName();
@@ -1270,8 +1288,8 @@ functions:
   /* Uncache shadows for given gradient */
   void UncacheShadowsForGradient(class CGradientMarker *penDiscard)
   {
-    INDEX ctGradientMarkers = &m_penGradient19-&m_penGradient0+1;
-    for( INDEX iGradient=0; iGradient<ctGradientMarkers; iGradient++)
+    INDEX ctGradientMarkers = &m_penGradient19 - &m_penGradient0 + 1;
+    for( INDEX iGradient=0; iGradient < ctGradientMarkers; iGradient++)
     {
       CGradientMarker *pgm = (CGradientMarker *)(&m_penGradient0)[iGradient].ep_pen;
       if(pgm == penDiscard)
@@ -1284,8 +1302,8 @@ functions:
   /* Get gradient, return FALSE for none. */
   BOOL GetGradient(INDEX iGradient, class CGradientParameters &fpGradient)
   {
-    INDEX ctGradientMarkers = &m_penGradient19-&m_penGradient0+1;
-    if ( (iGradient<ctGradientMarkers) && (iGradient>0) ){
+    INDEX ctGradientMarkers = &m_penGradient19 - &m_penGradient0 + 1;
+    if ( (iGradient <= ctGradientMarkers) && (iGradient > 0) ){
       CGradientMarker *pgm = (CGradientMarker *)(&m_penGradient0)[iGradient-1].ep_pen;
       if (pgm != NULL) {
         return pgm->GetGradient(0, fpGradient);

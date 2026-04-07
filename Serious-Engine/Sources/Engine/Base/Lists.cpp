@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 
 #include <Engine/Base/Lists.h>
 
@@ -40,8 +40,8 @@ BOOL CListHead::IsValid(void) const
 {
   ASSERT(this!=NULL);
   ASSERT(lh_NULL == NULL);
-  ASSERT((lh_Head == (CListNode *) &lh_NULL) && (lh_Tail == (CListNode *) &lh_Head)
-      ||  lh_Tail->IsValid() && lh_Head->IsValid() );
+  ASSERT(((lh_Head == (CListNode *) &lh_NULL) && (lh_Tail == (CListNode *) &lh_Head))
+      ||  (lh_Tail->IsValid() && lh_Head->IsValid()) );
   return TRUE;
 }
 
@@ -168,22 +168,22 @@ void CListHead::Sort(int (*pCompare)(const void *p0, const void *p1), int iNodeO
   }
 
   // create array of that much integers (the array will hold pointers to the list)
-  ULONG *aulPointers = new ULONG[ctCount];
+  size_t *aulPointers = new size_t[ctCount];
   // fill it
   INDEX i=0;
   for ( CListIter<int, 0> iter(*this); !iter.IsPastEnd(); iter.MoveToNext() ) {
-    aulPointers[i] = ((ULONG)&*iter)-iNodeOffset;
+    aulPointers[i] = ((size_t)&*iter)-iNodeOffset;
     i++;
   }
 
   // sort it
-  qsort(aulPointers, ctCount, sizeof(SLONG), pCompare);
+  qsort(aulPointers, ctCount, sizeof(aulPointers[0]), pCompare);
 
   // make temporary list
   CListHead lhTmp;
   // for each pointer
   {for(INDEX i=0; i<ctCount; i++) {
-    ULONG ul = aulPointers[i];
+    const size_t ul = aulPointers[i];
     // get the node
     CListNode *pln = (CListNode*)(ul+iNodeOffset);
     // remove it from original list
@@ -211,7 +211,7 @@ BOOL CListNode::IsValid(void) const
   ASSERT((ln_Pred==NULL && ln_Succ==NULL) || (ln_Pred!=NULL && ln_Succ!=NULL));
   // it is valid if it is cleared or if it is linked
   return (ln_Pred==NULL && ln_Succ==NULL)
-      || (ln_Pred->ln_Succ == this) && (ln_Succ->ln_Pred == this);
+      || ((ln_Pred->ln_Succ == this) && (ln_Succ->ln_Pred == this));
 }
 
 /*

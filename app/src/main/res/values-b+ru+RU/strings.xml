@@ -1,0 +1,86 @@
+<resources>
+	<string name="graphics">Настройки экрана</string>
+	<string name="screenResolution">Разрешение экрана</string>
+	<string name="dinUIScale">Динамический размер интерфейса</string>
+	<string name="banner">Показывать баннер в правом верхнем углу</string>
+	
+	<string name="aimAssistTitle">Помощь в прицеливании</string>
+	<string name="useAimAssist">Использовать Аим-Ассистента</string>
+	<string name="aimAssistDescription">Помогает попадать во врагов.</string>
+	<string name="aimAssistSens">Чувствительность Аим-Ассистента</string>
+	
+	<string name="useVolumeKeys">Использовать кнопки громкости</string>
+	<string name="volumeKeysDescription">Назначение действия кнопок громкости.</string>
+	<string name="volumeUpAction">Действие кнопки Volume +</string>
+	<string name="volumeDownAction">Действие кнопки Volume -</string>
+	
+	<string name="showTouchController">Показывать сенсорное управление</string>
+	<string name="controllerTitle">Геймпад</string>
+	<string name="controllerDeadZone">Мертвая зона</string>
+	<string name="controllerViewSens">Чувствительность стика камеры</string>
+	
+	<string name="gyroTitle">Использовать гироскоп</string>
+	<string name="gyroDescription">Наклон телефона для прицеливания</string>
+	<string name="gyroSens">Чувствительность гироскопа</string>
+	
+	<string name="dragSens">Чувствительность камеры</string>
+	<string name="inputOpacity">Прозрачность сенсорных кнопок</string>
+	
+	<string name="debug">Отладка</string>
+	<string name="showStatsTitle">Показывать статистику</string>
+	<string name="showStatsDescription">Выводит профайлинг GPU на экран.</string>
+	
+    <string-array name="AutoYesNo">
+        <item>Auto</item>
+        <item>Yes</item>
+        <item>No</item>
+    </string-array>
+	
+    <string-array name="OnOff">
+        <item>On</item>
+        <item>Off</item>
+    </string-array>
+
+    <string-array name="ShowTouchControllerEntries">
+        <item>Автоматически (когда нет геймпада)</item>
+        <item>Всегда на экране</item>
+        <item>Скрыт</item>
+    </string-array>
+
+    <string-array name="KeyActions">
+		<item>Fire</item>
+		<item>Use</item>
+		<item>Jump</item>
+		<item>Crouch</item>
+		<item>PrevWeapon</item>
+		<item>NextWeapon</item>
+		<item>SeriousBomb</item>
+		<item>Computer</item>
+		<item>Tab</item>
+		<item>DropMoney</item>
+		<item>Start</item>
+		<item>Flip</item>
+    </string-array>
+
+    <string-array name="ResolutionScaleFactorEntries">
+        <item>Полное разрешение экрана</item>
+        <item>Половина от разрешения экрана (больше FPS)</item>
+		<item>Четверть разрешения экрана :)</item>
+    </string-array>
+	
+	 <string-array name="FullHalf">
+        <item>Full</item>
+        <item>Half</item>
+	<item>Quarter</item>
+    </string-array>
+
+    <string-array name="DinamicUIScaleEntries">
+        <item>Включено</item>
+        <item>Выключено (если вдруг интерфейс слишком большой)</item>
+    </string-array>
+
+    <string-array name="DrawBannerScaleEntries">
+        <item>Включен (показывает версию, пинг и FPS)</item>
+        <item>Выключен</item>
+    </string-array>
+</resources>

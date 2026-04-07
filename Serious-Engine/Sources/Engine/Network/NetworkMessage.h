@@ -78,8 +78,18 @@ typedef enum NetworkMessageType {
   MSG_SEQ_ALLACTIONS,    // packed actions of all players from server to clients
   MSG_SEQ_ADDPLAYER,     // instructions for adding a new player to session states
   MSG_SEQ_REMPLAYER,     // instructions for removing a new player from session states
+  MSG_SEQ_ATTACHPLAYER,       // [SSE] Netcode Update - instructions for attaching player to client.
+  MSG_SEQ_DETACHPLAYER,       // [SSE] Netcode Update - instructions for detaching player from client.
+  MSG_SEQ_SWAPPLAYERENTITIES, // [SSE] Netcode Update - instructions for swapping two active players between.
   MSG_SEQ_PAUSE,         // game was paused/unpaused
   MSG_SEQ_CHARACTERCHANGE, // a player has changed character
+  
+  MSG_SEQ_DESTROYENTITY, // [SSE] Netcode Update - instruction for removing entity from the World.
+  
+  MSG_SEQ_ENTITYRPC,    // [SSE] Netcode Update - instruction for calling special hook in entity.
+  
+  MSG_S2C_ATTACHPLAYER, // [SSE] Netcode Update - instructions for certain client to take control on specified player.
+  MSG_S2C_CHANGESERVER, // [SSE] Netcode Update - instructions for certain client to change server to another.
 
   MSG_GAMESTREAMBLOCKS,         // packet with one or more game stream messages
   MSG_REQUESTGAMESTREAMRESEND,  // request for resend of a game stream message
@@ -228,9 +238,9 @@ public:
 class CNetworkStream {
 public:
   enum Result {
-    R_OK = 1,
-    R_BLOCKMISSING,           // block is missing in the stream
-    R_BLOCKNOTRECEIVEDYET,    // block is not yet received
+    NSR_OK = 1,
+    NSR_BLOCKMISSING,           // block is missing in the stream
+    NSR_BLOCKNOTRECEIVEDYET,    // block is not yet received
   };
 public:
   CListHead ns_lhBlocks;   // list of blocks of this stream (higher sequences first)

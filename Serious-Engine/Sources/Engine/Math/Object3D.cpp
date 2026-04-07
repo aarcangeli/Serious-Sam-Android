@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 
 #include <Engine/Math/Object3D.h>
 
@@ -81,7 +81,7 @@ void CObject3D::Project(CSimpleProjection3D_DOUBLE &pr)
   BOOL bXInverted = vObjectStretch(1)<0;
   BOOL bYInverted = vObjectStretch(2)<0;
   BOOL bZInverted = vObjectStretch(3)<0;
-  BOOL bInverted = bXInverted!=bYInverted!=bZInverted;
+  BOOL bInverted = (bXInverted != bYInverted) != bZInverted;
 
   // for all sectors
   FOREACHINDYNAMICARRAY(ob_aoscSectors, CObjectSector, itsc) {

@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 
 #include <Engine/Brushes/Brush.h>
 #include <Engine/Brushes/BrushArchive.h>
@@ -31,7 +31,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Terrain/Terrain.h>
 
 #include <Engine/Light/Shadows_internal.h>
-#include <Engine/Templates/BSP.cpp>
 
 /////////////////////////////////////////////////////////////////////
 // CLightSource
@@ -39,13 +38,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 CLightSource::CLightSource(void)
 {
   // set invalid properties, must be initialized by its entity
-  ls_ulFlags = -1;
+  ls_ulFlags = (ULONG) -1;
   ls_rHotSpot = -1;
   ls_rFallOff = -1;
   ls_colColor = 0;
   ls_colAmbient = 0;
-  ls_ubLightAnimationObject = -1;
-  ls_ubPolygonalMask = -1;
+  ls_ubLightAnimationObject = (UBYTE) -1;
+  ls_ubPolygonalMask = (UBYTE) -1;
   ls_penEntity = NULL;
   ls_plftLensFlare = NULL;
   ls_paoLightAnimation = NULL;
@@ -418,7 +417,7 @@ void CLightSource::FindShadowLayersPoint(BOOL bSelectedOnly)
   }
 
   // for each layer of the light source
-  DOUBLE3D dvOrigin = FLOATtoDOUBLE(*_pvOrigin);
+  FLOAT3D dvOrigin = *_pvOrigin;
   {FORDELETELIST(CBrushShadowLayer, bsl_lnInLightSource, ls_lhLayers, itbsl) {
     CBrushPolygon *pbpo = itbsl->bsl_pbsmShadowMap->GetBrushPolygon();
     CEntity *penWithPolygon = pbpo->bpo_pbscSector->bsc_pbmBrushMip->bm_pbrBrush->br_penEntity;
@@ -491,7 +490,7 @@ void CLightSource::FindShadowLayersPoint(BOOL bSelectedOnly)
             if (!itbsc->bsc_boxBoundingBox.HasContactWith(_boxLight)
               ||(itbsc->bsc_bspBSPTree.bt_pbnRoot!=NULL
               &&!(itbsc->bsc_bspBSPTree.TestSphere(
-                 dvOrigin, FLOATtoDOUBLE(_rRange))>=0) )) {
+                 dvOrigin, _rRange)>=0) )) {
               // skip it
               continue;
             }

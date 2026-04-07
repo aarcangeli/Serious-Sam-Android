@@ -449,7 +449,9 @@ procedures:
     // setup light source
     if (m_bLightSource) { SetupLightSource(); }
 
-    while(_pTimer->CurrentTick()<m_tmStarted+m_tmLifeTime && m_bAlive || m_bWaitTrigger)
+    // FIXME: DG: I'm not 100% sure about the loop-condition, I added parenthesis that
+    //            reflect the orig behavior to shut compiler warnings up
+    while(((_pTimer->CurrentTick()<m_tmStarted+m_tmLifeTime) && m_bAlive) || m_bWaitTrigger)
     {
       wait( 0.25f)
       {

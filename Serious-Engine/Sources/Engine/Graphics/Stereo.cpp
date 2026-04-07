@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include <Engine/StdH.h>
 
 #include <Engine/Graphics/Stereo.h>
 
@@ -57,7 +57,7 @@ void Stereo_AdjustProjection(CProjection3D &pr, INDEX iEye, FLOAT fFactor)
   // prepare and clamp
   CPerspectiveProjection3D &ppr = (CPerspectiveProjection3D &)pr;
   gfx_fStereoSeparation = Clamp( gfx_fStereoSeparation, 0.01f, 1.0f);
-  gfx_iStereoOffset     = Clamp( gfx_iStereoOffset, -100L, +100L);
+  gfx_iStereoOffset     = Clamp( gfx_iStereoOffset, -100, 100);
   // apply!
   if (iEye==STEREO_BOTH || gfx_iStereo==0) {
     NOTHING;

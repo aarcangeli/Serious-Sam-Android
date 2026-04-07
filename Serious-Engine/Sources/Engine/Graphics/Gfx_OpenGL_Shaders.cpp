@@ -13,8 +13,11 @@ public:
   GLuint pgmObject = 0;
   const char *vertexShader, *fragmentShader;
   // uniforms
-  GLint projMat;
+  GLint projMat3D;
+  GLint projMat2D;
+  GLint uUseOrtho;
   GLint modelViewMat;
+  GLint texMat;
   GLint mainTexture;
   GLint enableTexture;
   GLint enableAlphaTest;
@@ -77,8 +80,11 @@ void gfxUseProgram(GfxProgram _program) {
     glUseProgram(pgm->pgmObject);
 
     // get uniforms
-    pgm->projMat = glGetUniformLocation(pgm->pgmObject, "projMat");
+    pgm->projMat3D = glGetUniformLocation(pgm->pgmObject, "projMat3D");
+    pgm->projMat2D = glGetUniformLocation(pgm->pgmObject, "projMat2D");
+    pgm->uUseOrtho = glGetUniformLocation(pgm->pgmObject, "uUseOrtho");
     pgm->modelViewMat = glGetUniformLocation(pgm->pgmObject, "modelViewMat");
+    pgm->texMat       = glGetUniformLocation(pgm->pgmObject, "texMat");
     pgm->mainTexture = glGetUniformLocation(pgm->pgmObject, "mainTexture");
     if (pgm->mainTexture >= 0) glUniform1i(pgm->mainTexture, 0);
     pgm->enableTexture = glGetUniformLocation(pgm->pgmObject, "enableTexture");
@@ -155,7 +161,7 @@ void gfxUniform(const char *uniformName, float f0, float f1, float f2, float f3)
 }
 
 void gfxUniform(const char *uniformName, GFXColor &color) {
-  gfxUniform(uniformName, color.gfxcol.ub.r / 255.0f, color.gfxcol.ub.g / 255.0f, color.gfxcol.ub.b / 255.0f, color.gfxcol.ub.a / 255.0f);
+  gfxUniform(uniformName, color.ub.r / 255.0f, color.ub.g / 255.0f, color.ub.b / 255.0f, color.ub.a / 255.0f);
 }
 
 void gfxUniform(const char *uniformName, const FLOATmatrix3D &matrix) {
@@ -185,7 +191,7 @@ inline void gfxSetUniformValue(GLint uniformLocation, const FLOAT3D &value) {
 }
 
 inline void gfxSetUniformValue(GLint uniformLocation, GFXColor value) {
-  glUniform4f(uniformLocation, value.gfxcol.ub.r / 255.0f, value.gfxcol.ub.g / 255.0f, value.gfxcol.ub.b / 255.0f, value.gfxcol.ub.a / 255.0f);
+  glUniform4f(uniformLocation, value.ub.r / 255.0f, value.ub.g / 255.0f, value.ub.b / 255.0f, value.ub.a / 255.0f);
 }
 
 inline void gfxSetUniformValue(GLint uniformLocation, const FLOATmatrix3D &value) {
@@ -193,7 +199,7 @@ inline void gfxSetUniformValue(GLint uniformLocation, const FLOATmatrix3D &value
 }
 
 inline BOOL operator!=(const GFXColor &v1, const GFXColor &v2) {
-  return v1.gfxcol.ul.abgr != v2.gfxcol.ul.abgr;
+  return v1.ul.abgr != v2.ul.abgr;
 };
 
 void gfxSyncProgram(struct GfxShadersUniforms &params) {
@@ -201,9 +207,23 @@ void gfxSyncProgram(struct GfxShadersUniforms &params) {
   ASSERT(pgm);
   glUseProgram(pgm->pgmObject);
 
-  // update buffers
-  glUniformMatrix4fv(pgm->projMat, 1, GL_FALSE, gles_adapter::getProjMat());
-  glUniformMatrix4fv(pgm->modelViewMat, 1, GL_FALSE, gles_adapter::getModelViewMat());
+    if (pgm->projMat3D >= 0) {
+        glUniformMatrix4fv(pgm->projMat3D, 1, GL_FALSE, gles_adapter::getProjMat());      // 3D
+    }
+    if (pgm->projMat2D >= 0) {
+        glUniformMatrix4fv(pgm->projMat2D, 1, GL_FALSE, gles_adapter::getProjMat2D());    // 2D
+    }
+    if (pgm->uUseOrtho >= 0) {
+        glUniform1f(pgm->uUseOrtho, gles_adapter::isOrthoActive() ? 1.0f : 0.0f);
+    }
+
+    if (pgm->modelViewMat >= 0) {
+        glUniformMatrix4fv(pgm->modelViewMat, 1, GL_FALSE, gles_adapter::getModelViewMat());
+    }
+
+    if (pgm->texMat >= 0) {
+        glUniformMatrix4fv(pgm->texMat, 1, GL_FALSE, gles_adapter::getTexMat());
+    }
   params.enableTexture = gles_adapter::isTexture2d();
   params.enableAlphaTest = gles_adapter::isAlphaTest();
 

@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 
 #include <Engine/Terrain/Terrain.h>
 #include <Engine/Terrain/TerrainArchive.h>
@@ -44,7 +44,7 @@ void CTerrainArchive::Read_t( CTStream *istrFile) // throw char *
   // if there are some terrains
   if (ctTerrains!=0) {
     // create that much terrains
-    CTerrain *atrBrushes = ta_atrTerrains.New(ctTerrains);
+    /* CTerrain *atrBrushes = */ ta_atrTerrains.New(ctTerrains);
     // for each of the new terrains
     for (INDEX iTerrain=0; iTerrain<ctTerrains; iTerrain++) {
       // read it from stream

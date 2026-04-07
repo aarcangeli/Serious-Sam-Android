@@ -92,8 +92,8 @@ inline Type *CDynamicStackArray<Type>::Push(INDEX ct) {
 template<class Type>
 inline void CDynamicStackArray<Type>::PopAll(void) {
   // if there is only one block allocated
-  if ( Super::da_BlocksList.IsEmpty()
-    || &Super::da_BlocksList.Head()==&Super::da_BlocksList.Tail()) {
+  if ( this->da_BlocksList.IsEmpty()
+    || &this->da_BlocksList.Head()==&this->da_BlocksList.Tail()) {
     // just clear the counter
     da_ctUsed = 0;
 
@@ -151,7 +151,7 @@ INDEX CDynamicStackArray<Type>::Index(Type *ptMember) {
 template<class Type>
 Type **CDynamicStackArray<Type>::GetArrayOfPointers(void)
 {
-  return Super::da_Pointers;
+  return this->da_Pointers;
 }
 
 /*

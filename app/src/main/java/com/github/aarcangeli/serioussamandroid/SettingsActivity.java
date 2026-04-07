@@ -8,31 +8,60 @@ import android.preference.PreferenceFragment;
 
 public class SettingsActivity extends PreferenceActivity {
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        getFragmentManager().beginTransaction().replace(android.R.id.content, new MyPreferenceFragment()).commit();
-    }
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		getFragmentManager().beginTransaction().replace(android.R.id.content, new MyPreferenceFragment()).commit();
+	}
 
-    public static class MyPreferenceFragment extends PreferenceFragment {
-        @Override
-        public void onCreate(final Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            addPreferencesFromResource(R.xml.preferences);
+	public static class MyPreferenceFragment extends PreferenceFragment {
+		@Override
+		public void onCreate(final Bundle savedInstanceState) {
+			super.onCreate(savedInstanceState);
+			addPreferencesFromResource(R.xml.preferences);
 
-            final CheckBoxPreference useGyroscope = (CheckBoxPreference) findPreference("use_gyroscope");
-            final Preference gyroSensibility = findPreference("gyro_sensibility");
-
-            if (useGyroscope != null && gyroSensibility != null) {
-                gyroSensibility.setEnabled(useGyroscope.isChecked());
-                useGyroscope.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-                    @Override
-                    public boolean onPreferenceChange(Preference preference, Object newValue) {
-                        gyroSensibility.setEnabled((Boolean) newValue);
-                        return true;
-                    }
-                });
-            }
-        }
-    }
+			final CheckBoxPreference useGyroscope = (CheckBoxPreference) findPreference("use_gyroscope");
+			final Preference gyroSensibility = findPreference("gyro_sensibility");
+			final CheckBoxPreference useAimAssist = (CheckBoxPreference) findPreference("useAimAssist");
+			final Preference autoAimSens = findPreference("autoAimSens");
+			final CheckBoxPreference useVolumeKeys = (CheckBoxPreference) findPreference("useVolumeKeys");
+			final Preference volumeUpAction = findPreference("volumeUpAction");
+			final Preference volumeDownAction = findPreference("volumeDownAction");
+			
+			if (useGyroscope != null && gyroSensibility != null) {
+				gyroSensibility.setEnabled(useGyroscope.isChecked());
+				useGyroscope.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+					@Override
+					public boolean onPreferenceChange(Preference preference, Object newValue) {
+						gyroSensibility.setEnabled((Boolean) newValue);
+						return true;
+					}
+				});
+			}
+			
+			if (useAimAssist != null && autoAimSens != null) {
+				autoAimSens.setEnabled(useAimAssist.isChecked());
+				useAimAssist.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+					@Override
+					public boolean onPreferenceChange(Preference preference, Object newValue) {
+						autoAimSens.setEnabled((Boolean) newValue);
+						return true;
+					}
+				});
+			}
+			
+			if (useVolumeKeys != null) {
+				volumeUpAction.setEnabled(useVolumeKeys.isChecked());
+				volumeDownAction.setEnabled(useVolumeKeys.isChecked());
+				useVolumeKeys.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+					@Override
+					public boolean onPreferenceChange(Preference preference, Object newValue) {
+						volumeUpAction.setEnabled((Boolean) newValue);
+						volumeDownAction.setEnabled((Boolean) newValue);
+						return true;
+					}
+				});
+			}
+		}
+	}
 }

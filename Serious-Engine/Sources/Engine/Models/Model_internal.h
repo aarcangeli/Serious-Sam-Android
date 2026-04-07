@@ -129,6 +129,22 @@ struct ENGINE_API ModelFrameVertex16 {
 	UBYTE mfv_ubNormH, mfv_ubNormP;
 };
 
+static inline CTStream &operator>>(CTStream &strm, ModelFrameVertex16 &mfv)
+{
+    strm>>mfv.mfv_SWPoint;
+	strm>>mfv.mfv_ubNormH;
+    strm>>mfv.mfv_ubNormP;
+    return strm;
+}
+
+static inline CTStream &operator<<(CTStream &strm, const ModelFrameVertex16 &mfv)
+{
+    strm<<mfv.mfv_SWPoint;
+	strm<<mfv.mfv_ubNormH;
+    strm<<mfv.mfv_ubNormP;
+    return strm;
+}
+
 struct ENGINE_API ModelFrameInfo {
 	FLOATaabbox3D mfi_Box;													// bounding box info for each frame
 };
@@ -144,6 +160,28 @@ struct ENGINE_API ModelTextureVertex {
   INDEX mtv_iTransformedVertex;
   FLOAT3D mtv_vU, mtv_vV;                         // bump directions
 };
+
+static inline CTStream &operator>>(CTStream &strm, ModelTextureVertex &mtv)
+{
+    strm>>mtv.mtv_UVW;
+    strm>>mtv.mtv_UV;
+    strm>>mtv.mtv_iSurfaceVx;
+    strm>>mtv.mtv_iTransformedVertex;
+    strm>>mtv.mtv_vU;
+    strm>>mtv.mtv_vV;
+    return(strm);
+}
+
+static inline CTStream &operator<<(CTStream &strm, const ModelTextureVertex &mtv)
+{
+    strm<<mtv.mtv_UVW;
+    strm<<mtv.mtv_UV;
+    strm<<mtv.mtv_iSurfaceVx;
+    strm<<mtv.mtv_iTransformedVertex;
+    strm<<mtv.mtv_vU;
+    strm<<mtv.mtv_vV;
+    return(strm);
+}
 
 struct ENGINE_API ModelPolygonVertex
 {

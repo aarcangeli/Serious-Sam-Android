@@ -71,7 +71,8 @@ public:
   void TestWholeWorld(CWorld *pwoWorld);
   /* Test active sectors recusively. */
   void TestThroughSectors(void);
-  
+
+  FLOAT GetRayRadius(const FLOAT3D& center) const;
 
 public:
 // these are filled by the constructor:
@@ -83,6 +84,7 @@ public:
   FLOAT3D cr_vTargetRelative; // coordinates of ray target relative to current entity
 
 // these can be altered afterwards for special options
+  BOOL cr_bConicForAutoAim;        // ray radius is determined by distance to tested target
   BOOL cr_bHitPortals;             // don't pass through portals (off by default)
   BOOL cr_bHitTranslucentPortals;  // don't pass through translucent portals (on by default)
   enum TestType cr_ttHitModels;    // type of testing against models (simple by default)

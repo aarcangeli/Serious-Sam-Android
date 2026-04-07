@@ -44,7 +44,7 @@ functions:
     m_aps.Precache(m_fnmMessage);
   }
   const CTString &GetDescription(void) const {
-    ((CTString&)m_strDescription).PrintF("%s", m_fnmMessage.FileName());
+    ((CTString&)m_strDescription).PrintF("%s", (const char *) m_fnmMessage.FileName());
     return m_strDescription;
   }
 

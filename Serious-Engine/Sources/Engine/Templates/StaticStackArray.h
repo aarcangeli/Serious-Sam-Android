@@ -26,7 +26,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
  */
 template<class Type>
 class CStaticStackArray : public CStaticArray<Type> {
-  using Super = CStaticArray<Type>;
 public:
   INDEX sa_UsedCount;         // number of used objects in array
   INDEX sa_ctAllocationStep;  // how many elements to allocate when stack overflows

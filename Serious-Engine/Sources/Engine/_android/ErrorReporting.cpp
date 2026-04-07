@@ -2,12 +2,19 @@
 #include <Engine/Base/ErrorReporting.h>
 #include <Engine/Base/CTString.h>
 #include <Engine/Base/ErrorTable.h>
-#include <android/log.h>
 
-#define  LOG_TAG    "SeriousSamNative"
-#define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
-#define  LOGW(...)  __android_log_print(ANDROID_LOG_WARN,LOG_TAG,__VA_ARGS__)
-#define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
+#if defined(ANDROID)
+  #include <android/log.h>
+  #define  LOG_TAG    "SeriousSamNative"
+  #define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
+  #define  LOGW(...)  __android_log_print(ANDROID_LOG_WARN,LOG_TAG,__VA_ARGS__)
+  #define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
+#else
+  #include <stdio.h>
+  #define  LOGI(...)  do { fprintf(stdout, __VA_ARGS__); fprintf(stdout, "\n"); } while (0)
+  #define  LOGW(...)  do { fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n"); } while (0)
+  #define  LOGE(...)  do { fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n"); } while (0)
+#endif
 
 CThreadLocal<slThrowBufferText> slThrowBuffer;
 

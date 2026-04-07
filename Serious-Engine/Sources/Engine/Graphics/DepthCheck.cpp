@@ -13,8 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
-
+#include "Engine/StdH.h"
 
 #include <Engine/Base/Console.h>
 #include <Engine/Graphics/GfxLibrary.h>
@@ -55,11 +54,7 @@ static void UpdateDepthPointsVisibility( const CDrawPort *pdp, const INDEX iMirr
                                          DepthInfo *pdi, const INDEX ctCount)
 {
   const GfxAPIType eAPI = _pGfx->gl_eCurrentAPI;
-#ifdef SE1_D3D
-  ASSERT(eAPI == GAT_OGL || eAPI == GAT_D3D || eAPI == GAT_NONE);
-#else // SE1_D3D
-  ASSERT(eAPI == GAT_OGL || eAPI == GAT_NONE);
-#endif // SE1_D3D
+  ASSERT(GfxValidApi(eAPI));
   ASSERT( pdp!=NULL && ctCount>0);
   const CRaster *pra = pdp->dp_Raster;
 
@@ -251,12 +246,12 @@ extern BOOL CheckDepthPoint( const CDrawPort *pdp, PIX pixI, PIX pixJ, FLOAT fOo
 extern void CheckDelayedDepthPoints( const CDrawPort *pdp, INDEX iMirrorLevel/*=0*/)
 {
   // skip if not delayed or mirror level is to high
-  gap_iOptimizeDepthReads = Clamp( gap_iOptimizeDepthReads, 0L, 2L);
+  gap_iOptimizeDepthReads = Clamp( gap_iOptimizeDepthReads, 0, 2);
   if( gap_iOptimizeDepthReads==0 || iMirrorLevel>7) return; 
   ASSERT( pdp!=NULL && iMirrorLevel>=0);
 
   // check only if time lapse allows
-  const CTimerValue tvNow = _pTimer->GetHighPrecisionTimer();
+  const CTimerValue tvNow = _pTimer->GetLowPrecisionTimer();
   const TIME tmDelta = (tvNow-_tvLast[iMirrorLevel]).GetSeconds();
   ASSERT( tmDelta>=0);
   if( gap_iOptimizeDepthReads==2 && tmDelta<0.1f) return;
@@ -289,9 +284,10 @@ extern void CheckDelayedDepthPoints( const CDrawPort *pdp, INDEX iMirrorLevel/*=
   // ignore stalls
   if( tmDelta>1.0f) return;
 
-  // check and upadete visibility of what has left
+  // check and update visibility of what has left
   ASSERT( ctPoints == _adiDelayed.Count());
   if( ctPoints>0) UpdateDepthPointsVisibility( pdp, iMirrorLevel, &_adiDelayed[0], ctPoints);
+
   // mark checking
   _iCheckIteration++;
 }

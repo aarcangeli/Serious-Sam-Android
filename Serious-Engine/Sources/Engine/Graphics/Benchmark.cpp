@@ -207,7 +207,7 @@ static void InitTris(void)
       _avtx[ivx].z = -1.0f;
       _atex[ivx].s = (iC+iR) % 2;
       _atex[ivx].t = (iR)    % 2;
-      _acol[ivx].gfxcol.ul.abgr = 0xFFFFFFFF;
+      _acol[ivx].ul.abgr = 0xFFFFFFFF;
     }
   }
   INDEX ctTri = (_ctR-1)*(_ctC-1)*2;

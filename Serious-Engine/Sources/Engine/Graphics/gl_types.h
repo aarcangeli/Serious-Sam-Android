@@ -21,6 +21,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #if !PLATFORM_UNIX
 #include <GLES2/gl2.h>
+#include <GLES3/gl3.h>
 #else
 
 /*
@@ -1068,7 +1069,7 @@ typedef double		GLdouble;	/* double precision float */
 typedef double		GLclampd;	/* double precision float in [0,1] */
 
 #include <GLES2/gl2.h>
-
+#include <GLES3/gl3.h>
 
 #endif /* PLATFORM_UNIX */
 #endif  /* include-once check. */

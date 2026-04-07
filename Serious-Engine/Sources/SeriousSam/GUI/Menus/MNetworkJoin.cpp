@@ -44,6 +44,7 @@ void CNetworkJoinMenu::Initialize_t(void)
   gm_mgNET.mg_strTip = TRANS("search internet for servers");
   gm_lhGadgets.AddTail(gm_mgNET.mg_lnNode);
   gm_mgNET.mg_pActivatedFunction = NULL;
+  gm_mgNET.mg_bEnabled = FALSE; // DISABLED TEMPORARY WHILE I SETUP MASTER SERVER
 
   gm_mgOpen.mg_bfsFontSize = BFS_LARGE;
   gm_mgOpen.mg_boxOnScreen = BoxBigRow(3.0f);

@@ -19,7 +19,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 2
 %{
-#include "StdH.h"
+#include <Engine/StdH.h>
 #include <Engine/Entities/InternalClasses.h>
 #include <Engine/Base/CRC.h>
 #include <Engine/Base/Stream.h>

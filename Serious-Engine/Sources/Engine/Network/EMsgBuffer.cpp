@@ -41,7 +41,7 @@ void AngleToUL(ANGLE3D &Angle,ULONG &ulResult)
 	ubDir = (UBYTE) (AxisAngles(2)/90*127);
 	ulResult = ulResult << 8;
   ulResult |= ubDir;
-	swAngle = (UWORD) (fRotAngle * 180);	// after rounding, angle is precise up to 1/180 degrees (65536/360 ~ 180)
+	swAngle = (UWORD) (SWORD) (fRotAngle * 180);	// after rounding, angle is precise up to 1/180 degrees (65536/360 ~ 180)
 	ulResult = (ulResult << 16) | swAngle;
 
 };

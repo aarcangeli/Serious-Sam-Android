@@ -76,7 +76,7 @@ public:
   /* Elliminate paired vertices. */
   void ElliminatePairedVertices(void);
   /* Create edges from vertices in one container -- must be sorted before. */
-  void CreateEdges(CDynamicArray<BSPEdge<Type, iDimensions> > &abedAll, ULONG ulEdgeTag);
+  void CreateEdges(CDynamicArray<BSPEdge<Type, iDimensions> > &abedAll, size_t ulEdgeTag);
 };
 
 /*
@@ -87,12 +87,14 @@ class BSPEdge {
 public:
   Vector<Type, iDimensions> bed_vVertex0;  // edge vertices
   Vector<Type, iDimensions> bed_vVertex1;
-  ULONG bed_ulEdgeTag;   // tags for BSPs with tagged edges/planes
+  size_t bed_ulEdgeTag;   // tags for BSPs with tagged edges/planes
 
   /* Default constructor. */
   inline BSPEdge(void) {};
   /* Constructor with two vectors. */
-  inline BSPEdge(const Vector<Type, iDimensions> &vVertex0, const Vector<Type, iDimensions> &vVertex1, ULONG ulTag);
+  inline BSPEdge(const Vector<Type, iDimensions> &vVertex0, const Vector<Type, iDimensions> &vVertex1, size_t ulTag)
+    : bed_vVertex0(vVertex0), bed_vVertex1(vVertex1), bed_ulEdgeTag(ulTag) {}
+
   /* Clear the object. */
   inline void Clear(void) {};
   // remove all edges marked for removal
@@ -108,16 +110,16 @@ template<class Type, int iDimensions>
 class BSPPolygon : public Plane<Type, iDimensions> {
 public:
   CDynamicArray<BSPEdge<Type, iDimensions> > bpo_abedPolygonEdges;  // array of edges in the polygon
-  ULONG bpo_ulPlaneTag;         // tags for BSPs with tagged planes (-1 for no tag)
+  size_t bpo_ulPlaneTag;         // tags for BSPs with tagged planes (-1 for no tag)
 
   /* Add an edge to the polygon. */
-  inline void AddEdge(const Vector<Type, iDimensions> &vPoint0, const Vector<Type, iDimensions> &vPoint1, ULONG ulTag);
+  inline void AddEdge(const Vector<Type, iDimensions> &vPoint0, const Vector<Type, iDimensions> &vPoint1, size_t ulTag);
 
   /* Default constructor. */
   inline BSPPolygon(void) : bpo_ulPlaneTag(-1) {};
   /* Constructor with array of edges and plane. */
   inline BSPPolygon(
-    Plane<Type, iDimensions> &plPlane, CDynamicArray<BSPEdge<Type, iDimensions> > abedPolygonEdges, ULONG ulPlaneTag)
+    Plane<Type, iDimensions> &plPlane, CDynamicArray<BSPEdge<Type, iDimensions> > abedPolygonEdges, size_t ulPlaneTag)
     : Plane<Type, iDimensions>(plPlane)
     , bpo_abedPolygonEdges(abedPolygonEdges)
     , bpo_ulPlaneTag(ulPlaneTag)
@@ -139,13 +141,12 @@ public:
  */
 template<class Type, int iDimensions>
 class BSPNode : public Plane<Type, iDimensions> {  // split plane
-  using Super = Plane<Type, iDimensions>;
 public:
   enum BSPNodeLocation bn_bnlLocation;    // location of bsp node
 
   BSPNode<Type, iDimensions> *bn_pbnFront;        // pointer to child node in front of split plane
   BSPNode<Type, iDimensions> *bn_pbnBack;         // pointer to child node behind split plane
-  ULONG bn_ulPlaneTag;         // tags for BSPs with tagged planes (-1 for no tag)
+  size_t bn_ulPlaneTag;         // tags for BSPs with tagged planes (-1 for no tag)
 
 public:
   /* Defualt constructor (for arrays only). */
@@ -153,7 +154,7 @@ public:
   /* Constructor for a leaf node. */
   inline BSPNode(enum BSPNodeLocation bnl);
   /* Constructor for a branch node. */
-  inline BSPNode(const Plane<Type, iDimensions> &plSplitPlane, ULONG ulPlaneTag, 
+  inline BSPNode(const Plane<Type, iDimensions> &plSplitPlane, size_t ulPlaneTag,
     BSPNode<Type, iDimensions> &bnFront, BSPNode<Type, iDimensions> &bnBack);
   /* Constructor for cloning a bsp (sub)tree. */
   BSPNode(BSPNode<Type, iDimensions> &bnRoot);
@@ -179,7 +180,7 @@ template<class Type, int iDimensions>
 class BSPCutter {
 public:
   /* Split an edge with a plane. */
-  static inline void SplitEdge(const Vector<Type, iDimensions> &vPoint0, const Vector<Type, iDimensions> &vPoint1, ULONG ulEdgeTag,
+  static inline void SplitEdge(const Vector<Type, iDimensions> &vPoint0, const Vector<Type, iDimensions> &vPoint1, size_t ulEdgeTag,
     const Plane<Type, iDimensions> &plSplitPlane,
     BSPPolygon<Type, iDimensions> &abedFront, BSPPolygon<Type, iDimensions> &abedBack,
     BSPVertexContainer<Type, iDimensions> &bvcFront, BSPVertexContainer<Type, iDimensions> &bvcBack);
@@ -194,7 +195,7 @@ public:
   CDynamicArray<BSPEdge<Type, iDimensions> > bc_abedBorderOutside;// edges of border part of polygon facing outwards
 
   /* Split a polygon with a plane. */
-  static inline BOOL SplitPolygon(BSPPolygon<Type, iDimensions> &bpoPolygon, const Plane<Type, iDimensions> &plPlane, ULONG ulPlaneTag,
+  static inline BOOL SplitPolygon(BSPPolygon<Type, iDimensions> &bpoPolygon, const Plane<Type, iDimensions> &plPlane, size_t ulPlaneTag,
     BSPPolygon<Type, iDimensions> &bpoFront, BSPPolygon<Type, iDimensions> &bpoBack);
 
   /* Constructor for splitting a polygon with a BSP tree. */

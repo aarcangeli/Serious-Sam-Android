@@ -23,6 +23,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #define SERVER_CLIENTS 16
 
+// [SSE] S2S Communication
+#define SERVER_SERVERS 16
+
 #include <Engine/Network/CPacket.h>
 
 // Communication class

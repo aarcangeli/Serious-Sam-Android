@@ -125,7 +125,7 @@ void CRenderer::AddModelEntity(CEntity *penModel)
         CreateModelOBBox( penModel, vHandle, pprProjection->pr_ViewerRotationMatrix, boxEntity);
         bModelHasBox = TRUE;
       } // test it to mirror/warp plane
-      iMirrorPlaneTest = boxEntity.TestAgainstPlane(pprProjection->pr_plMirrorView);
+      iMirrorPlaneTest = (INDEX) (boxEntity.TestAgainstPlane(pprProjection->pr_plMirrorView));
     }
     // if not in mirror
     if( iMirrorPlaneTest<0) {
@@ -262,7 +262,7 @@ void CRenderer::AddSkaModelEntity(CEntity *penModel)
         CreateModelOBBox( penModel, vHandle, pprProjection->pr_ViewerRotationMatrix, boxEntity);
         bModelHasBox = TRUE;
       } // test it to mirror/warp plane
-      iMirrorPlaneTest = boxEntity.TestAgainstPlane(pprProjection->pr_plMirrorView);
+      iMirrorPlaneTest = (INDEX) boxEntity.TestAgainstPlane(pprProjection->pr_plMirrorView);
     }
     // if not in mirror
     if( iMirrorPlaneTest<0) {
@@ -662,7 +662,7 @@ void CRenderer::AddZoningSectorsAroundEntity(CEntity *pen, const FLOAT3D &vEyesP
   ASSERT(!(pen->en_ulFlags&ENF_ZONING));
 
   // make parameters for minimum sphere to add
-  re_vdViewSphere = FLOATtoDOUBLE(vEyesPos);
+  re_vdViewSphere = vEyesPos;
   re_dViewSphereR = re_prProjection->NearClipDistanceR()*1.5f;
 
   CListHead lhToAdd;
@@ -751,7 +751,7 @@ void CRenderer::AddZoningSectorsAroundBox(const FLOATaabbox3D &boxNear)
   FLOAT3D vSphereCenter = boxNear.Center();
 
   re_dViewSphereR = re_prProjection->NearClipDistanceR()*1.5f;
-  re_vdViewSphere = FLOATtoDOUBLE(vSphereCenter);
+  re_vdViewSphere = vSphereCenter;
 
   // for all entities in world
   FOREACHINDYNAMICCONTAINER(re_pwoWorld->wo_cenEntities, CEntity, iten) {
@@ -762,7 +762,7 @@ void CRenderer::AddZoningSectorsAroundBox(const FLOATaabbox3D &boxNear)
       continue;
     }
     // if it is not zoning brush
-    if (iten->en_RenderType!=CEntity::RT_BRUSH && iten->en_RenderType!=CEntity::RT_FIELDBRUSH
+    if ((iten->en_RenderType!=CEntity::RT_BRUSH && iten->en_RenderType!=CEntity::RT_FIELDBRUSH)
       ||!(iten->en_ulFlags&ENF_ZONING)) {
       // skip it
       continue;
@@ -792,7 +792,7 @@ void CRenderer::AddZoningSectorsAroundBox(const FLOATaabbox3D &boxNear)
          &&!((itbsc->bsc_ulFlags&BSCF_HIDDEN) && !re_bRenderingShadows)) {
           // if the sphere is inside the sector
           if (itbsc->bsc_bspBSPTree.TestSphere(
-             FLOATtoDOUBLE(vSphereCenter), FLOATtoDOUBLE(fSphereRadius))>=0) {
+             vSphereCenter, fSphereRadius)>=0) {
 
             // add that sector to active sectors
             AddActiveSector(itbsc.Current());

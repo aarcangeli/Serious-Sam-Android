@@ -57,7 +57,7 @@ void FatalError(const char *strPattern, Types... t) {
   if (g_errorCalllback) g_errorCalllback(true, stringFormatter::format(strPattern, t...));
   AndroidLogPrintE(stringFormatter::format(strPattern, t...));
   // block application
-  while (1) sleep(100000);
+  //while (1) sleep(100000);
 }
 
 /* Report error to the user. */

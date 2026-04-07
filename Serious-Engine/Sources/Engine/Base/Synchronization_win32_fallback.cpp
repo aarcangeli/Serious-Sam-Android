@@ -19,7 +19,7 @@ LONG InterlockedDecrement(LONG volatile *Addend) {
 }
 
 DWORD GetCurrentThreadId() {
-  static_assert(sizeof(pthread_t) == sizeof(DWORD), "");
+  static_assert(sizeof(pthread_t) == sizeof(size_t), "");
   return (DWORD) pthread_self();
 }
 

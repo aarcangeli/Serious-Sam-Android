@@ -18,9 +18,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "EntitiesMP/StdH/StdH.h"
 %}
 
+uses "EntitiesMP/Debris";
 uses "EntitiesMP/ModelHolder2";
 uses "EntitiesMP/BasicEffects";
-uses "EntitiesMP/Debris";
 uses "EntitiesMP/BloodSpray";
 uses "EntitiesMP/SoundHolder";
 
@@ -134,9 +134,9 @@ functions:
     if(ct==0) {
       ((CTString&)m_strDescription).PrintF("(%g): no more", m_fHealth);
     } else if(ct==1) {
-      ((CTString&)m_strDescription).PrintF("(%g): %s", m_fHealth, m_penModel0->GetName());
+      ((CTString&)m_strDescription).PrintF("(%g): %s", m_fHealth, (const char *) m_penModel0->GetName());
     } else if (TRUE) {
-      ((CTString&)m_strDescription).PrintF("(%g): %s,...(%d)", m_fHealth, m_penModel0->GetName(), ct);
+      ((CTString&)m_strDescription).PrintF("(%g): %s,...(%d)", m_fHealth, (const char *) m_penModel0->GetName(), ct);
     }
     return m_strDescription;
   }
@@ -145,7 +145,7 @@ functions:
   void CheckOneModelTarget(CEntityPointer &pen)
   {
     if (pen!=NULL && !IsOfClass(pen, "ModelHolder2")) {
-      WarningMessage("Model '%s' is not ModelHolder2!", pen->GetName());
+      WarningMessage("Model '%s' is not ModelHolder2!", (const char *) pen->GetName());
       pen=NULL;
     }
   }

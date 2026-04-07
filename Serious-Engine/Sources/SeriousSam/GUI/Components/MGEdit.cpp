@@ -150,7 +150,7 @@ BOOL CMGEdit::OnChar(MSG msg)
   // only chars are allowed
   const INDEX ctFullLen = mg_strText.Length();
   const INDEX ctNakedLen = mg_strText.LengthNaked();
-  mg_iCursorPos = Clamp(mg_iCursorPos, 0L, ctFullLen);
+  mg_iCursorPos = Clamp(mg_iCursorPos, 0, ctFullLen);
   int iVKey = msg.wParam;
   if (isprint(iVKey) && ctNakedLen <= mg_ctMaxStringLen) {
     mg_strText.InsertChar(mg_iCursorPos, (char)iVKey);

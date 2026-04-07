@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 #include <Engine/Terrain/ArrayHolder.h>
 #include <Engine/Terrain/Terrain.h>
 #include <Engine/Terrain/TerrainMisc.h>
@@ -68,7 +68,7 @@ INDEX CArrayHolder::GetNewArrays()
 }
 
 // Mark tile arrays as unused
-void CArrayHolder::FreeArrays(INT iOldArraysIndex)
+void CArrayHolder::FreeArrays(SINT iOldArraysIndex)
 {
   // if arrays are valid
   if(iOldArraysIndex!=-1) {
@@ -106,12 +106,12 @@ void CArrayHolder::EmptyArrays(INDEX iArrayIndex)
 void CArrayHolder::Clear(void)
 {
   // for each tile arrays
-  INT ctta = ah_ataTileArrays.Count();
-  for(INT ita=0;ita<ctta;ita++) {
+  SLONG ctta = ah_ataTileArrays.Count();
+  for(SLONG ita=0;ita<ctta;ita++) {
     TileArrays &ta = ah_ataTileArrays[ita];
     // for each tile layer
-    INT cttl = ta.ta_atlLayers.Count();
-    for(INT itl=0;itl<cttl;itl++) {
+    SLONG cttl = ta.ta_atlLayers.Count();
+    for(SLONG itl=0;itl<cttl;itl++) {
       // Clear its indices and vertex color
       TileLayer &tl = ta.ta_atlLayers[itl];
       tl.tl_auiIndices.Clear();
@@ -140,7 +140,7 @@ SLONG CArrayHolder::GetUsedMemory(void)
   // Show memory usage
   SLONG slUsedMemory=0;
   slUsedMemory+=sizeof(CArrayHolder);
-  slUsedMemory+=sizeof(INT) * ah_aiFreeArrays.sa_Count;
+  slUsedMemory+=sizeof(SLONG) * ah_aiFreeArrays.sa_Count;
   slUsedMemory+=sizeof(TileArrays) * ah_ataTileArrays.sa_Count;
 
   INDEX ctta=ah_ataTileArrays.sa_Count;

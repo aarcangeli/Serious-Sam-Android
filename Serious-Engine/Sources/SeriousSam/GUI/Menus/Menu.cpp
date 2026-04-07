@@ -418,8 +418,8 @@ void InitializeMenus(void)
   _pGUIM->gmNetworkOpenMenu.Initialize_t();
   _pGUIM->gmNetworkOpenMenu.gm_strName = "NetworkOpen";
   _pGUIM->gmNetworkOpenMenu.gm_pmgSelectedByDefault = &_pGUIM->gmNetworkOpenMenu.gm_mgJoin;
-//  _pGUIM->gmNetworkOpenMenu.gm_pgmParentMenu = &_pGUIM->gmNetworkJoinMenu; // skip "join game" menu
-  _pGUIM->gmNetworkOpenMenu.gm_pgmParentMenu = &_pGUIM->gmNetworkMenu;
+  _pGUIM->gmNetworkOpenMenu.gm_pgmParentMenu = &_pGUIM->gmNetworkJoinMenu; // skip "join game" menu
+//  _pGUIM->gmNetworkOpenMenu.gm_pgmParentMenu = &_pGUIM->gmNetworkMenu;
   InitActionsForNetworkOpenMenu();
 
   _pGUIM->gmSplitScreenMenu.Initialize_t();
@@ -663,8 +663,8 @@ BOOL DoMenu( CDrawPort *pdp)
   _pGfx->GetCurrentDisplayMode(dmCurrent);
   if (dmCurrent.IsFullScreen()) {
     // clamp mouse pointer
-    _pixCursorPosI = Clamp(_pixCursorPosI, 0L, dpMenu.GetWidth());
-    _pixCursorPosJ = Clamp(_pixCursorPosJ, 0L, dpMenu.GetHeight());
+    _pixCursorPosI = Clamp(_pixCursorPosI, 0, dpMenu.GetWidth());
+    _pixCursorPosJ = Clamp(_pixCursorPosJ, 0, dpMenu.GetHeight());
   // if in window
   } else {
     // use same mouse pointer as windows

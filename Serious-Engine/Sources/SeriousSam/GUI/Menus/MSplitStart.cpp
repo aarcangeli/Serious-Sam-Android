@@ -80,13 +80,13 @@ void CSplitStartMenu::StartMenu(void)
   extern INDEX sam_bMentalActivated;
   gm_mgDifficulty.mg_ctTexts = sam_bMentalActivated ? 6 : 5;
 
-  gm_mgGameType.mg_iSelected = Clamp(_pShell->GetINDEX("gam_iStartMode"), 0L, ctGameTypeRadioTexts - 1L);
+  gm_mgGameType.mg_iSelected = Clamp(_pShell->GetINDEX("gam_iStartMode"), 0, ctGameTypeRadioTexts - 1);
   gm_mgGameType.ApplyCurrentSelection();
   gm_mgDifficulty.mg_iSelected = _pShell->GetINDEX("gam_iStartDifficulty") + 1;
   gm_mgDifficulty.ApplyCurrentSelection();
 
   // clamp maximum number of players to at least 4
-  _pShell->SetINDEX("gam_ctMaxPlayers", ClampDn(_pShell->GetINDEX("gam_ctMaxPlayers"), 4L));
+  _pShell->SetINDEX("gam_ctMaxPlayers", ClampDn(_pShell->GetINDEX("gam_ctMaxPlayers"), 4));
 
   UpdateSplitLevel(0);
   CGameMenu::StartMenu();

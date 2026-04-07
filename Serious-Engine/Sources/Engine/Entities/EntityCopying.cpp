@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include <Engine/StdH.h>
 
 #include <Engine/Entities/Entity.h>
 #include <Engine/Entities/LastPositions.h>
@@ -38,7 +38,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Templates/DynamicContainer.cpp>
 #include <Engine/Templates/StaticArray.cpp>
 #include <Engine/Templates/Selection.cpp>
-#include <Engine/Templates/DynamicArray.cpp>
 
 class CPointerRemapping {
 public:
@@ -378,7 +377,7 @@ void CWorld::CopyEntities(CWorld &woOther, CDynamicContainer<CEntity> &cenToCopy
     return;
   }
 
-  CSetFPUPrecision FPUPrecision(FPT_24BIT);
+  //CSetFPUPrecision FPUPrecision(FPT_24BIT);
 
   ULONG ulCopyFlags = COPY_REMAP;
   if(_bReinitEntitiesWhileCopying) {
@@ -617,7 +616,7 @@ void CWorld::MirrorAndStretch(CWorld &woOriginal, FLOAT fStretch, enum WorldMirr
 
   // update all links
   {
-    CSetFPUPrecision FPUPrecision(FPT_53BIT);
+    //CSetFPUPrecision FPUPrecision(FPT_53BIT);
     wo_baBrushes.LinkPortalsAndSectors();
   }
 

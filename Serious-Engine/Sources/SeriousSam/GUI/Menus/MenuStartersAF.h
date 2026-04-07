@@ -28,6 +28,7 @@ BOOL LSLoadPlayerModel(const CTFileName &fnm);
 BOOL LSLoadControls(const CTFileName &fnm);
 BOOL LSLoadAddon(const CTFileName &fnm);
 BOOL LSLoadMod(const CTFileName &fnm);
+BOOL LSLoadAdvanced(const CTFileName &fnm);
 BOOL LSLoadCustom(const CTFileName &fnm);
 BOOL LSLoadNetSettings(const CTFileName &fnm);
 BOOL LSSaveAnyGame(const CTFileName &fnm);

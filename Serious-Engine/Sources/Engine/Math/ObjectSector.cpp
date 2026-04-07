@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 
 #include <Engine/Math/Object3D.h>
 #include <Engine/Templates/BSP_internal.h>
@@ -21,7 +21,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Templates/StaticArray.cpp>
 #include <Engine/Templates/DynamicArray.cpp>
 #include <Engine/Templates/DynamicContainer.cpp>
-#include <Engine/Templates/BSP.cpp>
 
 // define this for full debugging of all algorithms
 #define FULL_DEBUG
@@ -45,7 +44,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #define EDX_EPSILON DOUBLE(0.00390625*mth_fCSGEpsilon) // 1/2^8
 
 // use O(nlogn) instead O(n2) algorithms for object optimization
-INDEX wld_bFastObjectOptimization = 1.0f;
+INDEX wld_bFastObjectOptimization = 1;
 FLOAT mth_fCSGEpsilon = 1.0f;
 
 /*
@@ -91,6 +90,7 @@ static int qsort_CompareVerticesAlongLine(const void *pvVertex0, const void *pvV
   CObjectVertex &vx1 = **(CObjectVertex **)pvVertex1;
   return CompareVerticesAlongLine(vx0, vx1);
 }
+#if 0 // DG: unused.
 /*
  * Compare two vertices along a line for quick-sort - reversely.
  */
@@ -100,6 +100,7 @@ static int qsort_CompareVerticesAlongLineReversely(const void *pvVertex0, const 
   CObjectVertex &vx1 = **(CObjectVertex **)pvVertex1;
   return -CompareVerticesAlongLine(vx0, vx1);
 }
+#endif // 0 (unused)
 
 
 /*
@@ -233,6 +234,10 @@ BOOL FindEdge( CStaticArray<CObjectEdge *> &apedSorted,
 /*
  * Get start and end vertices.
  */
+// rcg10162001 wtf...I had to move this into the class definition itself.
+//  I think it's an optimization bug; I didn't have this problem when I
+//  didn't give GCC the "-O2" option.
+#if 0
 void CObjectPolygonEdge::GetVertices(CObjectVertex *&povxStart, CObjectVertex *&povxEnd)
 {
   ASSERT(ope_Edge!=NULL);
@@ -244,12 +249,14 @@ void CObjectPolygonEdge::GetVertices(CObjectVertex *&povxStart, CObjectVertex *&
     povxEnd = ope_Edge->oed_Vertex1;
   }
 }
+#endif
+
 
 /*
  * Default constructor.
  */
 CObjectSector::CObjectSector(void) :
-  osc_colAmbient(0), osc_colColor(0), osc_strName("")
+  osc_colColor(0), osc_colAmbient(0), osc_strName("")
 {
   osc_ulFlags[0] = 0;
   osc_ulFlags[1] = 0;
@@ -543,6 +550,7 @@ CObjectPolygon *CObjectSector::CreatePolygon(INDEX ctVertices, INDEX aivVertices
 void CObjectSector::CheckOptimizationAlgorithm(void)
 {
   // for vertices
+#if 0 // DG: this doesn't really do anything?!
   FOREACHINDYNAMICARRAY(osc_aovxVertices, CObjectVertex, itvx1) {
     FOREACHINDYNAMICARRAY(osc_aovxVertices, CObjectVertex, itvx2) {
       CObjectVertex &vx1 = itvx1.Current();
@@ -550,6 +558,7 @@ void CObjectSector::CheckOptimizationAlgorithm(void)
       // !!!!why this fails sometimes ?(on spheres) ASSERT( (&vx1 == &vx2) || (CompareVertices(vx1, vx2)!=0) );
     }
   }
+#endif // 0
 
   // for planes
   FOREACHINDYNAMICARRAY(osc_aoplPlanes, CObjectPlane, itpl1) {
@@ -595,7 +604,7 @@ void CObjectSector::CheckOptimizationAlgorithm(void)
   {FOREACHINDYNAMICARRAY(osc_aopoPolygons, CObjectPolygon, itopo) {
     // for each edge in polygon
     {FOREACHINDYNAMICARRAY(itopo->opo_PolygonEdges, CObjectPolygonEdge, itope) {
-      CObjectEdge &oedThis = *itope->ope_Edge;
+      //CObjectEdge &oedThis = *itope->ope_Edge;
       CObjectVertex *povxStartThis, *povxEndThis;
       // get start and end vertices
       itope->GetVertices(povxStartThis, povxEndThis);
@@ -624,7 +633,7 @@ BOOL CObjectSector::ArePolygonsPlanar(void)
   {FOREACHINDYNAMICARRAY(osc_aopoPolygons, CObjectPolygon, itopo) {
     // for each edge in polygon
     {FOREACHINDYNAMICARRAY(itopo->opo_PolygonEdges, CObjectPolygonEdge, itope) {
-      CObjectEdge &oedThis = *itope->ope_Edge;
+      //CObjectEdge &oedThis = *itope->ope_Edge;
       CObjectVertex *povxStartThis, *povxEndThis;
       // get start and end vertices
       itope->GetVertices(povxStartThis, povxEndThis);
@@ -710,7 +719,7 @@ void CObjectSector::RemapClonedPlanes(void)
 /*
  * Remap different vertices with same coordinates to use only one of each.
  */
-static BOOL bBug=FALSE;
+//static BOOL bBug=FALSE;
 void CObjectSector::RemapClonedVertices(void)
 {
   // if there are no vertices in the sector
@@ -1102,7 +1111,7 @@ void CObjectPolygon::JoinContinuingEdges(CDynamicArray<CObjectEdge> &oedEdges)
   // create an empty array for newly created edges
   CDynamicArray<CObjectPolygonEdge> aopeNew;
   // set the counter of edges to current number of edges
-  INDEX ctEdges = opo_PolygonEdges.Count();
+  //INDEX ctEdges = opo_PolygonEdges.Count();
 
   // for each edge
   {FOREACHINDYNAMICARRAY(opo_PolygonEdges, CObjectPolygonEdge, itope) {
@@ -1181,10 +1190,10 @@ void CObjectSector::SplitCollinearEdgesRun(CStaticArray<CEdgeEx *> &apedxSortedE
   if (iFirstInRun>iLastInRun) {
     return; // this should not happen, but anyway!
   }
-  CEdgeEx &edxLine = *apedxSortedEdgeLines[iFirstInRun];  // representative line of the run
 
   /* set up array of vertex pointers */
 /*
+  CEdgeEx &edxLine = *apedxSortedEdgeLines[iFirstInRun];  // representative line of the run
   // for each vertex in sector
   INDEX ctVerticesOnLine=0;
   {FOREACHINDYNAMICARRAY(osc_aovxVertices, CObjectVertex, itovx) {
@@ -1839,7 +1848,7 @@ void CObjectSector::CreateBSP(void)
 
     // copy the plane
     (DOUBLEplane3D &)bpo = *opo.opo_Plane;
-    bpo.bpo_ulPlaneTag = (ULONG)opo.opo_Plane;
+    bpo.bpo_ulPlaneTag = (size_t)opo.opo_Plane;
 
     // get count of edges in this polygon
     const INDEX ctEdges = opo.opo_PolygonEdges.Count();
@@ -1854,11 +1863,11 @@ void CObjectSector::CreateBSP(void)
       // if the edge is reversed
       if(ope.ope_Backward) {
         // add bsp edge with reversed vertices
-        pbed[iEdge] = DOUBLEbspedge3D(*oed.oed_Vertex1, *oed.oed_Vertex0, (ULONG)&oed);
+        pbed[iEdge] = DOUBLEbspedge3D(*oed.oed_Vertex1, *oed.oed_Vertex0, (size_t)&oed);
       // otherwise
       } else {
         // add normal bsp edge
-        pbed[iEdge] = DOUBLEbspedge3D(*oed.oed_Vertex0, *oed.oed_Vertex1, (ULONG)&oed);
+        pbed[iEdge] = DOUBLEbspedge3D(*oed.oed_Vertex0, *oed.oed_Vertex1, (size_t)&oed);
       }
     }
     opo.opo_PolygonEdges.Unlock();

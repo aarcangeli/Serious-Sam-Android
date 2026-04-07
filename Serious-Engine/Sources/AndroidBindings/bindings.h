@@ -8,12 +8,13 @@
 #include <Engine/Base/CTString.h>
 #include <Engine/Base/Stream.h>
 #include <Engine/Engine.h>
-#include <EntitiesMP/Common/playerCommons.h>
 #include <stdint.h>
 #include <AndroidAdapters/binding-callbacks.h>
 
 extern pthread_mutex_t g_mySeriousMutex;
 extern pthread_t g_mySeriousThreadId;
+extern pthread_mutex_t g_inputMutex;
+
 extern bool g_gameRunning;
 extern ANativeWindow *g_currentWindow;
 

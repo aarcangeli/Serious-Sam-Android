@@ -599,6 +599,7 @@ void InitActionsForOptionsMenu()
   gmCurrent.gm_mgAudioOptions.mg_pActivatedFunction = &StartAudioOptionsMenu;
   gmCurrent.gm_mgPlayerProfileOptions.mg_pActivatedFunction = &StartChangePlayerMenuFromOptions;
   gmCurrent.gm_mgNetworkOptions.mg_pActivatedFunction = &StartNetworkSettingsMenu;
+  gmCurrent.gm_mgAdvancedOptions.mg_pActivatedFunction = &StartAdvancedLoadMenu;
   gmCurrent.gm_mgCustomOptions.mg_pActivatedFunction = &StartCustomLoadMenu;
 }
 
@@ -862,7 +863,7 @@ extern void RefreshSoundFormat(void)
   }
 
   gmCurrent.gm_mgAudioAutoTrigger.mg_iSelected = Clamp(sam_bAutoAdjustAudio, 0, 1);
-  gmCurrent.gm_mgAudioAPITrigger.mg_iSelected = Clamp(_pShell->GetINDEX("snd_iInterface"), 0L, 2L);
+  gmCurrent.gm_mgAudioAPITrigger.mg_iSelected = Clamp(_pShell->GetINDEX("snd_iInterface"), 0, 2);
 
   gmCurrent.gm_mgWaveVolume.mg_iMinPos = 0;
   gmCurrent.gm_mgWaveVolume.mg_iMaxPos = VOLUME_STEPS;
@@ -885,7 +886,7 @@ static void ApplyAudioOptions(void)
 
   sam_bAutoAdjustAudio = gmCurrent.gm_mgAudioAutoTrigger.mg_iSelected;
   if (sam_bAutoAdjustAudio) {
-    _pShell->Execute("include \"Scripts\\Addons\\SFX-AutoAdjust.ini\"");
+    //_pShell->Execute("include \"Scripts\\Addons\\SFX-AutoAdjust.ini\"");
   } else {
     _pShell->SetINDEX("snd_iInterface", gmCurrent.gm_mgAudioAPITrigger.mg_iSelected);
 
@@ -1016,8 +1017,8 @@ void InitActionsForNetworkMenu()
 {
   CNetworkMenu &gmCurrent = _pGUIM->gmNetworkMenu;
 
-//  gmCurrent.gm_mgJoin.mg_pActivatedFunction = &StartNetworkJoinMenu; // skip "join game" menu
-  gmCurrent.gm_mgJoin.mg_pActivatedFunction = &StartNetworkOpenMenu;
+  gmCurrent.gm_mgJoin.mg_pActivatedFunction = &StartNetworkJoinMenu; // skip "join game" menu
+ // gmCurrent.gm_mgJoin.mg_pActivatedFunction = &StartNetworkOpenMenu;
   gmCurrent.gm_mgStart.mg_pActivatedFunction = &StartNetworkStartMenu;
   gmCurrent.gm_mgQuickLoad.mg_pActivatedFunction = &StartNetworkQuickLoadMenu;
   gmCurrent.gm_mgLoad.mg_pActivatedFunction = &StartNetworkLoadMenu;

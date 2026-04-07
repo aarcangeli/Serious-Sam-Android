@@ -1,5 +1,6 @@
 %option prefix="syy"
 %{
+#define register
 #include <Engine/Ska/ParsingSmbs.h>
 #include <Engine/Ska/smcPars.h>
 

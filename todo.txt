@@ -1,6 +1,7 @@
   - Customizable inputs
   - Multiplayer android and android
   - Multiplayer android and pc??
+  - rewrite mainactivity to nativeactivity c++
 
 generic infos:
 DIMP: Dictionary Import (list of id and filenames)

@@ -18,6 +18,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "EntitiesMP/StdH/StdH.h"
 %}
 
+uses "EntitiesMP/WorldLink";
 uses "EntitiesMP/Player";
 uses "EntitiesMP/CameraMarker";
 
@@ -116,7 +117,7 @@ functions:
   const CTString &GetDescription(void) const
   {
     if (m_penTarget!=NULL) {
-      ((CTString&)m_strDescription).PrintF("->%s", m_penTarget->GetName());
+      ((CTString&)m_strDescription).PrintF("->%s", (const char *) m_penTarget->GetName());
     } else {
       ((CTString&)m_strDescription).PrintF("-><none>");
     }
@@ -634,7 +635,7 @@ procedures:
     m_fLastFOV = m_fFOV;
 
     if( m_penTarget!=NULL && !IsOfClass( m_penTarget, "Camera Marker")) {
-      WarningMessage( "Entity '%s' is not of Camera Marker class!", m_penTarget);
+      WarningMessage( "Entity '%s' is not of Camera Marker class!", (const char *) (m_penTarget->GetName()));
       m_penTarget = NULL;
     }
 

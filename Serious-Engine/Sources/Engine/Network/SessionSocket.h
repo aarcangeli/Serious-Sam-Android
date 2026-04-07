@@ -42,28 +42,32 @@ public:
 };
 
 // connection data for each session connected to a server
-class CSessionSocket {
-public:
-  BOOL sso_bActive;
-  BOOL sso_bSendStream;
-  CTimerValue sso_tvMessageReceived;
-  TIME sso_tmLastSyncReceived;
-  INDEX sso_iDisconnectedState;
-  INDEX sso_iLastSentSequence;
-  INDEX sso_ctBadSyncs;   // counter of bad sync in row
-  CTimerValue sso_tvLastMessageSent;    // for sending keep-alive messages
-  CTimerValue sso_tvLastPingSent;       // for sending ping
-  CNetworkStream sso_nsBuffer;  // stream of blocks buffered for sending
-  CSessionSocketParams sso_sspParams; // parameters that the client wants
-  INDEX sso_ctLocalPlayers;     // number of players that this client will connect
-  BOOL sso_bVIP;          // set if the client was successfully authorized as a VIP
-public:
-  CSessionSocket(void);
-  ~CSessionSocket(void);
-  void Clear(void);
-  void Activate(void);
-  void Deactivate(void);
-  BOOL IsActive(void);
+class CSessionSocket
+{
+  public:
+    BOOL sso_bActive;
+    BOOL sso_bSendStream;
+    CTimerValue sso_tvMessageReceived;
+    TIME sso_tmLastSyncReceived;
+    INDEX sso_iDisconnectedState;
+    INDEX sso_iLastSentSequence;
+    INDEX sso_ctBadSyncs;   // counter of bad sync in row
+    CTimerValue sso_tvLastMessageSent;    // for sending keep-alive messages
+    CTimerValue sso_tvLastPingSent;       // for sending ping
+    CNetworkStream sso_nsBuffer;  // stream of blocks buffered for sending
+    CSessionSocketParams sso_sspParams; // parameters that the client wants
+    INDEX sso_ctLocalPlayers;     // number of players that this client will connect
+    BOOL sso_bVIP;          // set if the client was successfully authorized as a VIP
+  
+    INDEX sso_ctLastSecChat; // [SSE] Server Essentials - Chat Anti-DDOS
+
+  public:
+    CSessionSocket(void);
+    ~CSessionSocket(void);
+    void Clear(void);
+    void Activate(void);
+    void Deactivate(void);
+    BOOL IsActive(void);
 };
 
 

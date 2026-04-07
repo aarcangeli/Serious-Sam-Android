@@ -32,6 +32,7 @@ int findConfigAttrib(EGLDisplay display, EGLConfig &config, int attribute, int d
   return defaultValue;
 }
 
+#if defined(ANDROID)
 void CViewPort::Initialize(ANativeWindow *window) {
   const EGLint attribs[] = {
     EGL_RED_SIZE, 8,
@@ -100,6 +101,7 @@ void CViewPort::Initialize(ANativeWindow *window) {
 
   Resize();
 }
+#endif
 
 void CViewPort::OpenCanvas(void) {
 }

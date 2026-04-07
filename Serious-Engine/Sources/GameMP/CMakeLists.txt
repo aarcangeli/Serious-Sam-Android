@@ -21,7 +21,11 @@ else ()
   add_library(GameMP SHARED ${SOURCES})
 endif ()
 
+if (FIRST_ENCOUNTER)
+target_link_libraries(GameMP Entities)
+else()
 target_link_libraries(GameMP EntitiesMP)
+endif()
 
 target_compile_definitions(GameMP PUBLIC ENGINE_API=)
 target_compile_definitions(GameMP PUBLIC PLATFORM_UNIX)

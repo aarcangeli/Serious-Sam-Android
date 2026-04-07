@@ -228,6 +228,11 @@ procedures:
     ASSERT(ef.penAttach!=NULL);
     m_penOwner = ef.penOwner;
     m_penAttach = ef.penAttach;
+    
+    // [SSE] First Flame Fix
+    m_fDamageToApply = DAMAGE_AMMOUNT;
+    m_fDamageStep=m_fDamageToApply/(TM_APPLY_WHOLE_DAMAGE/TM_APPLY_DAMAGE_QUANTUM);
+    //
 
     m_tmStart = _pTimer->CurrentTick();
     m_tmFirstStart=m_tmStart;
@@ -338,10 +343,12 @@ procedures:
           }
           // inflict damage to parent
           const FLOAT fDamageMul = GetSeriousDamageMultiplier(m_penOwner);
-          FLOAT fDamageToApply=fDamageMul*(m_fDamageToApply/TM_APPLY_WHOLE_DAMAGE*TM_APPLY_DAMAGE_QUANTUM)*m_fDamageStep;
-          m_penAttach->InflictDirectDamage( m_penAttach, m_penOwner, DMT_BURNING, fDamageToApply,
+          FLOAT fDamageToApply = fDamageMul*(m_fDamageToApply/TM_APPLY_WHOLE_DAMAGE*TM_APPLY_DAMAGE_QUANTUM)*m_fDamageStep;
+
+          InflictDirectDamage( m_penAttach, m_penOwner, DMT_BURNING, fDamageToApply,
                                             GetPlacement().pl_PositionVector, -en_vGravityDir);
-          m_fAppliedDamage+=fDamageToApply;
+          m_fAppliedDamage += fDamageToApply;
+
           resume;
         }
         on (EFlame ef) : {

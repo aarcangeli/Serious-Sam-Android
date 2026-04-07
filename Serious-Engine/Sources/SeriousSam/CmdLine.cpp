@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "SeriousSam/StdH.h"
 
 #include <Engine/CurrentVersion.h>
 #include "CmdLine.h"
@@ -92,7 +92,7 @@ CTString GetNextParam(void)
 void ParseCommandLine(CTString strCmd)
 {
   cmd_strOutput = "";
-  cmd_strOutput+=CTString(0, TRANS("Command line: '%s'\n"), strCmd);
+  cmd_strOutput+=CTString(0, TRANS("Command line: '%s'\n"), (const char *) strCmd);
   // if no command line
   if (strlen(strCmd) == 0) {
     // do nothing
@@ -137,7 +137,7 @@ void ParseCommandLine(CTString strCmd)
     } else if (strWord=="+logfile") {
       _strLogFile = GetNextParam();
     } else {
-      cmd_strOutput+=CTString(0, TRANS("  Unknown option: '%s'\n"), strWord);
+      cmd_strOutput+=CTString(0, TRANS("  Unknown option: '%s'\n"), (const char *) strWord);
     }
   }
 }

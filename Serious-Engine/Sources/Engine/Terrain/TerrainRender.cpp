@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#include "StdH.h"
+#include "Engine/StdH.h"
 #include <Engine/Terrain/Terrain.h>
 #include <Engine/Terrain/TerrainRender.h>
 #include <Engine/Terrain/TerrainEditing.h>
@@ -46,7 +46,7 @@ CStaticStackArray<GFXVertex4>  _avLerpedTileLayerVertices;
 
 // Arrays for batch rendering of tiles is lowest mip
 static CStaticStackArray<GFXVertex4>  _avDelayedVertices;
-static CStaticStackArray<INDEX>       _aiDelayedIndices;
+static CStaticStackArray<INDEX_T>     _aiDelayedIndices;
 static CStaticStackArray<GFXTexCoord> _auvDelayedTexCoords;
 static CStaticStackArray<GFXTexCoord> _auvDelayedShadowMapTC;
 
@@ -269,7 +269,7 @@ void PrepareSmothVertices(INDEX itt)
   GFXVertex *pvBorderSrc = pavSrc;
 
   for(INDEX ivx=tt.tt_ctNonBorderVertices;ivx<ctVertices;ivx++) {
-    *pavDst++ = *pavSrc++;
+    // *pavDst++ = *pavSrc++;
     pvBorderDst[0] = pvBorderSrc[0];
     pvBorderDst++;
     pvBorderSrc++;
@@ -601,7 +601,7 @@ void PrepareSmothVertices(INDEX itt)
 void PrepareSmothVerticesOnTileLayer(INDEX iTerrainTile, INDEX iTileLayer)
 {
   CTerrainTile &tt  = _ptrTerrain->tr_attTiles[iTerrainTile];
-  CTerrainLayer &tl = _ptrTerrain->tr_atlLayers[iTileLayer];
+  //CTerrainLayer &tl = _ptrTerrain->tr_atlLayers[iTileLayer];
   TileLayer &ttl    = tt.GetTileLayers()[iTileLayer];
 
   ASSERT(tt.tt_iLod==0);
@@ -770,7 +770,7 @@ static void RenderBatchedTiles(void)
   GFXVertex4  *pavVertices     = &_avDelayedVertices[0];
   GFXTexCoord *pauvTexCoords   = &_auvDelayedTexCoords[0];
   GFXTexCoord *pauvShadowMapTC = &_auvDelayedShadowMapTC[0];
-  INDEX       *paiIndices      = &_aiDelayedIndices[0];
+  INDEX_T     *paiIndices      = &_aiDelayedIndices[0];
   INDEX        ctVertices      = _avDelayedVertices.Count();
   INDEX        ctIndices       = _aiDelayedIndices.Count();
 
@@ -826,12 +826,12 @@ static void BatchTile(INDEX itt)
   GFXVertex4  *pavVertices        = &tt.GetVertices()[0];
   GFXTexCoord *pauvTexCoords      = &tt.GetTexCoords()[0];
   GFXTexCoord *pauvShadowMapTC    = &tt.GetShadowMapTC()[0];
-  INDEX       *paiIndices         = &tt.GetIndices()[0];
+  INDEX_T     *paiIndices         = &tt.GetIndices()[0];
 
   GFXVertex4  *pavDelVertices     = _avDelayedVertices.Push(9);
   GFXTexCoord *pauvDelTexCoords   = _auvDelayedTexCoords.Push(9);
   GFXTexCoord *pauvDelShadowMapTC = _auvDelayedShadowMapTC.Push(9);
-  INDEX       *paiDelIndices      = _aiDelayedIndices.Push(24);
+  INDEX_T     *paiDelIndices      = _aiDelayedIndices.Push(24);
 
   // for each vertex in tile
   for(INDEX ivx=0;ivx<9;ivx++) {
@@ -859,16 +859,16 @@ static FLOAT   _fHazeAdd;
 static void GetHazeMapInVertex( GFXVertex4 &vtx, GFXTexCoord &txHaze)
 {
   const FLOAT fD = vtx.x*_vViewerObj(1) + vtx.y*_vViewerObj(2) + vtx.z*_vViewerObj(3);
-  txHaze.gfxtc.uv.u = (fD+_fHazeAdd) * _haze_fMul;
-  txHaze.gfxtc.uv.v = 0.0f;
+  txHaze.uv.u = (fD+_fHazeAdd) * _haze_fMul;
+  txHaze.uv.v = 0.0f;
 }
 
 static void GetFogMapInVertex( GFXVertex4 &vtx, GFXTexCoord &tex)
 {
   const FLOAT fD = vtx.x*_vFViewerObj(1) + vtx.y*_vFViewerObj(2) + vtx.z*_vFViewerObj(3);
   const FLOAT fH = vtx.x*_vHDirObj(1)    + vtx.y*_vHDirObj(2)    + vtx.z*_vHDirObj(3);
-  tex.gfxtc.uv.u = (fD+_fFogAddZ) * _fog_fMulZ;
-  tex.gfxtc.uv.v = (fH+_fFogAddH) * _fog_fMulH;
+  tex.uv.u = (fD+_fFogAddZ) * _fog_fMulZ;
+  tex.uv.v = (fH+_fFogAddH) * _fog_fMulH;
 }
 
 static CStaticStackArray<GFXTexCoord> _atcHaze;
@@ -891,7 +891,7 @@ static void RenderFogLayer(INDEX itt)
   _fFogAddH = (_fog_vHDirAbs % vObjPosition) + _fog_fp.fp_fH3;
 
   GFXVertex *pvVtx;
-  INDEX     *piIndices;
+  INDEX_T   *piIndices;
   INDEX ctVertices;
   INDEX ctIndices;
   // if this is tile 
@@ -947,7 +947,7 @@ static void RenderHazeLayer(INDEX itt)
   _fHazeAdd += _vViewer(3) * (vObjPosition(3) - _aprProjection->pr_vViewerPosition(3));
 
   GFXVertex *pvVtx;
-  INDEX     *piIndices;
+  INDEX_T   *piIndices;
   INDEX ctVertices;
   INDEX ctIndices;
   // if this is tile 
@@ -1103,7 +1103,7 @@ static void RenderTile(INDEX itt)
     gfxSetTextureMatrix2(NULL);
     INDEX ctIndices = tt.GetIndices().Count();
     if(ctIndices>0) {
-      INDEX *paiIndices = &tt.GetIndices()[0];
+      INDEX_T *paiIndices = &tt.GetIndices()[0];
 
       // if detail map exists
       if(_ptrTerrain->tr_ptdDetailMap!=NULL) {
@@ -1157,7 +1157,7 @@ static void RenderTile(INDEX itt)
     if(_wrpWorldRenderPrefs.wrp_shtShadows!=CWorldRenderPrefs::SHT_NONE) {
       gfxDepthFunc(GFX_EQUAL);
       INDEX ctIndices = tt.GetIndices().Count();
-      INDEX *paiIndices = &tt.GetIndices()[0];
+      INDEX_T *paiIndices = &tt.GetIndices()[0];
 
       gfxSetTextureWrapping(GFX_CLAMP,GFX_CLAMP);
       gfxBlendFunc(GFX_DST_COLOR,GFX_SRC_COLOR);
@@ -1231,7 +1231,7 @@ void RenderTerrain(void)
     RenderBatchedTiles();
   }
 
-  CEntity *pen = _ptrTerrain->tr_penEntity;
+  //CEntity *pen = _ptrTerrain->tr_penEntity;
 
   extern void ShowRayPath(CDrawPort *pdp);
   ShowRayPath(_pdp);
@@ -1371,7 +1371,7 @@ void DrawSelectedVertices(GFXVertex *pavVertices, GFXColor *pacolColors, INDEX c
     GFXVertex &vtx = pavVertices[ivx];
     GFXColor  &col = pacolColors[ivx];
     // draw vertex
-    _pdp->DrawPoint3D(FLOAT3D(vtx.x,vtx.y,vtx.z),ByteSwap(col.gfxcol.ul.abgr),3);
+    _pdp->DrawPoint3D(FLOAT3D(vtx.x,vtx.y,vtx.z),ByteSwap(col.ul.abgr),3);
   }
   gfxDisableDepthBias();
 }
