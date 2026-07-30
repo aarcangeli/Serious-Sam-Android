@@ -52,6 +52,7 @@ public class SeriousSamSurface extends SurfaceView implements GestureDetector.On
         getHolder().addCallback(new SurfaceHolder.Callback() {
             @Override
             public void surfaceCreated(SurfaceHolder holder) {
+                requestFocus();
             }
 
             @Override
